@@ -24,7 +24,7 @@
 
 ## Checklist
 
-- [ ] 브랜치명이 `type/issueNumber/shortDescription` 형식을 따릅니다.
+- [ ] 브랜치명이 `type/shortDescription` 형식을 따릅니다.
 - [ ] PR 제목이 `type: summary` 형식을 따릅니다.
 - [ ] 불필요한 로그와 주석을 제거했습니다.
 - [ ] UI 변경 사항을 스크린샷으로 첨부했습니다.
