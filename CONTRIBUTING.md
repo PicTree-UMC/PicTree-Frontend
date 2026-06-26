@@ -1,97 +1,152 @@
 # Contributing Guide
 
-PicTree 프론트엔드 팀의 Git, PR, 코드 작성 컨벤션입니다.
+PicTree 프론트엔드 팀의 Git, PR, 코드 작성 컨벤션입니다. 팀원은 아래 양식을 그대로 복사해 브랜치, 커밋, PR을 작성합니다.
+
+## Workflow
+
+```bash
+git switch main
+git pull origin main
+git switch -c feat/loginPage
+
+# 작업 후
+npm run lint
+npm run build
+
+git add .
+git commit -m "feat: add login page"
+git push -u origin feat/loginPage
+```
 
 ## Branch Convention
 
-```txt
-type/issue-number-short-description
-```
-
-예시:
+### Format
 
 ```txt
-feat/12-login-page
-fix/18-map-marker-position
-docs/24-readme
-refactor/31-home-feature-structure
+type/shortDescription
 ```
 
-### Branch Type
+### Examples
 
-| Type | Description |
-| --- | --- |
-| `feat` | 새로운 기능 |
-| `fix` | 버그 수정 |
-| `docs` | 문서 수정 |
-| `style` | 포맷팅, 세미콜론 등 코드 동작 변화 없는 수정 |
-| `refactor` | 리팩토링 |
-| `test` | 테스트 추가 또는 수정 |
-| `chore` | 빌드, 패키지, 설정 등 기타 작업 |
+```txt
+feat/loginPage
+fix/mapMarkerPosition
+docs/updateReadme
+refactor/homeFeatureStructure
+chore/eslintConfig
+```
+
+- `type`: 작업 종류를 작성합니다. 예: `feat`, `fix`, `docs`
+- `shortDescription`: 작업 내용을 camelCase로 작성합니다.
+
+### Type
+
+| Type | Description | Example |
+| --- | --- | --- |
+| `feat` | 새로운 기능 | `feat/loginPage` |
+| `fix` | 버그 수정 | `fix/mapMarkerPosition` |
+| `docs` | 문서 수정 | `docs/updateReadme` |
+| `style` | 코드 동작 변화 없는 스타일 수정 | `style/formatButton` |
+| `refactor` | 리팩토링 | `refactor/homeFeatureStructure` |
+| `test` | 테스트 추가 또는 수정 | `test/authForm` |
+| `chore` | 패키지, 빌드, 설정 등 기타 작업 | `chore/eslintConfig` |
 
 ## Commit Convention
 
-커밋 메시지는 아래 형식을 사용합니다.
+### Format
 
 ```txt
-type(scope): summary
+type: summary
 ```
 
-예시:
+### Examples
+
+```txt
+feat: add login form
+fix: correct marker coordinate parsing
+docs: update readme
+style: format shared button
+refactor: split home marker hook
+test: add auth form validation test
+chore: setup eslint and prettier
+```
+
+### Optional Scope
+
+변경 범위를 꼭 구분해야 할 때만 scope를 선택적으로 사용합니다.
 
 ```txt
 feat(auth): add login form
 fix(home): correct marker coordinate parsing
-docs(readme): add project setup guide
-chore(config): setup eslint and prettier
+docs(readme): update project introduction
 ```
 
-### Commit Rules
+### Rules
 
 - summary는 영어 소문자로 시작하고 명령형으로 작성합니다.
 - 한 커밋에는 하나의 의도를 담습니다.
-- scope는 feature 또는 변경 영역을 사용합니다. 예: `auth`, `home`, `timeline`, `router`, `shared`, `config`.
+- 불필요한 콘솔 로그, 주석, 사용하지 않는 코드는 커밋 전에 제거합니다.
 
 ## Pull Request Convention
 
-PR 제목은 커밋 컨벤션과 동일하게 작성합니다.
+### PR Title
+
+PR 제목은 대표적인 작업 내용을 한국어로 작성합니다.
 
 ```txt
-feat(auth): add login page
+[feat] 로그인 화면 추가
+[fix] 올바른 마커 좌표 파싱
+[docs] readme 수정
 ```
 
-### PR Checklist
+### PR Body
 
-- 변경 목적과 구현 내용을 명확히 작성합니다.
-- UI 변경이 있다면 스크린샷 또는 화면 녹화를 첨부합니다.
-- 테스트한 내용을 작성합니다.
-- 관련 이슈가 있다면 연결합니다.
-- 리뷰어가 확인해야 할 부분을 남깁니다.
+아래 양식을 사용합니다. 실제 PR 생성 시에는 `.github/pull_request_template.md`가 자동으로 표시됩니다.
+
+```md
+## Summary
+
+- 로그인 페이지 UI와 입력 폼을 추가했습니다.
+
+## Changes
+
+- `AuthPage` 라우트를 추가했습니다.
+- 이메일, 비밀번호 입력 필드를 구현했습니다.
+- 공용 `Input`, `Button` 컴포넌트를 적용했습니다.
+
+## Screenshots
+
+| 화면 | 이미지 |
+| --- | --- |
+| 로그인 | 첨부 |
+
+## Test
+
+- [x] `npm run lint`
+- [x] `npm run build`
+- [ ] 브라우저에서 직접 확인
+
+## Review Points
+
+- 입력 폼 구조가 이후 API 연동에 적절한지 확인해주세요.
+```
 
 ## Review Rules
 
-- 팀원은 매주 2개 이상의 PR 리뷰를 작성합니다.
+- 팀원은 매주 2개 이상의 PR 리뷰를 작성하려고 노력합니다.
 - 리뷰 코멘트는 이유와 제안을 함께 남깁니다.
 - 수정 요청 반영 후에는 어떤 방식으로 반영했는지 답글을 남깁니다.
 
-## Naming Convention
+### Review Comment Examples
 
-| Target | Convention | Example |
-| --- | --- | --- |
-| 변수, 함수 | camelCase | `userName`, `getUserProfile` |
-| 컴포넌트 | PascalCase | `LoginPage`, `TimelineCard` |
-| 타입, 인터페이스 | PascalCase | `UserProfile`, `LoginFormValues` |
-| 상수 | UPPER_SNAKE_CASE | `DEFAULT_MAP_ZOOM` |
-| 파일명 | PascalCase for components, camelCase for utilities | `Button.tsx`, `formatDate.ts` |
+```md
+이 로직은 `home/hooks`로 분리하면 컴포넌트가 더 읽기 쉬울 것 같습니다.
+```
 
-## Folder Rules
+```md
+마커 좌표가 없을 때의 예외 처리가 필요해 보여요. EXIF 정보가 없는 사진도 업로드될 수 있습니다.
+```
 
-- feature 전용 코드는 `src/features/{feature}` 내부에 둡니다.
-- 여러 feature에서 함께 쓰는 코드는 `src/shared` 내부에 둡니다.
-- 전역 상태는 `src/store` 내부에 둡니다.
-- 라우팅 설정은 `src/router` 내부에서 관리합니다.
-- 외부 API 클라이언트와 공통 라이브러리 설정은 `src/shared/lib`에서 관리합니다.
-
-## Troubleshooting
-
-문제 해결 과정은 [docs/troubleshooting-template.md](./docs/troubleshooting-template.md) 양식으로 기록합니다.
+```md
+좋습니다. 다만 이 컴포넌트가 다른 feature에서도 쓰이면 `shared/components`로 옮기는 것도 고려해볼 수 있을 것 같습니다.
+```
