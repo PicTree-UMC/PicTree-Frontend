@@ -1,0 +1,28 @@
+import { useEffect, useRef } from 'react';
+
+export function useKakaoMap(lat = 37.5665, lng = 126.9780, level = 3) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const initMap = () => {
+      if (!containerRef.current) return;
+      new window.kakao.maps.Map(containerRef.current, {
+        center: new window.kakao.maps.LatLng(lat, lng),
+        level,
+      });
+    };
+
+    if (window.kakao?.maps) {
+      // 이미 로드된 경우
+      initMap();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_MAP_APP_KEY}&autoload=false`;
+    script.onload = () => window.kakao.maps.load(initMap);
+    document.head.appendChild(script);
+  }, [lat, lng, level]);
+
+  return containerRef;
+}
