@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Journey } from './types/journey';
-import { JourneyCard } from './components/JourneyCard';
 import { BottomSheet } from './components/BottomSheet';
 import { RenameModal } from './components/RenameModal';
 import { journeyData } from '../../mocks/journeyData';
+import { JourneyList } from './components/JourneyList';
 
 export function JourneyPage() {
   const [journeys, setJourneys] = useState<Journey[]>(journeyData);
@@ -12,7 +12,7 @@ export function JourneyPage() {
   const [showRenameModal, setShowRenameModal] = useState(false);
 
   const handleDelete = (id: number) => {
-    setJourneys(prev => prev.filter(journey => journey.id !== id));
+    setJourneys((prev) => prev.filter((journey) => journey.id !== id));
   };
 
   const handleClick = (journey: Journey) => {
@@ -26,12 +26,10 @@ export function JourneyPage() {
   };
 
   const handleRename = (newTitle: string) => {
-    setJourneys(prev =>
-      prev.map(journey =>
-        journey.id === selectedJourney?.id
-          ? { ...journey, title: newTitle }
-          : journey
-      )
+    setJourneys((prev) =>
+      prev.map((journey) =>
+        journey.id === selectedJourney?.id ? { ...journey, title: newTitle } : journey,
+      ),
     );
     setShowRenameModal(false);
     setShowBottomSheet(false);
@@ -50,14 +48,7 @@ export function JourneyPage() {
           </button>
         </div>
       ) : (
-        journeys.map(journey => (
-          <JourneyCard
-            key={journey.id}
-            journey={journey}
-            onDelete={handleDelete}
-            onClick={handleClick}
-          />
-        ))
+        <JourneyList journeys={journeys} onDelete={handleDelete} onClick={handleClick} />
       )}
 
       {showBottomSheet && selectedJourney && (
