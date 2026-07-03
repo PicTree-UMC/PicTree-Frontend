@@ -3,7 +3,7 @@ import { JourneyCard } from './JourneyCard';
 
 interface JourneyListProps {
   journeys: Journey[];
-  onDelete: (id: number) => void;
+  onDelete: (journey: Journey) => void;  // id: number → journey: Journey
   onClick: (journey: Journey) => void;
 }
 

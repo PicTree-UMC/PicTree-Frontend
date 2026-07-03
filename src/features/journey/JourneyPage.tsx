@@ -4,15 +4,20 @@ import { BottomSheet } from './components/BottomSheet';
 import { RenameModal } from './components/RenameModal';
 import { journeyData } from '../../mocks/journeyData';
 import { JourneyList } from './components/JourneyList';
+import { DeleteModal } from './components/DeleteModal';
 
 export function JourneyPage() {
   const [journeys, setJourneys] = useState<Journey[]>(journeyData);
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const handleDelete = (id: number) => {
-    setJourneys((prev) => prev.filter((journey) => journey.id !== id));
+  const handleDelete = () => {
+    if (!selectedJourney) return;
+    setJourneys((prev) => prev.filter((journey) => journey.id !== selectedJourney.id));
+    setShowDeleteModal(false);
+    setSelectedJourney(null);
   };
 
   const handleClick = (journey: Journey) => {
@@ -48,7 +53,14 @@ export function JourneyPage() {
           </button>
         </div>
       ) : (
-        <JourneyList journeys={journeys} onDelete={handleDelete} onClick={handleClick} />
+        <JourneyList
+          journeys={journeys}
+          onDelete={(journey) => {
+            setSelectedJourney(journey);
+            setShowDeleteModal(true);
+          }}
+          onClick={handleClick}
+        />
       )}
 
       {showBottomSheet && selectedJourney && (
@@ -67,11 +79,17 @@ export function JourneyPage() {
 
       {showRenameModal && selectedJourney && (
         <RenameModal
-          currentTitle={selectedJourney.title}
+          isOpen={showRenameModal}
+          currentTitle={selectedJourney?.title ?? ''}
           onClose={() => setShowRenameModal(false)}
           onConfirm={handleRename}
         />
       )}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

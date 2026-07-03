@@ -2,7 +2,7 @@ import { Journey } from '../types/journey';
 
 interface JourneyCardProps {
   journey: Journey;
-  onDelete: (id: number) => void;
+  onDelete: (journey: Journey) => void;
   onClick: (journey: Journey) => void;
 }
 
@@ -17,7 +17,7 @@ export function JourneyCard({ journey, onDelete, onClick }: JourneyCardProps) {
         <h3 className="text-base font-semibold text-gray-900">{journey.title}</h3>
         <p className="text-sm text-gray-500">{journey.date}</p>
         <div className="flex gap-2">
-          {journey.places.map(place => (
+          {journey.places.map((place) => (
             <span key={place.id} className="text-xs text-gray-400">
               {place.name}
             </span>
@@ -30,7 +30,7 @@ export function JourneyCard({ journey, onDelete, onClick }: JourneyCardProps) {
       <button
         onClick={(e) => {
           e.stopPropagation();
-          onDelete(journey.id);
+          onDelete(journey); // journey.id → journey
         }}
         className="rounded-full bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
       >
