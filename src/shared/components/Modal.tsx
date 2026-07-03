@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { Button } from './Button';
 
 /** 공용 모달. isOpen 으로 부모가 여닫는 controlled 방식. */
 type ModalProps = {
@@ -81,21 +82,20 @@ export function ConfirmModal({
       title={title}
       footer={
         <>
-          <button
-            type="button"
+          {/* 공용 Button 재사용. 취소=중립(회색), 확인=위험(빨강)으로 className 오버라이드 */}
+          <Button
             onClick={onClose}
-            className="rounded-md border border-neutral-300 px-4 py-2 text-sm text-neutral-600 transition hover:bg-neutral-50"
+            className="border border-neutral-300 !bg-white !text-neutral-600 hover:!bg-neutral-50"
           >
             {cancelText}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={onConfirm}
             disabled={isConfirming}
-            className="rounded-md bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="!bg-red-500 hover:!bg-red-600"
           >
             {confirmText}
-          </button>
+          </Button>
         </>
       }
     >

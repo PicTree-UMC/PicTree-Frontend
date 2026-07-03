@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
+import { ROUTES } from '@/shared/constants/routes';
 
 /** 하단 탭바. NavLink 로 현재 경로 탭이 자동 활성화됨. */
 
@@ -7,16 +8,16 @@ export interface TabItem {
   to: string;
   label: string;
   icon?: ReactNode;
-  end?: boolean; // '/'(지도)처럼 정확 매칭만 활성화할 때 true
+  end?: boolean; // 지도(홈)처럼 정확 매칭만 활성화할 때 true
 }
 
-// 탭 구성의 기준값. 라우트/아이콘 확정 시 이 배열만 수정
+// 경로는 shared/constants/routes 의 ROUTES 상수를 사용. 아이콘은 확정 시 교체.
 const DEFAULT_TABS: TabItem[] = [
-  { to: '/', label: '지도', icon: '📍', end: true },
-  { to: '/timeline', label: '타임라인', icon: '🕓' },
-  { to: '/journey', label: '동선', icon: '🗺️' },
-  { to: '/blog', label: '블로그', icon: '🗂️' },
-  { to: '/mypage', label: '마이', icon: '👤' },
+  { to: ROUTES.home, label: '지도', icon: '📍', end: true },
+  { to: ROUTES.timeline, label: '타임라인', icon: '🕓' },
+  { to: ROUTES.journey, label: '동선', icon: '🗺️' },
+  { to: ROUTES.blog, label: '블로그', icon: '🗂️' },
+  { to: ROUTES.profile, label: '마이', icon: '👤' },
 ];
 
 type BottomTabBarProps = {
