@@ -1,10 +1,12 @@
-import { MapPlaceholder } from '../../shared/components/MapPlaceholder';
+import { useKakaoMap } from './hooks/useKakaoMap';
 
 export function HomePage() {
+  const { containerRef } = useKakaoMap(37.5665, 126.9780, 3);
+
   return (
     <div className="relative h-screen w-full overflow-hidden">
-      {/* 가짜 지도 배경 */}
-      <MapPlaceholder />
+      {/* 카카오맵 */}
+      <div ref={containerRef} className="absolute inset-0" />
 
       {/* 카메라 버튼 */}
       <button className="absolute bottom-[90px] left-1/2 z-20 flex h-[52px] w-[52px] -translate-x-1/2 items-center justify-center rounded-full bg-pictree-700">
