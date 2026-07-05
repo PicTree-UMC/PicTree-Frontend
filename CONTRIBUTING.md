@@ -56,15 +56,15 @@ chore/eslintConfig
 ### Format
 
 ```txt
-[type] 작업 내용
+type: 작업 내용
 ```
 
 ### Examples
 
 ```txt
-feat: add login form
+feat: login form 추가
 fix: correct marker coordinate parsing
-docs: update readme
+docs: readme 수정
 style: format shared button
 refactor: split home marker hook
 test: add auth form validation test
