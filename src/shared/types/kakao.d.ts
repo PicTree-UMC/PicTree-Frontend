@@ -9,6 +9,17 @@ declare namespace kakao.maps {
   class LatLng {
     constructor(lat: number, lng: number);
   }
+  class CustomOverlay {
+    constructor(options: CustomOverlayOptions);
+    setMap(map: Map | null): void;
+  }
+  interface CustomOverlayOptions {
+    position: LatLng;
+    content: string | HTMLElement;
+    xAnchor?: number;
+    yAnchor?: number;
+    zIndex?: number;
+  }
   function load(callback: () => void): void;
 }
 
