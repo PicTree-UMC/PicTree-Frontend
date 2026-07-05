@@ -56,7 +56,7 @@ chore/eslintConfig
 ### Format
 
 ```txt
-type: summary
+[type] 작업 내용
 ```
 
 ### Examples
