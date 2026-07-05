@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Journey } from './types/journey';
 import { BottomSheet } from './components/BottomSheet';
 import { RenameModal } from './components/RenameModal';
-import { journeyData } from '../../mocks/journeyData';
+import { journeyData } from './mocks/journeyData';
 import { JourneyList } from './components/JourneyList';
 import { DeleteModal } from './components/DeleteModal';
 
