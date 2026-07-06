@@ -1,22 +1,37 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { AuthForm } from './components/AuthForm';
 import { AuthShell } from './components/AuthShell';
 import { WelcomeView } from './components/WelcomeView';
 import { AUTH_FORM_FIELDS } from './constants/authFormFields';
+import { ROUTES } from '../../shared/constants/routes';
 import type {
   AuthSubmitValues,
-  AuthView,
+  AuthFormMode,
   LoginRequest,
   SignupFormValues,
   SignupRequest,
 } from './types/auth';
 
 export function AuthPage() {
-  const [view, setView] = useState<AuthView>('welcome');
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const showLogin = () => setView('login');
-  const showSignup = () => setView('signup');
+  const view = useMemo(() => {
+    if (location.pathname === ROUTES.authLogin) {
+      return 'login' as const;
+    }
+
+    if (location.pathname === ROUTES.authSignup) {
+      return 'signup' as const;
+    }
+
+    return 'welcome' as const;
+  }, [location.pathname]);
+
+  const showLogin = () => navigate(ROUTES.authLogin);
+  const showSignup = () => navigate(ROUTES.authSignup);
 
   const handleSubmit = (values: AuthSubmitValues) => {
     if (view === 'login') {
@@ -45,8 +60,9 @@ export function AuthPage() {
         <WelcomeView onLogin={showLogin} onSignup={showSignup} />
       ) : (
         <AuthForm
+          key={view}
           fields={AUTH_FORM_FIELDS[view]}
-          mode={view}
+          mode={view as AuthFormMode}
           onSubmit={handleSubmit}
           onToggle={view === 'login' ? showSignup : showLogin}
         />
