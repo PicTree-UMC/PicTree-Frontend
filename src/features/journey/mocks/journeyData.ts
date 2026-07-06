@@ -1,4 +1,4 @@
-import { Journey } from '../features/journey/types/journey';
+import { Journey } from '../types/journey';
 
 export const journeyData: Journey[] = [
   {
