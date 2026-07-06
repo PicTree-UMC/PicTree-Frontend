@@ -30,7 +30,7 @@ export function JourneyCard({ journey, onDelete, onClick }: JourneyCardProps) {
       <button
         onClick={(e) => {
           e.stopPropagation();
-          onDelete(journey); // journey.id → journey
+          onDelete(journey);
         }}
         className="rounded-full bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
       >

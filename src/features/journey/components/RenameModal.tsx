@@ -13,6 +13,8 @@ interface RenameModalProps {
 export function RenameModal({ isOpen, currentTitle, onClose, onConfirm }: RenameModalProps) {
   const [newTitle, setNewTitle] = useState(currentTitle);
 
+  const handleConfirm = () => onConfirm(newTitle);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -23,7 +25,7 @@ export function RenameModal({ isOpen, currentTitle, onClose, onConfirm }: Rename
           <Button onClick={onClose} className="bg-gray-100 text-gray-500 hover:bg-gray-200">
             취소
           </Button>
-          <Button onClick={() => onConfirm(newTitle)}>
+          <Button onClick={handleConfirm}>
             변경
           </Button>
         </>
@@ -32,6 +34,8 @@ export function RenameModal({ isOpen, currentTitle, onClose, onConfirm }: Rename
       <Input
         value={newTitle}
         onChange={(e) => setNewTitle(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
+        autoFocus
         className="w-full mt-2"
       />
     </Modal>
