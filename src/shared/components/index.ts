@@ -5,6 +5,7 @@ export { BottomTabBar } from './BottomTabBar';
 export type { TabItem } from './BottomTabBar';
 export { Modal, ConfirmModal } from './Modal';
 export { ErrorPage } from './ErrorPage';
+export { PicTreeMark } from './PicTreeMark';
 export { default as Toaster } from './toast/Toaster';
 export { useToast, useToastStore } from './toast/toastStore';
 export type { ToastType, ToastItem } from './toast/toastStore';

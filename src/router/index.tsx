@@ -18,6 +18,14 @@ export const router = createBrowserRouter([
     element: <AuthPage />,
   },
   {
+    path: ROUTES.authLogin,
+    element: <AuthPage />,
+  },
+  {
+    path: ROUTES.authSignup,
+    element: <AuthPage />,
+  },
+  {
     path: ROUTES.home,
     element: <HomePage />,
   },
