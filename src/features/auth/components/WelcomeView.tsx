@@ -1,4 +1,5 @@
-import { PicTreeMark } from './PicTreeMark';
+import { Button } from '../../../shared/components';
+import { PicTreeMark } from '../../../shared/components/PicTreeMark';
 
 type WelcomeViewProps = {
   onLogin: () => void;
@@ -19,20 +20,22 @@ export function WelcomeView({ onLogin, onSignup }: WelcomeViewProps) {
       </div>
 
       <div className="space-y-5">
-        <button
-          className="flex w-[20.75rem] h-[4.3125rem] items-center justify-center rounded-[1.5rem] bg-[#89986D] pb-[0.9375rem] pt-[0.875rem] text-[1.125rem] font-bold text-[#FFF] transition hover:bg-[#7d9062] line-height-[2.5rem]"
+        <Button
+          unstyled
+          className="flex h-[4.3125rem] w-[20.75rem] items-center justify-center rounded-[1.5rem] bg-[#89986D] pb-[0.9375rem] pt-[0.875rem] text-[1.125rem] font-bold text-[#FFF] hover:bg-[#7d9062]"
           type="button"
           onClick={onLogin}
         >
           로그인
-        </button>
-        <button
-          className="flex w-[20.75rem] h-[3.5625rem] items-center justify-center rounded-[1.5rem] bg-[#F6F0D7] pb-[0.5625rem] pt-[0.5rem] text-[1.125rem] font-bold text-[#5C6F2B] transition hover:bg-[#eee8ce] line-height-[2.5rem]"
+        </Button>
+        <Button
+          unstyled
+          className="flex h-[3.5625rem] w-[20.75rem] items-center justify-center rounded-[1.5rem] bg-[#F6F0D7] pb-[0.5625rem] pt-[0.5rem] text-[1.125rem] font-bold text-[#5C6F2B] hover:bg-[#eee8ce]"
           type="button"
           onClick={onSignup}
         >
           새로 시작하기
-        </button>
+        </Button>
       </div>
     </div>
   );

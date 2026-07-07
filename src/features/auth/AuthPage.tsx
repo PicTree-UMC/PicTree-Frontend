@@ -35,6 +35,7 @@ export function AuthPage() {
 
   const handleSubmit = (values: AuthSubmitValues) => {
     if (view === 'login') {
+      // TODO: API 연동 시 useMutation으로 login(payload) 호출
       const payload: LoginRequest = {
         email: values.email,
         password: values.password,
@@ -45,6 +46,7 @@ export function AuthPage() {
     }
 
     const signupValues = toSignupValues(values);
+    // TODO: API 연동 시 useMutation으로 signup(payload) 호출
     const payload: SignupRequest = {
       nickname: signupValues.nickname,
       email: signupValues.email,

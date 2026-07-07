@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ROUTES } from '@/shared/constants/routes';
+import { ROUTES } from '../constants/routes';
 
 /** 하단 탭바. NavLink 로 현재 경로 탭이 자동 활성화됨. */
 

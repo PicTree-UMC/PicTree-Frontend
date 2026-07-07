@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { Input } from '../../../shared/components';
 import type { AuthField } from '../types/auth';
 
 type AuthTextFieldProps = {
@@ -38,9 +39,9 @@ export function AuthTextField({
         </div>
       ) : null}
       <div className="relative">
-        <input
+        <Input
           autoComplete={field.autoComplete}
-          className={`h-[50px] w-full rounded-[17px] bg-[#f5f0d8] px-7 pr-12 text-[13px] font-bold text-[#263122] outline-none placeholder:text-[#aba994] focus:ring-2 ${hasError ? 'ring-1 ring-[#d87474] focus:ring-[#d87474]' : 'focus:ring-[#c5dc98]'}`}
+          className={`h-[50px] w-full rounded-[17px] border-0 bg-[#f5f0d8] px-7 pr-12 text-[13px] font-bold text-[#263122] outline-none placeholder:text-[#aba994] focus:border-transparent focus:ring-2 ${hasError ? 'ring-1 ring-[#d87474] focus:ring-[#d87474]' : 'focus:ring-[#c5dc98]'}`}
           id={field.name}
           name={field.name}
           placeholder={field.placeholder}
