@@ -6,5 +6,11 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#9fdb83",
-  "icons": []
+  "icons": [
+    {
+      "src": "/apple-touch-icon.jpg",
+      "sizes": "any",
+      "type": "image/jpeg"
+    }
+  ]
 }
