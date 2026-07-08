@@ -1,4 +1,3 @@
-import { BottomTabBar } from '@/shared/components';
 import { useKakaoMap } from './hooks/useKakaoMap';
 import { useMapMarkers } from './hooks/useMapMarkers';
 import { JourneyBanner } from './components/JourneyBanner';
@@ -39,9 +38,6 @@ export function HomePage() {
           />
         </svg>
       </button>
-
-      {/* 하단 탭바 */}
-      <BottomTabBar />
     </div>
   );
 }
