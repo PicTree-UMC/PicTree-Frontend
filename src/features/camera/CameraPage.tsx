@@ -83,11 +83,15 @@ export function CameraPage() {
         </button>
       </div>
 
-      <div className="flex flex-col gap-3 bg-black pb-2 pt-4">
+      <div className="flex flex-col gap-3 bg-black pb-4 pt-4">
         <div className="flex items-center justify-around px-6">
-          <span className="flex h-11 w-11 items-center justify-center text-neutral-500" aria-hidden>
-            <FlashOffIcon />
-          </span>
+          <button
+            onClick={handleSkip}
+            aria-label="사진 없이 기록하기"
+            className="flex h-11 w-11 items-center justify-center text-white"
+          >
+            <PencilIcon />
+          </button>
           <button
             onClick={handleCapture}
             aria-label="촬영"
@@ -97,22 +101,16 @@ export function CameraPage() {
             <SwitchCameraIcon />
           </button>
         </div>
-        <button
-          onClick={handleSkip}
-          className="w-full bg-neutral-800 py-3 text-sm text-neutral-300"
-        >
-          사진 없이 기록하기
-        </button>
       </div>
     </div>
   );
 }
 
-function FlashOffIcon() {
+function PencilIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 3L4 14h6l-1 7 9-11h-6l1-7z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4l16 16" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>
   );
 }
