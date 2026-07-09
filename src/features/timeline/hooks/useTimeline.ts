@@ -8,7 +8,6 @@ import type {
 
 /**
  * TanStack Query 캐시 키.
- * 삭제 후 목록을 새로고침(무효화)할 때 이 키를 공유해서 씀.
  * (useDeleteRecord 에서 이 키로 invalidate → 타임라인이 자동 갱신됨)
  */
 export const timelineKeys = {
@@ -18,7 +17,7 @@ export const timelineKeys = {
 // 요일 표시용 (Date.getDay() 는 0=일 ~ 6=토 를 반환)
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-// Date 
+// Date → "2025-04-01" 문자열. 같은 날인지 비교하고 그룹 키로 쓰기 위함
 const toDateKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
     d.getDate()
@@ -46,10 +45,6 @@ const buildLabel = (date: Date, today: Date): string => {
 /**
  * 기록 목록을 날짜별 그룹으로 묶고 최신순 정렬.
  *
- * 흐름:
- *  1) 기록들을 날짜 키("2025-04-01")별로 Map 에 모음
- *  2) 그룹(날짜)들을 내림차순 정렬 → 오늘이 맨 위
- *  3) 각 그룹 안 기록도 시간 내림차순 정렬 → 최신 시간이 위
  */
 const groupByDate = (
   records: TimelineRecord[],
@@ -88,11 +83,6 @@ interface UseTimelineResult {
   isError: boolean;
 }
 
-/**
- * 타임라인 조회 훅.
- * - 서버에서 기록을 받아와(getTimeline) 날짜 그룹으로 가공해 돌려줌.
- * - useQuery 가 로딩/에러/캐싱을 알아서 처리함.
- */
 export const useTimeline = (): UseTimelineResult => {
   const { data, isLoading, isError } = useQuery({
     queryKey: timelineKeys.all, // 이 키로 캐시 저장/조회

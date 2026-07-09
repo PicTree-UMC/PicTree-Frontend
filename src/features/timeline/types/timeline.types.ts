@@ -1,9 +1,10 @@
 /**
+ *
  * NOTE: 장소 기록(Record) 모델은 home/journey 피처와 공유될 수 있어,
- *       추후 shared/types 로 옮길 수 있다. (팀 합의 후 이동)
+ *       추후 shared/types 로 옮길 수 있습니다. (팀 합의 후 이동)
  */
 
-/** 사용자 플랜 (무료 플랜은 최근 3일치까지만 조회 가능) */
+/** 사용자 플랜 (무료 플랜은 최근 3일치까지만 조회 가능 — TIMELINE-03) */
 export type PlanType = "free" | "premium";
 
 /** 장소 기록 카드 1건 */

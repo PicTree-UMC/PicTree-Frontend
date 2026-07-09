@@ -1,9 +1,6 @@
 import type { TimelineGroup as Group } from "../types/timeline.types";
 import TimelineCard from "./TimelineCard";
 
-/**
- * 날짜 헤더 + 그 날짜의 카드 목록. 디자인 미확정이라 스타일은 확정 후 반영.
- */
 interface Props {
   group: Group; // 헤더 라벨 + 그 날짜의 기록들
   onDelete: (id: string) => void; // 카드로 그대로 전달 (삭제 처리)
@@ -13,8 +10,9 @@ interface Props {
 export default function TimelineGroup({ group, onDelete, deletingId }: Props) {
   return (
     <section>
-      {/* TODO(디자인): 날짜 헤더 타이포/색상/여백 */}
-      <h2>{group.label}</h2>
+      <h2 className="px-4 pb-2 pt-4 text-[15px] font-bold text-black">
+        {group.label}
+      </h2>
 
       <ul>
         {group.records.map((record) => (
