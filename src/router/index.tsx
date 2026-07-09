@@ -6,6 +6,7 @@ import { HomePage } from '../features/home/HomePage';
 import { JourneyPage } from '../features/journey/JourneyPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { TimelinePage } from '../features/timeline/TimelinePage';
+import { Layout } from '../shared/components';
 import { ROUTES } from '../shared/constants/routes';
 
 export const router = createBrowserRouter([
@@ -18,23 +19,36 @@ export const router = createBrowserRouter([
     element: <AuthPage />,
   },
   {
-    path: ROUTES.home,
-    element: <HomePage />,
+    path: ROUTES.authLogin,
+    element: <AuthPage />,
   },
   {
-    path: ROUTES.timeline,
-    element: <TimelinePage />,
+    path: ROUTES.authSignup,
+    element: <AuthPage />,
   },
   {
-    path: ROUTES.journey,
-    element: <JourneyPage />,
-  },
-  {
-    path: ROUTES.profile,
-    element: <ProfilePage />,
-  },
-  {
-    path: ROUTES.blog,
-    element: <BlogPage />,
+    element: <Layout />,
+    children: [
+      {
+        path: ROUTES.home,
+        element: <HomePage />,
+      },
+      {
+        path: ROUTES.timeline,
+        element: <TimelinePage />,
+      },
+      {
+        path: ROUTES.journey,
+        element: <JourneyPage />,
+      },
+      {
+        path: ROUTES.profile,
+        element: <ProfilePage />,
+      },
+      {
+        path: ROUTES.blog,
+        element: <BlogPage />,
+      },
+    ],
   },
 ]);
