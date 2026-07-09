@@ -2,33 +2,31 @@ import { NavLink } from 'react-router-dom';
 import { ROUTES } from '../constants/routes';
 
 import mapIcon from '../assets/icons/map.svg';
+import mapActive from '../assets/icons/map-active.svg';
 import timelineIcon from '../assets/icons/timeline.svg';
+import timelineActive from '../assets/icons/timeline-active.svg';
 import journeyIcon from '../assets/icons/journey.svg';
+import journeyActive from '../assets/icons/journey-active.svg';
 import blogIcon from '../assets/icons/blog.svg';
+import blogActive from '../assets/icons/blog-active.svg';
 import profileIcon from '../assets/icons/profile.svg';
+import profileActive from '../assets/icons/profile-active.svg';
 
-/**
- * 하단 탭바. NavLink 로 현재 경로 탭이 자동 활성화됨.
- * 아이콘은 단색 SVG 1개를 CSS mask 로 재색칠 → 활성 초록(#8BCC6A) / 비활성 검정.
- * (활성·비활성 이미지를 따로 두지 않아 파일/용량 절약)
- */
-
-const ACTIVE_COLOR = '#8BCC6A';
-const INACTIVE_COLOR = '#000000';
 
 export interface TabItem {
   to: string;
   label: string;
-  icon: string; // 단색 SVG (색은 CSS 로 입힘)
+  icon: string; // 비활성(검정)
+  iconActive: string; // 활성(초록 #8BCC6A)
   end?: boolean;
 }
 
 const DEFAULT_TABS: TabItem[] = [
-  { to: ROUTES.home, label: '지도', icon: mapIcon, end: true },
-  { to: ROUTES.timeline, label: '타임라인', icon: timelineIcon },
-  { to: ROUTES.journey, label: '동선', icon: journeyIcon },
-  { to: ROUTES.blog, label: '블로그', icon: blogIcon },
-  { to: ROUTES.profile, label: '마이', icon: profileIcon },
+  { to: ROUTES.home, label: '지도', icon: mapIcon, iconActive: mapActive, end: true },
+  { to: ROUTES.timeline, label: '타임라인', icon: timelineIcon, iconActive: timelineActive },
+  { to: ROUTES.journey, label: '동선', icon: journeyIcon, iconActive: journeyActive },
+  { to: ROUTES.blog, label: '블로그', icon: blogIcon, iconActive: blogActive },
+  { to: ROUTES.profile, label: '마이', icon: profileIcon, iconActive: profileActive },
 ];
 
 type BottomTabBarProps = {
@@ -48,20 +46,10 @@ export function BottomTabBar({ tabs = DEFAULT_TABS }: BottomTabBarProps) {
             >
               {({ isActive }) => (
                 <>
-                  <span
-                    aria-hidden
+                  <img
+                    src={isActive ? tab.iconActive : tab.icon}
+                    alt=""
                     className="h-6 w-6"
-                    style={{
-                      backgroundColor: isActive ? ACTIVE_COLOR : INACTIVE_COLOR,
-                      maskImage: `url(${tab.icon})`,
-                      WebkitMaskImage: `url(${tab.icon})`,
-                      maskRepeat: 'no-repeat',
-                      WebkitMaskRepeat: 'no-repeat',
-                      maskPosition: 'center',
-                      WebkitMaskPosition: 'center',
-                      maskSize: 'contain',
-                      WebkitMaskSize: 'contain',
-                    }}
                   />
                   <span>{tab.label}</span>
                 </>
