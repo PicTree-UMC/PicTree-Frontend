@@ -1,23 +1,34 @@
-import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ROUTES } from '@/shared/constants/routes';
+import { ROUTES } from '../constants/routes';
 
-/** 하단 탭바. NavLink 로 현재 경로 탭이 자동 활성화됨. */
+import mapIcon from '../assets/icons/map.svg';
+import timelineIcon from '../assets/icons/timeline.svg';
+import journeyIcon from '../assets/icons/journey.svg';
+import blogIcon from '../assets/icons/blog.svg';
+import profileIcon from '../assets/icons/profile.svg';
+
+/**
+ * 하단 탭바. NavLink 로 현재 경로 탭이 자동 활성화됨.
+ * 아이콘은 단색 SVG 1개를 CSS mask 로 재색칠 → 활성 초록(#8BCC6A) / 비활성 검정.
+ * (활성·비활성 이미지를 따로 두지 않아 파일/용량 절약)
+ */
+
+const ACTIVE_COLOR = '#8BCC6A';
+const INACTIVE_COLOR = '#000000';
 
 export interface TabItem {
   to: string;
   label: string;
-  icon?: ReactNode;
-  end?: boolean; // 지도(홈)처럼 정확 매칭만 활성화할 때 true
+  icon: string; // 단색 SVG (색은 CSS 로 입힘)
+  end?: boolean;
 }
 
-// 경로는 shared/constants/routes 의 ROUTES 상수를 사용. 아이콘은 확정 시 교체.
 const DEFAULT_TABS: TabItem[] = [
-  { to: ROUTES.home, label: '지도', icon: '📍', end: true },
-  { to: ROUTES.timeline, label: '타임라인', icon: '🕓' },
-  { to: ROUTES.journey, label: '동선', icon: '🗺️' },
-  { to: ROUTES.blog, label: '블로그', icon: '🗂️' },
-  { to: ROUTES.profile, label: '마이', icon: '👤' },
+  { to: ROUTES.home, label: '지도', icon: mapIcon, end: true },
+  { to: ROUTES.timeline, label: '타임라인', icon: timelineIcon },
+  { to: ROUTES.journey, label: '동선', icon: journeyIcon },
+  { to: ROUTES.blog, label: '블로그', icon: blogIcon },
+  { to: ROUTES.profile, label: '마이', icon: profileIcon },
 ];
 
 type BottomTabBarProps = {
@@ -33,16 +44,28 @@ export function BottomTabBar({ tabs = DEFAULT_TABS }: BottomTabBarProps) {
             <NavLink
               to={tab.to}
               end={tab.end}
-              className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 py-2 text-xs transition ${
-                  isActive ? 'text-pictree-700' : 'text-neutral-400'
-                }`
-              }
+              className="flex flex-col items-center gap-0.5 py-2 text-xs text-black"
             >
-              <span className="text-lg" aria-hidden>
-                {tab.icon}
-              </span>
-              <span>{tab.label}</span>
+              {({ isActive }) => (
+                <>
+                  <span
+                    aria-hidden
+                    className="h-6 w-6"
+                    style={{
+                      backgroundColor: isActive ? ACTIVE_COLOR : INACTIVE_COLOR,
+                      maskImage: `url(${tab.icon})`,
+                      WebkitMaskImage: `url(${tab.icon})`,
+                      maskRepeat: 'no-repeat',
+                      WebkitMaskRepeat: 'no-repeat',
+                      maskPosition: 'center',
+                      WebkitMaskPosition: 'center',
+                      maskSize: 'contain',
+                      WebkitMaskSize: 'contain',
+                    }}
+                  />
+                  <span>{tab.label}</span>
+                </>
+              )}
             </NavLink>
           </li>
         ))}
