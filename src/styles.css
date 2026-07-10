@@ -33,10 +33,15 @@
   background: #ffffff;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
   /* 더블탭 확대 등 브라우저 기본 줌 제스처 차단. 지도 자체 줌(카카오맵)과 충돌 방지 */
   touch-action: manipulation;
 }
@@ -46,4 +51,13 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+/* 노치/홈 인디케이터 등 안전영역을 침범하지 않도록 하는 유틸. viewport-fit=cover 와 함께 사용. */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
