@@ -42,7 +42,7 @@ export function JourneyPage() {
   };
 
   return (
-    <div className="flex flex-col gap-3 p-5">
+    <div className="flex flex-col gap-3 p-5 pb-24">
       <h1 className="text-xl font-bold text-gray-900">저장된 동선</h1>
 
       {journeys.length === 0 ? (

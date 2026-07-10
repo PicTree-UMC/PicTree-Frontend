@@ -3,6 +3,7 @@ export { Button } from './Button';
 export { Input } from './Input';
 export { BottomTabBar } from './BottomTabBar';
 export type { TabItem } from './BottomTabBar';
+export { Layout } from './Layout';
 export { Modal, ConfirmModal } from './Modal';
 export { ErrorPage } from './ErrorPage';
 export { PicTreeMark } from './PicTreeMark';
