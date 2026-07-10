@@ -37,6 +37,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  /* 더블탭 확대 등 브라우저 기본 줌 제스처 차단. 지도 자체 줌(카카오맵)과 충돌 방지 */
+  touch-action: manipulation;
 }
 
 button,
