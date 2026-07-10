@@ -11,7 +11,7 @@ export function HomePage() {
   useMapMarkers(map, DEMO_MARKERS);
 
   return (
-    <div className="relative h-screen w-full overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden">
       {/* 카카오맵 */}
       <div ref={containerRef} className="absolute inset-0" />
 
@@ -21,7 +21,7 @@ export function HomePage() {
       {/* 카메라 버튼 */}
       <button
         onClick={() => navigate(ROUTES.camera)}
-        className="absolute bottom-[90px] left-1/2 z-20 -translate-x-1/2"
+        className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2"
       >
         <img src="/camera_btn.png" alt="사진 촬영" className="h-[52px] w-[52px]" />
       </button>

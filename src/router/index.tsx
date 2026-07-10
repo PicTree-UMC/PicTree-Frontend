@@ -1,5 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
-import { App } from '../app/App';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AuthPage } from '../features/auth/AuthPage';
 import { BlogPage } from '../features/blog/BlogPage';
 import { CameraPage } from '../features/camera/CameraPage';
@@ -14,7 +13,7 @@ import { ROUTES } from '../shared/constants/routes';
 export const router = createBrowserRouter([
   {
     path: ROUTES.root,
-    element: <App />,
+    element: <Navigate to={ROUTES.home} replace />,
   },
   {
     path: ROUTES.auth,

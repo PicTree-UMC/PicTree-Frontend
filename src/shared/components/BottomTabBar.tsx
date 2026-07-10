@@ -26,7 +26,7 @@ type BottomTabBarProps = {
 
 export function BottomTabBar({ tabs = DEFAULT_TABS }: BottomTabBarProps) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-neutral-200 bg-white">
+    <nav className="shrink-0 border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)]">
       <ul className="mx-auto flex max-w-md items-stretch justify-around">
         {tabs.map((tab) => (
           <li key={tab.to} className="flex-1">
