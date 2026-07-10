@@ -1,6 +1,9 @@
 import type { TimelineGroup as Group } from "../types/timeline.types";
 import TimelineCard from "./TimelineCard";
 
+/**
+ * 날짜 그룹 1개 — 날짜 헤더 + 그 날짜의 카드 목록.
+ */
 interface Props {
   group: Group; // 헤더 라벨 + 그 날짜의 기록들
   onDelete: (id: string) => void; // 카드로 그대로 전달 (삭제 처리)

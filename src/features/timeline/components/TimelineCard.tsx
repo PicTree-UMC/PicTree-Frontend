@@ -12,6 +12,7 @@ const formatTime = (iso: string): string => {
 };
 
 /**
+ * 기록 카드 1건
  *
  * Figma 색상:
  *   카드 보더 #8BCC6A / 썸네일 #D9D9D9 / 기록됨 배지 #EDEDED·#4F4F4F
@@ -25,7 +26,7 @@ interface Props {
 
 export default function TimelineCard({ record, onDelete, isDeleting }: Props) {
   const [confirming, setConfirming] = useState(false);
-  const hasPhoto = !!record.thumbnailUrl; // 사진 유무 
+  const hasPhoto = !!record.thumbnailUrl; // 사진 유무 (TIMELINE-07/08)
 
   return (
     <li className="mx-4 my-2 overflow-hidden rounded-2xl border border-[#8BCC6A] bg-white">
@@ -40,7 +41,7 @@ export default function TimelineCard({ record, onDelete, isDeleting }: Props) {
                 className="h-11 w-11 object-cover"
               />
             ) : (
-              // 사진 없는 기록 플레이스홀더: 스마일 아이콘 
+              // 사진 없는 기록 플레이스홀더: 스마일 아이콘 (TIMELINE-08)
               <img src={smileyIcon} alt="" className="h-6 w-6" />
             )}
           </div>
@@ -62,7 +63,7 @@ export default function TimelineCard({ record, onDelete, isDeleting }: Props) {
           <p className="truncate text-[13px] text-black">{record.comment}</p>
         </div>
 
-        {/* 우: 사진 라벨 (사진 있는 기록만) */}
+        {/* 우: 사진 라벨 (사진 있는 기록만, TIMELINE-07) */}
         {hasPhoto && (
           <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-md bg-[#D9D9D9] text-xs text-black">
             사진

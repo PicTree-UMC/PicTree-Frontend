@@ -38,7 +38,7 @@ export function TimelinePage() {
         </p>
       )}
 
-      {/* 날짜 그룹 반복 (최신순) */}
+      {/* 날짜 그룹 반복 */}
       {groups.map((group) => (
         <TimelineGroup
           key={group.dateKey}
