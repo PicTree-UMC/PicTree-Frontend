@@ -8,4 +8,6 @@ export const ROUTES = {
   profile: '/profile',
   blog: '/blog',
   journey: '/journey',
+  camera: '/camera',
+  record: '/record',
 } as const;
