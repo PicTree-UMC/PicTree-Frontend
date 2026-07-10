@@ -13,7 +13,14 @@ export function useCameraStream(facingMode: FacingMode) {
     setError(null);
 
     navigator.mediaDevices
-      .getUserMedia({ video: { facingMode } })
+      .getUserMedia({
+        video: {
+          facingMode,
+          // 기기가 지원하는 최대 해상도를 요청 (브라우저가 지원 가능한 값으로 자동 조정)
+          width: { ideal: 4096 },
+          height: { ideal: 4096 },
+        },
+      })
       .then((stream) => {
         if (cancelled) {
           stream.getTracks().forEach((track) => track.stop());
