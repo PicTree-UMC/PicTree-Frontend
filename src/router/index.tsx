@@ -5,7 +5,6 @@ import { CameraPage } from '../features/camera/CameraPage';
 import { HomePage } from '../features/home/HomePage';
 import { JourneyPage } from '../features/journey/JourneyPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
-import { RecordPage } from '../features/record/RecordPage';
 import { TimelinePage } from '../features/timeline/TimelinePage';
 import { Layout } from '../shared/components';
 import { ROUTES } from '../shared/constants/routes';
@@ -30,10 +29,6 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.camera,
     element: <CameraPage />,
-  },
-  {
-    path: ROUTES.record,
-    element: <RecordPage />,
   },
   {
     element: <Layout />,

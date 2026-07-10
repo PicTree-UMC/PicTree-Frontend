@@ -59,3 +59,34 @@ select {
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* 촬영 검토 화면 등장 애니메이션 */
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.28s ease-out both;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.28s ease-out both;
+}

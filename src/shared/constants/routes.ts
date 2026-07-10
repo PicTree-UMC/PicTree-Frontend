@@ -9,5 +9,4 @@ export const ROUTES = {
   blog: '/blog',
   journey: '/journey',
   camera: '/camera',
-  record: '/record',
 } as const;
