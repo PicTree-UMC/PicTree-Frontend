@@ -6,13 +6,14 @@ import { routePlaces } from './mocks/routePlaces';
 import { RouteDateTabs } from './components/RouteDateTabs';
 import { RoutePlaceStrip } from './components/RoutePlaceStrip';
 import { SaveRouteSheet } from './components/SaveRouteSheet';
+import { useToast } from '@/shared/components/toast/toastStore';
 
 export function RouteViewPage() {
   const navigate = useNavigate();
   const { containerRef, map } = useKakaoMap();
+  const { showToast } = useToast();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showSaveSheet, setShowSaveSheet] = useState(false);
-  const [justSavedDate, setJustSavedDate] = useState<string | null>(null);
 
   const dates = useMemo(
     () => [...new Set(routePlaces.map((place) => place.date))],
@@ -25,14 +26,9 @@ export function RouteViewPage() {
 
   useRoutePath(map, filteredPlaces);
 
-  const handleSelectDate = (date: string | null) => {
-    setSelectedDate(date);
-    setJustSavedDate(null);
-  };
-
   const handleConfirmSave = () => {
-    setJustSavedDate(selectedDate);
     setShowSaveSheet(false);
+    showToast('동선이 저장되었어요!', 'success', { placement: 'top' });
   };
 
   return (
@@ -52,17 +48,11 @@ export function RouteViewPage() {
         )}
       </header>
 
-      {justSavedDate !== null && justSavedDate === selectedDate ? (
-        <div className="px-4 py-3">
-          <span className="rounded-full bg-pictree-100 px-3 py-1.5 text-xs font-medium text-pictree-700">
-            동선이 저장되었어요!
-          </span>
-        </div>
-      ) : (
-        <RouteDateTabs dates={dates} selectedDate={selectedDate} onSelect={handleSelectDate} />
-      )}
+      <RouteDateTabs dates={dates} selectedDate={selectedDate} onSelect={setSelectedDate} />
 
-      <div ref={containerRef} className="flex-1" />
+      {/* isolate: 카카오맵이 내부 요소에 큰 z-index 를 부여해도 stacking context 를
+          가둬서 하단 strip/탭바 등 형제 UI 위로 새어 나오지 않게 한다. */}
+      <div ref={containerRef} className="isolate flex-1" />
 
       <RoutePlaceStrip places={filteredPlaces} />
 
