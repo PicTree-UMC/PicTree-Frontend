@@ -10,6 +10,7 @@ export interface MapMarkerData {
   label: string;
   date: string;
   comment: string;
+  photo?: string;
   isFavorite?: boolean;
 }
 

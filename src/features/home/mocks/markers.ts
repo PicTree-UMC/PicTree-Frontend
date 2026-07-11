@@ -10,6 +10,7 @@ export const DEMO_MARKERS: MapMarkerData[] = [
     label: '포그레인 공원',
     date: '2026-04-01',
     comment: '벚꽃 구경하기 좋은 곳',
+    photo: 'https://picsum.photos/seed/fog-lane-park/600/800',
   },
   {
     id: 'oasis-meeting',
@@ -19,6 +20,7 @@ export const DEMO_MARKERS: MapMarkerData[] = [
     label: '오아이스 만난곳',
     date: '2026-04-01',
     comment: '갤러거 형제 자만추',
+    photo: 'https://picsum.photos/seed/oasis-meeting/800/600',
   },
   {
     id: 'mart',
