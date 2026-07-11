@@ -24,8 +24,8 @@ export function useRoutePath(map: kakao.maps.Map | null, points: RoutePlace[]) {
         ? new window.kakao.maps.Polyline({
             path: points.map((point) => new window.kakao.maps.LatLng(point.lat, point.lng)),
             strokeWeight: 3,
-            strokeColor: '#4f8d34',
-            strokeOpacity: 0.8,
+            strokeColor: '#000000',
+            strokeOpacity: 0.9,
             strokeStyle: 'shortdash',
           })
         : null;

@@ -14,9 +14,10 @@ export function SaveRouteSheet({ onClose, onConfirm }: SaveRouteSheetProps) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+      {/* 시안상 뒤 지도를 어둡게 깔지 않는다. 딤 없이 바깥 탭으로 닫는 영역만 유지. */}
+      <div className="fixed inset-0 z-50" onClick={onClose} />
 
-      <div className="fixed bottom-0 left-0 right-0 rounded-t-2xl bg-white p-5">
+      <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-white p-5">
         <h2 className="mb-4 text-base font-semibold text-gray-900">동선 이름 설정</h2>
         <Input
           value={name}
