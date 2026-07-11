@@ -96,16 +96,13 @@ export function CameraPage() {
 
           {capturedPhoto ? (
             <>
-              <div className="animate-fade-in-down flex flex-1">
-                <div className="flex flex-1 items-center gap-1 rounded-full bg-black/40 px-3 py-1.5">
-                  <PinIcon />
-                  <input
-                    value={placeName}
-                    onChange={(e) => setPlaceName(e.target.value)}
-                    placeholder="상호명 입력"
-                    className="w-full min-w-0 bg-transparent text-base outline-none placeholder:text-white/60"
-                  />
-                </div>
+              <div className="flex flex-1 justify-center">
+                {placeName && (
+                  <div className="animate-fade-in-down flex items-center gap-1 rounded-full bg-black/40 px-3 py-1.5">
+                    <PinIcon />
+                    <span className="max-w-[160px] truncate text-base text-white">{placeName}</span>
+                  </div>
+                )}
               </div>
               <span className="animate-fade-in-down shrink-0 text-sm text-white/70">{today}</span>
             </>
@@ -148,6 +145,8 @@ export function CameraPage() {
           <CaptionEditor
             selectedEmoji={selectedEmoji}
             onSelectEmoji={setSelectedEmoji}
+            placeName={placeName}
+            onPlaceNameChange={setPlaceName}
             comment={comment}
             onCommentChange={setComment}
           />
