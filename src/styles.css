@@ -33,10 +33,15 @@
   background: #ffffff;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
 }
 
 button,
@@ -106,4 +111,13 @@ select {
   .blog-generating-progress {
     width: 72%;
   }
+}
+
+/* 노치/홈 인디케이터 등 안전영역을 침범하지 않도록 하는 유틸. viewport-fit=cover 와 함께 사용. */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
