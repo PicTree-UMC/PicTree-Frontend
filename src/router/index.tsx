@@ -5,6 +5,7 @@ import { BlogPage } from '../features/blog/BlogPage';
 import { HomePage } from '../features/home/HomePage';
 import { JourneyPage } from '../features/journey/JourneyPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
+import { PremiumPage } from '../features/premium/PremiumPage';
 import { TimelinePage } from '../features/timeline/TimelinePage';
 import { Layout } from '../shared/components';
 import { ROUTES } from '../shared/constants/routes';
@@ -48,6 +49,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.blog,
         element: <BlogPage />,
+      },
+      {
+        path: ROUTES.premium,
+        element: <PremiumPage />,
       },
     ],
   },

@@ -7,5 +7,6 @@ export const ROUTES = {
   timeline: '/timeline',
   profile: '/profile',
   blog: '/blog',
+  premium: '/premium',
   journey: '/journey',
 } as const;
