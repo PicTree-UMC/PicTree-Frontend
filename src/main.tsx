@@ -5,12 +5,14 @@ import { RouterProvider } from 'react-router-dom';
 
 import { router } from './router';
 import { queryClient } from './shared/lib/queryClient';
+import { Toaster } from './shared/components';
 import './styles.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <Toaster />
     </QueryClientProvider>
   </StrictMode>,
 );

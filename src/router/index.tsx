@@ -4,6 +4,7 @@ import { BlogPage } from '../features/blog/BlogPage';
 import { CameraPage } from '../features/camera/CameraPage';
 import { HomePage } from '../features/home/HomePage';
 import { JourneyPage } from '../features/journey/JourneyPage';
+import { RouteViewPage } from '../features/journey/RouteViewPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { RecordPage } from '../features/record/RecordPage';
 import { TimelinePage } from '../features/timeline/TimelinePage';
@@ -59,5 +60,9 @@ export const router = createBrowserRouter([
         element: <BlogPage />,
       },
     ],
+  },
+  {
+    path: ROUTES.journeyView,
+    element: <RouteViewPage />,
   },
 ]);
