@@ -1,10 +1,21 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/shared/constants/routes";
 import treeIcon from "./assets/icons/tree.svg";
 import cardIcon from "./assets/icons/card.svg";
 import statsIcon from "./assets/icons/stats.svg";
 import starIcon from "./assets/icons/star.svg";
 import logoutIcon from "./assets/icons/logout.svg";
 import chevronIcon from "./assets/icons/chevron.svg";
+
+/**
+ * 마이페이지 (하단 탭바 [마이] → 진입)
+ * Figma 최종본 1087:26950 기준.
+ * 색상 토큰: 헤더 #C5D89D, 배경 #FFFDF7, 카드 테두리 #C5D89D,
+ *           섹션 라벨 #9CAB84, 제목 #111, 부제 #90908F, 아바타 원 #F6F0D7,
+ *           프리미엄 배지 #DDBF68 / 글자 #2C3930, 로그아웃 #FF4B4B.
+ * ⚠️ 사용자 정보는 목(mock) — 백엔드 연동 시 교체하세요.
+ */
 
 interface MenuRowProps {
   icon: string; // 왼쪽 아이콘 (없으면 빈 문자열)
@@ -13,6 +24,7 @@ interface MenuRowProps {
   onClick?: () => void;
 }
 
+/** 계정/정보 섹션의 한 줄 (아이콘 + 제목/부제 + 오른쪽 화살표) */
 function MenuRow({ icon, title, subtitle, onClick }: MenuRowProps) {
   return (
     <button
@@ -27,12 +39,14 @@ function MenuRow({ icon, title, subtitle, onClick }: MenuRowProps) {
           <p className="text-xs font-medium text-[#90908F]">{subtitle}</p>
         )}
       </div>
+      {/* 오른쪽 화살표 (화살표_왼쪽.svg 는 오른쪽을 향하므로 회전 없이 사용) */}
       <img src={chevronIcon} alt="" className="h-[20px] w-[23px] flex-shrink-0" />
     </button>
   );
 }
 
 export function ProfilePage() {
+  const navigate = useNavigate();
   // 근처 나무 알림 토글 (기본 꺼짐)
   const [alarmOn, setAlarmOn] = useState(false);
 
@@ -96,16 +110,19 @@ export function ProfilePage() {
               icon={cardIcon}
               title="구독 및 결제"
               subtitle="월간 프리미엄 · 이용중"
+              onClick={() => navigate(ROUTES.subscription)}
             />
             <MenuRow
               icon={statsIcon}
               title="여행 캘린더"
               subtitle="잔디로 보는 나의 여행기록"
+              onClick={() => navigate(ROUTES.calendar)}
             />
             <MenuRow
               icon={starIcon}
               title="즐겨찾기 장소"
               subtitle="다시 방문하고 싶은 장소 관리"
+              onClick={() => navigate(ROUTES.favorites)}
             />
           </div>
         </section>
