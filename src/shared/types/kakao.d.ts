@@ -20,6 +20,28 @@ declare namespace kakao.maps {
     yAnchor?: number;
     zIndex?: number;
   }
+  class Polyline {
+    constructor(options: PolylineOptions);
+    setMap(map: Map | null): void;
+  }
+  interface PolylineOptions {
+    path: LatLng[];
+    strokeWeight?: number;
+    strokeColor?: string;
+    strokeOpacity?: number;
+    strokeStyle?:
+      | 'solid'
+      | 'shortdash'
+      | 'shortdot'
+      | 'shortdashdot'
+      | 'shortdashdotdot'
+      | 'dash'
+      | 'dot'
+      | 'dashdot'
+      | 'longdash'
+      | 'longdashdot'
+      | 'longdashdotdot';
+  }
   function load(callback: () => void): void;
 }
 

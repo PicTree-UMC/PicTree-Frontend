@@ -5,6 +5,7 @@ import { CameraPage } from '../features/camera/CameraPage';
 import { HomePage } from '../features/home/HomePage';
 import { RecordPage } from '../features/record/RecordPage';
 import { JourneyPage } from '../features/journey/JourneyPage';
+import { RouteViewPage } from '../features/journey/RouteViewPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { PremiumPage } from '../features/premium/PremiumPage';
 import { TimelinePage } from '../features/timeline/TimelinePage';
@@ -64,5 +65,9 @@ export const router = createBrowserRouter([
         element: <PremiumPage />,
       },
     ],
+  },
+  {
+    path: ROUTES.journeyView,
+    element: <RouteViewPage />,
   },
 ]);

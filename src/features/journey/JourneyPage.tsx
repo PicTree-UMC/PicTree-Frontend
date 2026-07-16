@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Journey } from './types/journey';
 import { BottomSheet } from './components/BottomSheet';
 import { RenameModal } from './components/RenameModal';
 import { journeyData } from './mocks/journeyData';
 import { JourneyList } from './components/JourneyList';
 import { DeleteModal } from './components/DeleteModal';
+import { ROUTES } from '../../shared/constants/routes';
 
 export function JourneyPage() {
+  const navigate = useNavigate();
   const [journeys, setJourneys] = useState<Journey[]>(journeyData);
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
@@ -48,7 +51,10 @@ export function JourneyPage() {
       {journeys.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 py-32 text-center">
           <p className="text-gray-400">저장된 동선이 없어요</p>
-          <button className="rounded-full bg-green-500 px-5 py-2 text-sm text-white">
+          <button
+            onClick={() => navigate(ROUTES.journeyView)}
+            className="rounded-full bg-green-500 px-5 py-2 text-sm text-white"
+          >
             동선 보기로 이동
           </button>
         </div>
