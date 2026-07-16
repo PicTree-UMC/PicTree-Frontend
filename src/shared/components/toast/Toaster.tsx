@@ -9,8 +9,11 @@ const typeClass: Record<ToastType, string> = {
 };
 
 // 상단은 헤더/탭 아래로, 하단은 탭바 위로 오도록 위치를 잡는다.
+// top 은 현재 동선 보기 화면만 쓰며, 값은 그 화면 세이지 밴드 높이(safe + 112px)에
+// 맞춘 것이다. 헤더 높이가 다른 화면이 top 을 쓰게 되면 페이지가 오프셋을 넘기는
+// 방식으로 바꿔야 한다.
 const placementClass: Record<ToastPlacement, string> = {
-  top: 'top-24',
+  top: 'top-[calc(env(safe-area-inset-top,0px)+7rem+5px)]',
   bottom: 'bottom-20',
 };
 
