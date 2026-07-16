@@ -27,7 +27,7 @@ export function PremiumPage() {
   };
 
   return (
-    <main className="mx-auto min-h-screen max-w-[390px] bg-[linear-gradient(#c9dfa0_0%,#eef4dc_62%,#fffdf4_100%)] px-5 pb-28 pt-[72px] text-[#20251f]">
+    <main className="min-h-full w-full bg-[linear-gradient(#c9dfa0_0%,#eef4dc_62%,#fffdf4_100%)] px-5 pb-8 pt-[72px] text-[#20251f]">
       <button className="absolute right-5 top-5 text-sm text-[#58614d]" onClick={() => navigate(-1)}>닫기</button>
       <div className="flex flex-col items-center"><CrownIcon/><h1 className="mt-2 text-[24px] font-bold">프리미엄으로 업그레이드</h1><p className="mt-1 text-[14px]">나의 여행을 더 특별하게 기록하세요</p></div>
       <BenefitTable/>

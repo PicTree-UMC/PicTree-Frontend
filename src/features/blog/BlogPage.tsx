@@ -10,7 +10,7 @@ export function BlogPage() {
   const openPremium = () => navigate(ROUTES.premium);
 
   return (
-    <main className="mx-auto min-h-screen max-w-[390px] bg-[#fffdf4] pb-28 text-[#20251f] shadow-sm">
+    <main className="min-h-full w-full bg-[#fffdf4] text-[#20251f]">
       <BlogHeader isPremium={flow.isPremium} onUpgrade={openPremium} />
       <BlogComposer
         status={flow.blogStatus}
