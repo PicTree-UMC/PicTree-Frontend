@@ -104,7 +104,7 @@ export function BottomSheet({
       <div className="fixed inset-0 z-50 animate-fade-in bg-black/60" onClick={onClose} />
 
       <div
-        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-[390px] animate-slide-up-sheet rounded-t-[20px] bg-[#fffcef] px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3"
+        className="fixed inset-x-0 bottom-0 z-50 mx-auto animate-slide-up-sheet rounded-t-[20px] bg-[#fffcef] px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 sm:max-w-[390px]"
         role="dialog"
         aria-modal="true"
       >
