@@ -9,7 +9,7 @@ interface JourneyListProps {
 
 export function JourneyList({ journeys, onDelete, onClick }: JourneyListProps) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-[18px]">
       {journeys.map(journey => (
         <JourneyCard
           key={journey.id}
