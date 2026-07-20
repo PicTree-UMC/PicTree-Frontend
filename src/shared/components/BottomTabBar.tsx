@@ -36,7 +36,8 @@ type BottomTabBarProps = {
 export function BottomTabBar({ tabs = DEFAULT_TABS }: BottomTabBarProps) {
   return (
     <nav className="shrink-0 border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)]">
-      <ul className="mx-auto flex max-w-md items-stretch justify-around">
+      {/* 폭 제한은 AppShell 이 담당한다(390px 컬럼). 여기서 또 묶으면 배경만 넓어져 어긋난다. */}
+      <ul className="flex items-stretch justify-around">
         {tabs.map((tab) => (
           <li key={tab.to} className="flex-1">
             <NavLink
