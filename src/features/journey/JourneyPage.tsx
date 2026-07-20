@@ -101,8 +101,10 @@ export function JourneyPage() {
         <BottomSheet
           journey={selectedJourney}
           onClose={handleClose}
-          onMapView={() => {}}
+          onMapView={() => navigate(ROUTES.journeyView)}
+          // TODO: 사진 갤러리 화면 구현 후 연결
           onPhotoGallery={() => {}}
+          // TODO: 블로그 화면(현재 스텁) 구현 후 연결
           onAIBlog={() => {}}
           onRename={() => {
             setShowBottomSheet(false);
