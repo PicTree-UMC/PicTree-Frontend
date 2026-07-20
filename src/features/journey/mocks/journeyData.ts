@@ -10,6 +10,7 @@ export const journeyData: Journey[] = [
       { id: 1, name: '포그레인 공원' },
       { id: 2, name: '오아시스 만난 곳' },
     ],
+    photos: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
   },
   {
     id: 2,
@@ -20,6 +21,7 @@ export const journeyData: Journey[] = [
       { id: 1, name: '포그레인 공원' },
       { id: 2, name: '오아시스 만난 곳' },
     ],
+    photos: [{ id: 1 }, { id: 2 }],
   },
   {
     id: 3,
@@ -30,5 +32,6 @@ export const journeyData: Journey[] = [
       { id: 1, name: '포그레인 공원' },
       { id: 2, name: '오아시스 만난 곳' },
     ],
+    photos: [],
   },
 ];

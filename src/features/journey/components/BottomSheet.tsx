@@ -11,6 +11,12 @@ interface BottomSheetProps {
   onPhotoGallery: () => void;
   onAIBlog: () => void;
   onRename: () => void;
+  /**
+   * 열릴 때 슬라이드업/페이드인 재생 여부. 기본 true.
+   * 사진 앨범에서 되돌아오는 경우처럼 이미 시트가 떠 있던 맥락에서는 false로 꺼서
+   * 딤이 다시 깜빡이거나 시트가 아래에서 재등장하지 않게 한다.
+   */
+  animateIn?: boolean;
 }
 
 const iconBase = {
@@ -73,7 +79,10 @@ interface SheetMenuItemProps {
 
 function SheetMenuItem({ icon, title, desc, onClick }: SheetMenuItemProps) {
   return (
-    <button onClick={onClick} className="flex w-full items-center gap-4 py-3 text-left text-[#2c3930]">
+    <button
+      onClick={onClick}
+      className="flex w-full items-center gap-4 py-3 text-left text-[#2c3930]"
+    >
       <span className="shrink-0">{icon}</span>
       <span className="min-w-0">
         <span className="block text-sm font-bold text-[#111]">{title}</span>
@@ -90,6 +99,7 @@ export function BottomSheet({
   onPhotoGallery,
   onAIBlog,
   onRename,
+  animateIn = true,
 }: BottomSheetProps) {
   useLockBodyScroll();
 
@@ -101,10 +111,13 @@ export function BottomSheet({
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-50 animate-fade-in bg-black/60" onClick={onClose} />
+      <div
+        className={`fixed inset-0 z-50 bg-black/60 ${animateIn ? 'animate-fade-in' : ''}`}
+        onClick={onClose}
+      />
 
       <div
-        className="fixed inset-x-0 bottom-0 z-50 mx-auto animate-slide-up-sheet rounded-t-[20px] bg-[#fffcef] px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 sm:max-w-[390px]"
+        className={`fixed inset-x-0 bottom-0 z-50 mx-auto rounded-t-[20px] bg-[#fffcef] px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 sm:max-w-[390px] ${animateIn ? 'animate-slide-up-sheet' : ''}`}
         role="dialog"
         aria-modal="true"
       >

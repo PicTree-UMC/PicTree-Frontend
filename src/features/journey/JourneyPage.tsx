@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Journey } from './types/journey';
 import { BottomSheet } from './components/BottomSheet';
+import { PhotoAlbumSheet } from './components/PhotoAlbumSheet';
 import { RenameModal } from './components/RenameModal';
 import { journeyData } from './mocks/journeyData';
 import { JourneyList } from './components/JourneyList';
@@ -26,6 +27,9 @@ export function JourneyPage() {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPhotoAlbum, setShowPhotoAlbum] = useState(false);
+  /** 앨범에서 되돌아온 경우 바텀시트를 애니메이션 없이 즉시 띄운다. */
+  const [animateBottomSheet, setAnimateBottomSheet] = useState(true);
 
   const handleDelete = () => {
     if (!selectedJourney) return;
@@ -36,6 +40,7 @@ export function JourneyPage() {
 
   const handleClick = (journey: Journey) => {
     setSelectedJourney(journey);
+    setAnimateBottomSheet(true);
     setShowBottomSheet(true);
   };
 
@@ -90,10 +95,14 @@ export function JourneyPage() {
             </div>
           </>
         ) : (
-          <JourneyList journeys={journeys} onDelete={(journey) => {
-            setSelectedJourney(journey);
-            setShowDeleteModal(true);
-          }} onClick={handleClick} />
+          <JourneyList
+            journeys={journeys}
+            onDelete={(journey) => {
+              setSelectedJourney(journey);
+              setShowDeleteModal(true);
+            }}
+            onClick={handleClick}
+          />
         )}
       </div>
 
@@ -101,14 +110,28 @@ export function JourneyPage() {
         <BottomSheet
           journey={selectedJourney}
           onClose={handleClose}
+          animateIn={animateBottomSheet}
           onMapView={() => navigate(ROUTES.journeyView)}
-          // TODO: 사진 갤러리 화면 구현 후 연결
-          onPhotoGallery={() => {}}
+          onPhotoGallery={() => {
+            setShowBottomSheet(false);
+            setShowPhotoAlbum(true);
+          }}
           // TODO: 블로그 화면(현재 스텁) 구현 후 연결
           onAIBlog={() => {}}
           onRename={() => {
             setShowBottomSheet(false);
             setShowRenameModal(true);
+          }}
+        />
+      )}
+
+      {showPhotoAlbum && selectedJourney && (
+        <PhotoAlbumSheet
+          journey={selectedJourney}
+          onClose={() => {
+            setShowPhotoAlbum(false);
+            setAnimateBottomSheet(false);
+            setShowBottomSheet(true);
           }}
         />
       )}
