@@ -32,7 +32,7 @@ export function RouteViewPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full flex-col">
       <header className="flex items-center gap-3 border-b border-gray-100 px-4 py-3">
         <button onClick={() => navigate(-1)} aria-label="뒤로가기" className="text-lg">
           &lt;

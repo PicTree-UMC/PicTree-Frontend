@@ -16,7 +16,7 @@ export function TimelinePage() {
 
   return (
     // pb-24: 하단 탭바 높이만큼 여백
-    <div className="flex min-h-screen flex-col bg-[#F7F7FB] pb-24">
+    <div className="flex min-h-full flex-col bg-[#F7F7FB] pb-24">
       {/* 총 기록 수 헤더 */}
       <TimelineHeader totalCount={totalCount} />
 

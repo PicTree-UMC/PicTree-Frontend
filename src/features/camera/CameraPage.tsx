@@ -64,7 +64,7 @@ export function CameraPage() {
     setZoom((prev) => ZOOM_STEPS[(ZOOM_STEPS.indexOf(prev as (typeof ZOOM_STEPS)[number]) + 1) % ZOOM_STEPS.length]);
 
   return (
-    <div className="flex h-dvh w-full flex-col bg-black">
+    <div className="flex h-full w-full flex-col bg-black">
       <header className={`pt-safe flex min-h-11 items-center gap-2 px-4 pb-2 text-white ${capturedPhoto ? '' : 'justify-center'}`}>
         {capturedPhoto ? (
           <>

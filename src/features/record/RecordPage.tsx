@@ -41,7 +41,7 @@ export function RecordPage() {
   };
 
   return (
-    <div className="relative flex h-dvh w-full flex-col bg-neutral-900">
+    <div className="relative flex h-full w-full flex-col bg-neutral-900">
       <div className="absolute inset-0 bg-neutral-800" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/40" />
 
