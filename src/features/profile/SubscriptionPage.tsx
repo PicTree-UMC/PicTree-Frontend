@@ -2,7 +2,7 @@ import { useState } from "react";
 import crownIcon from "./assets/icons/crown.svg";
 import gisRouteIcon from "./assets/icons/gisRoute.svg";
 import menuBookIcon from "./assets/icons/menuBook.svg";
-import adsOffIcon from "./assets/icons/adsOff.svg";
+import adsOffIcon from "./assets/icons/adsoff.svg";
 import checkIcon from "./assets/icons/check.svg";
 import cardIcon from "./assets/icons/card.svg";
 import alertIcon from "./assets/icons/alert.svg";
