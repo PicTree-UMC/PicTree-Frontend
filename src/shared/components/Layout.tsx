@@ -9,7 +9,8 @@ import { BottomTabBar } from './BottomTabBar';
 export function Layout() {
   return (
     <div className="flex h-full flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      {/* overscroll-none: 스크롤 끝에서 셸로 넘어가며 튕기는 반동 차단 */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-none">
         <Outlet />
       </div>
       <BottomTabBar />
