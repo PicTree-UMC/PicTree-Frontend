@@ -3,7 +3,6 @@ import { AuthPage } from '../features/auth/AuthPage';
 import { BlogPage } from '../features/blog/BlogPage';
 import { CameraPage } from '../features/camera/CameraPage';
 import { HomePage } from '../features/home/HomePage';
-import { RecordPage } from '../features/record/RecordPage';
 import { JourneyPage } from '../features/journey/JourneyPage';
 import { RouteViewPage } from '../features/journey/RouteViewPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
