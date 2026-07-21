@@ -88,7 +88,7 @@ export function AuthForm({ fields, mode, onSubmit, onToggle }: AuthFormProps) {
     <form className="flex flex-1 flex-col px-1" onInput={handleInput} onSubmit={handleSubmit}>
       <div className="mt-[132px]">
         <h1 className="font-['KOROAD'] text-[22px] font-bold leading-normal text-[#2C3930]">{copy.title}</h1>
-        <p className="mt-3 flex h-[38px] w-[282px] flex-col justify-center font-['KOROAD'] text-[16px] font-medium leading-[40px] text-[#2C3930]">
+        <p className="mt-3 flex h-[38px] flex-col justify-center font-['KOROAD'] text-[16px] font-medium leading-[40px] text-[#2C3930]">
           {copy.description}
         </p>
       </div>
@@ -116,7 +116,7 @@ export function AuthForm({ fields, mode, onSubmit, onToggle }: AuthFormProps) {
           unstyled
           className={
             mode === 'signup'
-              ? "h-[56px] w-[332px] rounded-[24px] bg-[#C5D89D] p-0 text-[17px] font-extrabold text-white hover:bg-[#b7cf88] active:bg-[#8b9d70]"
+              ? "h-[56px] w-full rounded-[24px] bg-[#C5D89D] p-0 text-[17px] font-extrabold text-white hover:bg-[#b7cf88] active:bg-[#8b9d70]"
               : 'h-[56px] w-full rounded-[18px] bg-[#c5dc98] p-0 text-[17px] font-extrabold text-white hover:bg-[#b7cf88] active:bg-[#8b9d70]'
           }
           type="submit"
