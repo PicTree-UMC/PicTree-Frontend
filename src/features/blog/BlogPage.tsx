@@ -14,6 +14,7 @@ export function BlogPage() {
       <BlogHeader isPremium={flow.isPremium} onUpgrade={openPremium} />
       <BlogComposer
         status={flow.blogStatus}
+        isPremium={flow.isPremium}
         onCreate={flow.isPremium ? flow.generateDraft : openPremium}
       />
     </main>
