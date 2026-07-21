@@ -10,6 +10,7 @@ export const ROUTES = {
   calendar: '/profile/calendar',
   favorites: '/profile/favorites',
   blog: '/blog',
+  premium: '/premium',
   journey: '/journey',
   journeyView: '/journey/view',
   camera: '/camera',
