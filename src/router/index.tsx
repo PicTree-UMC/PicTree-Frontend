@@ -3,9 +3,11 @@ import { AuthPage } from '../features/auth/AuthPage';
 import { BlogPage } from '../features/blog/BlogPage';
 import { CameraPage } from '../features/camera/CameraPage';
 import { HomePage } from '../features/home/HomePage';
+import { RecordPage } from '../features/record/RecordPage';
 import { JourneyPage } from '../features/journey/JourneyPage';
 import { RouteViewPage } from '../features/journey/RouteViewPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
+import { PremiumPage } from '../features/premium/PremiumPage';
 import { SubscriptionPage } from '../features/profile/SubscriptionPage';
 import { TravelCalendarPage } from '../features/profile/TravelCalendarPage';
 import { FavoritesPage } from '../features/profile/FavoritesPage';
@@ -73,6 +75,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.blog,
         element: <BlogPage />,
+      },
+      {
+        path: ROUTES.premium,
+        element: <PremiumPage />,
       },
     ],
   },
