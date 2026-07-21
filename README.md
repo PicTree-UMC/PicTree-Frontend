@@ -79,20 +79,25 @@ PicTree 프론트엔드는 사용자가 복잡한 기록 과정을 느끼지 않
 
 ## Tech Stack
 
-| 분류 | 기술 | 비고 |
-| :--- | :--- | :--- |
-| Core | React, TypeScript | UI 라이브러리 및 정적 타입 |
-| Build | Vite | 개발 서버 및 빌드 도구 |
-| Style | Tailwind CSS | 유틸리티 기반 스타일링 |
-| Routing | React Router | SPA 라우팅 |
-| Server State | TanStack Query | 서버 데이터 캐싱 및 패칭 |
-| Client State | Zustand | 전역 클라이언트 상태 관리 |
-| Network | Axios | API 요청 |
-| Form | React Hook Form | 폼 상태 및 검증 |
-| Map | Kakao Maps SDK | 지도, 마커, 동선 표시 |
-| Image Metadata | exifr | 사진 위치 정보 추출 |
-| PWA / Push | web-push | PWA 푸시 알림 |
-| Quality | ESLint, Prettier | 코드 품질 및 포맷팅 |
+> 아래 버전은 `package.json` 기준이며, 실제 설치 버전은 `package-lock.json`에 고정되어 있습니다.
+> `도입 예정`은 의존성은 설치했으나 아직 코드에 적용하지 않은 항목입니다.
+
+| 분류 | 기술 | 버전 | 비고 |
+| :--- | :--- | :--- | :--- |
+| Runtime | Node.js | `>=20` | 권장 실행 환경 |
+| Core | React | `19.1.0` | UI 라이브러리 |
+| Core | TypeScript | `5.8.3` | 정적 타입 |
+| Build | Vite | `6.3.5` | 개발 서버 및 빌드 도구 |
+| Style | Tailwind CSS | `3.4.17` | 유틸리티 기반 스타일링 |
+| Routing | React Router | `7.6.2` | SPA 라우팅 |
+| Server State | TanStack Query | `5.81.5` | 서버 데이터 캐싱 및 패칭 |
+| Client State | Zustand | `5.0.5` | 전역 클라이언트 상태 관리 |
+| Network | Axios | `1.10.0` | API 요청 |
+| Form | React Hook Form | `7.58.1` | 폼 상태 및 검증 · 도입 예정 |
+| Map | Kakao Maps SDK | 버전 미고정 | 지도, 마커, 동선 표시 · `dapi.kakao.com/v2/maps/sdk.js` 런타임 로드 |
+| Image Metadata | exifr | `7.1.3` | 사진 위치 정보 추출 · 도입 예정 |
+| PWA / Push | web-push | `3.6.7` | PWA 푸시 알림 · 도입 예정 |
+| Quality | ESLint / Prettier | `9.29.0` / `3.6.0` | 코드 품질 및 포맷팅 |
 
 <br/>
 
