@@ -1,56 +1,99 @@
+import { useState } from "react";
 import { useDeleteRecord } from "./hooks/useDeleteRecord";
 import { useTimeline } from "./hooks/useTimeline";
+import type { TimelineRecord } from "./types/timeline.types";
 import TimelineHeader from "./components/TimelineHeader";
-import FreePlanBanner from "./components/FreePlanBanner";
+import StorageBanner from "./components/StorageBanner";
 import TimelineGroup from "./components/TimelineGroup";
+import { RecordActionSheet } from "./components/RecordActionSheet";
+import { DeleteRecordModal } from "./components/DeleteRecordModal";
+import { useToast } from "@/shared/components";
 
-/**
- * 타임라인 페이지 
- * 색상은 Figma 값: 페이지 배경 #F7F7FB.
- */
 export function TimelinePage() {
   const { groups, totalCount, plan, isLoading, isError } = useTimeline();
   const deleteMutation = useDeleteRecord();
+  const { showToast } = useToast();
 
-  const handleDelete = (id: string) => deleteMutation.mutate(id);
+  const [menuTarget, setMenuTarget] = useState<TimelineRecord | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<TimelineRecord | null>(null);
+
+  // 저장 용량 배너 값 (mock — 백엔드 연동 시 교체)
+  const storage =
+    plan === "premium"
+      ? { usedLabel: "50MB", totalLabel: "20GB", planLabel: "맥스", usedRatio: 50 / 20000 }
+      : { usedLabel: "50MB", totalLabel: "100MB", planLabel: "무료", usedRatio: 50 / 100 };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteMutation.mutate(deleteTarget.id);
+    setDeleteTarget(null);
+  };
 
   return (
-    // pb-24: 하단 탭바 높이만큼 여백
-    <div className="flex min-h-screen flex-col bg-[#F7F7FB] pb-24">
-      {/* 총 기록 수 헤더 */}
-      <TimelineHeader totalCount={totalCount} />
+    <div className="flex min-h-screen flex-col bg-[#FFFCEF] pb-28">
+      <TimelineHeader
+        totalCount={totalCount}
+        plan={plan}
+        onUpgrade={() => showToast("구독 및 결제에서 업그레이드할 수 있어요.", "info")}
+      />
 
-      {/* 무료 플랜일 때만 제한 안내 배너 */}
-      {plan === "free" && <FreePlanBanner />}
+      <div className="flex flex-col gap-5 px-5 py-4">
+        <StorageBanner {...storage} />
 
-      {/* 상태 분기 (로딩/에러/빈 목록) */}
-      {isLoading && (
-        <p className="py-10 text-center text-sm text-[#4F4F4F]">불러오는 중...</p>
-      )}
-      {isError && (
-        <p className="py-10 text-center text-sm text-[#FF0000]">
-          기록을 불러오지 못했습니다.
-        </p>
-      )}
-      {!isLoading && !isError && groups.length === 0 && (
-        <p className="py-10 text-center text-sm text-[#4F4F4F]">
-          아직 저장된 기록이 없어요.
-        </p>
-      )}
+        {isLoading && (
+          <p className="py-10 text-center text-sm text-[#8D8D8D]">불러오는 중...</p>
+        )}
+        {isError && (
+          <p className="py-10 text-center text-sm text-[#FF5858]">
+            기록을 불러오지 못했습니다.
+          </p>
+        )}
+        {!isLoading && !isError && groups.length === 0 && (
+          <p className="py-10 text-center text-sm text-[#8D8D8D]">
+            아직 저장된 기록이 없어요.
+          </p>
+        )}
 
-      {/* 날짜 그룹 반복 */}
-      {groups.map((group) => (
-        <TimelineGroup
-          key={group.dateKey}
-          group={group}
-          onDelete={handleDelete}
-          deletingId={
-            deleteMutation.isPending
-              ? (deleteMutation.variables as string)
-              : null
-          }
+        {groups.map((group) => (
+          <TimelineGroup
+            key={group.dateKey}
+            group={group}
+            onOpenMenu={setMenuTarget}
+          />
+        ))}
+      </div>
+
+      {menuTarget && (
+        <RecordActionSheet
+          record={menuTarget}
+          onClose={() => setMenuTarget(null)}
+          onEdit={() => {
+            showToast("기록 수정은 준비 중이에요.", "info");
+            setMenuTarget(null);
+          }}
+          onChangePhoto={() => {
+            showToast("사진 보기/변경은 준비 중이에요.", "info");
+            setMenuTarget(null);
+          }}
+          onFavorite={() => {
+            showToast("즐겨찾기에 추가했어요.", "success");
+            setMenuTarget(null);
+          }}
+          onDelete={() => {
+            setDeleteTarget(menuTarget);
+            setMenuTarget(null);
+          }}
         />
-      ))}
+      )}
+
+      {deleteTarget && (
+        <DeleteRecordModal
+          record={deleteTarget}
+          isDeleting={deleteMutation.isPending}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
     </div>
   );
 }

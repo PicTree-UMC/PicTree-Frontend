@@ -3,10 +3,6 @@ import { deleteRecord } from "../api/timelineApi";
 import { timelineKeys } from "./useTimeline";
 import { useToast } from "@/shared/components";
 
-/**
- * 기록 삭제 mutation 훅.
- * 성공 시 타임라인 목록을 무효화해 갱신하고, 지도 마커는 서버에서 함께 제거됨
- */
 export const useDeleteRecord = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();

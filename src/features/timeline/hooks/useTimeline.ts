@@ -17,10 +17,17 @@ const isSameDay = (a: Date, b: Date) => toDateKey(a) === toDateKey(b);
 const buildLabel = (date: Date, today: Date): string => {
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
-  let prefix = "";
-  if (isSameDay(date, today)) prefix = "오늘 - ";
-  else if (isSameDay(date, yesterday)) prefix = "어제 - ";
-  return `${prefix}${date.getMonth() + 1}월 ${date.getDate()}일 (${WEEKDAYS[date.getDay()]})`;
+  const md = `${date.getMonth() + 1}월 ${date.getDate()}일 (${WEEKDAYS[date.getDay()]})`;
+  if (isSameDay(date, today)) return `오늘 · ${md}`;
+  if (isSameDay(date, yesterday)) return `어제 · ${md}`;
+  // 그 외에는 "N일 전 · 날짜" (Figma 라벨)
+  const dayMs = 1000 * 60 * 60 * 24;
+  const diff = Math.round(
+    (new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime() -
+      new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()) /
+      dayMs
+  );
+  return diff >= 2 ? `${diff}일 전 · ${md}` : md;
 };
 const groupByDate = (records: TimelineRecord[], now = new Date()): TimelineGroup[] => {
   const map = new Map<string, TimelineRecord[]>();
