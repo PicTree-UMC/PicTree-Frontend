@@ -1,6 +1,7 @@
 // 공용 컴포넌트 배럴 export — import { Button, Modal } from '@/shared/components';
 export { Button } from './Button';
 export { Input } from './Input';
+export { AppShell } from './AppShell';
 export { BottomTabBar } from './BottomTabBar';
 export type { TabItem } from './BottomTabBar';
 export { Layout } from './Layout';

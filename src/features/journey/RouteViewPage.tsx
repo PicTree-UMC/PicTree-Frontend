@@ -35,7 +35,7 @@ export function RouteViewPage() {
   };
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col bg-white">
+    <div className="flex h-full w-full flex-col bg-white">
       {/* 상단 라임 그린 밴드(rounded-b): 헤더 + 날짜 탭. 지도 위에 떠 있는 카드처럼 보이게 한다. */}
       <div className="relative z-10 rounded-b-[20px] bg-[#c5d89d] pt-safe">
         <header className="flex items-center gap-2 px-5 pt-4">

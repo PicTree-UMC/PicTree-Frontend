@@ -24,7 +24,7 @@ export function ErrorPage({ title, description, onReset }: ErrorPageProps) {
   const handleReset = () => (onReset ? onReset() : navigate('/'));
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+    <div className="flex min-h-full flex-col items-center justify-center gap-4 px-6 text-center">
       <div className="text-4xl" aria-hidden>
         ⚠️
       </div>
