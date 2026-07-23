@@ -51,7 +51,7 @@ export function ProfilePage() {
   const [alarmOn, setAlarmOn] = useState(false);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#FFFDF7] pb-28">
+    <div className="flex min-h-full flex-col bg-[#FFFDF7] pb-28">
       {/* 헤더 밴드 */}
       <header className="bg-[#C5D89D] px-[31px] pb-8 pt-6">
         <div className="flex items-center gap-5">

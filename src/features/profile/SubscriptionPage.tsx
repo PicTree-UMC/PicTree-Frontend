@@ -31,7 +31,7 @@ export function SubscriptionPage() {
   const [cancelOpen, setCancelOpen] = useState(false);
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-[#FFFDF7] pb-28">
+    <div className="relative flex min-h-full flex-col bg-[#FFFDF7] pb-28">
       {/* 헤더 밴드 + 플랜 박스 */}
       <header className="bg-[#C5D89D] px-5 pb-10 pt-4">
         <div className="flex items-center gap-3">
