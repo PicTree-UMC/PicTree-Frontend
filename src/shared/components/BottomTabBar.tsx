@@ -37,8 +37,8 @@ export function BottomTabBar() {
   // 폭 제한(w-full)은 여기서 묶지 않는다. AppShell 이 390px 컬럼으로 잡으므로
   // 여기서 또 묶으면 배경만 넓어져 어긋난다.
   return (
-    <nav className="z-40 h-[86px] w-full shrink-0 rounded-t-[24px] bg-white shadow-[0_-4px_18px_rgba(55,60,42,0.08)]">
-      <ul className="flex h-full items-center justify-around px-3 pb-1">
+    <nav className="z-40 pb-safe w-full shrink-0 rounded-t-[24px] bg-white shadow-[0_-4px_18px_rgba(55,60,42,0.08)]">
+      <ul className="flex h-[86px] items-center justify-around px-3 pb-1">
         {tabs.map((tab) => (
           <li key={tab.to} className="flex-1">
             <NavLink
