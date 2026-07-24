@@ -15,5 +15,4 @@ export const ROUTES = {
   journey: '/journey',
   journeyView: '/journey/view',
   camera: '/camera',
-  record: '/record',
 } as const;

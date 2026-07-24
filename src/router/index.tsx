@@ -11,7 +11,6 @@ import { SubscriptionPage } from '../features/profile/SubscriptionPage';
 import { TravelCalendarPage } from '../features/profile/TravelCalendarPage';
 import { FavoritesPage } from '../features/profile/FavoritesPage';
 import { PrivacyPolicyPage } from '../features/profile/PrivacyPolicyPage';
-import { RecordPage } from '../features/record/RecordPage';
 import { TimelinePage } from '../features/timeline/TimelinePage';
 import { Layout } from '../shared/components';
 import { ROUTES } from '../shared/constants/routes';
@@ -36,10 +35,6 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.camera,
     element: <CameraPage />,
-  },
-  {
-    path: ROUTES.record,
-    element: <RecordPage />,
   },
   {
     element: <Layout />,
