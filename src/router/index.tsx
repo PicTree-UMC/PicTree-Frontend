@@ -10,6 +10,7 @@ import { PremiumPage } from '../features/premium/PremiumPage';
 import { SubscriptionPage } from '../features/profile/SubscriptionPage';
 import { TravelCalendarPage } from '../features/profile/TravelCalendarPage';
 import { FavoritesPage } from '../features/profile/FavoritesPage';
+import { PrivacyPolicyPage } from '../features/profile/PrivacyPolicyPage';
 import { RecordPage } from '../features/record/RecordPage';
 import { TimelinePage } from '../features/timeline/TimelinePage';
 import { Layout } from '../shared/components';
@@ -70,6 +71,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.favorites,
         element: <FavoritesPage />,
+      },
+      {
+        path: ROUTES.privacy,
+        element: <PrivacyPolicyPage />,
       },
       {
         path: ROUTES.blog,
