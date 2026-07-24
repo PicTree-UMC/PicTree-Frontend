@@ -18,6 +18,36 @@ git commit -m "feat: add login page"
 git push -u origin feat/loginPage
 ```
 
+## Issue Convention
+
+작업은 이슈 생성에서 시작합니다. 이슈를 만들고, 그 이슈 번호를 브랜치와 PR에 연결합니다.
+
+### Issue Title
+
+PR 제목과 동일하게 `[type] 작업 내용` 형식으로 한국어로 작성합니다.
+
+```txt
+[feat] 로그인 화면 추가
+[fix] 마커 좌표가 어긋나는 문제
+[chore] 이슈 템플릿 추가
+```
+
+### Template
+
+이슈 생성 시 `.github/ISSUE_TEMPLATE/`의 양식이 자동으로 표시됩니다.
+
+| 템플릿 | 용도 | 라벨 |
+| --- | --- | --- |
+| 기능 개발 | 새로 구현할 기능 | `feat` |
+| 버그 리포트 | 동작하지 않는 부분 | `fix` |
+| 기타 작업 | 리팩토링, 문서, 설정 | `chore` |
+
+### Rules
+
+- 하나의 이슈에는 하나의 작업 단위를 담습니다.
+- `Tasks` 체크박스로 작업을 쪼개 진행 상황을 공유합니다.
+- PR 본문에 `Closes #12`를 적으면 머지 시 이슈가 자동으로 닫힙니다.
+
 ## Branch Convention
 
 ### Format
