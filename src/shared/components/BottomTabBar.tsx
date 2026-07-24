@@ -1,56 +1,56 @@
+import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
+
+import blogActiveIcon from '../assets/icons/nav-blog-active.svg';
+import blogIcon from '../assets/icons/nav-blog.svg';
+import journeyActiveIcon from '../assets/icons/nav-journey-active.svg';
+import journeyIcon from '../assets/icons/nav-journey.svg';
+import mapActiveIcon from '../assets/icons/nav-map-active.svg';
+import mapIcon from '../assets/icons/nav-map.svg';
+import profileActiveIcon from '../assets/icons/nav-profile-active.svg';
+import profileIcon from '../assets/icons/nav-profile.svg';
+import timelineActiveIcon from '../assets/icons/nav-timeline-active.svg';
+import timelineIcon from '../assets/icons/nav-timeline.svg';
 import { ROUTES } from '../constants/routes';
 
-import mapIcon from '../assets/icons/map.svg';
-import mapActive from '../assets/icons/map-active.svg';
-import timelineIcon from '../assets/icons/timeline.svg';
-import timelineActive from '../assets/icons/timeline-active.svg';
-import journeyIcon from '../assets/icons/journey.svg';
-import journeyActive from '../assets/icons/journey-active.svg';
-import blogIcon from '../assets/icons/blog.svg';
-import blogActive from '../assets/icons/blog-active.svg';
-import profileIcon from '../assets/icons/profile.svg';
-import profileActive from '../assets/icons/profile-active.svg';
-
-
-export interface TabItem {
+export type TabItem = {
   to: string;
   label: string;
-  icon: string; // 비활성(검정)
-  iconActive: string; // 활성(초록 #8BCC6A)
+  icon?: ReactNode;
   end?: boolean;
-}
-
-const DEFAULT_TABS: TabItem[] = [
-  { to: ROUTES.home, label: '지도', icon: mapIcon, iconActive: mapActive, end: true },
-  { to: ROUTES.timeline, label: '타임라인', icon: timelineIcon, iconActive: timelineActive },
-  { to: ROUTES.journey, label: '동선', icon: journeyIcon, iconActive: journeyActive },
-  { to: ROUTES.blog, label: '블로그', icon: blogIcon, iconActive: blogActive },
-  { to: ROUTES.profile, label: '마이', icon: profileIcon, iconActive: profileActive },
-];
-
-type BottomTabBarProps = {
-  tabs?: TabItem[];
 };
 
-export function BottomTabBar({ tabs = DEFAULT_TABS }: BottomTabBarProps) {
+type NavigationTab = Omit<TabItem, 'icon'> & {
+  icon: string;
+  activeIcon: string;
+};
+
+const tabs: NavigationTab[] = [
+  { to: ROUTES.home, label: '지도', icon: mapIcon, activeIcon: mapActiveIcon, end: true },
+  { to: ROUTES.timeline, label: '타임라인', icon: timelineIcon, activeIcon: timelineActiveIcon },
+  { to: ROUTES.journey, label: '동선', icon: journeyIcon, activeIcon: journeyActiveIcon },
+  { to: ROUTES.blog, label: '블로그', icon: blogIcon, activeIcon: blogActiveIcon },
+  { to: ROUTES.profile, label: '마이', icon: profileIcon, activeIcon: profileActiveIcon },
+];
+
+export function BottomTabBar() {
+  // 폭 제한(w-full)은 여기서 묶지 않는다. AppShell 이 390px 컬럼으로 잡으므로
+  // 여기서 또 묶으면 배경만 넓어져 어긋난다.
   return (
-    <nav className="shrink-0 border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)]">
-      <ul className="mx-auto flex max-w-md items-stretch justify-around">
+    <nav className="z-40 pb-safe w-full shrink-0 rounded-t-[24px] bg-white shadow-[0_-4px_18px_rgba(55,60,42,0.08)]">
+      <ul className="flex h-[86px] items-center justify-around px-3 pb-1">
         {tabs.map((tab) => (
           <li key={tab.to} className="flex-1">
             <NavLink
               to={tab.to}
               end={tab.end}
-              className="flex flex-col items-center gap-0.5 py-2 text-xs text-black"
+              className={({ isActive }) =>
+                `flex flex-col items-center gap-1 text-[11px] font-bold transition-colors ${isActive ? 'text-[#5C6F2B]' : 'text-[#2C3930]'}`
+              }
             >
               {({ isActive }) => (
                 <>
-                  <img
-                    src={isActive ? tab.iconActive : tab.icon}
-                    alt=""
-                    className="h-6 w-6"
-                  />
+                  <img className="h-9 w-9" src={isActive ? tab.activeIcon : tab.icon} alt="" aria-hidden />
                   <span>{tab.label}</span>
                 </>
               )}

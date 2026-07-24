@@ -1,45 +1,74 @@
-export type AuthView = 'welcome' | 'login' | 'signup';
-export type AuthFormMode = Exclude<AuthView, 'welcome'>;
+export type AuthStep = 'social-login' | 'terms';
 
-export type LoginFormValues = {
-  email: string;
-  password: string;
+export type SocialLoginProvider = 'KAKAO' | 'GOOGLE';
+
+export type SocialLoginRequest = {
+  provider: SocialLoginProvider;
+  authorizationCode: string;
+  redirectUri: string;
 };
 
-export type SignupFormValues = LoginFormValues & {
-  nickname: string;
-  passwordConfirm: string;
-};
+export type TermId =
+  | 'service'
+  | 'privacy'
+  | 'location'
+  | 'push'
+  | 'marketing';
 
-export type AuthSubmitValues = LoginFormValues | SignupFormValues;
-
-export type AuthFieldName = keyof SignupFormValues;
-
-export type AuthField = {
-  name: AuthFieldName;
-  label?: string;
-  placeholder: string;
-  type?: 'email' | 'password' | 'text';
-  autoComplete?: string;
-};
-
-export type AuthFormCopy = {
+export type AgreementTerm = {
+  id: TermId;
   title: string;
   description: string;
-  submitLabel: string;
-  footerText: string;
-  footerAction: string;
+  required: boolean;
 };
 
-export type LoginRequest = LoginFormValues;
+export type CurrentPlan = 'FREE' | 'PREMIUM';
 
-export type SignupRequest = {
+export type AuthUser = {
+  id: number;
+  email: string | null;
   nickname: string;
-  email: string;
-  password: string;
+  profileImageUrl: string | null;
+  currentPlan: CurrentPlan;
 };
 
-export type AuthResponse = {
+export type SocialLoginData = {
+  isNewUser: boolean;
+  needTermsAgreement?: boolean;
+  needProfileSetup?: boolean;
   accessToken: string;
-  refreshToken?: string;
+  expiresIn: number;
+  user: AuthUser;
 };
+
+export type RefreshTokenData = {
+  accessToken: string;
+  expiresIn: number;
+};
+
+export type ApiSuccessResponse<TData> = {
+  resultType: 'SUCCESS';
+  error: null;
+  success: {
+    message: string;
+  };
+  data: TData;
+};
+
+export type ApiErrorResponse = {
+  resultType: 'FAIL';
+  error: {
+    code:
+      | 'BAD_REQUEST'
+      | 'AUTH_SOCIAL_AUTHENTICATION_FAILED'
+      | 'AUTH_INVALID_ACCESS_TOKEN'
+      | 'AUTH_INVALID_REFRESH_TOKEN'
+      | 'USER_UNAVAILABLE'
+      | 'INTERNAL_SERVER_ERROR';
+    message: string;
+  };
+  success: null;
+  data: null;
+};
+
+export type ApiResponse<TData> = ApiSuccessResponse<TData> | ApiErrorResponse;

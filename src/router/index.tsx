@@ -4,7 +4,13 @@ import { BlogPage } from '../features/blog/BlogPage';
 import { CameraPage } from '../features/camera/CameraPage';
 import { HomePage } from '../features/home/HomePage';
 import { JourneyPage } from '../features/journey/JourneyPage';
+import { RouteViewPage } from '../features/journey/RouteViewPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
+import { PremiumPage } from '../features/premium/PremiumPage';
+import { SubscriptionPage } from '../features/profile/SubscriptionPage';
+import { TravelCalendarPage } from '../features/profile/TravelCalendarPage';
+import { FavoritesPage } from '../features/profile/FavoritesPage';
+import { PrivacyPolicyPage } from '../features/profile/PrivacyPolicyPage';
 import { TimelinePage } from '../features/timeline/TimelinePage';
 import { Layout } from '../shared/components';
 import { ROUTES } from '../shared/constants/routes';
@@ -50,9 +56,33 @@ export const router = createBrowserRouter([
         element: <ProfilePage />,
       },
       {
+        path: ROUTES.subscription,
+        element: <SubscriptionPage />,
+      },
+      {
+        path: ROUTES.calendar,
+        element: <TravelCalendarPage />,
+      },
+      {
+        path: ROUTES.favorites,
+        element: <FavoritesPage />,
+      },
+      {
+        path: ROUTES.privacy,
+        element: <PrivacyPolicyPage />,
+      },
+      {
         path: ROUTES.blog,
         element: <BlogPage />,
       },
+      {
+        path: ROUTES.premium,
+        element: <PremiumPage />,
+      },
     ],
+  },
+  {
+    path: ROUTES.journeyView,
+    element: <RouteViewPage />,
   },
 ]);

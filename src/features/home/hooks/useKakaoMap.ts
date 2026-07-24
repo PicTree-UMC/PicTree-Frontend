@@ -26,6 +26,18 @@ export function useKakaoMap(lat = 37.5665, lng = 126.9780, level = 3) {
       setMap(null); // 컴포넌트가 사라지면 이 map 인스턴스 참조도 함께 해제
     };
   }, [status, lat, lng, level]);
+  
+  // 컨테이너 크기가 바뀌면(시트/키보드 등장 등) 카카오맵은 새로 노출된 영역을 회색 빈 타일로 남겨두기 떄문에 타일을 다시 그려줌
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!map || !container) return;
+
+    const observer = new ResizeObserver(() =>
+      (map as kakao.maps.Map & { relayout: () => void }).relayout(),
+    );
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [map]);
 
   return { containerRef, map };
 }

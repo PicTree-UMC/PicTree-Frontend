@@ -19,7 +19,7 @@ export function JourneyBanner({ placeCount }: JourneyBannerProps) {
         </div>
       </div>
       <Link
-        to={ROUTES.journey}
+        to={ROUTES.journeyView}
         className="shrink-0 rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700 transition hover:bg-neutral-200"
       >
         동선보기

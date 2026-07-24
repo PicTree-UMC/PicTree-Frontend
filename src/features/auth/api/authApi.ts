@@ -1,14 +1,36 @@
 import { httpClient } from '../../../shared/lib/httpClient';
-import type { AuthResponse, LoginRequest, SignupRequest } from '../types/auth';
+import type {
+  ApiResponse,
+  RefreshTokenData,
+  SocialLoginData,
+  SocialLoginRequest,
+} from '../types/auth';
 
-export async function login(payload: LoginRequest) {
-  const { data } = await httpClient.post<AuthResponse>('/auth/login', payload);
+export async function socialLogin(payload: SocialLoginRequest) {
+  const { data } = await httpClient.post<ApiResponse<SocialLoginData>>(
+    '/auth/social-login',
+    payload,
+  );
 
   return data;
 }
 
-export async function signup(payload: SignupRequest) {
-  const { data } = await httpClient.post<AuthResponse>('/auth/signup', payload);
+export async function refreshAccessToken() {
+  const { data } = await httpClient.post<ApiResponse<RefreshTokenData>>('/auth/refresh');
+
+  return data;
+}
+
+export async function logout(accessToken: string) {
+  const { data } = await httpClient.post<ApiResponse<null>>(
+    '/auth/logout',
+    null,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
 
   return data;
 }

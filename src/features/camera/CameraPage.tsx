@@ -52,7 +52,7 @@ export function CameraPage() {
     setZoom((prev) => ZOOM_STEPS[(ZOOM_STEPS.indexOf(prev as (typeof ZOOM_STEPS)[number]) + 1) % ZOOM_STEPS.length]);
 
   return (
-    <div ref={viewportRef} className="relative h-dvh w-full overflow-hidden bg-black">
+    <div ref={viewportRef} className="relative h-full w-full overflow-hidden bg-black">
       {/* 카메라 프리뷰 (항상 마운트해 스트림 유지) */}
       <video
         ref={videoRef}

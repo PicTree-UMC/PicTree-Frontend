@@ -6,7 +6,13 @@ export const ROUTES = {
   home: '/home',
   timeline: '/timeline',
   profile: '/profile',
+  subscription: '/profile/subscription',
+  calendar: '/profile/calendar',
+  favorites: '/profile/favorites',
+  privacy: '/profile/privacy',
   blog: '/blog',
+  premium: '/premium',
   journey: '/journey',
+  journeyView: '/journey/view',
   camera: '/camera',
 } as const;
