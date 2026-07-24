@@ -11,7 +11,7 @@ export function DateRangeCard() {
         <DateField label="종료일" value="2026.04.01" />
       </div>
       <div className="mt-[10px] flex flex-wrap justify-center gap-[7px]">
-        {ITINERARY.map((item) => <span key={item} className="min-w-[99px] rounded-[9px] bg-[#ffecae] px-3 py-[6px] text-center text-[10px] font-bold">{item}</span>)}
+        {ITINERARY.map((item) => <span key={item} className="min-w-[99px] rounded-[9px] bg-[#e9ffbb] px-3 py-[6px] text-center text-[10px] font-bold">{item}</span>)}
         <span className="self-center text-[14px] font-medium">+1개</span>
       </div>
     </div>

@@ -11,8 +11,8 @@ export function BlogHeader({ isPremium, onUpgrade }: BlogHeaderProps) {
           <h1 className="text-[20px] font-bold leading-7">AI 블로그 작성</h1>
           <p className="text-[15px] font-medium">사진/기록으로 초안을 자동 생성해요</p>
         </div>
-        <button className="rounded-[14px] bg-[#e7c568] px-4 py-[10px] text-[13px] font-medium text-[#34402c]" onClick={isPremium ? undefined : onUpgrade}>
-          {isPremium ? '연간 프리미엄' : '업그레이드'}
+        <button className="min-w-[92px] rounded-[13px] bg-[#60762d] px-4 py-[10px] text-[13px] font-bold text-white" onClick={isPremium ? undefined : onUpgrade}>
+          {isPremium ? '맥스' : '업그레이드'}
         </button>
       </div>
     </header>
