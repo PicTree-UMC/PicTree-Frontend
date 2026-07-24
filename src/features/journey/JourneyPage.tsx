@@ -4,7 +4,9 @@ import { Journey } from './types/journey';
 import { BottomSheet } from './components/BottomSheet';
 import { PhotoAlbumSheet } from './components/PhotoAlbumSheet';
 import { RenameModal } from './components/RenameModal';
-import { journeyData } from './mocks/journeyData';
+import { useJourneys } from './hooks/useJourneys';
+import { useDeleteJourney } from './hooks/useDeleteJourney';
+import { useRenameJourney } from './hooks/useRenameJourney';
 import { JourneyList } from './components/JourneyList';
 import { DeleteModal } from './components/DeleteModal';
 import { PremiumBanner } from './components/PremiumBanner';
@@ -22,7 +24,11 @@ function PlusBadge({ className }: { className?: string }) {
 
 export function JourneyPage() {
   const navigate = useNavigate();
-  const [journeys, setJourneys] = useState<Journey[]>(journeyData);
+  // 조회는 useQuery, 삭제·이름변경은 useMutation 으로 처리한다.
+  // 로딩·에러 상태 UI 배선은 이슈 2(feat/journeyQueryStates)에서 붙인다.
+  const { data: journeys = [] } = useJourneys();
+  const deleteMutation = useDeleteJourney();
+  const renameMutation = useRenameJourney();
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
@@ -33,7 +39,7 @@ export function JourneyPage() {
 
   const handleDelete = () => {
     if (!selectedJourney) return;
-    setJourneys((prev) => prev.filter((journey) => journey.id !== selectedJourney.id));
+    deleteMutation.mutate(selectedJourney.id);
     setShowDeleteModal(false);
     setSelectedJourney(null);
   };
@@ -50,11 +56,8 @@ export function JourneyPage() {
   };
 
   const handleRename = (newTitle: string) => {
-    setJourneys((prev) =>
-      prev.map((journey) =>
-        journey.id === selectedJourney?.id ? { ...journey, title: newTitle } : journey,
-      ),
-    );
+    if (!selectedJourney) return;
+    renameMutation.mutate({ id: selectedJourney.id, title: newTitle });
     setShowRenameModal(false);
     setShowBottomSheet(false);
     setSelectedJourney(null);
