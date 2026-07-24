@@ -46,6 +46,17 @@ body {
   touch-action: manipulation;
 }
 
+/*
+ * 스크롤 끝에서 더 당겨지는 러버밴드(고무줄) 반동과 당겨서 새로고침을 막는다.
+ * 문서 레벨에서 한 번, 실제 스크롤 컨테이너(AppShell/Layout)에서 한 번 더 막아야
+ * 컨테이너 끝에 닿았을 때 문서로 스크롤이 넘어가며 튕기는 걸 함께 차단할 수 있다.
+ * iOS Safari 는 16 이상에서 동작한다.
+ */
+html,
+body {
+  overscroll-behavior: none;
+}
+
 button,
 input,
 textarea,
