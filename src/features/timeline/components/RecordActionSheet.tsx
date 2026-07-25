@@ -2,7 +2,7 @@ import type { TimelineRecord } from "../types/timeline.types";
 import penIcon from "../assets/penLine.svg";
 import photoIcon from "../assets/photo.svg";
 import starIcon from "../assets/star.svg";
-import trashIcon from "../assets/trashCan.svg";
+import trashIcon from "../assets/trashcan.svg";
 
 // ISO → "2026년 4월 1일 09:30"
 const formatFull = (iso: string): string => {
