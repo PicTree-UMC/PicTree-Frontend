@@ -25,8 +25,7 @@ function PlusBadge({ className }: { className?: string }) {
 export function JourneyPage() {
   const navigate = useNavigate();
   // 조회는 useQuery, 삭제·이름변경은 useMutation 으로 처리한다.
-  // 로딩·에러 상태 UI 배선은 이슈 2(feat/journeyQueryStates)에서 붙인다.
-  const { data: journeys = [] } = useJourneys();
+  const { data: journeys = [], isLoading, isError, refetch } = useJourneys();
   const deleteMutation = useDeleteJourney();
   const renameMutation = useRenameJourney();
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
@@ -71,17 +70,34 @@ export function JourneyPage() {
       <header className="bg-[#c5d89d] px-[31px] pb-4 pt-safe">
         <h1 className="pt-9 text-xl font-bold text-black">저장된 동선</h1>
         <p className="mt-1 text-base font-medium text-black">
-          무료플랜 · {journeys.length}개 저장됨
+          무료플랜{!isLoading && !isError && ` · ${journeys.length}개 저장됨`}
         </p>
         <div className="mt-4">
           <PremiumBanner />
         </div>
       </header>
 
-      {/* 본문 */}
-      <div className="flex flex-1 flex-col gap-[30px] px-5 py-6">
-        {isEmpty ? (
-          <>
+      {/* 본문: 로딩 → 에러 → 빈 상태 → 목록 순으로 분기 */}
+      <div className="flex flex-1 flex-col px-5 py-6">
+        {isLoading ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3">
+            <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#89986d]" />
+            <p className="text-[15px] font-medium text-[#5c6f2b]">동선을 불러오는 중...</p>
+          </div>
+        ) : isError ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-4">
+            <p className="text-center text-[15px] font-semibold text-[#2c3930]">
+              동선을 불러오지 못했어요
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="h-[46px] rounded-[24px] bg-[#89986d] px-8 text-base font-bold text-white"
+            >
+              다시 시도
+            </button>
+          </div>
+        ) : isEmpty ? (
+          <div className="flex flex-col gap-[30px]">
             <p className="text-center text-xl font-bold text-[#111]">저장된 동선이 없어요</p>
             <button
               onClick={() => navigate(ROUTES.journeyView)}
@@ -96,7 +112,7 @@ export function JourneyPage() {
                 버튼을 눌러서 동선을 저장해 보세요
               </p>
             </div>
-          </>
+          </div>
         ) : (
           <JourneyList
             journeys={journeys}
