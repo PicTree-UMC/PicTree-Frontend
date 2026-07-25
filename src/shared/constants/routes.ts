@@ -10,10 +10,10 @@ export const ROUTES = {
   subscription: '/profile/subscription',
   calendar: '/profile/calendar',
   favorites: '/profile/favorites',
+  privacy: '/profile/privacy',
   blog: '/blog',
   premium: '/premium',
   journey: '/journey',
   journeyView: '/journey/view',
   camera: '/camera',
-  record: '/record',
 } as const;

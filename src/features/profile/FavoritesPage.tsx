@@ -29,9 +29,23 @@ const MOCK_FAVORITES: FavoritePlace[] = [
   },
 ];
 
+type SortOrder = "latest" | "registered";
+const SORT_LABELS: Record<SortOrder, string> = {
+  latest: "최신순",
+  registered: "등록순",
+};
+
 export function FavoritesPage() {
   const [favorites, setFavorites] = useState<FavoritePlace[]>(MOCK_FAVORITES);
   const [target, setTarget] = useState<FavoritePlace | null>(null); // 제거 대상
+  const [sortOrder, setSortOrder] = useState<SortOrder>("latest");
+  const [sortOpen, setSortOpen] = useState(false);
+
+  // 최신순 = 저장일 내림차순, 등록순 = 저장일 오름차순(먼저 등록된 순)
+  const sortedFavorites = [...favorites].sort((a, b) => {
+    const cmp = a.savedAt.localeCompare(b.savedAt) || a.id.localeCompare(b.id);
+    return sortOrder === "latest" ? -cmp : cmp;
+  });
 
   const handleRemove = () => {
     if (!target) return;
@@ -79,14 +93,51 @@ export function FavoritesPage() {
         {/* 저장한 장소 + 정렬 */}
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-black">저장한 장소</h2>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 rounded-[20px] py-1.5 pl-4 pr-2 text-sm text-[#303030]"
-            style={{ background: "linear-gradient(180deg, #ECF6D8, #FFF6D1)" }}
-          >
-            최신순
-            <img src={chevronIcon} alt="" className="h-3 w-3 rotate-90" />
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setSortOpen((prev) => !prev)}
+              aria-expanded={sortOpen}
+              className="inline-flex items-center gap-1.5 rounded-[20px] py-1.5 pl-4 pr-2 text-sm text-[#303030]"
+              style={{ background: "linear-gradient(180deg, #ECF6D8, #FFF6D1)" }}
+            >
+              {SORT_LABELS[sortOrder]}
+              <img
+                src={chevronIcon}
+                alt=""
+                className={`h-3 w-3 ${sortOpen ? "-rotate-90" : "rotate-90"}`}
+              />
+            </button>
+
+            {sortOpen && (
+              <>
+                {/* 바깥 클릭 시 닫힘 */}
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setSortOpen(false)}
+                />
+                <div className="absolute right-0 top-full z-20 mt-1 w-28 overflow-hidden rounded-xl bg-white shadow-[0px_4px_16px_0px_rgba(0,0,0,0.12)]">
+                  {(["latest", "registered"] as SortOrder[]).map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        setSortOrder(opt);
+                        setSortOpen(false);
+                      }}
+                      className={`block w-full px-4 py-2.5 text-left text-sm ${
+                        opt === sortOrder
+                          ? "bg-[#ECF6D8] font-bold text-[#2C3930]"
+                          : "text-[#303030]"
+                      }`}
+                    >
+                      {SORT_LABELS[opt]}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* 장소 목록 */}
@@ -95,7 +146,7 @@ export function FavoritesPage() {
             즐겨찾기한 장소가 없어요.
           </p>
         ) : (
-          favorites.map((place) => (
+          sortedFavorites.map((place) => (
             <div
               key={place.id}
               className="relative flex items-start gap-3 rounded-2xl bg-white p-3 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]"
@@ -119,7 +170,6 @@ export function FavoritesPage() {
                 <p className="mt-1 text-xs text-[#90908F]">{place.savedAt}</p>
               </div>
 
-              {/* 제거 버튼 → 확인 모달 */}
               <button
                 type="button"
                 onClick={() => setTarget(place)}
@@ -133,7 +183,6 @@ export function FavoritesPage() {
         )}
       </div>
 
-      {/* 제거 확인 모달 */}
       {target && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-5"
