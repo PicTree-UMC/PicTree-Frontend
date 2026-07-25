@@ -1,6 +1,6 @@
 # PicTree 프론트엔드 기능 명세서
 
-> 작성 기준 커밋: `869e304` (main) · 최종 갱신: 2026-07-25 (최초 작성 2026-07-24, 기준 `d772084`)
+> 작성 기준 커밋: `5eca214` (main) · 최종 갱신: 2026-07-26 (최초 작성 2026-07-24, 기준 `d772084`)
 > 이 문서는 `src/` 실제 소스코드와 교차 검증되도록 작성했다. 경로·컴포넌트명은 코드와 1:1 대응한다.
 
 ---
@@ -46,14 +46,18 @@
 | (루트) | `/` | — | `/home` 으로 리다이렉트 | ✕ | — |
 
 > **담당자 판정 근거**: 각 feature 디렉터리의 `git log --no-merges` 기준 최다 커밋 작성자.
-> **변경 이력**: `/record`(RecordPage)는 PR #16 에서 카메라로 통합되며 **제거됨**. `/auth/callback`·`/profile/privacy` 추가.
+> **변경 이력**: `/record`(RecordPage)는 PR #16 에서 카메라로 통합되며 **제거됨**. `/auth/callback`·`/profile/privacy` 추가. **인증 가드(`ProtectedRoute`·`PublicOnlyRoute`) 추가** (PR #44).
 
 ### 라우팅 구조 특징
 
 - `/` → `/home` **리다이렉트** (`<Navigate replace />`)
 - `Layout` **중첩 라우트**: 하단 탭바가 필요한 10개 화면만 `<Layout>` 자식으로 묶임
 - `Layout` **미적용**: 인증·OAuth 콜백·카메라·경로뷰는 전체화면 (탭바 없음)
-- ⚠️ **인증 가드(`ProtectedRoute`) 없음** — 로그인 안 해도 모든 보호 경로 접근 가능. `authStore`로 토큰은 저장되지만 라우트 차단 로직 미구현 (부록 TBD)
+- ✅ **인증 가드 구현됨** (PR #44) — `ProtectedRoute`/`PublicOnlyRoute` ([src/features/auth/components/](src/features/auth/components/)) 로 라우트를 두 그룹으로 나눔:
+  - `PublicOnlyRoute`: `/auth`·`/auth/login`·`/auth/signup` — **로그인 상태면 `/home` 으로 리다이렉트**
+  - `ProtectedRoute`: 카메라·경로뷰 + `Layout` 하위 10개 화면 — **미인증이면 `/auth` 로 리다이렉트** (`state.from` 보존)
+  - `/auth/callback` 은 어느 가드에도 안 묶임 (콜백은 공개)
+  - 토큰이 없으면 `POST /auth/refresh`(쿠키 리프레시)로 재발급을 시도하고, 확인되는 동안 "로그인 상태를 확인 중입니다" 로딩 화면 표시
 - `errorElement` **미연결** — `ErrorPage` 컴포넌트는 있으나 라우터에 배선 안 됨
 
 ### 진입 경로 (내비게이션 흐름)
@@ -122,7 +126,7 @@
 
 | 도메인 | 상태 | 근거 파일 | 비고 |
 | --- | --- | --- | --- |
-| **auth** | 🟢 실 API 연동 | `api/authApi.ts`, `lib/oauth.ts` → `httpClient` | 소셜 로그인(카카오/구글) OAuth 리다이렉트 플로우. 토큰 `authStore` 저장 |
+| **auth** | 🟢 실 API 연동 | `api/authApi.ts`, `lib/oauth.ts` → `httpClient` | 소셜 로그인(카카오/구글) OAuth 리다이렉트 플로우. 토큰 `authStore` 저장. `socialLogin`·`refreshAccessToken`·`logout` 3개 함수 + 라우트 가드가 `POST /auth/refresh` 로 재발급 |
 | **journey** | 🟡 API 레이어 완료 (목 데이터) | `api/journeyApi.ts` → `hooks/useJourneys` | ✅ 목을 API 레이어 뒤로 분리 완료. 페이지는 훅만 사용. **함수 본문만 교체하면 실 연동** (`/routes`) |
 | **timeline** | 🟡 API 함수 준비 | `api/timelineApi.ts` → `httpClient` | 엔드포인트 `/timeline` 은 추측, 백엔드 확정 후 교체 |
 | **home** | 🔴 Mock | `mocks/markers.ts` | API 레이어 없음 |
@@ -135,8 +139,8 @@
 
 ### 백엔드 대기 중 (데이터 계약 미확정 — TBD)
 
-- 공통 응답 래퍼 형식 (`{ data, code, message }` 유무)
-- 토큰 만료·갱신 정책 (현재 `httpClient`에 토큰 재발급 인터셉터 없음)
+- 공통 응답 래퍼 형식 — auth 는 이미 `ApiResponse<T>`(`resultType`/`success`/`code`/`message`/`data`)로 언랩하나 timeline/journey 목은 미적용 → 실 연동 시 통일 필요
+- 토큰 만료·갱신 정책 — 라우트 가드(`ProtectedRoute`/`PublicOnlyRoute`)가 진입 시 `POST /auth/refresh` 로 재발급하지만, `httpClient` 에는 여전히 401 자동 재발급 인터셉터 없음
 - 날짜 필드 형식 (ISO 8601 여부) — 현재 목은 `"2024년 4월 7일"` **포맷된 문자열**
 - `/routes` 페이지네이션 유무
 - 사진 필드명 (`imageUrl`/`photoUrl`/…) — 스키마는 시안만 보고 정한 추측
@@ -161,89 +165,11 @@
 
 - `src/store/` 전역 스토어 디렉터리는 여전히 비어 있음 (스토어는 각 feature 로컬)
 - `authStore`: `accessToken`을 `localStorage('pictree.accessToken')`에 저장 → 새로고침해도 로그인 유지
-- ⚠️ `subscriptionStore`는 `persist` 미적용 → **새로고침 시 구독 상태 소실** (트러블슈팅 6-4)
+- ⚠️ `subscriptionStore`는 `persist` 미적용 → **새로고침 시 구독 상태 소실** (M3 에서 `GET /subscriptions/me` 서버 상태로 전환 예정)
 
 ---
 
-## 6. 트러블 슈팅
-
-> 상세 원인·측정값은 `.claude/TROUBLESHOOTING.md` 에 누적. 아래는 대표 6건 요약.
-
-### 6-1. 하단 탭바가 홈 인디케이터와 겹침
-
-| 항목 | 내용 |
-| --- | --- |
-| 문제 상황 | iOS 안전영역(홈 인디케이터) 위로 탭바가 겹쳐 아이콘 하단이 잘림 |
-| 발생 시점 | PR #22 리뷰 |
-| 담당자 | endl24 |
-| 원인 | `viewport-fit=cover` 로 뷰포트가 홈 인디케이터까지 확장, `box-sizing`·`pb-safe` 상호작용 |
-| 해결 여부 | ✅ 해결 (실기기 확인, 커밋 `e5ac43d`) |
-| 해결 방법 | 탭바에 `pb-safe` 적용 + 자체 여백 조정 |
-| 참고 자료 | TROUBLESHOOTING 2-1 |
-
-### 6-2. 탭 전환 시 이전 스크롤 위치가 남음
-
-| 항목 | 내용 |
-| --- | --- |
-| 문제 상황 | 다른 탭으로 이동해도 이전 화면의 스크롤 위치가 유지됨 |
-| 발생 시점 | PR #22 리뷰 |
-| 담당자 | endl24 |
-| 원인 | 스크롤 컨테이너가 AppShell·Layout 두 곳에 존재, `<ScrollRestoration>` 무동작 |
-| 해결 여부 | ✅ 해결 (커밋 `b9fe237`) |
-| 해결 방법 | 라우트 변경 시 스크롤 컨테이너 top 리셋 |
-| 참고 자료 | TROUBLESHOOTING 3-1 ~ 3-4 |
-
-### 6-3. 바텀시트 입력창 포커스 시 배경 전체가 밀려 올라감
-
-| 항목 | 내용 |
-| --- | --- |
-| 문제 상황 | iOS 에서 시트 입력창 포커스 시 배경 페이지 전체가 스크롤됨 |
-| 발생 시점 | 동선 저장 시트 구현 중 |
-| 담당자 | endl24 |
-| 원인 | iOS 가 입력창 포커스 시 배경을 강제로 밀어올림 |
-| 해결 여부 | ✅ 해결 |
-| 해결 방법 | 버튼→입력창 전환 + `focus({ preventScroll })` (`SaveRouteSheet` + `useKeyboardOffset`) |
-| 참고 자료 | TROUBLESHOOTING 4-1 |
-
-### 6-4. 새로고침하면 구독이 풀림
-
-| 항목 | 내용 |
-| --- | --- |
-| 문제 상황 | 구독 후 새로고침하면 무료 플랜으로 되돌아감 |
-| 발생 시점 | 프리미엄 화면 구현 중 |
-| 담당자 | Gureum |
-| 원인 | `subscriptionStore` 가 메모리 전용 (persist 없음), 서버 상태 미연동 |
-| 해결 여부 | 🟡 미해결 (M3 에서 `GET /subscriptions/me` 로 전환 예정) |
-| 해결 방법 | (예정) 서버 상태로 전환 |
-| 참고 자료 | TROUBLESHOOTING 5-1 |
-
-### 6-5. 루트 외 모든 경로에서 404
-
-| 항목 | 내용 |
-| --- | --- |
-| 문제 상황 | 배포 시 `/timeline` 등 새로고침하면 404 |
-| 발생 시점 | 배포 사전 점검 |
-| 담당자 | endl24 |
-| 원인 | SPA 히스토리 폴백 미설정 |
-| 해결 여부 | ✅ 해결 (`netlify.toml` 에 `/* → /index.html` rewrite 200, PR #36) |
-| 해결 방법 | Netlify redirects 로 모든 요청을 `index.html` 로 rewrite |
-| 참고 자료 | TROUBLESHOOTING 1-1 |
-
-### 6-6. Netlify 시크릿 스캐너가 빌드를 막음
-
-| 항목 | 내용 |
-| --- | --- |
-| 문제 상황 | `VITE_*` 공개 키가 번들에 인라인되자 Netlify 시크릿 스캐너가 빌드 실패 처리 |
-| 발생 시점 | Netlify 배포 직후 (PR #41) |
-| 담당자 | endl24 |
-| 원인 | 브라우저가 어차피 보는 공개 값(`VITE_`)인데 스캐너가 시크릿으로 오인 |
-| 해결 여부 | ✅ 해결 (커밋 `482e851`) |
-| 해결 방법 | `SECRETS_SCAN_OMIT_KEYS` 로 공개 `VITE_` 키 제외. **카카오 REST 키 등 진짜 비밀은 프론트에 두지 않고 백엔드로** |
-| 참고 자료 | `netlify.toml` 주석 |
-
----
-
-## 7. 배포 주소
+## 6. 배포 주소
 
 🟢 **배포됨** (Netlify)
 
@@ -267,10 +193,9 @@ npm run dev
 
 ## 부록: 미결정 항목 (TBD — 팀 확인 필요)
 
-1. **`ProtectedRoute` 인증 가드** — `authStore`로 토큰은 저장되나 라우트 차단 미구현. 로그인 없이 `/home`·`/profile` 접근 가능
-2. **토큰 갱신 인터셉터** — `httpClient`에 401 재발급 로직 없음. 토큰 만료 정책 백엔드 확인 필요
-3. **`Journey` ↔ `/routes` 네이밍** — 코드 용어 유지 + API 레이어 매핑으로 결정됨. 개명은 별도 브랜치
-4. **AI 블로그 死 버튼** — `JourneyPage` 의 `onAIBlog`, `/blog` 스텁. 비활성 표시/토스트/유지 미결
-5. **요금제 가격 불일치** — 하드코딩. 서버(`GET /subscription-plans`) 이관 예정
-6. **`errorElement` 배선** — `ErrorPage` 있으나 라우터 미연결
-7. **결제 연동 전체** — 토스 SDK 미설치, 승인 플로우·빌링키 등록 화면 미구현 (M3)
+1. **토큰 갱신 인터셉터** — 라우트 가드는 진입 시 `POST /auth/refresh` 로 재발급하나, `httpClient` 에 401 자동 재발급 로직은 없음. 토큰 만료 정책 백엔드 확인 필요
+2. **`Journey` ↔ `/routes` 네이밍** — 코드 용어 유지 + API 레이어 매핑으로 결정됨. 개명은 별도 브랜치
+3. **AI 블로그 死 버튼** — `JourneyPage` 의 `onAIBlog`, `/blog` 스텁. 비활성 표시/토스트/유지 미결
+4. **요금제 가격 불일치** — 하드코딩. 서버(`GET /subscription-plans`) 이관 예정
+5. **`errorElement` 배선** — `ErrorPage` 있으나 라우터 미연결
+6. **결제 연동 전체** — 토스 SDK 미설치, 승인 플로우·빌링키 등록 화면 미구현 (M3)
