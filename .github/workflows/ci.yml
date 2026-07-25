@@ -1,0 +1,30 @@
+# PR 검증 CI.
+# 팀 전원이 macOS(대소문자 미구분)라, 로컬에서 통과하는 코드가 배포(리눅스)에서
+# 깨지는 걸 사람이 사전에 못 잡는다(예: PR #37 대소문자 import). 리눅스에서 lint·build 를
+# 대신 돌려 그 PR 에 미리 빨간불을 띄운다. CD(배포)는 Netlify 가 따로 처리한다.
+name: CI
+
+on:
+  pull_request:
+
+# 같은 PR 에 새 커밋이 푸시되면 진행 중이던 실행을 취소한다(불필요한 큐 방지).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"      # netlify.toml 의 NODE_VERSION 과 맞춘다
+          cache: "npm"            # ~/.npm 캐시로 npm ci 를 빠르게
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run build        # tsc -b && vite build — 타입 에러도 함께 검증
