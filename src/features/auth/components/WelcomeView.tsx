@@ -9,7 +9,7 @@ type WelcomeViewProps = {
 export function WelcomeView({ onSocialLogin }: WelcomeViewProps) {
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-1 flex-col items-center justify-center pb-[5rem] text-center">
+      <div className="flex flex-1 flex-col items-center justify-center pb-[9.25rem] text-center">
         <PicTreeMark />
         <h1 className="mt-7 flex h-[2.375rem] flex-col justify-center text-center font-['KOROAD'] text-base font-bold leading-[2.5rem] tracking-[0px] text-[#2C3930]">
           나의 여행 발자국
@@ -41,7 +41,7 @@ function SocialLoginButton({
   return (
     <Button
       unstyled
-      className={`flex h-[4.3125rem] w-full items-center justify-center gap-3 rounded-[1.5rem] font-['KOROAD'] text-[1.125rem]   text-[#2C3930] transition ${
+      className={`flex h-[4.3125rem] w-full items-center justify-center gap-3 rounded-[1.5rem] font-['KOROAD'] text-[1.125rem] font-bold text-[#2C3930] transition ${
         isKakao ? 'bg-[#FFEC9A] hover:bg-[#f7df70]' : 'bg-[#ECECEC] hover:bg-[#e2e2e2]'
       }`}
       type="button"
