@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AuthCallbackPage } from '../features/auth/AuthCallbackPage';
 import { AuthPage } from '../features/auth/AuthPage';
+import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
+import { PublicOnlyRoute } from '../features/auth/components/PublicOnlyRoute';
 import { BlogPage } from '../features/blog/BlogPage';
 import { CameraPage } from '../features/camera/CameraPage';
 import { HomePage } from '../features/home/HomePage';
@@ -22,72 +24,82 @@ export const router = createBrowserRouter([
     element: <Navigate to={ROUTES.home} replace />,
   },
   {
-    path: ROUTES.auth,
-    element: <AuthPage />,
-  },
-  {
-    path: ROUTES.authLogin,
-    element: <AuthPage />,
-  },
-  {
-    path: ROUTES.authSignup,
-    element: <AuthPage />,
+    element: <PublicOnlyRoute />,
+    children: [
+      {
+        path: ROUTES.auth,
+        element: <AuthPage />,
+      },
+      {
+        path: ROUTES.authLogin,
+        element: <AuthPage />,
+      },
+      {
+        path: ROUTES.authSignup,
+        element: <AuthPage />,
+      },
+    ],
   },
   {
     path: ROUTES.authCallback,
     element: <AuthCallbackPage />,
   },
   {
-    path: ROUTES.camera,
-    element: <CameraPage />,
-  },
-  {
-    element: <Layout />,
+    element: <ProtectedRoute />,
     children: [
       {
-        path: ROUTES.home,
-        element: <HomePage />,
+        path: ROUTES.camera,
+        element: <CameraPage />,
       },
       {
-        path: ROUTES.timeline,
-        element: <TimelinePage />,
+        element: <Layout />,
+        children: [
+          {
+            path: ROUTES.home,
+            element: <HomePage />,
+          },
+          {
+            path: ROUTES.timeline,
+            element: <TimelinePage />,
+          },
+          {
+            path: ROUTES.journey,
+            element: <JourneyPage />,
+          },
+          {
+            path: ROUTES.profile,
+            element: <ProfilePage />,
+          },
+          {
+            path: ROUTES.subscription,
+            element: <SubscriptionPage />,
+          },
+          {
+            path: ROUTES.calendar,
+            element: <TravelCalendarPage />,
+          },
+          {
+            path: ROUTES.favorites,
+            element: <FavoritesPage />,
+          },
+          {
+            path: ROUTES.privacy,
+            element: <PrivacyPolicyPage />,
+          },
+          {
+            path: ROUTES.blog,
+            element: <BlogPage />,
+          },
+          {
+            path: ROUTES.premium,
+            element: <PremiumPage />,
+          },
+        ],
       },
       {
-        path: ROUTES.journey,
-        element: <JourneyPage />,
-      },
-      {
-        path: ROUTES.profile,
-        element: <ProfilePage />,
-      },
-      {
-        path: ROUTES.subscription,
-        element: <SubscriptionPage />,
-      },
-      {
-        path: ROUTES.calendar,
-        element: <TravelCalendarPage />,
-      },
-      {
-        path: ROUTES.favorites,
-        element: <FavoritesPage />,
-      },
-      {
-        path: ROUTES.privacy,
-        element: <PrivacyPolicyPage />,
-      },
-      {
-        path: ROUTES.blog,
-        element: <BlogPage />,
-      },
-      {
-        path: ROUTES.premium,
-        element: <PremiumPage />,
+        path: ROUTES.journeyView,
+        element: <RouteViewPage />,
       },
     ],
-  },
-  {
-    path: ROUTES.journeyView,
-    element: <RouteViewPage />,
   },
 ]);
