@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLogout } from "@/features/auth/hooks/useLogout";
 import { ROUTES } from "@/shared/constants/routes";
 import treeIcon from "./assets/icons/tree.svg";
 import cardIcon from "./assets/icons/card.svg";
@@ -38,6 +39,7 @@ function MenuRow({ icon, title, subtitle, onClick }: MenuRowProps) {
 
 export function ProfilePage() {
   const navigate = useNavigate();
+  const { mutate: requestLogout, isPending: isLoggingOut } = useLogout();
   // 근처 나무 알림 토글 (기본 꺼짐)
   const [alarmOn, setAlarmOn] = useState(false);
 
@@ -133,13 +135,17 @@ export function ProfilePage() {
           </div>
         </section>
 
-        {/* 로그아웃 */}
+        {/* 로그아웃 — 요청 중에는 중복 클릭 방지 */}
         <button
           type="button"
-          className="mt-1 flex items-center justify-center gap-2 py-2"
+          onClick={() => requestLogout()}
+          disabled={isLoggingOut}
+          className="mt-1 flex items-center justify-center gap-2 py-2 disabled:opacity-50"
         >
           <img src={logoutIcon} alt="" className="h-6 w-6" />
-          <span className="text-base text-[#FF4B4B]">로그아웃</span>
+          <span className="text-base text-[#FF4B4B]">
+            {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
+          </span>
         </button>
       </div>
     </div>
