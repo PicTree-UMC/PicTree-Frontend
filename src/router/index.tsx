@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { AuthCallbackPage } from '../features/auth/AuthCallbackPage';
 import { AuthPage } from '../features/auth/AuthPage';
 import { BlogPage } from '../features/blog/BlogPage';
 import { CameraPage } from '../features/camera/CameraPage';
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.authSignup,
     element: <AuthPage />,
+  },
+  {
+    path: ROUTES.authCallback,
+    element: <AuthCallbackPage />,
   },
   {
     path: ROUTES.camera,

@@ -1,22 +1,31 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { AuthShell } from './components/AuthShell';
 import { DevicePermissionModal } from './components/DevicePermissionModal';
 import { TermsAgreementView } from './components/TermsAgreementView';
 import { WelcomeView } from './components/WelcomeView';
+import { redirectToOAuth } from './lib/oauth';
+import { useToast } from '../../shared/components';
 import { ROUTES } from '../../shared/constants/routes';
 import type { AuthStep, SocialLoginProvider } from './types/auth';
 
 export function AuthPage() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<AuthStep>('social-login');
-  const [provider, setProvider] = useState<SocialLoginProvider | null>(null);
+  const [searchParams] = useSearchParams();
+  const { showToast } = useToast();
+  const initialStep = searchParams.get('step') === 'terms' ? 'terms' : 'social-login';
+  const [step] = useState<AuthStep>(initialStep);
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
 
   const handleSocialLogin = (nextProvider: SocialLoginProvider) => {
-    setProvider(nextProvider);
-    setStep('terms');
+    try {
+      redirectToOAuth(nextProvider);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : '소셜 로그인 설정을 확인해 주세요.', 'error', {
+        placement: 'top',
+      });
+    }
   };
 
   const handleTermsAgree = () => {
@@ -24,13 +33,8 @@ export function AuthPage() {
   };
 
   const handlePermissionConfirm = () => {
-    if (provider) {
-      // TODO: OAuth SDK에서 authorizationCode를 받은 뒤 socialLogin({ provider, authorizationCode, redirectUri }) 호출
-      void provider;
-    }
-
     setIsPermissionModalOpen(false);
-    navigate(ROUTES.home);
+    navigate(ROUTES.home, { replace: true });
   };
 
   return (

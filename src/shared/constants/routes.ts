@@ -3,6 +3,7 @@ export const ROUTES = {
   auth: '/auth',
   authLogin: '/auth/login',
   authSignup: '/auth/signup',
+  authCallback: '/auth/callback',
   home: '/home',
   timeline: '/timeline',
   profile: '/profile',
