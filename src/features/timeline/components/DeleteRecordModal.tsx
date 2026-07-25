@@ -1,5 +1,5 @@
 import type { TimelineRecord } from "../types/timeline.types";
-import trashIcon from "../assets/trashCan.svg";
+import trashIcon from "../assets/trashcan.svg";
 
 interface Props {
   record: TimelineRecord;
