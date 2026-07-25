@@ -8,6 +8,10 @@
 
 [build.environment]
   NODE_VERSION = "20"         # 로컬 권장 버전과 맞춘다. 미지정 시 Netlify 기본값이라 재현성이 떨어진다
+  # 아래 VITE_* 는 전부 클라이언트 번들에 인라인되는 공개 값이다(브라우저가 어차피 다 본다).
+  # 시크릿이 아닌데 Netlify 시크릿 스캐너가 번들에서 값을 발견해 빌드를 막으므로 스캔 대상에서 뺀다.
+  # 주의: 카카오 REST API 키 같은 진짜 비밀은 여기 넣지 않는다. 애초에 프론트(VITE_)에 두면 안 되고 백엔드로 보낸다.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_API_BASE_URL,VITE_GOOGLE_CLIENT_ID,VITE_KAKAO_MAP_APP_KEY,VITE_OAUTH_REDIRECT_URI"
 
 # SPA 히스토리 폴백.
 # react-router 가 클라이언트에서 경로를 그리므로, /timeline 같은 경로로 새로고침하면
