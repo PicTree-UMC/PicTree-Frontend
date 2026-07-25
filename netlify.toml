@@ -1,0 +1,19 @@
+# Netlify 배포 설정.
+# 대시보드에서 값을 눌러 설정할 수도 있지만, 이 파일로 두면 저장소가 배포 방식의
+# 단일 출처가 된다(대시보드 수동 설정은 이력이 안 남아 팀이 추적하기 어렵다).
+
+[build]
+  command = "npm run build"   # tsc -b && vite build
+  publish = "dist"            # vite 빌드 산출물 폴더
+
+[build.environment]
+  NODE_VERSION = "20"         # 로컬 권장 버전과 맞춘다. 미지정 시 Netlify 기본값이라 재현성이 떨어진다
+
+# SPA 히스토리 폴백.
+# react-router 가 클라이언트에서 경로를 그리므로, /timeline 같은 경로로 새로고침하면
+# 서버에는 그 파일이 없어 404 가 난다. 모든 요청을 index.html 로 돌려 앱이 경로를 처리하게 한다.
+# status 200 = 리다이렉트가 아니라 rewrite(주소창 URL 유지).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
