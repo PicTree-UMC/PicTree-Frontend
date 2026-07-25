@@ -99,7 +99,7 @@
 
 | 파일 | 역할 |
 | --- | --- |
-| `httpClient.ts` | axios 인스턴스 — **모든 API 는 이걸 통함**. `baseURL` 기본값 `https://tenma.store/api/v1`, `withCredentials: true` (쿠키 인증) |
+| `httpClient.ts` | axios 인스턴스 — **모든 API 는 이걸 통함**. `baseURL`은 `VITE_API_BASE_URL` 환경변수로 설정, `withCredentials: true` (쿠키 인증) |
 | `queryClient.ts` | TanStack Query 설정 (staleTime 60s, retry 1) |
 | `kakaoSdkStore.ts` | 카카오맵 SDK 로드 상태 (Zustand) |
 | `date.ts` | 날짜 포맷 유틸 |
@@ -254,7 +254,7 @@
 | 빌드 | `npm run build` (`tsc -b && vite build`) → `dist` |
 | Node | 20 |
 | SPA 폴백 | `/* → /index.html` (status 200 rewrite) ✅ |
-| 백엔드 API | `https://tenma.store/api/v1` (`VITE_API_BASE_URL`) |
+| 백엔드 API | `VITE_API_BASE_URL` 환경변수로 설정 |
 | OAuth 콜백 | `https://picturetree.netlify.app/auth/callback` |
 
 로컬 실행:

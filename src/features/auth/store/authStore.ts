@@ -30,11 +30,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   setAccessToken: (accessToken, expiresIn) => {
     localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, accessToken);
-    set({
+    set((state) => ({
       accessToken,
       expiresIn,
+      user: state.user,
       isAuthenticated: true,
-    });
+    }));
   },
   clearAuth: () => {
     localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
