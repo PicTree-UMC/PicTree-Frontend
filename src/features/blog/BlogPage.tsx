@@ -14,11 +14,18 @@ export function BlogPage() {
 
   return (
     <main className="min-h-full w-full bg-[#fffdf4] text-[#20251f]">
-      <BlogHeader isPremium={flow.isPremium} onUpgrade={openPremium} />
+      <BlogHeader isPremium={flow.isPremium} activePlan={flow.activePlan} onUpgrade={openPremium} />
       <BlogComposer
         status={flow.blogStatus}
         isPremium={flow.isPremium}
+        startDate={flow.startDate}
+        endDate={flow.endDate}
+        trees={flow.trees}
+        onStartDateChange={flow.setStartDate}
+        onEndDateChange={flow.setEndDate}
         onCreate={flow.isPremium ? flow.generateDraft : () => setUpsellOpen(true)}
+        onSave={flow.saveDraft}
+        onDelete={flow.deleteDraft}
       />
       {upsellOpen && (
         <PremiumUpsellSheet
