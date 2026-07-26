@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLogout } from "@/features/auth/hooks/useLogout";
 import { ROUTES } from "@/shared/constants/routes";
+import { useSessionExpiredRedirect } from "@/features/auth/hooks/useSessionExpiredRedirect";
+import { useMyProfile } from "./hooks/useMyProfile";
+import { getPlanLabel } from "./lib/plan";
+import { getApiErrorMessage, getProfileErrorKind } from "./lib/profileError";
 import treeIcon from "./assets/icons/tree.svg";
 import cardIcon from "./assets/icons/card.svg";
 import statsIcon from "./assets/icons/stats.svg";
@@ -40,28 +44,108 @@ function MenuRow({ icon, title, subtitle, onClick }: MenuRowProps) {
 export function ProfilePage() {
   const navigate = useNavigate();
   const { mutate: requestLogout, isPending: isLoggingOut } = useLogout();
-  // 근처 나무 알림 토글 (기본 꺼짐)
-  const [alarmOn, setAlarmOn] = useState(false);
+  /**
+   * `isLoading` 대신 `isPending` 을 쓴다. react-query v5 의 `isLoading` 은
+   * `isPending && isFetching` 이라, 토큰이 없어 쿼리가 꺼진 동안 false 가 된다.
+   * 그러면 데이터가 없는 채로 성공 분기가 그려져 닉네임·플랜이 빈 칸으로 남는다.
+   */
+  const { data: profile, isPending, isError, error, refetch } = useMyProfile();
+
+  const errorKind = isError ? getProfileErrorKind(error) : null;
+
+  // 401 은 화면에서 처리할 수 없다 — 토큰을 비우고 로그인 화면으로 보낸다.
+  useSessionExpiredRedirect(errorKind === 'session-expired');
+
+  /**
+   * 프로필 이미지 로드 실패 여부.
+   * URL 이 내려와도 실제로 못 불러오는 경우(만료된 CDN 링크 등)가 있어,
+   * 이때 깨진 이미지 아이콘 대신 기본 나무 아이콘으로 떨어뜨린다.
+   */
+  const [isAvatarBroken, setIsAvatarBroken] = useState(false);
+
+  /**
+   * 근처 나무 알림 토글.
+   * 서버 값(`notification`)을 초기값으로 쓰되, 사용자가 누르면 그 값이 우선한다.
+   * ⚠️ 아직 저장은 안 된다 — 영속화하려면 `PATCH /users/me` 연동이 필요하다.
+   */
+  const [alarmOverride, setAlarmOverride] = useState<boolean | null>(null);
+  const alarmOn = alarmOverride ?? profile?.notification ?? false;
+
+  const planLabel = profile ? getPlanLabel(profile.currentPlan) : null;
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFDF7] pb-28">
       {/* 헤더 밴드 */}
       <header className="bg-[#C5D89D] px-[31px] pb-8 pt-6">
         <div className="flex items-center gap-5">
-          {/* 아바타 */}
-          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-[#F6F0D7]">
-            <img src={treeIcon} alt="" className="h-9 w-9" />
+          {/* 아바타 — 프로필 이미지가 없으면 기본 나무 아이콘 */}
+          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
+            {profile?.profileImageUrl && !isAvatarBroken ? (
+              <img
+                src={profile.profileImageUrl}
+                alt=""
+                onError={() => setIsAvatarBroken(true)}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <img src={treeIcon} alt="" className="h-9 w-9" />
+            )}
           </div>
 
-          <div>
-            <p className="text-xl font-bold text-black">밴드맨</p>
-            <p className="mt-0.5 text-base font-medium text-black">
-              oasis@gmail.com
+          {isPending ? (
+            // 스켈레톤 — 닉네임·이메일·플랜 배지 자리를 그대로 잡아 레이아웃이 튀지 않게 한다
+            <div className="flex flex-col gap-2">
+              <div className="h-6 w-28 animate-pulse rounded bg-[#B4C98A]" />
+              <div className="h-5 w-40 animate-pulse rounded bg-[#B4C98A]" />
+              <div className="h-4 w-20 animate-pulse rounded-xl bg-[#B4C98A]" />
+            </div>
+          ) : errorKind === 'session-expired' ? (
+            // useSessionExpiredRedirect 가 곧 로그인 화면으로 보낸다
+            <p className="text-base font-semibold text-[#2C3930]">
+              로그인 화면으로 이동합니다
             </p>
-            <span className="mt-1.5 inline-block rounded-xl bg-[#DDBF68] px-3 py-0.5 text-[10px] font-medium text-[#2C3930]">
-              월간 프리미엄
-            </span>
-          </div>
+          ) : errorKind === 'account-unavailable' ? (
+            // 정지·삭제된 계정. 재시도해도 결과가 바뀌지 않으니 사유만 알린다.
+            <div>
+              <p className="text-base font-semibold text-[#2C3930]">
+                {getApiErrorMessage(error, '계정 정보를 확인할 수 없어요')}
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate(ROUTES.auth, { replace: true })}
+                className="mt-1.5 rounded-xl bg-[#89986D] px-3 py-1 text-xs font-bold text-white"
+              >
+                로그인 화면으로
+              </button>
+            </div>
+          ) : isError ? (
+            // 500·네트워크 오류 — 여기서만 재시도가 의미 있다
+            <div>
+              <p className="text-base font-semibold text-[#2C3930]">
+                {getApiErrorMessage(error, '정보를 불러오지 못했어요')}
+              </p>
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="mt-1.5 rounded-xl bg-[#89986D] px-3 py-1 text-xs font-bold text-white"
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : (
+            <div>
+              <p className="text-xl font-bold text-black">{profile?.nickname}</p>
+              {/* 이메일은 소셜 계정에 따라 없을 수 있어 있을 때만 그린다 */}
+              {profile?.email && (
+                <p className="mt-0.5 text-base font-medium text-black">
+                  {profile.email}
+                </p>
+              )}
+              <span className="mt-1.5 inline-block rounded-xl bg-[#DDBF68] px-3 py-0.5 text-[10px] font-medium text-[#2C3930]">
+                {planLabel}
+              </span>
+            </div>
+          )}
         </div>
       </header>
 
@@ -80,7 +164,7 @@ export function ProfilePage() {
             role="switch"
             aria-checked={alarmOn}
             aria-label="근처 나무 알림"
-            onClick={() => setAlarmOn((prev) => !prev)}
+            onClick={() => setAlarmOverride(!alarmOn)}
             className={`relative h-6 w-10 flex-shrink-0 rounded-full transition-colors ${
               alarmOn ? "bg-[#9CAB84]" : "bg-[#CCC]"
             }`}
@@ -102,7 +186,7 @@ export function ProfilePage() {
             <MenuRow
               icon={cardIcon}
               title="구독 및 결제"
-              subtitle="월간 프리미엄 · 이용중"
+              subtitle={planLabel ? `${planLabel} · 이용중` : undefined}
               onClick={() => navigate(ROUTES.subscription)}
             />
             <MenuRow
