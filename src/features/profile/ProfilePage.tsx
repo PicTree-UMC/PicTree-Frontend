@@ -4,6 +4,7 @@ import { useLogout } from "@/features/auth/hooks/useLogout";
 import { ROUTES } from "@/shared/constants/routes";
 import { useSessionExpiredRedirect } from "@/features/auth/hooks/useSessionExpiredRedirect";
 import { useMyProfile } from "./hooks/useMyProfile";
+import { useUpdateMyProfile } from "./hooks/useUpdateMyProfile";
 import { getPlanLabel } from "./lib/plan";
 import { getApiErrorMessage, getProfileErrorKind } from "./lib/profileError";
 import treeIcon from "./assets/icons/tree.svg";
@@ -51,6 +52,8 @@ export function ProfilePage() {
    */
   const { data: profile, isPending, isError, error, refetch } = useMyProfile();
 
+  const { mutate: updateProfile, isPending: isUpdating } = useUpdateMyProfile();
+
   const errorKind = isError ? getProfileErrorKind(error) : null;
 
   // 401 은 화면에서 처리할 수 없다 — 토큰을 비우고 로그인 화면으로 보낸다.
@@ -64,12 +67,11 @@ export function ProfilePage() {
   const [isAvatarBroken, setIsAvatarBroken] = useState(false);
 
   /**
-   * 근처 나무 알림 토글.
-   * 서버 값(`notification`)을 초기값으로 쓰되, 사용자가 누르면 그 값이 우선한다.
-   * ⚠️ 아직 저장은 안 된다 — 영속화하려면 `PATCH /users/me` 연동이 필요하다.
+   * 근처 나무 알림. 서버 값이 곧 화면 값이다.
+   * 토글하면 `PATCH /users/me` 가 나가고, 훅이 캐시를 낙관적으로 갱신하므로
+   * 별도 로컬 상태 없이 즉시 반영된다 (실패하면 훅이 되돌린다).
    */
-  const [alarmOverride, setAlarmOverride] = useState<boolean | null>(null);
-  const alarmOn = alarmOverride ?? profile?.notification ?? false;
+  const alarmOn = profile?.notification ?? false;
 
   const planLabel = profile ? getPlanLabel(profile.currentPlan) : null;
 
@@ -164,8 +166,10 @@ export function ProfilePage() {
             role="switch"
             aria-checked={alarmOn}
             aria-label="근처 나무 알림"
-            onClick={() => setAlarmOverride(!alarmOn)}
-            className={`relative h-6 w-10 flex-shrink-0 rounded-full transition-colors ${
+            // 프로필을 못 불러왔으면 무엇을 바꿀지 알 수 없어 막는다
+            disabled={!profile || isUpdating}
+            onClick={() => updateProfile({ notification: !alarmOn })}
+            className={`relative h-6 w-10 flex-shrink-0 rounded-full transition-colors disabled:opacity-50 ${
               alarmOn ? "bg-[#9CAB84]" : "bg-[#CCC]"
             }`}
           >
