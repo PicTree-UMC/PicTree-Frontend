@@ -3,6 +3,8 @@ declare namespace kakao.maps {
     constructor(container: HTMLElement, options: MapOptions);
     getLevel(): number;
     setLevel(level: number, options?: { anchor?: LatLng }): void;
+    setCenter(latlng: LatLng): void;
+    panTo(latlng: LatLng): void;
     getProjection(): Projection;
     relayout(): void;
   }
