@@ -1,17 +1,22 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 import { useKakaoMap } from './hooks/useKakaoMap';
 import { useMapMarkers, type MapMarkerData } from './hooks/useMapMarkers';
+import { useDeleteTree, useToggleFavorite, useTreeDetail, useTrees } from './hooks/useTrees';
 import { JourneyBanner } from './components/JourneyBanner';
 import { MarkerDetailSheet } from './components/MarkerDetailSheet';
-import { DEMO_MARKERS } from './mocks/markers';
 
 export function HomePage() {
   const navigate = useNavigate();
   const { containerRef, map } = useKakaoMap(37.5665, 126.978, 3);
-  const [markers, setMarkers] = useState(DEMO_MARKERS);
+
+  const { data: markers = [] } = useTrees();
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+
+  const toggleFavorite = useToggleFavorite();
+  const deleteTree = useDeleteTree();
+  const { data: selectedDetail } = useTreeDetail(selectedMarkerId);
 
   const handleMarkerClick = useCallback((marker: MapMarkerData) => {
     setSelectedMarkerId(marker.id);
@@ -19,15 +24,24 @@ export function HomePage() {
 
   useMapMarkers(map, markers, handleMarkerClick);
 
-  const selectedMarker = markers.find((marker) => marker.id === selectedMarkerId) ?? null;
+  /**
+   * 상세시트에 넘길 데이터. 목록 마커(즐겨찾기·이름 등)를 기본으로 쓰되,
+   * 코멘트·사진·날짜는 상세 조회 결과로 채운다(로그인 시).
+   */
+  const selectedMarker = useMemo<MapMarkerData | null>(() => {
+    const listMarker = markers.find((marker) => marker.id === selectedMarkerId);
+    if (!listMarker) return null;
+    return {
+      ...listMarker,
+      comment: selectedDetail?.comment ?? listMarker.comment,
+      photo: selectedDetail?.photo ?? listMarker.photo,
+      date: selectedDetail?.date || listMarker.date,
+    };
+  }, [markers, selectedMarkerId, selectedDetail]);
 
   const handleToggleFavorite = () => {
     if (!selectedMarkerId) return;
-    setMarkers((prev) =>
-      prev.map((marker) =>
-        marker.id === selectedMarkerId ? { ...marker, isFavorite: !marker.isFavorite } : marker,
-      ),
-    );
+    toggleFavorite.mutate(selectedMarkerId);
   };
 
   const handleEdit = () => {
@@ -36,7 +50,7 @@ export function HomePage() {
 
   const handleDelete = () => {
     if (!selectedMarkerId) return;
-    setMarkers((prev) => prev.filter((marker) => marker.id !== selectedMarkerId));
+    deleteTree.mutate(selectedMarkerId);
     setSelectedMarkerId(null);
   };
 

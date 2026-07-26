@@ -1,6 +1,10 @@
 declare namespace kakao.maps {
   class Map {
     constructor(container: HTMLElement, options: MapOptions);
+    getLevel(): number;
+    setLevel(level: number, options?: { anchor?: LatLng }): void;
+    getProjection(): Projection;
+    relayout(): void;
   }
   interface MapOptions {
     center: LatLng;
@@ -8,6 +12,21 @@ declare namespace kakao.maps {
   }
   class LatLng {
     constructor(lat: number, lng: number);
+    getLat(): number;
+    getLng(): number;
+  }
+  class Point {
+    constructor(x: number, y: number);
+    x: number;
+    y: number;
+  }
+  interface Projection {
+    containerPointFromCoords(latlng: LatLng): Point;
+    coordsFromContainerPoint(point: Point): LatLng;
+  }
+  namespace event {
+    function addListener(target: unknown, type: string, handler: () => void): void;
+    function removeListener(target: unknown, type: string, handler: () => void): void;
   }
   class CustomOverlay {
     constructor(options: CustomOverlayOptions);
