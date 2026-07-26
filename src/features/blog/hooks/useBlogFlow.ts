@@ -18,6 +18,14 @@ export function useBlogFlow() {
     }),
     [startDate, endDate],
   );
+  const activityByDate = useMemo(
+    () => MOCK_BLOG_TREES.reduce<Record<string, number>>((activity, tree) => {
+      const date = tree.createdAt.slice(0, 10);
+      activity[date] = (activity[date] ?? 0) + 1;
+      return activity;
+    }, {}),
+    [],
+  );
 
   useEffect(() => {
     if (blogStatus !== 'generating') return;
@@ -32,14 +40,10 @@ export function useBlogFlow() {
     startDate,
     endDate,
     trees,
-    setStartDate: (date: string) => {
-      setStartDate(date);
-      if (date > endDate) setEndDate(date);
-      setBlogStatus(isPremium ? 'premium' : 'free');
-    },
-    setEndDate: (date: string) => {
-      setEndDate(date);
-      if (date < startDate) setStartDate(date);
+    activityByDate,
+    setDateRange: (start: string, end: string) => {
+      setStartDate(start);
+      setEndDate(end);
       setBlogStatus(isPremium ? 'premium' : 'free');
     },
     generateDraft: () => setBlogStatus('generating'),

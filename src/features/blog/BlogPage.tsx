@@ -21,8 +21,8 @@ export function BlogPage() {
         startDate={flow.startDate}
         endDate={flow.endDate}
         trees={flow.trees}
-        onStartDateChange={flow.setStartDate}
-        onEndDateChange={flow.setEndDate}
+        activityByDate={flow.activityByDate}
+        onDateRangeChange={flow.setDateRange}
         onCreate={flow.isPremium ? flow.generateDraft : () => setUpsellOpen(true)}
         onSave={flow.saveDraft}
         onDelete={flow.deleteDraft}
