@@ -1,4 +1,4 @@
-import { CheckIcon, CrownIcon } from './icons';
+import { AdOffIcon, BlogBenefitIcon, CheckIcon, CrownIcon, StorageUpgradeIcon } from './icons';
 
 type PremiumUpsellSheetProps = {
   onClose: () => void;
@@ -6,9 +6,9 @@ type PremiumUpsellSheetProps = {
 };
 
 const BENEFITS = [
-  ['용량 업그레이드', '1GB/5GB/20GB'],
-  ['AI 블로그 자동 생성', '월 5회/20회/50회'],
-  ['광고 제거', '광고 없음'],
+  { title: '용량 업그레이드', detail: '1GB/5GB/20GB', icon: StorageUpgradeIcon },
+  { title: 'AI 블로그 자동 생성', detail: '월 5회/20회/50회', icon: BlogBenefitIcon },
+  { title: '광고 제거', detail: '광고 없음', icon: AdOffIcon },
 ] as const;
 
 export function PremiumUpsellSheet({ onClose, onUpgrade }: PremiumUpsellSheetProps) {
@@ -27,9 +27,9 @@ export function PremiumUpsellSheet({ onClose, onUpgrade }: PremiumUpsellSheetPro
         <p className="mt-2 text-center text-[14px] leading-5 text-[#34402c]">AI 블로그 자동 작성과 무제한 동선 저장은<br />프리미엄 플랜에서 이용 가능해요</p>
 
         <div className="mt-5 rounded-xl border-2 border-[#bed793] bg-white px-5 py-2">
-          {BENEFITS.map(([title, detail]) => (
+          {BENEFITS.map(({ title, detail, icon: BenefitIcon }) => (
             <div key={title} className="flex min-h-[62px] items-center gap-3">
-              <span className="text-[22px]" aria-hidden>{title === '용량 업그레이드' ? '☁' : title === 'AI 블로그 자동 생성' ? '▣' : 'A̸D̸S̸'}</span>
+              <span className="grid h-6 w-6 shrink-0 place-items-center"><BenefitIcon /></span>
               <span className="flex-1"><strong className="block text-[16px]">{title}</strong><small className="text-[11px] text-[#999]">{detail}</small></span>
               <CheckIcon />
             </div>

@@ -126,6 +126,43 @@ select {
   }
 }
 
+@keyframes payment-check-circle-in {
+  0% { transform: scale(0.55); opacity: 0.7; }
+  55% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes payment-check-draw {
+  0% { stroke-dashoffset: 34; color: #71815f; }
+  65% { color: #71815f; }
+  100% { stroke-dashoffset: 0; color: #2c3930; }
+}
+
+.payment-check-circle {
+  animation: payment-check-circle-in 520ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.payment-check-icon {
+  color: #2c3930;
+}
+
+.payment-check-path {
+  stroke-dasharray: 34;
+  stroke-dashoffset: 34;
+  animation: payment-check-draw 600ms ease-out 260ms forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .payment-check-circle,
+  .payment-check-path {
+    animation: none;
+  }
+
+  .payment-check-path {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* 노치/홈 인디케이터 등 안전영역을 침범하지 않도록 하는 유틸. viewport-fit=cover 와 함께 사용. */
 .pt-safe {
   padding-top: env(safe-area-inset-top);
