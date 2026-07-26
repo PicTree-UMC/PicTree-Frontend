@@ -11,6 +11,7 @@ type BlogComposerProps = {
   isPremium: boolean;
   startDate: string;
   endDate: string;
+  savedAt: string | null;
   trees: BlogTreeRecord[];
   activityByDate: Record<string, number>;
   onDateRangeChange: (startDate: string, endDate: string) => void;
@@ -24,6 +25,7 @@ export function BlogComposer({
   isPremium,
   startDate,
   endDate,
+  savedAt,
   trees,
   activityByDate,
   onDateRangeChange,
@@ -40,7 +42,7 @@ export function BlogComposer({
       </button>
       {status === 'generating' && <GeneratingCard />}
       {status === 'draft' && <DraftCard startDate={startDate} endDate={endDate} trees={trees} onSave={onSave} />}
-      {status === 'saved' && <SavedDraftCard startDate={startDate} endDate={endDate} onDelete={onDelete} />}
+      {status === 'saved' && savedAt && <SavedDraftCard startDate={startDate} endDate={endDate} savedAt={savedAt} onDelete={onDelete} />}
     </section>
   );
 }

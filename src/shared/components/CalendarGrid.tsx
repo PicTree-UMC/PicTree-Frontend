@@ -20,6 +20,7 @@ type CalendarGridProps = {
 
 export function CalendarGrid({ year, month, activityByDate = {}, activityIcon, startDate, endDate, onDateSelect }: CalendarGridProps) {
   const weeks = buildCalendarWeeks(year, month);
+  const cellHeight = activityIcon ? 'h-14' : 'h-11';
 
   return (
     <div>
@@ -28,7 +29,7 @@ export function CalendarGrid({ year, month, activityByDate = {}, activityIcon, s
       </div>
       <div className="mt-2 grid grid-cols-7">
         {weeks.flatMap((week, weekIndex) => week.map((day, column) => {
-          if (!day) return <div key={`${weekIndex}-${column}`} className="h-11" />;
+          if (!day) return <div key={`${weekIndex}-${column}`} className={cellHeight} />;
 
           const date = toCalendarDate(year, month, day);
           const isStart = date === startDate;
@@ -44,7 +45,7 @@ export function CalendarGrid({ year, month, activityByDate = {}, activityIcon, s
             </>
           );
 
-          const className = `flex h-11 flex-col items-center justify-start pt-0.5 ${isInRange ? 'bg-[#edf5d9]' : ''}`;
+          const className = `flex ${cellHeight} flex-col items-center justify-start pt-0.5 ${isInRange ? 'bg-[#edf5d9]' : ''}`;
           return onDateSelect ? (
             <button key={date} type="button" className={className} onClick={() => onDateSelect(date)} aria-pressed={isStart || isEnd || isInRange}>{content}</button>
           ) : (

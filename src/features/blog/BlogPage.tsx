@@ -20,6 +20,7 @@ export function BlogPage() {
         isPremium={flow.isPremium}
         startDate={flow.startDate}
         endDate={flow.endDate}
+        savedAt={flow.savedAt}
         trees={flow.trees}
         activityByDate={flow.activityByDate}
         onDateRangeChange={flow.setDateRange}
