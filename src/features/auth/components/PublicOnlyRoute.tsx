@@ -3,6 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 
 import { ROUTES } from '../../../shared/constants/routes';
 import { refreshAccessToken } from '../api/authApi';
+import { isLogoutRequested } from '../lib/logoutFlag';
 import { useAuthStore } from '../store/authStore';
 
 type AuthCheckStatus = 'checking' | 'authenticated' | 'unauthenticated';
@@ -23,6 +24,13 @@ export function PublicOnlyRoute() {
     }
 
     if (hasRequestedRef.current) {
+      return;
+    }
+
+    // 방금 로그아웃한 사용자를 refresh 쿠키로 되돌려보내지 않는다.
+    // (서버 폐기가 실패해 쿠키가 남아 있을 수 있다)
+    if (isLogoutRequested()) {
+      setStatus('unauthenticated');
       return;
     }
 

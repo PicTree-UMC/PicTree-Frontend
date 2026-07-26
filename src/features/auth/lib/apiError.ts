@@ -22,12 +22,3 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
 
   return body?.error?.message ?? body?.message ?? fallback;
 }
-
-/** 세션이 이미 끝난 상태(401 만료·403 정지)인지. 이 경우 로그아웃은 사실상 성공이다. */
-export function isSessionEndedError(error: unknown): boolean {
-  if (!isAxiosError(error)) {
-    return false;
-  }
-
-  return error.response?.status === 401 || error.response?.status === 403;
-}
