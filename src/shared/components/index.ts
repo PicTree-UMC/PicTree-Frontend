@@ -8,6 +8,7 @@ export { Layout } from './Layout';
 export { Modal, ConfirmModal } from './Modal';
 export { ErrorPage } from './ErrorPage';
 export { PicTreeMark } from './PicTreeMark';
+export { CalendarGrid } from './CalendarGrid';
 export { default as Toaster } from './toast/Toaster';
 export { useToast, useToastStore } from './toast/toastStore';
 export type { ToastType, ToastItem } from './toast/toastStore';

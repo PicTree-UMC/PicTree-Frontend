@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 import { ROUTES } from '../../../shared/constants/routes';
 import { refreshAccessToken } from '../api/authApi';
@@ -8,9 +8,13 @@ import { useAuthStore } from '../store/authStore';
 type AuthCheckStatus = 'checking' | 'authenticated' | 'unauthenticated';
 
 export function PublicOnlyRoute() {
+  const location = useLocation();
   const accessToken = useAuthStore((state) => state.accessToken);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
   const clearAuth = useAuthStore((state) => state.clearAuth);
+  const isTermsStep =
+    location.pathname === ROUTES.auth &&
+    new URLSearchParams(location.search).get('step') === 'terms';
   const [status, setStatus] = useState<AuthCheckStatus>(
     accessToken ? 'authenticated' : 'checking',
   );
@@ -54,7 +58,15 @@ export function PublicOnlyRoute() {
   }
 
   if (status === 'authenticated') {
+    if (isTermsStep) {
+      return <Outlet />;
+    }
+
     return <Navigate to={ROUTES.home} replace />;
+  }
+
+  if (isTermsStep) {
+    return <Navigate to={ROUTES.auth} replace />;
   }
 
   return <Outlet />;

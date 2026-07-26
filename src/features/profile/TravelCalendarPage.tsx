@@ -1,13 +1,13 @@
 import { useState } from "react";
+import { CalendarGrid } from "../../shared/components";
 import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
 import grassIcon from "./assets/icons/grass.svg";
 import treeIcon from "./assets/icons/tree.svg";
 
-
-const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
-
-const ACTIVITY: Record<string, Record<number, number>> = {
-  "2026-4": { 1: 2, 7: 3, 8: 3 },
+const ACTIVITY: Record<string, number> = {
+  "2026-04-01": 2,
+  "2026-04-07": 3,
+  "2026-04-08": 3,
 };
 
 const GRASS_SHADES = [
@@ -19,35 +19,10 @@ const GRASS_SHADES = [
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 
-function buildWeeks(year: number, month: number): (number | null)[][] {
-  const firstWeekday = new Date(year, month - 1, 1).getDay();
-  const lead = (firstWeekday + 6) % 7;
-  const dayCount = new Date(year, month, 0).getDate();
-
-  const cells: (number | null)[] = [];
-  for (let i = 0; i < lead; i += 1) cells.push(null);
-  for (let d = 1; d <= dayCount; d += 1) cells.push(d);
-  while (cells.length % 7 !== 0) cells.push(null);
-
-  const weeks: (number | null)[][] = [];
-  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
-  return weeks;
-}
-
-/** 요일/날짜 색상 (5=토 파랑, 6=일 빨강) */
-function columnColor(col: number): string {
-  if (col === 5) return "text-[#78A3FF]";
-  if (col === 6) return "text-[#FF8080]";
-  return "text-[#000000]";
-}
-
 export function TravelCalendarPage() {
   const [year, setYear] = useState(2026);
   const [month, setMonth] = useState(4); // 1~12
   const [pickerOpen, setPickerOpen] = useState(false);
-
-  const weeks = buildWeeks(year, month);
-  const activity = ACTIVITY[`${year}-${month}`] ?? {};
 
   const goPrevMonth = () => {
     if (month === 1) {
@@ -177,33 +152,7 @@ export function TravelCalendarPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-7 text-center text-base font-bold">
-            {WEEKDAYS.map((label, col) => (
-              <div key={label} className={columnColor(col)}>
-                {label}
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-2 grid grid-cols-7">
-            {weeks.map((week, wi) =>
-              week.map((day, col) => (
-                <div
-                  key={`${wi}-${col}`}
-                  className="flex h-11 flex-col items-center justify-start pt-1.5"
-                >
-                  {day && (
-                    <>
-                      <span className={`text-base ${columnColor(col)}`}>{day}</span>
-                      {activity[day] && (
-                        <img src={grassIcon} alt="방문 기록" className="mt-0.5 h-4 w-4" />
-                      )}
-                    </>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
+          <CalendarGrid year={year} month={month} activityByDate={ACTIVITY} activityIcon={grassIcon} />
         </div>
 
         <div className="mt-4 rounded-xl bg-[#ECF6D8] px-5 py-4">
