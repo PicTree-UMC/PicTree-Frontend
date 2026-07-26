@@ -56,6 +56,16 @@ export function CommentField({ comment, onCommentChange }: CommentFieldProps) {
       )}
 
       {isEditing && (
+        // 밝은 사진에서 흰 한줄평이 묻히지 않도록 포커싱 중엔 배경을 어둡게. 탭하면 입력을 닫는다.
+        <button
+          type="button"
+          aria-label="입력 닫기"
+          onClick={() => inputRef.current?.blur()}
+          className="animate-fade-in fixed inset-0 z-10 bg-black/40"
+        />
+      )}
+
+      {isEditing && (
         <div
           className="fixed inset-x-6 z-20 transition-[bottom] duration-300 ease-out"
           style={{
