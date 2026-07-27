@@ -1,6 +1,7 @@
 import { httpClient } from "@/shared/lib/httpClient";
 import type { ApiResponse } from "@/features/auth/types/auth";
 import type {
+  CreateTimelineRequest,
   TimelineApiPage,
   TimelineApiRecord,
   TimelineDetail,
@@ -99,6 +100,34 @@ export const getTimelineDetail = async (
       .map((image, index) => ({ ...image, sortOrder: image.sortOrder ?? index }))
       .sort((a, b) => a.sortOrder - b.sortOrder),
   };
+};
+
+/**
+ * 타임라인 기록 생성. `POST /timelines`
+ *
+ * 생성된 기록의 id 를 돌려준다. 응답 형태가 갈리므로 여기서 흡수한다:
+ * 명세서는 200 `{ timelineId }`, 서버는 201 에 기록 전체(`{ id, ... }`)를 담아 준다.
+ * axios 는 2xx 를 모두 성공으로 보므로 상태코드 차이는 문제되지 않는다.
+ */
+export const createTimeline = async (
+  accessToken: string,
+  payload: CreateTimelineRequest,
+): Promise<string> => {
+  const { data } = await httpClient.post<ApiResponse<TimelineDetailApiRecord>>(
+    "/timelines",
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (data.resultType === "FAIL") {
+    throw new Error(data.error.message);
+  }
+
+  return String(data.data?.timelineId ?? data.data?.id ?? "");
 };
 
 export const deleteRecord = async (recordId: string): Promise<void> => {

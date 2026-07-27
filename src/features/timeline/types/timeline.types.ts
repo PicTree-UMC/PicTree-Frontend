@@ -1,5 +1,21 @@
 export type PlanType = "free" | "premium";
 
+/**
+ * 기록 분류. 서버 `TimelineCategory` enum 과 값이 정확히 일치해야 한다.
+ *
+ * ⚠️ 명세서 예시에는 `"기록"` 같은 한글이 적혀 있는데, 서버는 `@IsEnum` 으로
+ * 검증하므로 그대로 보내면 400 이 떨어진다. 반드시 아래 값만 보낸다.
+ */
+export const TIMELINE_CATEGORIES = [
+  "VISIT",
+  "FOOD",
+  "SHOPPING",
+  "ACTIVITY",
+  "ETC",
+] as const;
+
+export type TimelineCategory = (typeof TIMELINE_CATEGORIES)[number];
+
 export interface TimelineRecord {
   id: string;
   placeName: string;
@@ -111,4 +127,22 @@ export interface TimelineDetail extends TimelineRecord {
   /** 연결된 나무 이름. 나무 없이 남긴 기록이면 null. */
   treeName: string | null;
   images: TimelineImage[];
+}
+
+/**
+ * `POST /timelines` 요청 본문.
+ *
+ * 서버 `CreateTimelineRequestDto` 기준이며 검증이 걸려 있다:
+ * - `title` 필수, 100자 이하
+ * - `content` 선택, 500자 이하
+ * - `category` 필수, `TimelineCategory` 값만 허용
+ * - `visitedAt` 필수, ISO 8601 (`new Date().toISOString()` 형태를 권장)
+ * - `treeId` 선택. 나무 없이 기록만 남기면 생략하거나 null
+ */
+export interface CreateTimelineRequest {
+  treeId?: number | null;
+  title: string;
+  content?: string | null;
+  category: TimelineCategory;
+  visitedAt: string;
 }
