@@ -159,6 +159,28 @@ export const updateTimeline = async (
   return String(data.data?.timelineId ?? data.data?.id ?? timelineId);
 };
 
-export const deleteRecord = async (recordId: string): Promise<void> => {
-  await httpClient.delete(`/timeline/${recordId}`);
+/**
+ * 타임라인 기록 삭제. `DELETE /timelines/{timelineId}`
+ *
+ * 성공 시 `data` 는 null 이라 돌려줄 값이 없다.
+ *
+ * ⚠️ 기존 코드는 `/timeline/{id}`(단수) 로 보내고 토큰도 안 붙여 항상 실패했다.
+ * 실제 경로는 `/timelines/{id}` 이고 `AccessTokenGuard` 가 걸려 있다.
+ */
+export const deleteTimeline = async (
+  accessToken: string,
+  timelineId: string,
+): Promise<void> => {
+  const { data } = await httpClient.delete<ApiResponse<null>>(
+    `/timelines/${timelineId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (data.resultType === "FAIL") {
+    throw new Error(data.error.message);
+  }
 };
