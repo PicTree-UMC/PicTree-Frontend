@@ -81,3 +81,23 @@ export const getMySubscription = async (): Promise<MySubscription> => {
     throw err;
   }
 };
+
+/** POST /subscriptions/{id}/cancel — 자동갱신 해지 (status 는 ACTIVE 유지, autoRenew=false) */
+export const cancelSubscription = async (
+  subscriptionId: number,
+): Promise<SubscriptionDto> => {
+  const { data } = await httpClient.post<ApiResponse<SubscriptionDto>>(
+    `/subscriptions/${subscriptionId}/cancel`,
+  );
+  return data.data;
+};
+
+/** POST /subscriptions/{id}/resume — 자동갱신 재개 (autoRenew=true, nextBillingAt 복귀) */
+export const resumeSubscription = async (
+  subscriptionId: number,
+): Promise<SubscriptionDto> => {
+  const { data } = await httpClient.post<ApiResponse<SubscriptionDto>>(
+    `/subscriptions/${subscriptionId}/resume`,
+  );
+  return data.data;
+};

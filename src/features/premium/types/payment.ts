@@ -70,7 +70,7 @@ export interface SubscriptionDto {
   startedAt: string; // ISO 8601
   expiresAt: string; // ISO 8601
   autoRenew: boolean;
-  nextBillingAt: string; // ISO 8601
+  nextBillingAt: string | null; // ISO 8601. 해지(자동갱신 off) 시 null
 }
 
 /**
