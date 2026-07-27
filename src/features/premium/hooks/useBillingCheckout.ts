@@ -19,5 +19,9 @@ export const useBillingCheckout = () => {
       sessionStorage.setItem(PENDING_PLAN_STORAGE_KEY, plan);
       await requestBillingAuth(customerKey); // 성공 시 리다이렉트 (반환 없음)
     },
+    onError: (error) => {
+      // 결제 시작 실패는 지금까지 조용히 삼켜졌다. 최소한 콘솔엔 남겨 원인 추적이 되게 한다.
+      console.error('[checkout] 결제 시작 실패:', error);
+    },
   });
 };
