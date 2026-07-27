@@ -8,6 +8,7 @@ import type {
   TimelineDetailApiRecord,
   TimelinePage,
   TimelineRecord,
+  UpdateTimelineRequest,
 } from "../types/timeline.types";
 
 export const TIMELINE_PAGE_SIZE = 20;
@@ -128,6 +129,34 @@ export const createTimeline = async (
   }
 
   return String(data.data?.timelineId ?? data.data?.id ?? "");
+};
+
+/**
+ * 타임라인 기록 수정. `PATCH /timelines/{timelineId}`
+ *
+ * 생성과 마찬가지로 응답 형태가 갈린다 — 명세서는 `{ timelineId }`,
+ * 서버는 기록 전체를 준다. 수정된 기록의 id 만 돌려준다.
+ */
+export const updateTimeline = async (
+  accessToken: string,
+  timelineId: string,
+  payload: UpdateTimelineRequest,
+): Promise<string> => {
+  const { data } = await httpClient.patch<ApiResponse<TimelineDetailApiRecord>>(
+    `/timelines/${timelineId}`,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (data.resultType === "FAIL") {
+    throw new Error(data.error.message);
+  }
+
+  return String(data.data?.timelineId ?? data.data?.id ?? timelineId);
 };
 
 export const deleteRecord = async (recordId: string): Promise<void> => {

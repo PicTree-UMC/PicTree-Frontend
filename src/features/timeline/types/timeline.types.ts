@@ -146,3 +146,19 @@ export interface CreateTimelineRequest {
   category: TimelineCategory;
   visitedAt: string;
 }
+
+/**
+ * `PATCH /timelines/{timelineId}` 요청 본문.
+ *
+ * 보낸 필드만 반영되는 부분 수정이다. 검증은 생성과 같되 전부 선택이며,
+ * 하나도 안 보내면 400 이 떨어진다.
+ *
+ * `treeId: null` 은 "나무 연결 해제" 를 뜻한다 — 필드를 생략하는 것과 다르다.
+ */
+export interface UpdateTimelineRequest {
+  treeId?: number | null;
+  title?: string;
+  content?: string | null;
+  category?: TimelineCategory;
+  visitedAt?: string;
+}
