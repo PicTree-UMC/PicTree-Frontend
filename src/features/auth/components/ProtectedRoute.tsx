@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 import { ROUTES } from '../../../shared/constants/routes';
 import { refreshAccessToken } from '../api/authApi';
+import { isLogoutRequested } from '../lib/logoutFlag';
 import { useAuthStore } from '../store/authStore';
 
 type AuthCheckStatus = 'checking' | 'authenticated' | 'unauthenticated';
@@ -24,6 +25,12 @@ export function ProtectedRoute() {
     }
 
     if (hasRequestedRef.current) {
+      return;
+    }
+
+    // 로그아웃 직후 보호 경로로 들어와도 refresh 쿠키로 되살리지 않는다.
+    if (isLogoutRequested()) {
+      setStatus('unauthenticated');
       return;
     }
 
