@@ -6,19 +6,22 @@ import { CrownIcon } from './components/icons';
 import { PaymentCompleteModal } from './components/PaymentCompleteModal';
 import { PaymentConfirmSheet } from './components/PaymentConfirmSheet';
 import { PlanCard } from './components/PlanCard';
+import { useBillingCheckout } from './hooks/useBillingCheckout';
 import { useSubscriptionStore } from './store/subscriptionStore';
 import { PLAN_DETAILS, type PaymentStep, type SubscriptionPlan } from './types/premium';
 
 export function PremiumPage() {
   const navigate = useNavigate();
   const activate = useSubscriptionStore((state) => state.activate);
+  const checkout = useBillingCheckout();
   const [plan, setPlan] = useState<SubscriptionPlan>('max');
   const [step, setStep] = useState<PaymentStep>('plan');
   const selectedPlan = PLAN_DETAILS[plan];
 
   const handlePayment = () => {
-    // TODO: 토스페이먼츠 결제 승인 API 성공 후 complete 상태로 전환
-    setStep('complete');
+    // customerKey 발급 → 토스 카드 인증창 → 성공 시 BillingSuccessPage 로 리다이렉트.
+    // 빌링키 발급·구독 시작은 그 착지 페이지가 이어받는다. 아래 complete 스텝은 안 쓰인다.
+    checkout.mutate(plan);
   };
 
   const handleComplete = () => {

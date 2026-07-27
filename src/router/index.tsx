@@ -5,6 +5,8 @@ import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
 import { PublicOnlyRoute } from '../features/auth/components/PublicOnlyRoute';
 import { BlogPage } from '../features/blog/BlogPage';
 import { BlogCreatePage } from '../features/blog/BlogCreatePage';
+import { BillingFailPage } from '../features/premium/BillingFailPage';
+import { BillingSuccessPage } from '../features/premium/BillingSuccessPage';
 import { CameraPage } from '../features/camera/CameraPage';
 import { HomePage } from '../features/home/HomePage';
 import { JourneyPage } from '../features/journey/JourneyPage';
@@ -55,6 +57,15 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.blogCreate,
         element: <BlogCreatePage />,
+      },
+      {
+        // 토스 빌링 인증 후 착지 (탭바 없는 전환 화면). 구독은 로그인 필요 → 보호 구역.
+        path: ROUTES.premiumBillingSuccess,
+        element: <BillingSuccessPage />,
+      },
+      {
+        path: ROUTES.premiumBillingFail,
+        element: <BillingFailPage />,
       },
       {
         element: <Layout />,
