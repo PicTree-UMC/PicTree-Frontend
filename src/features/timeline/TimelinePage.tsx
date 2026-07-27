@@ -7,15 +7,19 @@ import StorageBanner from "./components/StorageBanner";
 import TimelineGroup from "./components/TimelineGroup";
 import { RecordActionSheet } from "./components/RecordActionSheet";
 import { DeleteRecordModal } from "./components/DeleteRecordModal";
+import { TimelineEditModal } from "./components/TimelineEditModal";
+import { useUpdateTimeline } from "./hooks/useUpdateTimeline";
 import { useToast } from "@/shared/components";
 
 export function TimelinePage() {
   const { groups, totalCount, plan, isLoading, isError } = useTimeline();
   const deleteMutation = useDeleteRecord();
+  const updateMutation = useUpdateTimeline();
   const { showToast } = useToast();
 
   const [menuTarget, setMenuTarget] = useState<TimelineRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<TimelineRecord | null>(null);
+  const [editTarget, setEditTarget] = useState<TimelineRecord | null>(null);
 
   // 저장 용량 배너 값 (mock — 백엔드 연동 시 교체)
   const storage =
@@ -27,6 +31,21 @@ export function TimelinePage() {
     if (!deleteTarget) return;
     deleteMutation.mutate(deleteTarget.id);
     setDeleteTarget(null);
+  };
+
+  const handleSaveEdit = (values: { title: string; content: string }) => {
+    if (!editTarget) return;
+
+    updateMutation.mutate(
+      { timelineId: editTarget.id, payload: values },
+      {
+        // 실패는 훅이 토스트로 알린다. 성공했을 때만 닫아야 입력값이 안 날아간다.
+        onSuccess: () => {
+          setEditTarget(null);
+          showToast("기록을 수정했어요.", "success");
+        },
+      },
+    );
   };
 
   return (
@@ -68,7 +87,7 @@ export function TimelinePage() {
           record={menuTarget}
           onClose={() => setMenuTarget(null)}
           onEdit={() => {
-            showToast("기록 수정은 준비 중이에요.", "info");
+            setEditTarget(menuTarget);
             setMenuTarget(null);
           }}
           onChangePhoto={() => {
@@ -83,6 +102,15 @@ export function TimelinePage() {
             setDeleteTarget(menuTarget);
             setMenuTarget(null);
           }}
+        />
+      )}
+
+      {editTarget && (
+        <TimelineEditModal
+          record={editTarget}
+          isSaving={updateMutation.isPending}
+          onClose={() => setEditTarget(null)}
+          onSave={handleSaveEdit}
         />
       )}
 
