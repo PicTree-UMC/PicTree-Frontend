@@ -7,12 +7,10 @@ import { PaymentCompleteModal } from './components/PaymentCompleteModal';
 import { PaymentConfirmSheet } from './components/PaymentConfirmSheet';
 import { PlanCard } from './components/PlanCard';
 import { useBillingCheckout } from './hooks/useBillingCheckout';
-import { useSubscriptionStore } from './store/subscriptionStore';
 import { PLAN_DETAILS, type PaymentStep, type SubscriptionPlan } from './types/premium';
 
 export function PremiumPage() {
   const navigate = useNavigate();
-  const activate = useSubscriptionStore((state) => state.activate);
   const checkout = useBillingCheckout();
   const [plan, setPlan] = useState<SubscriptionPlan>('max');
   const [step, setStep] = useState<PaymentStep>('plan');
@@ -25,7 +23,8 @@ export function PremiumPage() {
   };
 
   const handleComplete = () => {
-    activate(plan);
+    // 프리미엄 여부는 이제 서버(useMySubscription)가 진실이라 로컬 플래그를 세우지 않는다.
+    // (이 complete 스텝 자체가 현재 트리거되지 않는 잔여 코드다 — 실제 완료는 BillingSuccessPage.)
     navigate(ROUTES.blog);
   };
 
