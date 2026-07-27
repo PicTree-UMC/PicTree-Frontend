@@ -90,10 +90,6 @@ export function TimelinePage() {
             setEditTarget(menuTarget);
             setMenuTarget(null);
           }}
-          onChangePhoto={() => {
-            showToast("사진 보기/변경은 준비 중이에요.", "info");
-            setMenuTarget(null);
-          }}
           onFavorite={() => {
             showToast("즐겨찾기에 추가했어요.", "success");
             setMenuTarget(null);
