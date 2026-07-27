@@ -72,11 +72,12 @@ interface UseTimelineResult {
  */
 export const useTimeline = (page = 1, size = TIMELINE_PAGE_SIZE): UseTimelineResult => {
   const accessToken = useAuthStore((state) => state.accessToken);
+  const hasToken = Boolean(accessToken);
 
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: timelineKeys.list(page, size),
     queryFn: () => getTimelines(accessToken ?? "", { page, size }),
-    enabled: Boolean(accessToken),
+    enabled: hasToken,
     /**
      * 4xx 는 재시도하지 않는다. 401(토큰 무효)·400(잘못된 요청)은 같은 요청을
      * 반복해도 결과가 바뀌지 않는다. 5xx·네트워크 오류는 기본값(1회)을 쓴다.
@@ -101,7 +102,12 @@ export const useTimeline = (page = 1, size = TIMELINE_PAGE_SIZE): UseTimelineRes
      * 쓸 수 없다. 두 작업이 합쳐지면 `useMyProfile` 값으로 교체한다.
      */
     plan: "free",
-    isLoading: isPending,
+    /**
+     * 토큰이 없으면 쿼리가 꺼져 있어 `isPending` 이 계속 true 다.
+     * 그대로 내보내면 화면이 로딩 스피너에서 영영 안 벗어나므로 로딩으로 치지 않는다.
+     * (`ProtectedRoute` 가 토큰을 보장하니 실제로는 닿기 어려운 경로다)
+     */
+    isLoading: hasToken && isPending,
     isError,
     refetch,
   };
