@@ -12,6 +12,7 @@ import type {
 export const timelineKeys = {
   all: ["timeline"] as const,
   list: (page: number, size: number) => ["timeline", "list", page, size] as const,
+  detail: (timelineId: string) => ["timeline", "detail", timelineId] as const,
 };
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];

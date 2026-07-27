@@ -3,6 +3,8 @@ import type { ApiResponse } from "@/features/auth/types/auth";
 import type {
   TimelineApiPage,
   TimelineApiRecord,
+  TimelineDetail,
+  TimelineDetailApiRecord,
   TimelinePage,
   TimelineRecord,
 } from "../types/timeline.types";
@@ -61,6 +63,41 @@ export const getTimelines = async (
     page: body?.page ?? page,
     size: body?.size ?? size,
     totalCount: body?.totalElements ?? body?.totalCount ?? records.length,
+  };
+};
+
+/**
+ * 타임라인 상세 조회. `GET /timelines/{timelineId}`
+ *
+ * 목록과 같은 레코드에 `images` 가 더 붙는다.
+ * 존재하지 않는 기록이면 404 `TIMELINE_NOT_FOUND` 가 온다 (목록과 달리 진짜 에러).
+ */
+export const getTimelineDetail = async (
+  accessToken: string,
+  timelineId: string,
+): Promise<TimelineDetail> => {
+  const { data } = await httpClient.get<ApiResponse<TimelineDetailApiRecord>>(
+    `/timelines/${timelineId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (data.resultType === "FAIL") {
+    throw new Error(data.error.message);
+  }
+
+  const record = data.data;
+
+  return {
+    ...toTimelineRecord(record),
+    treeName: record.treeName ?? record.tree?.name ?? null,
+    // sortOrder 가 없으면 배열 순서를 그대로 쓴다
+    images: (record.images ?? [])
+      .map((image, index) => ({ ...image, sortOrder: image.sortOrder ?? index }))
+      .sort((a, b) => a.sortOrder - b.sortOrder),
   };
 };
 

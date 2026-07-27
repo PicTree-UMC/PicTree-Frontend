@@ -86,3 +86,29 @@ export interface TimelinePage {
   size: number;
   totalCount: number;
 }
+
+export interface TimelineImage {
+  imageId: number;
+  imageUrl: string;
+  /** 정렬 순서. 서버가 안 주면 배열 순서를 그대로 쓴다. */
+  sortOrder: number;
+}
+
+/**
+ * `GET /timelines/{timelineId}` 응답의 `data`.
+ *
+ * 목록 레코드와 같은 필드에 `images` 가 더 붙는 형태다.
+ *
+ * ⚠️ `images` 는 명세서에만 있고 서버 `TimelineResponseDto` 에는 없다
+ * (이미지는 별도 `tree-images` 모듈). 없으면 빈 배열로 떨어진다.
+ */
+export interface TimelineDetailApiRecord extends TimelineApiRecord {
+  images?: TimelineImage[];
+}
+
+/** 정규화된 상세 — 화면·훅이 실제로 쓰는 형태 */
+export interface TimelineDetail extends TimelineRecord {
+  /** 연결된 나무 이름. 나무 없이 남긴 기록이면 null. */
+  treeName: string | null;
+  images: TimelineImage[];
+}
