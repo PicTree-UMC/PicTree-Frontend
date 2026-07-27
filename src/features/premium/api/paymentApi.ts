@@ -14,6 +14,7 @@ import axios from 'axios';
 import { httpClient } from '@/shared/lib/httpClient';
 import type { ApiResponse } from '@/shared/types/api';
 import type {
+  BillingKeyDeactivateResult,
   BillingKeyDto,
   CustomerKeyResponse,
   MySubscription,
@@ -80,6 +81,22 @@ export const getMySubscription = async (): Promise<MySubscription> => {
     }
     throw err;
   }
+};
+
+/** GET /billing-keys — 등록된 자동결제 수단(카드) 목록 */
+export const getBillingKeys = async (): Promise<BillingKeyDto[]> => {
+  const { data } = await httpClient.get<ApiResponse<BillingKeyDto[]>>('/billing-keys');
+  return data.data;
+};
+
+/** DELETE /billing-keys/{id} — 자동결제 수단 삭제(비활성화) */
+export const deleteBillingKey = async (
+  billingKeyId: number,
+): Promise<BillingKeyDeactivateResult> => {
+  const { data } = await httpClient.delete<ApiResponse<BillingKeyDeactivateResult>>(
+    `/billing-keys/${billingKeyId}`,
+  );
+  return data.data;
 };
 
 /** POST /subscriptions/{id}/cancel — 자동갱신 해지 (status 는 ACTIVE 유지, autoRenew=false) */

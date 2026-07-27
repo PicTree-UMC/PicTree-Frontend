@@ -37,7 +37,7 @@ export interface RegisterBillingKeyRequest {
   customerKey: string; // 백엔드 발급 (예: 'USER-1-7F4A8D')
 }
 
-/** 등록된 자동결제 수단(카드). POST /billing-keys 응답 & GET /billing-keys 항목 추정 */
+/** 등록된 자동결제 수단(카드). POST /billing-keys 응답 & GET /billing-keys 배열 항목 */
 export interface BillingKeyDto {
   billingKeyId: number;
   paymentProvider: string; // 'TOSS'
@@ -45,6 +45,13 @@ export interface BillingKeyDto {
   cardNumberMasked: string;
   status: string; // 'ACTIVE' 확인, 그 외 값 미확인
   issuedAt: string; // ISO 8601 ✓
+}
+
+/** DELETE /billing-keys/{id} 응답 — 삭제(비활성화) 결과 요약 */
+export interface BillingKeyDeactivateResult {
+  billingKeyId: number;
+  status: string; // 'DEACTIVATED'
+  deactivatedAt: string; // ISO 8601
 }
 
 /** POST /subscriptions 요청 — 구독 시작 (확정) */
@@ -74,7 +81,7 @@ export interface SubscriptionDto {
 }
 
 /**
- * GET /subscriptions/me — 내 구독 상태 (subscriptionStore 대체).
+ * GET /subscriptions/me — 내 구독 상태 (구 메모리 store 를 대체한 서버 상태).
  * 확정: 구독 중이면 SubscriptionDto, 미구독이면 404 → api 레이어에서 null 로 변환.
  */
 export type MySubscription = SubscriptionDto | null;

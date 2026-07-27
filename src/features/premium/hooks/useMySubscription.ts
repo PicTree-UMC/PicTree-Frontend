@@ -5,11 +5,13 @@ import { getMySubscription } from '../api/paymentApi';
 export const paymentKeys = {
   plans: ['subscription-plans'] as const,
   me: ['subscription', 'me'] as const,
+  billingKeys: ['billing-keys'] as const,
 };
 
 /**
  * 내 구독 상태 조회 훅.
- * subscriptionStore(메모리 전용, 새로고침 시 소실)를 대체할 서버 상태 소스.
+ * 프리미엄 여부의 단일 진실. 구 subscriptionStore(메모리 전용, 새로고침 시 소실)를 대체했다.
+ * blog 게이팅·구독 관리 화면이 모두 이 훅에서 파생한다.
  */
 export const useMySubscription = () => {
   return useQuery({
