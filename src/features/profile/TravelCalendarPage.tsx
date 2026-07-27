@@ -10,11 +10,12 @@ const ACTIVITY: Record<string, number> = {
   "2026-04-08": 3,
 };
 
-const GRASS_SHADES = [
-  "rgba(239,227,177,0.6)",
-  "rgba(197,216,157,0.6)",
-  "rgba(177,195,141,0.6)",
-  "rgba(137,152,109,0.6)",
+/** 잔디 농도 범례. 색과 라벨이 짝이라 한곳에서 관리한다 (시안 기준). */
+const GRASS_LEGEND = [
+  { shade: "rgba(239,227,177,0.6)", label: "1곳" },
+  { shade: "rgba(197,216,157,0.6)", label: "2곳" },
+  { shade: "rgba(177,195,141,0.6)", label: "3~4곳" },
+  { shade: "rgba(137,152,109,0.6)", label: "5곳+" },
 ];
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -162,16 +163,24 @@ export function TravelCalendarPage() {
               하루에 방문하는 수만큼 잔디가 진해져요
             </p>
           </div>
-          <div className="mt-3 flex items-center justify-center gap-2.5">
-            <span className="text-[10px] font-medium text-black">적음</span>
-            {GRASS_SHADES.map((shade) => (
-              <span
-                key={shade}
-                className="h-5 w-5 rounded-full"
-                style={{ backgroundColor: shade }}
-              />
+          {/*
+            items-start 로 두고 적음·많음 에만 mt 를 준다. 라벨이 붙은 만큼
+            열이 길어져도 두 글자는 점 높이(20px) 가운데에 계속 걸리게 하려는 것.
+          */}
+          <div className="mt-3 flex items-start justify-center gap-2.5">
+            <span className="mt-[5px] text-[10px] text-black">적음</span>
+            {GRASS_LEGEND.map(({ shade, label }) => (
+              <span key={label} className="flex w-5 flex-col items-center gap-1">
+                <span
+                  className="h-5 w-5 rounded-full"
+                  style={{ backgroundColor: shade }}
+                />
+                <span className="whitespace-nowrap text-[10px] leading-[10px] text-black">
+                  {label}
+                </span>
+              </span>
             ))}
-            <span className="text-[10px] font-medium text-black">많음</span>
+            <span className="mt-[5px] text-[10px] text-black">많음</span>
           </div>
         </div>
       </div>
