@@ -8,7 +8,7 @@
  * axios 는 이 껍데기를 response.data 로 주므로, 실제 값은 response.data.data 다.
  *
  * ⚠️ timeline 은 `features/auth/types/auth.ts` 의 다른 타입을 쓰고 있다(다른 담당자 영역).
- *    새 도메인은 이 타입을 쓴다.
+ *    새 도메인은 이 타입을 쓴다 — 현재 이 래퍼로 언랩하는 건 결제(premium) 도메인이다.
  */
 export interface ApiResponse<T> {
   success: boolean;
