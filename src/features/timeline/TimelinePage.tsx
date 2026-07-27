@@ -21,11 +21,23 @@ export function TimelinePage() {
   const [deleteTarget, setDeleteTarget] = useState<TimelineRecord | null>(null);
   const [editTarget, setEditTarget] = useState<TimelineRecord | null>(null);
 
-  // 저장 용량 배너 값 (mock — 백엔드 연동 시 교체)
+  /**
+   * 사진 저장 용량 배너.
+   *
+   * ⚠️ 사용량을 알려주는 API 가 없다. 사진 크기(`fileSize`)는 이미지마다 있지만
+   * `GET /trees/{treeId}/images` 로 나무별로만 조회돼, 총합을 구하려면 나무 전체를
+   * 순회해야 한다 (배너 하나에 N+1 요청). 그래서 지어내지 않고 `null` 로 둔다
+   * — 화면엔 "-" 가 뜨고 막대는 비어 있다.
+   *
+   * 서버가 사용량을 주면 `usedBytes` 에 그 값만 넣으면 된다.
+   *
+   * 상한값도 시안 문구에서 가져온 상수다. 요금제 테이블(`plan_features`)이 채워지면
+   * 거기서 읽어와야 한다.
+   */
   const storage =
     plan === "premium"
-      ? { usedLabel: "50MB", totalLabel: "20GB", planLabel: "맥스", usedRatio: 50 / 20000 }
-      : { usedLabel: "50MB", totalLabel: "100MB", planLabel: "무료", usedRatio: 50 / 100 };
+      ? { usedBytes: null, totalBytes: 20 * 1024 ** 3, planLabel: "맥스" }
+      : { usedBytes: null, totalBytes: 100 * 1024 ** 2, planLabel: "무료" };
 
   const handleConfirmDelete = () => {
     if (!deleteTarget) return;
