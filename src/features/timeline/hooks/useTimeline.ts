@@ -49,8 +49,13 @@ const groupByDate = (records: TimelineRecord[], now = new Date()): TimelineGroup
     .map(([dateKey, items]) => ({
       dateKey,
       label: buildLabel(new Date(dateKey), now),
+      /**
+       * 그룹(날짜)은 최신순이지만 그룹 안은 시간순이다 — 시안이 하루를 09:30 → 10:20
+       * 으로, 즉 그날 다닌 순서대로 보여준다. 최신순으로 뒤집으면 하루 동선을
+       * 거꾸로 읽게 된다.
+       */
       records: items.sort(
-        (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
+        (a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime()
       ),
     }));
 };
