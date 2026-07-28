@@ -1,3 +1,8 @@
+import { useQuery } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
+
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { getTimelines, TIMELINE_PAGE_SIZE } from "../api/timelineApi";
 import type {
   TimelineGroup,
   TimelineRecord,
@@ -6,6 +11,8 @@ import type {
 
 export const timelineKeys = {
   all: ["timeline"] as const,
+  list: (page: number, size: number) => ["timeline", "list", page, size] as const,
+  detail: (timelineId: string) => ["timeline", "detail", timelineId] as const,
 };
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -48,37 +55,60 @@ const groupByDate = (records: TimelineRecord[], now = new Date()): TimelineGroup
     }));
 };
 
-// 오늘/어제 기준으로 날짜 자동 생성
-const now = new Date();
-const at = (daysAgo: number, h: number, m: number) => {
-  const d = new Date(now);
-  d.setDate(d.getDate() - daysAgo);
-  d.setHours(h, m, 0, 0);
-  return d.toISOString();
-};
-
-const MOCK_RECORDS: TimelineRecord[] = [
-  { id: "1", placeName: "오아이스 만난곳", comment: "갤러거 형제 자만추", recordedAt: at(0, 9, 30), thumbnailUrl: "https://picsum.photos/seed/1/88" },
-  { id: "2", placeName: "쇼핑", comment: "기념품 구매", recordedAt: at(0, 10, 30), thumbnailUrl: "https://picsum.photos/seed/2/88" },
-  { id: "3", placeName: "아침밥 구매", comment: "피자 구매", recordedAt: at(1, 9, 30), thumbnailUrl: "https://picsum.photos/seed/3/88" },
-  { id: "4", placeName: "노숙자 만난 곳", comment: "지나가다가 1파운드 기부", recordedAt: at(1, 10, 30), thumbnailUrl: null },
-  { id: "5", placeName: "넘어졌던 곳", comment: "바닥 미끄러웠음", recordedAt: at(3, 10, 30), thumbnailUrl: null },
-];
-
 interface UseTimelineResult {
   groups: TimelineGroup[];
   totalCount: number;
   plan: PlanType;
   isLoading: boolean;
   isError: boolean;
+  refetch: () => void;
 }
 
-export const useTimeline = (): UseTimelineResult => {
+/**
+ * 타임라인 목록 조회 훅. `GET /timelines`
+ *
+ * 서버가 최신순으로 내려주지만 화면은 날짜별 그룹을 요구하므로 여기서 묶는다.
+ * 그룹 내부에서 한 번 더 정렬하므로 서버 정렬이 흔들려도 화면은 안전하다.
+ */
+export const useTimeline = (page = 1, size = TIMELINE_PAGE_SIZE): UseTimelineResult => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const hasToken = Boolean(accessToken);
+
+  const { data, isPending, isError, refetch } = useQuery({
+    queryKey: timelineKeys.list(page, size),
+    queryFn: () => getTimelines(accessToken ?? "", { page, size }),
+    enabled: hasToken,
+    /**
+     * 4xx 는 재시도하지 않는다. 401(토큰 무효)·400(잘못된 요청)은 같은 요청을
+     * 반복해도 결과가 바뀌지 않는다. 5xx·네트워크 오류는 기본값(1회)을 쓴다.
+     */
+    retry: (failureCount, error) => {
+      const status = isAxiosError(error) ? error.response?.status : undefined;
+
+      if (status && status >= 400 && status < 500) {
+        return false;
+      }
+
+      return failureCount < 1;
+    },
+  });
+
   return {
-    groups: groupByDate(MOCK_RECORDS),
-    totalCount: MOCK_RECORDS.length,
-    plan: "free", // 'premium' 으로 바꾸면 무료 배너 사라짐
-    isLoading: false,
-    isError: false,
+    groups: groupByDate(data?.records ?? []),
+    totalCount: data?.totalCount ?? 0,
+    /**
+     * ⚠️ 타임라인 응답에는 요금제 정보가 없다. 무료/유료 구분은 `GET /users/me` 의
+     * `currentPlan` 을 써야 하는데 그 연동은 `feat/myInfo` 브랜치에 있어 여기서는
+     * 쓸 수 없다. 두 작업이 합쳐지면 `useMyProfile` 값으로 교체한다.
+     */
+    plan: "free",
+    /**
+     * 토큰이 없으면 쿼리가 꺼져 있어 `isPending` 이 계속 true 다.
+     * 그대로 내보내면 화면이 로딩 스피너에서 영영 안 벗어나므로 로딩으로 치지 않는다.
+     * (`ProtectedRoute` 가 토큰을 보장하니 실제로는 닿기 어려운 경로다)
+     */
+    isLoading: hasToken && isPending,
+    isError,
+    refetch,
   };
 };

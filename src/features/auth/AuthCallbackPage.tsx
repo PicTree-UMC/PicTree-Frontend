@@ -4,6 +4,7 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../../shared/constants/routes';
 import { useToast } from '../../shared/components';
 import { socialLogin } from './api/authApi';
+import { clearLogoutRequested } from './lib/logoutFlag';
 import {
   clearSavedOAuthProvider,
   getOAuthRedirectUri,
@@ -50,6 +51,7 @@ export function AuthCallbackPage() {
 
         setAuth(response.data);
         clearSavedOAuthProvider();
+        clearLogoutRequested(); // 새 세션이 생겼으니 차단 해제 (리다이렉트로 진입한 경우 대비)
 
         if (response.data.needTermsAgreement) {
           navigate(`${ROUTES.auth}?step=terms`, { replace: true });
