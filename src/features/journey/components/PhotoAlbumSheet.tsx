@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useLockBodyScroll } from '@/shared/hooks/useLockBodyScroll';
 import { Journey } from '../types/journey';
+import { useJourneyPhotos } from '../hooks/useJourneyPhotos';
 
 /** 뒤로 가기(tabler:chevron-left) */
 function ChevronLeftIcon({ className }: { className?: string }) {
@@ -32,6 +33,7 @@ interface PhotoAlbumSheetProps {
  */
 export function PhotoAlbumSheet({ journey, onClose }: PhotoAlbumSheetProps) {
   useLockBodyScroll();
+  const { data: photos = [], isLoading, isError, refetch } = useJourneyPhotos(journey.id);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -62,27 +64,45 @@ export function PhotoAlbumSheet({ journey, onClose }: PhotoAlbumSheetProps) {
           </span>
         </header>
 
-        {/* 본문: 사진 개수 + 2열 그리드 */}
+        {/* 본문: 사진 개수 + 2열 그리드. 로딩·에러 중에는 개수를 숨긴다(목록 화면과 같은 규칙). */}
         <div className="flex-1 overflow-y-auto px-6 pb-6 pt-[22px]">
           <p className="text-base font-semibold tracking-[0.16px] text-black">
-            방문한 장소 사진 <span className="ml-2 text-[#5c6f2b]">{journey.photos.length}</span>
+            방문한 장소 사진
+            {!isLoading && !isError && <span className="ml-2 text-[#5c6f2b]">{photos.length}</span>}
           </p>
 
-          {journey.photos.length === 0 ? (
+          {isLoading ? (
+            <div className="mt-[22px] flex justify-center">
+              <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#89986d]" />
+            </div>
+          ) : isError ? (
+            <div className="mt-[22px] flex flex-col items-center gap-4">
+              <p className="text-sm font-semibold text-[#2c3930]">사진을 불러오지 못했어요</p>
+              <button
+                onClick={() => refetch()}
+                className="h-[38px] rounded-[19px] bg-[#89986d] px-6 text-sm font-bold text-white"
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : photos.length === 0 ? (
             <p className="mt-[22px] text-sm font-medium text-[#2c3930]">
               이 동선에는 아직 사진이 없어요
             </p>
           ) : (
             <ul className="mt-[22px] grid grid-cols-2 gap-5">
-              {journey.photos.map((photo) => (
-                <li key={photo.id} className="aspect-square overflow-hidden bg-[#d9d9d9]">
-                  {photo.url && (
-                    <img
-                      src={photo.url}
-                      alt={photo.placeName ?? ''}
-                      className="size-full object-cover"
-                    />
-                  )}
+              {photos.map((photo) => (
+                <li key={photo.treeId} className="aspect-square overflow-hidden bg-[#d9d9d9]">
+                  {/*
+                    사진 없는 장소는 앱 아이콘으로 대체한다(백엔드가 url=null 로 내려주는 자리).
+                    아이콘 이미지에 둥근 모서리가 그려져 있어 scale 로 살짝 키워 잘라낸다 —
+                    타임라인 썸네일과 같은 처리(TimelineCard).
+                  */}
+                  <img
+                    src={photo.url ?? '/apple-touch-icon.jpg'}
+                    alt={photo.placeName}
+                    className={`size-full object-cover ${photo.url ? '' : 'scale-[1.12]'}`}
+                  />
                 </li>
               ))}
             </ul>

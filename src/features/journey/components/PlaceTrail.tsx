@@ -28,8 +28,9 @@ interface PlaceTrailProps {
 export function PlaceTrail({ places, className }: PlaceTrailProps) {
   return (
     <div className={`flex items-start gap-2 ${className ?? ''}`}>
+      {/* 서버가 장소 식별자를 주지 않는다(이름·기분뿐). 순서가 곧 동선이라 index 를 키로 쓴다. */}
       {places.map((place, index) => (
-        <Fragment key={place.id}>
+        <Fragment key={index}>
           {index > 0 && (
             <span className="mt-3 h-0 flex-1 border-t border-dashed border-[#8d8d8d]" />
           )}
