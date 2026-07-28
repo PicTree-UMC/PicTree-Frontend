@@ -8,9 +8,10 @@ import { useCameraStream, type FacingMode } from './hooks/useCameraStream';
 import { useRecordForm } from './hooks/useRecordForm';
 import { captureFrame } from './lib/captureFrame';
 import { CameraControls } from './components/CameraControls';
-import { CaptionEditor } from './components/CaptionEditor';
+import { CommentField } from './components/CommentField';
+import { PlaceNameBar } from './components/PlaceNameBar';
 import { RecordForm } from './components/RecordForm';
-import { PinIcon, XIcon } from './components/icons';
+import { XIcon } from './components/icons';
 
 // 배율 조정 옵션
 const ZOOM_STEPS = [1, 1.5, 2] as const;
@@ -96,15 +97,8 @@ export function CameraPage() {
 
           {capturedPhoto ? (
             <>
-              <div className="flex flex-1 justify-center">
-                {placeName && (
-                  <div className="animate-fade-in-down flex items-center gap-1 rounded-full bg-black/40 px-3 py-1.5">
-                    <PinIcon />
-                    <span className="max-w-[160px] truncate text-base text-white">{placeName}</span>
-                  </div>
-                )}
-              </div>
-              <span className="animate-fade-in-down shrink-0 text-sm text-white/70">{today}</span>
+              <div className="flex-1" />
+              <span className="animate-fade-in-down shrink-0 text-sm text-white/80">{today}</span>
             </>
           ) : (
             <>
@@ -117,8 +111,18 @@ export function CameraPage() {
           )}
         </header>
 
-        {/* 작성 모드 폼 / 그 외에는 카메라가 비치는 투명 영역(+ 배율 배지) */}
-        {isWriteMode && !capturedPhoto ? (
+        {/* 촬영 검토: 중앙 한줄평 + 하단 장소명 바 / 작성 모드 폼 / 라이브 프리뷰(배율 배지) */}
+        {capturedPhoto ? (
+          <>
+            <CommentField comment={comment} onCommentChange={setComment} />
+            <PlaceNameBar
+              selectedEmoji={selectedEmoji}
+              onSelectEmoji={setSelectedEmoji}
+              placeName={placeName}
+              onPlaceNameChange={setPlaceName}
+            />
+          </>
+        ) : isWriteMode ? (
           <RecordForm
             selectedEmoji={selectedEmoji}
             onSelectEmoji={setSelectedEmoji}
@@ -129,27 +133,13 @@ export function CameraPage() {
           />
         ) : (
           <div className="relative flex-1">
-            {!capturedPhoto && (
-              <button
-                onClick={cycleZoom}
-                className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs text-white"
-              >
-                {zoom.toFixed(1)}x
-              </button>
-            )}
+            <button
+              onClick={cycleZoom}
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs text-white"
+            >
+              {zoom.toFixed(1)}x
+            </button>
           </div>
-        )}
-
-        {/* 촬영 검토: 사진 위 캡션(이모지 + 한줄평) */}
-        {capturedPhoto && (
-          <CaptionEditor
-            selectedEmoji={selectedEmoji}
-            onSelectEmoji={setSelectedEmoji}
-            placeName={placeName}
-            onPlaceNameChange={setPlaceName}
-            comment={comment}
-            onCommentChange={setComment}
-          />
         )}
 
         <CameraControls
