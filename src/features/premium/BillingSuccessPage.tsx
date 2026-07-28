@@ -47,7 +47,10 @@ export function BillingSuccessPage() {
         sessionStorage.removeItem(PENDING_PLAN_STORAGE_KEY);
         // TODO: 완료 화면(PaymentCompleteModal)로 전환하거나 구독 상태를 무효화 후 이동
         navigate(ROUTES.blog, { replace: true });
-      } catch {
+      } catch (err) {
+        // 화면엔 "결제 확인 실패" 한 줄만 뜨므로, 어느 단계(POST /billing-keys vs
+        // /subscriptions)에서 뭐가 터졌는지는 이 로그가 유일한 단서다. 삼키지 않는다.
+        console.error('[billing-success] 빌링키/구독 시작 실패:', err);
         setStatus('error');
       }
     })();
