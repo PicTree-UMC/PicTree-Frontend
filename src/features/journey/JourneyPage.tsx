@@ -1,15 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Journey } from './types/journey';
 import { BottomSheet } from './components/BottomSheet';
 import { PhotoAlbumSheet } from './components/PhotoAlbumSheet';
 import { RenameModal } from './components/RenameModal';
 import { useJourneys } from './hooks/useJourneys';
 import { useDeleteJourney } from './hooks/useDeleteJourney';
 import { useRenameJourney } from './hooks/useRenameJourney';
-import { JourneyList } from './components/JourneyList';
+import { JourneyChips } from './components/JourneyChips';
+import { JourneyRoadmap } from './components/JourneyRoadmap';
 import { DeleteModal } from './components/DeleteModal';
-import { PremiumBanner } from './components/PremiumBanner';
 import { ROUTES } from '../../shared/constants/routes';
 
 /** 빈 상태 안내 카드 아이콘(디자인 octicon:feed-plus-16). 인라인 SVG. */
@@ -22,13 +21,43 @@ function PlusBadge({ className }: { className?: string }) {
   );
 }
 
+/** 더보기(⋯) 아이콘 — 선택된 동선의 액션 시트를 연다. */
+function MoreIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
+      <circle cx="5" cy="12" r="1.8" />
+      <circle cx="12" cy="12" r="1.8" />
+      <circle cx="19" cy="12" r="1.8" />
+    </svg>
+  );
+}
+
+/** 삭제 버튼 안 휴지통 아이콘(디자인 ix:trashcan). 인라인 SVG. */
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 7h16M10 11v6M14 11v6M5 7l1 13a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-13M9 7V4h6v3" />
+    </svg>
+  );
+}
+
 export function JourneyPage() {
   const navigate = useNavigate();
   // 조회는 useQuery, 삭제·이름변경은 useMutation 으로 처리한다.
   const { data: journeys = [], isLoading, isError, refetch } = useJourneys();
   const deleteMutation = useDeleteJourney();
   const renameMutation = useRenameJourney();
-  const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
+  // 칩으로 선택된 동선. 로드맵·액션 시트·삭제 모두 이 동선을 대상으로 한다.
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -36,22 +65,23 @@ export function JourneyPage() {
   /** 앨범에서 되돌아온 경우 바텀시트를 애니메이션 없이 즉시 띄운다. */
   const [animateBottomSheet, setAnimateBottomSheet] = useState(true);
 
+  // 목록이 로드되거나 선택한 동선이 삭제되면 첫 동선으로 선택을 맞춘다.
+  useEffect(() => {
+    if (journeys.length === 0) {
+      if (selectedId !== null) setSelectedId(null);
+      return;
+    }
+    if (selectedId === null || !journeys.some((journey) => journey.id === selectedId)) {
+      setSelectedId(journeys[0].id);
+    }
+  }, [journeys, selectedId]);
+
+  const selectedJourney = journeys.find((journey) => journey.id === selectedId) ?? null;
+
   const handleDelete = () => {
     if (!selectedJourney) return;
     deleteMutation.mutate(selectedJourney.id);
     setShowDeleteModal(false);
-    setSelectedJourney(null);
-  };
-
-  const handleClick = (journey: Journey) => {
-    setSelectedJourney(journey);
-    setAnimateBottomSheet(true);
-    setShowBottomSheet(true);
-  };
-
-  const handleClose = () => {
-    setShowBottomSheet(false);
-    setSelectedJourney(null);
   };
 
   const handleRename = (newTitle: string) => {
@@ -59,26 +89,13 @@ export function JourneyPage() {
     renameMutation.mutate({ id: selectedJourney.id, title: newTitle });
     setShowRenameModal(false);
     setShowBottomSheet(false);
-    setSelectedJourney(null);
   };
 
   const isEmpty = journeys.length === 0;
 
   return (
     <div className="flex min-h-full flex-col bg-[#fffcef]">
-      {/* 헤더: 세이지 밴드 + 플랜 요약 + 프리미엄 배너 (목록/빈 상태 공통) */}
-      <header className="bg-[#c5d89d] px-[31px] pb-4 pt-safe">
-        <h1 className="pt-9 text-xl font-bold text-black">저장된 동선</h1>
-        <p className="mt-1 text-base font-medium text-black">
-          무료플랜{!isLoading && !isError && ` · ${journeys.length}개 저장됨`}
-        </p>
-        <div className="mt-4">
-          <PremiumBanner />
-        </div>
-      </header>
-
-      {/* 본문: 로딩 → 에러 → 빈 상태 → 목록 순으로 분기 */}
-      <div className="flex flex-1 flex-col px-5 py-6">
+      <div className="flex flex-1 flex-col px-5 pb-6 pt-safe">
         {isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
             <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#89986d]" />
@@ -97,7 +114,7 @@ export function JourneyPage() {
             </button>
           </div>
         ) : isEmpty ? (
-          <div className="flex flex-col gap-[30px]">
+          <div className="flex flex-1 flex-col justify-center gap-[30px]">
             <p className="text-center text-xl font-bold text-[#111]">저장된 동선이 없어요</p>
             <button
               onClick={() => navigate(ROUTES.journeyView)}
@@ -105,7 +122,6 @@ export function JourneyPage() {
             >
               동선 보기로 이동
             </button>
-            <hr className="border-t border-[#c5d89d]" />
             <div className="flex items-center gap-4 rounded-[12px] border-2 border-[#c5d89d] bg-white px-5 py-6">
               <PlusBadge className="size-10 shrink-0" />
               <p className="text-[15px] font-semibold text-[#2c3930]">
@@ -114,21 +130,62 @@ export function JourneyPage() {
             </div>
           </div>
         ) : (
-          <JourneyList
-            journeys={journeys}
-            onDelete={(journey) => {
-              setSelectedJourney(journey);
-              setShowDeleteModal(true);
-            }}
-            onClick={handleClick}
-          />
+          <>
+            {/* 칩 셀렉터: 저장된 동선 중 하나를 고른다. */}
+            <div className="pt-4">
+              <JourneyChips
+                journeys={journeys}
+                selectedId={selectedId}
+                onSelect={(journey) => setSelectedId(journey.id)}
+              />
+            </div>
+
+            {selectedJourney && (
+              <>
+                {/* 선택 동선 메타 + 액션(더보기 / 삭제) */}
+                <div className="mt-5 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-[#2c3930]">{selectedJourney.date}</p>
+                    <p className="text-[11px] font-light text-[#8d8d8d]">
+                      {selectedJourney.places.length}개 장소
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setAnimateBottomSheet(true);
+                        setShowBottomSheet(true);
+                      }}
+                      aria-label="동선 더보기"
+                      className="flex size-9 items-center justify-center rounded-full border border-[#c5d89d] bg-white text-[#2c3930]"
+                    >
+                      <MoreIcon className="size-5" />
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteModal(true)}
+                      aria-label="동선 삭제"
+                      className="flex size-9 items-center justify-center rounded-full border-[1.5px] border-[#ff9797] text-[#ff9797]"
+                    >
+                      <TrashIcon className="size-[18px]" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* 로드맵: 장소 이동을 사진 노드 + 점선으로 표현.
+                    key 로 동선이 바뀔 때마다 등장 애니메이션을 다시 재생한다. */}
+                <div className="mt-6">
+                  <JourneyRoadmap key={selectedJourney.id} journey={selectedJourney} />
+                </div>
+              </>
+            )}
+          </>
         )}
       </div>
 
       {showBottomSheet && selectedJourney && (
         <BottomSheet
           journey={selectedJourney}
-          onClose={handleClose}
+          onClose={() => setShowBottomSheet(false)}
           animateIn={animateBottomSheet}
           onMapView={() => navigate(ROUTES.journeyView)}
           onPhotoGallery={() => {
@@ -165,10 +222,7 @@ export function JourneyPage() {
       {showDeleteModal && selectedJourney && (
         <DeleteModal
           journeyTitle={selectedJourney.title}
-          onClose={() => {
-            setShowDeleteModal(false);
-            setSelectedJourney(null);
-          }}
+          onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDelete}
         />
       )}
