@@ -73,11 +73,16 @@ interface UseTimelineResult {
 export const useTimeline = (page = 1, size = TIMELINE_PAGE_SIZE): UseTimelineResult => {
   const accessToken = useAuthStore((state) => state.accessToken);
   const hasToken = Boolean(accessToken);
+  /**
+   * 토큰이 없어도 개발 환경에서는 쿼리를 돌린다 — `timelineApi` 가 목데이터로
+   * 폴백하므로, 여기서 막아 버리면 로컬에서 화면이 계속 비어 있게 된다.
+   */
+  const isEnabled = hasToken || import.meta.env.DEV;
 
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: timelineKeys.list(page, size),
     queryFn: () => getTimelines(accessToken ?? "", { page, size }),
-    enabled: hasToken,
+    enabled: isEnabled,
     /**
      * 4xx 는 재시도하지 않는다. 401(토큰 무효)·400(잘못된 요청)은 같은 요청을
      * 반복해도 결과가 바뀌지 않는다. 5xx·네트워크 오류는 기본값(1회)을 쓴다.
@@ -103,11 +108,11 @@ export const useTimeline = (page = 1, size = TIMELINE_PAGE_SIZE): UseTimelineRes
      */
     plan: "free",
     /**
-     * 토큰이 없으면 쿼리가 꺼져 있어 `isPending` 이 계속 true 다.
-     * 그대로 내보내면 화면이 로딩 스피너에서 영영 안 벗어나므로 로딩으로 치지 않는다.
+     * 쿼리가 꺼져 있으면 `isPending` 이 계속 true 다. 그대로 내보내면 화면이
+     * 로딩 스피너에서 영영 안 벗어나므로 로딩으로 치지 않는다.
      * (`ProtectedRoute` 가 토큰을 보장하니 실제로는 닿기 어려운 경로다)
      */
-    isLoading: hasToken && isPending,
+    isLoading: isEnabled && isPending,
     isError,
     refetch,
   };
