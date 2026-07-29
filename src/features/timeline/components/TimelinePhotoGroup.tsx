@@ -39,21 +39,25 @@ export function TimelinePhotoGroup({ group, onOpenDetail }: Props) {
             </button>
 
             {/*
-              장소명을 먼저 보여주고 더보기를 둔다. 사진만으로는 어디였는지 알 수
-              없어 매번 열어봐야 했다. 두 줄까지만 보이고 넘치면 말줄임한다 —
-              칸 높이가 제각각이면 그리드가 어긋난다.
-            */}
-            <p className="line-clamp-2 text-[12px] font-semibold leading-[16px] text-[#2C3930]">
-              {record.placeName}
-            </p>
+              장소명과 더보기를 한 줄에 좌우로 둔다. 사진만으로는 어디였는지 알 수
+              없어 장소명을 먼저 읽히게 하고, 더보기는 오른쪽 끝에 붙인다.
 
-            <button
-              type="button"
-              onClick={() => onOpenDetail(record)}
-              className="self-start text-[11px] text-[#8D8D8D] underline underline-offset-2"
-            >
-              더보기
-            </button>
+              칸 폭이 좁아 장소명이 길면 더보기를 밀어낸다 — 장소명에 min-w-0 +
+              truncate 를 줘서 말줄임되게 하고, 더보기에는 shrink-0 을 줘서
+              항상 자기 자리를 지키게 한다.
+            */}
+            <div className="flex items-baseline gap-1">
+              <p className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#2C3930]">
+                {record.placeName}
+              </p>
+              <button
+                type="button"
+                onClick={() => onOpenDetail(record)}
+                className="shrink-0 text-[11px] text-[#8D8D8D] underline underline-offset-2"
+              >
+                더보기
+              </button>
+            </div>
           </li>
         ))}
       </ul>
