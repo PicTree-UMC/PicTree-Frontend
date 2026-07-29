@@ -12,6 +12,7 @@ export const ROUTES = {
   favorites: '/profile/favorites',
   privacy: '/profile/privacy',
   blog: '/blog',
+  blogCreate: '/blog/create',
   premium: '/premium',
   journey: '/journey',
   journeyView: '/journey/view',
