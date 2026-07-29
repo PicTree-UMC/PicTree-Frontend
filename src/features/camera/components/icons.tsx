@@ -35,6 +35,14 @@ export function XIcon() {
   );
 }
 
+export function TapIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 9V5.25a1.75 1.75 0 00-3.5 0V13m0 0V8.25a1.75 1.75 0 00-3.5 0v6.5l-1.2-1.6a1.6 1.6 0 00-2.6 1.86l2.5 4a5 5 0 004.3 2.49H14a5 5 0 005-5V9.5a1.75 1.75 0 00-3.5 0V13" />
+    </svg>
+  );
+}
+
 export function PinIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

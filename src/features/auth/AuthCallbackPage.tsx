@@ -4,6 +4,7 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../../shared/constants/routes';
 import { useToast } from '../../shared/components';
 import { socialLogin } from './api/authApi';
+import { clearLogoutRequested } from './lib/logoutFlag';
 import {
   clearSavedOAuthProvider,
   getOAuthRedirectUri,
@@ -50,6 +51,7 @@ export function AuthCallbackPage() {
 
         setAuth(response.data);
         clearSavedOAuthProvider();
+        clearLogoutRequested(); // 새 세션이 생겼으니 차단 해제 (리다이렉트로 진입한 경우 대비)
 
         if (response.data.needTermsAgreement) {
           navigate(`${ROUTES.auth}?step=terms`, { replace: true });
@@ -69,7 +71,9 @@ export function AuthCallbackPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#FFFDF4] px-6 text-[#2C3930]">
+    // min-h-full: 뷰포트 단위를 아는 곳은 AppShell 하나다. 여기서 100vh 를 쓰면
+    // 주소창이 떠 있을 때 셸 컬럼(h-dvh)을 넘긴다. 가드들의 '확인 중' 화면과 같은 규칙.
+    <main className="flex min-h-full items-center justify-center bg-[#FFFDF4] px-6 text-[#2C3930]">
       <p className="font-['KOROAD'] text-[1rem] font-bold">로그인 처리 중입니다.</p>
     </main>
   );

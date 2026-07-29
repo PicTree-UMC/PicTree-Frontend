@@ -1,3 +1,4 @@
+import { clearLogoutRequested } from './logoutFlag';
 import type { SocialLoginProvider } from '../types/auth';
 
 const OAUTH_PROVIDER_STORAGE_KEY = 'pictree.oauthProvider';
@@ -42,6 +43,9 @@ export function redirectToOAuth(provider: SocialLoginProvider) {
       response_type: 'code',
     });
 
+    // 실제로 인증 페이지로 떠나는 시점에만 차단을 푼다.
+    // (키 누락 등으로 위에서 throw 되면 플래그는 그대로 유지돼야 한다)
+    clearLogoutRequested();
     window.location.assign(`https://kauth.kakao.com/oauth/authorize?${params.toString()}`);
     return;
   }
@@ -61,5 +65,6 @@ export function redirectToOAuth(provider: SocialLoginProvider) {
     prompt: 'select_account',
   });
 
+  clearLogoutRequested();
   window.location.assign(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
 }
