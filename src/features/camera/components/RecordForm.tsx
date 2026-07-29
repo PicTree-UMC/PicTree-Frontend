@@ -1,4 +1,4 @@
-import { EmojiPicker } from './EmojiPicker';
+import { EmojiPicker } from '@/shared/components/EmojiPicker';
 
 interface RecordFormProps {
   selectedEmoji: string | null;

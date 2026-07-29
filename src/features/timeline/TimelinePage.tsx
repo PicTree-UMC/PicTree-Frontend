@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useDeleteRecord } from "./hooks/useDeleteRecord";
 import { useTimeline } from "./hooks/useTimeline";
+import { useUpdateTimeline } from "./hooks/useUpdateTimeline";
 import type { TimelineSort } from "./lib/timelineQuery";
 import type { TimelineRecord } from "./types/timeline.types";
 import { TimelineSearchBar } from "./components/TimelineSearchBar";
 import { TimelineSortTabs } from "./components/TimelineSortTabs";
 import { TimelinePhotoGroup } from "./components/TimelinePhotoGroup";
 import { RecordDetailSheet } from "./components/RecordDetailSheet";
+import { TimelineEditModal } from "./components/TimelineEditModal";
 import { DeleteRecordModal } from "./components/DeleteRecordModal";
 import { useToast } from "@/shared/components";
 
@@ -16,15 +18,32 @@ export function TimelinePage() {
 
   const { groups, visibleCount, isLoading, isError } = useTimeline({ keyword, sort });
   const deleteMutation = useDeleteRecord();
+  const updateMutation = useUpdateTimeline();
   const { showToast } = useToast();
 
   const [detailTarget, setDetailTarget] = useState<TimelineRecord | null>(null);
+  const [editTarget, setEditTarget] = useState<TimelineRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<TimelineRecord | null>(null);
 
   const handleConfirmDelete = () => {
     if (!deleteTarget) return;
     deleteMutation.mutate(deleteTarget.id);
     setDeleteTarget(null);
+  };
+
+  const handleSaveEdit = (values: { title: string; content: string }) => {
+    if (!editTarget) return;
+
+    updateMutation.mutate(
+      { timelineId: editTarget.id, payload: values },
+      {
+        // 실패는 훅이 토스트로 알린다. 성공했을 때만 닫아야 입력값이 안 날아간다.
+        onSuccess: () => {
+          setEditTarget(null);
+          showToast("기록을 수정했어요.", "success");
+        },
+      },
+    );
   };
 
   // 검색 결과가 없는 것과 기록 자체가 없는 것은 다른 상황이라 문구를 나눈다.
@@ -74,13 +93,23 @@ export function TimelinePage() {
           record={detailTarget}
           onClose={() => setDetailTarget(null)}
           onEdit={() => {
-            showToast("기록 수정은 준비 중이에요.", "info");
+            // 상세 시트는 닫고 수정 모달로 넘긴다. 두 시트가 겹쳐 뜨지 않게.
+            setEditTarget(detailTarget);
             setDetailTarget(null);
           }}
           onDelete={() => {
             setDeleteTarget(detailTarget);
             setDetailTarget(null);
           }}
+        />
+      )}
+
+      {editTarget && (
+        <TimelineEditModal
+          record={editTarget}
+          isSaving={updateMutation.isPending}
+          onClose={() => setEditTarget(null)}
+          onSave={handleSaveEdit}
         />
       )}
 
