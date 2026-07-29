@@ -21,6 +21,12 @@ export interface TimelineRecord {
   placeName: string;
   comment: string;
   recordedAt: string;
+  /**
+   * 서버에 기록이 만들어진 시각. `recordedAt`(방문 시각)과 다르다 —
+   * 지난 여행을 나중에 올릴 수 있어서, 정렬 기준을 "최신순/등록순" 으로 나눈다.
+   * 서버가 안 주는 경우가 있어 없으면 `recordedAt` 으로 대체한다.
+   */
+  createdAt?: string;
   thumbnailUrl?: string | null;
   lat?: number;
   lng?: number;
@@ -63,6 +69,8 @@ export interface TimelineApiRecord {
   content?: string | null;
   category?: string;
   visitedAt?: string;
+  /** 서버 구현에만 있다 (`TimelineResponseDto.createdAt`) */
+  createdAt?: string;
 
   /** 명세서 — 평면 필드 */
   treeName?: string;
