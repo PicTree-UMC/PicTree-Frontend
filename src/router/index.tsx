@@ -4,6 +4,7 @@ import { AuthPage } from '../features/auth/AuthPage';
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
 import { PublicOnlyRoute } from '../features/auth/components/PublicOnlyRoute';
 import { BlogPage } from '../features/blog/BlogPage';
+import { BlogCreatePage } from '../features/blog/BlogCreatePage';
 import { CameraPage } from '../features/camera/CameraPage';
 import { HomePage } from '../features/home/HomePage';
 import { JourneyPage } from '../features/journey/JourneyPage';
@@ -50,6 +51,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.camera,
         element: <CameraPage />,
+      },
+      {
+        path: ROUTES.blogCreate,
+        element: <BlogCreatePage />,
       },
       {
         element: <Layout />,

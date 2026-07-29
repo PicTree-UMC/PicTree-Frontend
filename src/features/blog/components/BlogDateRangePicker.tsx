@@ -46,14 +46,14 @@ export function BlogDateRangePicker({ startDate, endDate, activityByDate, onClos
       <section className="w-full rounded-[20px] bg-[#fffdf4] p-5" role="dialog" aria-modal="true" aria-labelledby="blog-calendar-title" onClick={(event) => event.stopPropagation()}>
         <div className="flex items-center justify-between">
           <button type="button" onClick={() => moveMonth(-1)} aria-label="이전 달" className="p-2 text-2xl">‹</button>
-          <h2 id="blog-calendar-title" className="text-[18px] font-bold">{year}년 {month}월</h2>
+          <h2 id="blog-calendar-title" className="text-[18px] font-medium">{year}년 {month}월</h2>
           <button type="button" onClick={() => moveMonth(1)} aria-label="다음 달" className="p-2 text-2xl">›</button>
         </div>
         <p className="mb-3 text-center text-[11px] text-[#777]">{selectingStart ? '시작일을 선택해주세요' : '종료일을 선택해주세요'}</p>
         <CalendarGrid year={year} month={month} activityByDate={activityByDate} startDate={rangeStart} endDate={rangeEnd} onDateSelect={selectDate} />
         <div className="mt-4 flex gap-3">
-          <button type="button" className="h-11 flex-1 rounded-xl bg-[#e4e5e6] font-bold text-[#60655c]" onClick={onClose}>취소</button>
-          <button type="button" className="h-11 flex-1 rounded-xl bg-[#879b54] font-bold text-white disabled:opacity-40" disabled={!rangeStart || !rangeEnd} onClick={() => onApply(rangeStart, rangeEnd)}>적용</button>
+          <button type="button" className="h-11 flex-1 rounded-xl bg-[#e4e5e6] font-medium text-[#60655c]" onClick={onClose}>취소</button>
+          <button type="button" className="h-11 flex-1 rounded-xl bg-[#879b54] font-medium text-white disabled:opacity-40" disabled={!rangeStart || !rangeEnd} onClick={() => onApply(rangeStart, rangeEnd)}>적용</button>
         </div>
       </section>
     </div>,

@@ -1,39 +1,28 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { BlogComposer } from './components/BlogComposer';
-import { BlogHeader } from './components/BlogHeader';
-import { useBlogFlow } from './hooks/useBlogFlow';
-import { ROUTES } from '../../shared/constants/routes';
-import { PremiumUpsellSheet } from './components/PremiumUpsellSheet';
+import { useBlogDraftStore } from './store/blogDraftStore';
+import { BlogCreateFab } from './components/BlogCreateFab';
+import { BlogEmptyState } from './components/BlogEmptyState';
+import { SavedBlogCard } from './components/SavedBlogCard';
 
 export function BlogPage() {
-  const flow = useBlogFlow();
-  const navigate = useNavigate();
-  const [upsellOpen, setUpsellOpen] = useState(false);
-  const openPremium = () => navigate(ROUTES.premium);
+  const savedBlogs = useBlogDraftStore((state) => state.savedBlogs);
 
   return (
     <main className="min-h-full w-full bg-[#fffdf4] text-[#20251f]">
-      <BlogHeader isPremium={flow.isPremium} activePlan={flow.activePlan} onUpgrade={openPremium} />
-      <BlogComposer
-        status={flow.blogStatus}
-        isPremium={flow.isPremium}
-        startDate={flow.startDate}
-        endDate={flow.endDate}
-        savedAt={flow.savedAt}
-        trees={flow.trees}
-        activityByDate={flow.activityByDate}
-        onDateRangeChange={flow.setDateRange}
-        onCreate={flow.isPremium ? flow.generateDraft : () => setUpsellOpen(true)}
-        onSave={flow.saveDraft}
-        onDelete={flow.deleteDraft}
-      />
-      {upsellOpen && (
-        <PremiumUpsellSheet
-          onClose={() => setUpsellOpen(false)}
-          onUpgrade={openPremium}
-        />
+      <header className="px-5 pb-2 pt-[68px]">
+        <h1 className="text-[22px] font-bold">블로그</h1>
+      </header>
+
+      {savedBlogs.length > 0 ? (
+        <section className="flex flex-col px-5 pb-[140px] pt-1">
+          {savedBlogs.map((blog) => (
+            <SavedBlogCard key={blog.id} blog={blog} />
+          ))}
+        </section>
+      ) : (
+        <BlogEmptyState />
       )}
+
+      <BlogCreateFab />
     </main>
   );
 }

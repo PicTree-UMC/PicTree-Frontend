@@ -31,6 +31,14 @@ export function AdOffIcon() {
   return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M12.2 8.99922L10.2 6.99922H13C14.1 6.99922 15 7.89922 15 8.99922V11.7992L13 9.79922V8.99922H12.2ZM23 8.99922V6.99922H19C17.9 6.99922 17 7.89922 17 8.99922V10.9992C17 12.0992 17.9 12.9992 19 12.9992H21V14.9992H18.2L20.2 16.9992H21C22.1 16.9992 23 16.0992 23 14.9992V12.9992C23 11.8992 22.1 10.9992 21 10.9992H19V8.99922H23ZM22.1 21.4992L20.8 22.7992L14.4 16.3992C14.1 16.6992 13.6 16.9992 13 16.9992H9V10.8992L7 8.89922V16.9992H5V12.9992H3V16.9992H1V8.99922C1 7.89922 1.9 6.99922 3 6.99922H5.1L1.1 2.99922L2.4 1.69922L22.1 21.4992ZM5 8.99922H3V10.9992H5V8.99922ZM13 14.8992L11 12.8992V14.9992H13V14.8992Z" fill="#111111"/></svg>;
 }
 
+export function PencilIcon({ size = 26 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>;
+}
+
+export function EmptyBlogIcon() {
+  return <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#bcd08c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5Z" /><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5Z" /><path d="M15.5 8.5h1.5M15.5 11.5h1.5M15.5 14.5h1.5M7 8.5h1.5M7 11.5h1.5M7 14.5h1.5" /></svg>;
+}
+
 export function DeleteIcon({ size = 20 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 10v7m4-7v7"/></svg>;
 }
