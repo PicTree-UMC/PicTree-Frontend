@@ -1,6 +1,5 @@
 import type { TimelineRecord } from "../types/timeline.types";
 import penIcon from "../assets/penLine.svg";
-import photoIcon from "../assets/photo.svg";
 import starIcon from "../assets/star.svg";
 import trashIcon from "../assets/trashcan.svg";
 
@@ -17,7 +16,6 @@ interface Props {
   record: TimelineRecord;
   onClose: () => void;
   onEdit: () => void;
-  onChangePhoto: () => void;
   onFavorite: () => void;
   onDelete: () => void;
 }
@@ -47,7 +45,6 @@ export function RecordActionSheet({
   record,
   onClose,
   onEdit,
-  onChangePhoto,
   onFavorite,
   onDelete,
 }: Props) {
@@ -86,12 +83,8 @@ export function RecordActionSheet({
 
         {/* 액션 카드 */}
         <div className="rounded-[18px] bg-white px-4 py-1 shadow-[0px_4px_16px_0px_rgba(0,0,0,0.05)]">
+          {/* 시안 기준 2개다. "사진 보기 / 사진 변경" 은 이전 시안에만 있던 항목이라 뺐다. */}
           <ActionRow icon={penIcon} label="기록 수정" onClick={onEdit} />
-          <ActionRow
-            icon={photoIcon}
-            label="사진 보기 / 사진 변경"
-            onClick={onChangePhoto}
-          />
           <ActionRow icon={starIcon} label="즐겨찾기 추가" onClick={onFavorite} />
         </div>
 

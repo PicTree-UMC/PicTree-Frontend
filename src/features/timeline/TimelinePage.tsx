@@ -7,26 +7,57 @@ import StorageBanner from "./components/StorageBanner";
 import TimelineGroup from "./components/TimelineGroup";
 import { RecordActionSheet } from "./components/RecordActionSheet";
 import { DeleteRecordModal } from "./components/DeleteRecordModal";
+import { TimelineEditModal } from "./components/TimelineEditModal";
+import { useUpdateTimeline } from "./hooks/useUpdateTimeline";
 import { useToast } from "@/shared/components";
 
 export function TimelinePage() {
   const { groups, totalCount, plan, isLoading, isError } = useTimeline();
   const deleteMutation = useDeleteRecord();
+  const updateMutation = useUpdateTimeline();
   const { showToast } = useToast();
 
   const [menuTarget, setMenuTarget] = useState<TimelineRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<TimelineRecord | null>(null);
+  const [editTarget, setEditTarget] = useState<TimelineRecord | null>(null);
 
-  // 저장 용량 배너 값 (mock — 백엔드 연동 시 교체)
+  /**
+   * 사진 저장 용량 배너.
+   *
+   * ⚠️ 사용량을 알려주는 API 가 없다. 사진 크기(`fileSize`)는 이미지마다 있지만
+   * `GET /trees/{treeId}/images` 로 나무별로만 조회돼, 총합을 구하려면 나무 전체를
+   * 순회해야 한다 (배너 하나에 N+1 요청). 그래서 지어내지 않고 `null` 로 둔다
+   * — 화면엔 "-" 가 뜨고 막대는 비어 있다.
+   *
+   * 서버가 사용량을 주면 `usedBytes` 에 그 값만 넣으면 된다.
+   *
+   * 상한값도 시안 문구에서 가져온 상수다. 요금제 테이블(`plan_features`)이 채워지면
+   * 거기서 읽어와야 한다.
+   */
   const storage =
     plan === "premium"
-      ? { usedLabel: "50MB", totalLabel: "20GB", planLabel: "맥스", usedRatio: 50 / 20000 }
-      : { usedLabel: "50MB", totalLabel: "100MB", planLabel: "무료", usedRatio: 50 / 100 };
+      ? { usedBytes: null, totalBytes: 20 * 1024 ** 3, planLabel: "맥스" }
+      : { usedBytes: null, totalBytes: 100 * 1024 ** 2, planLabel: "무료" };
 
   const handleConfirmDelete = () => {
     if (!deleteTarget) return;
     deleteMutation.mutate(deleteTarget.id);
     setDeleteTarget(null);
+  };
+
+  const handleSaveEdit = (values: { title: string; content: string }) => {
+    if (!editTarget) return;
+
+    updateMutation.mutate(
+      { timelineId: editTarget.id, payload: values },
+      {
+        // 실패는 훅이 토스트로 알린다. 성공했을 때만 닫아야 입력값이 안 날아간다.
+        onSuccess: () => {
+          setEditTarget(null);
+          showToast("기록을 수정했어요.", "success");
+        },
+      },
+    );
   };
 
   return (
@@ -68,11 +99,7 @@ export function TimelinePage() {
           record={menuTarget}
           onClose={() => setMenuTarget(null)}
           onEdit={() => {
-            showToast("기록 수정은 준비 중이에요.", "info");
-            setMenuTarget(null);
-          }}
-          onChangePhoto={() => {
-            showToast("사진 보기/변경은 준비 중이에요.", "info");
+            setEditTarget(menuTarget);
             setMenuTarget(null);
           }}
           onFavorite={() => {
@@ -83,6 +110,15 @@ export function TimelinePage() {
             setDeleteTarget(menuTarget);
             setMenuTarget(null);
           }}
+        />
+      )}
+
+      {editTarget && (
+        <TimelineEditModal
+          record={editTarget}
+          isSaving={updateMutation.isPending}
+          onClose={() => setEditTarget(null)}
+          onSave={handleSaveEdit}
         />
       )}
 

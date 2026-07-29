@@ -1,7 +1,7 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { flushSync } from 'react-dom';
 import { useKeyboardOffset } from '@/shared/hooks/useKeyboardOffset';
-import { EmojiPicker } from './EmojiPicker';
+import { EmojiPicker } from '@/shared/components/EmojiPicker';
 import { PinIcon, XIcon } from './icons';
 
 interface PlaceNameBarProps {
