@@ -46,6 +46,8 @@ const toTimelineRecord = (record: TimelineApiRecord): TimelineRecord => ({
   placeName: record.title ?? record.treeName ?? record.tree?.name ?? "",
   comment: record.content ?? "",
   recordedAt: record.visitedAt ?? "",
+  // 등록순 정렬용. 서버가 안 주면 방문 시각으로 대체해 정렬이 무너지지 않게 한다.
+  createdAt: record.createdAt ?? record.visitedAt ?? "",
   thumbnailUrl: record.thumbnailUrl ?? null,
   treeId: record.treeId ?? record.tree?.id ?? null,
   category: record.category,

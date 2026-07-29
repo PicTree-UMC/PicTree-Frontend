@@ -8,6 +8,12 @@ import type {
   TimelineRecord,
   PlanType,
 } from "../types/timeline.types";
+import {
+  getSortDate,
+  searchRecords,
+  sortRecords,
+  type TimelineSort,
+} from "../lib/timelineQuery";
 
 export const timelineKeys = {
   all: ["timeline"] as const,
@@ -15,67 +21,88 @@ export const timelineKeys = {
   detail: (timelineId: string) => ["timeline", "detail", timelineId] as const,
 };
 
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const toDateKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
     d.getDate()
   ).padStart(2, "0")}`;
-const isSameDay = (a: Date, b: Date) => toDateKey(a) === toDateKey(b);
-const buildLabel = (date: Date, today: Date): string => {
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const md = `${date.getMonth() + 1}월 ${date.getDate()}일 (${WEEKDAYS[date.getDay()]})`;
-  if (isSameDay(date, today)) return `오늘 · ${md}`;
-  if (isSameDay(date, yesterday)) return `어제 · ${md}`;
-  // 그 외에는 "N일 전 · 날짜" (Figma 라벨)
-  const dayMs = 1000 * 60 * 60 * 24;
-  const diff = Math.round(
-    (new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime() -
-      new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()) /
-      dayMs
-  );
-  return diff >= 2 ? `${diff}일 전 · ${md}` : md;
-};
-const groupByDate = (records: TimelineRecord[], now = new Date()): TimelineGroup[] => {
+
+/**
+ * 그룹 머리글. 시안대로 날짜만 쓴다 ("4월 1일").
+ *
+ * 예전에는 "오늘 · 4월 1일 (수)" 처럼 상대 표기를 앞에 붙였는데, 사진 그리드에서는
+ * 머리글이 짧을수록 사진이 눈에 들어와서 뺐다.
+ */
+const buildLabel = (date: Date): string =>
+  `${date.getMonth() + 1}월 ${date.getDate()}일`;
+/**
+ * 등록 날짜로 묶는다.
+ *
+ * 그룹 머리글도 정렬과 같은 날짜를 봐야 한다 — 등록 시각으로 정렬해 놓고
+ * 머리글만 방문일이면 "4월 1일" 아래에 3월에 등록한 기록이 섞여 읽힌다.
+ *
+ * 그룹의 앞뒤 순서도 정렬 방향을 따른다. 등록순(오래된 것부터)인데 날짜 머리글이
+ * 최신부터면 안쪽만 뒤집힌 꼴이 된다. 그룹 안쪽은 `sortRecords` 가 잡아 둔
+ * 순서를 그대로 쓴다.
+ */
+const groupByDate = (
+  records: TimelineRecord[],
+  sort: TimelineSort
+): TimelineGroup[] => {
   const map = new Map<string, TimelineRecord[]>();
   for (const r of records) {
-    const key = toDateKey(new Date(r.recordedAt));
+    const key = toDateKey(new Date(getSortDate(r)));
     const b = map.get(key);
     if (b) b.push(r);
     else map.set(key, [r]);
   }
+
+  const direction = sort === "recent" ? -1 : 1;
+
   return Array.from(map.entries())
-    .sort(([a], [b]) => (a < b ? 1 : -1))
+    .sort(([a], [b]) => (a < b ? -direction : direction))
     .map(([dateKey, items]) => ({
       dateKey,
-      label: buildLabel(new Date(dateKey), now),
-      /**
-       * 그룹(날짜)은 최신순이지만 그룹 안은 시간순이다 — 시안이 하루를 09:30 → 10:20
-       * 으로, 즉 그날 다닌 순서대로 보여준다. 최신순으로 뒤집으면 하루 동선을
-       * 거꾸로 읽게 된다.
-       */
-      records: items.sort(
-        (a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime()
-      ),
+      label: buildLabel(new Date(dateKey)),
+      records: items,
     }));
 };
 
 interface UseTimelineResult {
   groups: TimelineGroup[];
+  /** 검색 전 전체 개수. 헤더의 "총 N개의 기록" 이 검색으로 흔들리지 않게 한다. */
   totalCount: number;
+  /** 검색·정렬을 거친 뒤 실제로 보이는 개수. */
+  visibleCount: number;
   plan: PlanType;
   isLoading: boolean;
   isError: boolean;
   refetch: () => void;
 }
 
+interface UseTimelineOptions {
+  page?: number;
+  size?: number;
+  /** 장소명·한줄평 검색어. 빈 문자열이면 거르지 않는다. */
+  keyword?: string;
+  sort?: TimelineSort;
+}
+
 /**
  * 타임라인 목록 조회 훅. `GET /timelines`
  *
- * 서버가 최신순으로 내려주지만 화면은 날짜별 그룹을 요구하므로 여기서 묶는다.
- * 그룹 내부에서 한 번 더 정렬하므로 서버 정렬이 흔들려도 화면은 안전하다.
+ * 화면은 날짜별 그룹을 요구하므로 여기서 묶는다.
+ *
+ * ⚠️ 검색·정렬은 서버가 아니라 여기서 한다. `GET /timelines` 의 쿼리 파라미터가
+ * `page`·`size` 뿐이라 서버에 넘길 수단이 없다. 따라서 받아온 페이지 안에서만
+ * 동작하며, 기록이 한 페이지를 넘어가면 뒤쪽은 검색에 걸리지 않는다.
+ * 백엔드에 `keyword`·`sort` 가 생기면 `timelineApi` 로 옮겨야 한다.
  */
-export const useTimeline = (page = 1, size = TIMELINE_PAGE_SIZE): UseTimelineResult => {
+export const useTimeline = ({
+  page = 1,
+  size = TIMELINE_PAGE_SIZE,
+  keyword = "",
+  sort = "recent",
+}: UseTimelineOptions = {}): UseTimelineResult => {
   const accessToken = useAuthStore((state) => state.accessToken);
   const hasToken = Boolean(accessToken);
   /**
@@ -103,9 +130,12 @@ export const useTimeline = (page = 1, size = TIMELINE_PAGE_SIZE): UseTimelineRes
     },
   });
 
+  const visible = sortRecords(searchRecords(data?.records ?? [], keyword), sort);
+
   return {
-    groups: groupByDate(data?.records ?? []),
+    groups: groupByDate(visible, sort),
     totalCount: data?.totalCount ?? 0,
+    visibleCount: visible.length,
     /**
      * ⚠️ 타임라인 응답에는 요금제 정보가 없다. 무료/유료 구분은 `GET /users/me` 의
      * `currentPlan` 을 써야 하는데 그 연동은 `feat/myInfo` 브랜치에 있어 여기서는
