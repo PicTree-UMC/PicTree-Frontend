@@ -13,10 +13,17 @@ export function DevicePermissionModal({ isOpen, onConfirm }: DevicePermissionMod
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-5">
+    // 이 모달은 568px 로 길다. 짧은 뷰포트(주소창 뜬 iPhone SE, 가로 모드)에서는 화면을
+    // 넘치는데, 예전엔 `items-center` + overflow visible 이라 위아래가 잘린 채 스크롤도
+    // 안 돼 '확인' 버튼에 닿을 수 없었다.
+    //  - overflow-y-auto 로 넘칠 땐 스크롤. 단 `items-center` 와 같이 쓰면 위로 넘친 부분이
+    //    스크롤로 도달되지 않으므로, 가운데 정렬은 자식의 `my-auto` 로 한다
+    //    (auto 마진은 남는 공간이 없으면 0 이 되어 잘리지 않는다).
+    //  - py 는 safe-area 최소값. 상태바·홈 인디케이터 아래로 모달이 들어가지 않게 한다.
+    <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto bg-black/40 px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-[max(env(safe-area-inset-top),1.25rem)]">
       <section
         aria-modal="true"
-        className="w-full max-w-[22rem] rounded-[1.125rem] bg-[#FFFDF4] px-[1.375rem] pb-6 pt-7"
+        className="my-auto w-full max-w-[22rem] shrink-0 rounded-[1.125rem] bg-[#FFFDF4] px-[1.375rem] pb-6 pt-7"
         role="dialog"
       >
         <h2 className="font-['KOROAD'] text-[1.25rem] font-bold text-[#111]">
