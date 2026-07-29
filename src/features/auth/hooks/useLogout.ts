@@ -1,12 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
 
 import { useToast } from '@/shared/components';
-import { ROUTES } from '@/shared/constants/routes';
 import { logout } from '../api/authApi';
 import { getApiErrorMessage } from '../lib/apiError';
-import { markLogoutRequested } from '../lib/logoutFlag';
 import { useAuthStore } from '../store/authStore';
+import { useClearSession } from './useClearSession';
 
 /**
  * 로그아웃 mutation 훅. `POST /auth/logout` (Authorization: Bearer <Access Token>)
@@ -21,19 +19,9 @@ import { useAuthStore } from '../store/authStore';
  * `markLogoutRequested()` 로 자동 재발급 자체를 막는다.
  */
 export const useLogout = () => {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { showToast } = useToast();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const clearAuth = useAuthStore((state) => state.clearAuth);
-
-  /** 로컬 세션 정리 후 로그인 화면으로. 뒤로가기로 돌아오지 못하게 replace. */
-  const clearSession = () => {
-    markLogoutRequested(); // 가드의 자동 재발급 차단 — navigate 보다 먼저 서야 한다
-    clearAuth(); // accessToken + localStorage 제거
-    queryClient.clear(); // 이전 계정의 서버 데이터가 다음 로그인에 남지 않도록
-    navigate(ROUTES.auth, { replace: true });
-  };
+  const clearSession = useClearSession();
 
   return useMutation({
     mutationFn: () => logout(accessToken ?? ''),

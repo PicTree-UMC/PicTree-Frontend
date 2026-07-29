@@ -13,6 +13,8 @@ import statsIcon from "./assets/icons/stats.svg";
 import starIcon from "./assets/icons/star.svg";
 import logoutIcon from "./assets/icons/logout.svg";
 import chevronIcon from "./assets/icons/chevron.svg";
+import { useWithdraw } from "./hooks/useWithdraw";
+import { WithdrawModal } from "./components/WithdrawModal";
 
 
 interface MenuRowProps {
@@ -75,8 +77,13 @@ export function ProfilePage() {
 
   const planLabel = profile ? getPlanLabel(profile.currentPlan) : null;
 
+  const { mutate: requestWithdraw, isPending: isWithdrawing } = useWithdraw();
+  // 되돌릴 수 없는 동작이라 한 번 더 확인받는다
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+
+  // 하단 여백(pb)은 회원탈퇴가 한 줄 늘어난 만큼 키웠다 — 탭바에 붙어 보이지 않게
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFDF7] pb-28">
+    <div className="flex min-h-full flex-col bg-[#FFFDF7] pb-36">
       {/* 헤더 밴드 */}
       <header className="bg-[#C5D89D] px-[31px] pb-8 pt-6">
         <div className="flex items-center gap-5">
@@ -235,7 +242,29 @@ export function ProfilePage() {
             {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
           </span>
         </button>
+
+        {/*
+          회원 탈퇴 — 로그아웃 아래에 한 칸 띄워 조용히 둔다.
+          로그아웃은 되돌릴 수 있고 탈퇴는 못 되돌리므로, 나란히 같은 빨강으로
+          두면 동급으로 읽히고 오탭 위험도 생긴다. 찾는 사람은 찾되 눈에 먼저
+          걸리지는 않도록 회색·작은 글씨로 낮춘다.
+        */}
+        <button
+          type="button"
+          onClick={() => setIsWithdrawModalOpen(true)}
+          className="mx-auto -mt-1 py-2 text-[13px] text-[#90908F] underline underline-offset-2"
+        >
+          회원탈퇴
+        </button>
       </div>
+
+      {isWithdrawModalOpen && (
+        <WithdrawModal
+          isWithdrawing={isWithdrawing}
+          onCancel={() => setIsWithdrawModalOpen(false)}
+          onConfirm={() => requestWithdraw()}
+        />
+      )}
     </div>
   );
 }
