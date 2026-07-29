@@ -35,11 +35,14 @@ const toDateKey = (d: Date) =>
 const buildLabel = (date: Date): string =>
   `${date.getMonth() + 1}월 ${date.getDate()}일`;
 /**
- * 정렬 기준이 보는 날짜로 묶는다.
+ * 등록 날짜로 묶는다.
  *
- * 그룹 헤더도 정렬과 같은 날짜를 써야 한다 — 등록순인데 머리글이 방문일이면
- * "4월 1일" 아래에 3월에 등록한 기록이 섞여 순서가 뒤죽박죽으로 읽힌다.
- * 그룹 안쪽 순서는 `sortRecords` 가 이미 잡아 둔 것을 그대로 유지한다.
+ * 그룹 머리글도 정렬과 같은 날짜를 봐야 한다 — 등록 시각으로 정렬해 놓고
+ * 머리글만 방문일이면 "4월 1일" 아래에 3월에 등록한 기록이 섞여 읽힌다.
+ *
+ * 그룹의 앞뒤 순서도 정렬 방향을 따른다. 등록순(오래된 것부터)인데 날짜 머리글이
+ * 최신부터면 안쪽만 뒤집힌 꼴이 된다. 그룹 안쪽은 `sortRecords` 가 잡아 둔
+ * 순서를 그대로 쓴다.
  */
 const groupByDate = (
   records: TimelineRecord[],
@@ -47,13 +50,16 @@ const groupByDate = (
 ): TimelineGroup[] => {
   const map = new Map<string, TimelineRecord[]>();
   for (const r of records) {
-    const key = toDateKey(new Date(getSortDate(r, sort)));
+    const key = toDateKey(new Date(getSortDate(r)));
     const b = map.get(key);
     if (b) b.push(r);
     else map.set(key, [r]);
   }
+
+  const direction = sort === "recent" ? -1 : 1;
+
   return Array.from(map.entries())
-    .sort(([a], [b]) => (a < b ? 1 : -1))
+    .sort(([a], [b]) => (a < b ? -direction : direction))
     .map(([dateKey, items]) => ({
       dateKey,
       label: buildLabel(new Date(dateKey)),
