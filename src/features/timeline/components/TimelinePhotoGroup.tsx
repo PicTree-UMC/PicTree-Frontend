@@ -65,7 +65,12 @@ export function TimelinePhotoGroup({ group, onOpenDetail }: Props) {
               aria-label={`${record.placeName} 자세히 보기`}
               className="flex w-full flex-col gap-1 text-left"
             >
-              <span className="aspect-square w-full overflow-hidden bg-[#EDE7D2]">
+              {/*
+                span은 기본적으로 inline이라 w-full/aspect-square가 적용되지 않는다.
+                block으로 만들어야 열 너비를 정확히 채우는 정사각형 썸네일이 되고,
+                원본 이미지의 고유 너비가 그리드 밖으로 밀려나지 않는다.
+              */}
+              <span className="block aspect-square w-full overflow-hidden bg-[#EDE7D2]">
                 <img
                   src={getThumbnail(record)}
                   alt=""
@@ -75,9 +80,9 @@ export function TimelinePhotoGroup({ group, onOpenDetail }: Props) {
               </span>
 
               {/* 칸 폭이 좁아 긴 장소명은 말줄임한다 — 줄이 늘면 그리드가 어긋난다 */}
-              <span className="flex items-center gap-1 text-[12px] font-semibold text-[#2C3930]">
+              <span className="flex h-[18px] min-w-0 items-center gap-1 text-[12px] font-semibold text-[#2C3930]">
                 <PinIcon />
-                <span className="truncate">{record.placeName}</span>
+                <span className="min-w-0 truncate">{record.placeName}</span>
               </span>
             </button>
           </li>
