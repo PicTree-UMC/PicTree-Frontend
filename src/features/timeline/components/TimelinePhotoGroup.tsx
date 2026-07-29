@@ -5,6 +5,35 @@ interface Props {
   onOpenDetail: (record: TimelineRecord) => void;
 }
 
+/**
+ * 장소명 앞에 붙는 위치 핀. 12px 글자 옆에 서므로 획을 굵게(2) 잡았다 —
+ * 기본 굵기로는 이 크기에서 흐릿하게 뭉갠다.
+ */
+function PinIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-3 w-3 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  );
+}
+
 /** 사진이 없는 기록에 쓸 대체 이미지. 서버가 준 나무 기본 이미지를 먼저 쓴다. */
 const getThumbnail = (record: TimelineRecord) =>
   record.thumbnailUrl ?? record.defaultImage ?? "/apple-touch-icon.jpg";
@@ -46,8 +75,9 @@ export function TimelinePhotoGroup({ group, onOpenDetail }: Props) {
               </span>
 
               {/* 칸 폭이 좁아 긴 장소명은 말줄임한다 — 줄이 늘면 그리드가 어긋난다 */}
-              <span className="truncate text-[12px] font-semibold text-[#2C3930]">
-                {record.placeName}
+              <span className="flex items-center gap-1 text-[12px] font-semibold text-[#2C3930]">
+                <PinIcon />
+                <span className="truncate">{record.placeName}</span>
               </span>
             </button>
           </li>
