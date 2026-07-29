@@ -1,27 +1,25 @@
 import { useState } from "react";
 import { useDeleteRecord } from "./hooks/useDeleteRecord";
 import { useTimeline } from "./hooks/useTimeline";
+import type { TimelineSort } from "./lib/timelineQuery";
 import type { TimelineRecord } from "./types/timeline.types";
-import TimelineHeader from "./components/TimelineHeader";
-import StorageBanner from "./components/StorageBanner";
-import TimelineGroup from "./components/TimelineGroup";
-import { RecordActionSheet } from "./components/RecordActionSheet";
+import { TimelineSearchBar } from "./components/TimelineSearchBar";
+import { TimelineSortTabs } from "./components/TimelineSortTabs";
+import { TimelinePhotoGroup } from "./components/TimelinePhotoGroup";
+import { RecordDetailSheet } from "./components/RecordDetailSheet";
 import { DeleteRecordModal } from "./components/DeleteRecordModal";
 import { useToast } from "@/shared/components";
 
 export function TimelinePage() {
-  const { groups, totalCount, plan, isLoading, isError } = useTimeline();
+  const [keyword, setKeyword] = useState("");
+  const [sort, setSort] = useState<TimelineSort>("recent");
+
+  const { groups, visibleCount, isLoading, isError } = useTimeline({ keyword, sort });
   const deleteMutation = useDeleteRecord();
   const { showToast } = useToast();
 
-  const [menuTarget, setMenuTarget] = useState<TimelineRecord | null>(null);
+  const [detailTarget, setDetailTarget] = useState<TimelineRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<TimelineRecord | null>(null);
-
-  // 저장 용량 배너 값 (mock — 백엔드 연동 시 교체)
-  const storage =
-    plan === "premium"
-      ? { usedLabel: "50MB", totalLabel: "20GB", planLabel: "맥스", usedRatio: 50 / 20000 }
-      : { usedLabel: "50MB", totalLabel: "100MB", planLabel: "무료", usedRatio: 50 / 100 };
 
   const handleConfirmDelete = () => {
     if (!deleteTarget) return;
@@ -29,16 +27,20 @@ export function TimelinePage() {
     setDeleteTarget(null);
   };
 
+  // 검색 결과가 없는 것과 기록 자체가 없는 것은 다른 상황이라 문구를 나눈다.
+  const isSearching = keyword.trim().length > 0;
+
   return (
     <div className="flex min-h-screen flex-col bg-[#FFFCEF] pb-28">
-      <TimelineHeader
-        totalCount={totalCount}
-        plan={plan}
-        onUpgrade={() => showToast("구독 및 결제에서 업그레이드할 수 있어요.", "info")}
-      />
+      <div className="flex flex-col gap-4 px-5 pb-4 pt-6">
+        <TimelineSearchBar value={keyword} onChange={setKeyword} />
 
-      <div className="flex flex-col gap-5 px-5 py-4">
-        <StorageBanner {...storage} />
+        <div className="flex items-center justify-between">
+          <p className="text-[12px] text-[#8D8D8D]">
+            {isSearching ? `검색 결과 ${visibleCount}개` : `총 ${visibleCount}개의 기록`}
+          </p>
+          <TimelineSortTabs value={sort} onChange={setSort} />
+        </div>
 
         {isLoading && (
           <p className="py-10 text-center text-sm text-[#8D8D8D]">불러오는 중...</p>
@@ -50,38 +52,34 @@ export function TimelinePage() {
         )}
         {!isLoading && !isError && groups.length === 0 && (
           <p className="py-10 text-center text-sm text-[#8D8D8D]">
-            아직 저장된 기록이 없어요.
+            {isSearching
+              ? "검색과 일치하는 기록이 없어요."
+              : "아직 저장된 기록이 없어요."}
           </p>
         )}
 
-        {groups.map((group) => (
-          <TimelineGroup
-            key={group.dateKey}
-            group={group}
-            onOpenMenu={setMenuTarget}
-          />
-        ))}
+        <div className="flex flex-col gap-5">
+          {groups.map((group) => (
+            <TimelinePhotoGroup
+              key={group.dateKey}
+              group={group}
+              onOpenDetail={setDetailTarget}
+            />
+          ))}
+        </div>
       </div>
 
-      {menuTarget && (
-        <RecordActionSheet
-          record={menuTarget}
-          onClose={() => setMenuTarget(null)}
+      {detailTarget && (
+        <RecordDetailSheet
+          record={detailTarget}
+          onClose={() => setDetailTarget(null)}
           onEdit={() => {
             showToast("기록 수정은 준비 중이에요.", "info");
-            setMenuTarget(null);
-          }}
-          onChangePhoto={() => {
-            showToast("사진 보기/변경은 준비 중이에요.", "info");
-            setMenuTarget(null);
-          }}
-          onFavorite={() => {
-            showToast("즐겨찾기에 추가했어요.", "success");
-            setMenuTarget(null);
+            setDetailTarget(null);
           }}
           onDelete={() => {
-            setDeleteTarget(menuTarget);
-            setMenuTarget(null);
+            setDeleteTarget(detailTarget);
+            setDetailTarget(null);
           }}
         />
       )}

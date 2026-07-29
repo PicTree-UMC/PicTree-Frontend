@@ -21,27 +21,19 @@ export const timelineKeys = {
   detail: (timelineId: string) => ["timeline", "detail", timelineId] as const,
 };
 
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const toDateKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
     d.getDate()
   ).padStart(2, "0")}`;
-const isSameDay = (a: Date, b: Date) => toDateKey(a) === toDateKey(b);
-const buildLabel = (date: Date, today: Date): string => {
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const md = `${date.getMonth() + 1}월 ${date.getDate()}일 (${WEEKDAYS[date.getDay()]})`;
-  if (isSameDay(date, today)) return `오늘 · ${md}`;
-  if (isSameDay(date, yesterday)) return `어제 · ${md}`;
-  // 그 외에는 "N일 전 · 날짜" (Figma 라벨)
-  const dayMs = 1000 * 60 * 60 * 24;
-  const diff = Math.round(
-    (new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime() -
-      new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()) /
-      dayMs
-  );
-  return diff >= 2 ? `${diff}일 전 · ${md}` : md;
-};
+
+/**
+ * 그룹 머리글. 시안대로 날짜만 쓴다 ("4월 1일").
+ *
+ * 예전에는 "오늘 · 4월 1일 (수)" 처럼 상대 표기를 앞에 붙였는데, 사진 그리드에서는
+ * 머리글이 짧을수록 사진이 눈에 들어와서 뺐다.
+ */
+const buildLabel = (date: Date): string =>
+  `${date.getMonth() + 1}월 ${date.getDate()}일`;
 /**
  * 정렬 기준이 보는 날짜로 묶는다.
  *
@@ -51,8 +43,7 @@ const buildLabel = (date: Date, today: Date): string => {
  */
 const groupByDate = (
   records: TimelineRecord[],
-  sort: TimelineSort,
-  now = new Date()
+  sort: TimelineSort
 ): TimelineGroup[] => {
   const map = new Map<string, TimelineRecord[]>();
   for (const r of records) {
@@ -65,7 +56,7 @@ const groupByDate = (
     .sort(([a], [b]) => (a < b ? 1 : -1))
     .map(([dateKey, items]) => ({
       dateKey,
-      label: buildLabel(new Date(dateKey), now),
+      label: buildLabel(new Date(dateKey)),
       records: items,
     }));
 };
