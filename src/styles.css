@@ -229,3 +229,25 @@ select {
 .animate-fade-in {
   animation: fade-in 0.25s ease-out both;
 }
+
+/* 곡선 로드맵 노드/라벨 등장: 아래에서 살짝 튀어오르며 나타남(순번대로 stagger) */
+@keyframes roadmap-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-roadmap-pop {
+  animation: roadmap-pop-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-roadmap-pop {
+    animation: none;
+  }
+}

@@ -47,6 +47,8 @@ export function BlogCreatePage() {
             startDate={flow.startDate}
             endDate={flow.endDate}
             trees={flow.trees}
+            selectedTreeIds={flow.selectedTreeIds}
+            onToggleTree={flow.toggleTree}
             activityByDate={flow.activityByDate}
             onDateRangeChange={flow.setDateRange}
             onNext={flow.goToTone}
