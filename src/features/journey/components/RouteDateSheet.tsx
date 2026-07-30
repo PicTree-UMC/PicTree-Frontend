@@ -178,7 +178,15 @@ export function RouteDateSheet({
         <div className="flex items-start justify-between px-5 pt-5">
           <div>
             <h2 className="text-[17px] font-medium text-[#111]">날짜 관리</h2>
-            <p className="mt-1 text-[13px] text-[#767676]">
+            {/* 한도에 막히면 이 줄이 흔들린다. 새로 뜨는 문구는 등장 자체가 움직임이라
+                흔들려도 눈에 안 들어와서, 계속 떠 있던 요소를 흔들어야 신호가 된다.
+                key 로 다시 마운트시켜야 연달아 눌렀을 때도 매번 재생된다. */}
+            <p
+              key={limitAttempt}
+              className={`mt-1 text-[13px] text-[#767676] ${
+                limitAttempt > 0 ? 'motion-safe:animate-shake' : ''
+              }`}
+            >
               선택한 날짜 {selectedDates.length}/{maxDates}일 · 선택한 장소 {selectedPlaceCount}/
               {maxPlaces}
             </p>
