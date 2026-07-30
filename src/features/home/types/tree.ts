@@ -6,18 +6,18 @@ export interface ApiEnvelope<TData> {
   data: TData;
 }
 
-/** 서버 기분 이모지 코드. */
-export type TreeMood = 'HAPPY' | 'SAD' | 'NORMAL';
-
 /** GET /trees (지도 목록) 의 개별 아이템. */
 export interface TreeListItem {
   treeId: number;
   name: string;
   latitude: number;
   longitude: number;
-  mood: TreeMood;
+  /** 서버가 유저가 고른 이모지 문자를 그대로 저장하므로 문자열이다. */
+  mood: string;
   isFavorite: boolean;
   defaultImage: string;
+  /** 대표 사진 presigned URL. 사진이 없으면 null → 기본 이미지로 표시. */
+  imageUrl: string | null;
 }
 
 /** GET /trees 페이지네이션 응답. */
@@ -39,7 +39,7 @@ export interface TreeImage {
 
 /**
  * POST /trees 요청 바디.
- * mood 는 서버가 유저가 고른 이모지 문자를 그대로 저장하므로 문자열이다(읽기용 TreeMood 와 별개).
+ * mood 는 서버가 유저가 고른 이모지 문자를 그대로 저장하므로 문자열이다.
  * latitude/longitude/name/mood 는 필수, 나머지는 선택.
  */
 export interface CreateTreeRequest {
@@ -69,7 +69,7 @@ export interface TreeDetail {
   name: string;
   latitude: number;
   longitude: number;
-  mood: TreeMood;
+  mood: string;
   isFavorite: boolean;
   defaultImage: string;
   address: string | null;
