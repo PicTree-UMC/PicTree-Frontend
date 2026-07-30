@@ -30,7 +30,10 @@
   font-family:
     KOROAD, Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #1f2a1b;
-  background: #ffffff;
+  /* 앱 base 배경 = 브랜드 크림(PicTree/100, theme-color 와 동일).
+     iOS PWA(black-translucent)에선 노치/safe-area 뒤로 이 base 가 비치므로 흰색이면
+     노치만 흰띠로 뜬다. 크림으로 맞춰 페이지가 못 덮는 틈도 크림으로 채워지게 한다. */
+  background: #fffcef;
 }
 
 html,
