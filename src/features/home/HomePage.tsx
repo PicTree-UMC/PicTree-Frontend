@@ -85,10 +85,13 @@ export function HomePage() {
       {/* 동선 추가 알림 카드 */}
       <JourneyBanner placeCount={0} />
 
-      {/* 카메라 버튼 */}
+      {/*
+        카메라 버튼 — 탭바(86px)가 지도 위에 얹히므로 그보다 위에 띄운다.
+        예전에는 탭바가 지도 아래에 흐름상 놓여 bottom-6 으로 충분했다.
+      */}
       <button
         onClick={() => navigate(ROUTES.camera)}
-        className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2"
+        className="absolute bottom-[110px] left-1/2 z-20 -translate-x-1/2"
       >
         <img src="/camera_btn.png" alt="사진 촬영" className="h-[52px] w-[52px]" />
       </button>
