@@ -24,6 +24,9 @@ export function RouteViewPage() {
   const [disabledPlaceIds, setDisabledPlaceIds] = useState<number[]>([]);
   const [showDateSheet, setShowDateSheet] = useState(false);
   const [showSaveSheet, setShowSaveSheet] = useState(false);
+  // 저장한 시점의 동선 구성. 저장 여부를 boolean 으로 들면 저장 뒤에 날짜·장소를 바꿔도
+  // '저장됨' 이 그대로 남아 안 저장된 동선을 저장했다고 말하게 된다(설계서 8번).
+  const [savedSignature, setSavedSignature] = useState<string | null>(null);
 
   // 캘린더가 '나무를 심은 날짜 + 그날 장소 수'를 요구한다(설계서 1번).
   // 실 연동에서는 /timelines ⋈ /trees 조인 결과가 이 자리에 들어온다.
@@ -58,6 +61,10 @@ export function RouteViewPage() {
       ),
     [selectedDates, places, disabledIds],
   );
+
+  // 켜져 있는 장소와 그 순서가 곧 저장 대상이다 — 하나라도 달라지면 '저장됨' 이 풀린다.
+  const signature = activePlaces.map((place) => place.id).join(',');
+  const isSaved = savedSignature !== null && savedSignature === signature;
 
   useRoutePath(map, places, disabledIds);
 
@@ -116,7 +123,11 @@ export function RouteViewPage() {
     setShowSaveSheet(true);
   };
 
-  const handleConfirmSave = () => {
+  const handleConfirmSave = (name: string) => {
+    // TODO(#35): POST /routes 연동. 지금은 목이라 화면 상태만 바꾼다.
+    //   이름과 `activePlaces` 가 그대로 요청 본문이 되는 자리다.
+    void name;
+    setSavedSignature(signature);
     setShowSaveSheet(false);
     showToast('동선이 저장되었어요!', 'success', { placement: 'top' });
   };
@@ -149,11 +160,14 @@ export function RouteViewPage() {
             </svg>
           </button>
           <h1 className="flex-1 text-xl font-medium text-[#2c3930]">동선 보기</h1>
+          {/* 저장 뒤에는 '저장됨' 으로 바뀌고 눌리지 않는다(설계서 8번). 색은 그대로 두는 게
+              시안이다 — 흐려두면 저장이 실패한 것처럼 보인다. */}
           <button
             onClick={handleSave}
+            disabled={isSaved}
             className="rounded-[8px] bg-[#2c3930] px-3 py-1.5 text-[13px] font-medium tracking-wide text-[#fffcef] shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
           >
-            동선저장
+            {isSaved ? '저장됨' : '동선저장'}
           </button>
         </header>
 

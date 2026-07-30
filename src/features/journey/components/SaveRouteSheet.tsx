@@ -21,7 +21,10 @@ export function SaveRouteSheet({ onClose, onConfirm }: SaveRouteSheetProps) {
     inputRef.current?.focus({ preventScroll: true });
   };
 
-  const handleConfirm = () => onConfirm(name);
+  // 이름 없는 동선은 목록에서 서로 구분이 안 된다. 시안에 문구가 없어 경고를 띄우는 대신
+  // 저장 버튼을 잠가 두는 쪽을 택했다 — 빈 이름으로 저장할 길 자체가 없다.
+  const canSave = name.trim().length > 0;
+  const handleConfirm = () => canSave && onConfirm(name.trim());
 
   return (
     <>
@@ -45,7 +48,7 @@ export function SaveRouteSheet({ onClose, onConfirm }: SaveRouteSheetProps) {
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
             onBlur={() => setIsEditing(false)}
-            placeholder="- - - - - - -"
+            placeholder="동선 이름 입력"
             className="h-11 w-full rounded-full bg-[#fffdf7] px-6 text-base text-[#2c3930] outline-none placeholder:text-[#999]"
           />
         ) : (
@@ -54,7 +57,7 @@ export function SaveRouteSheet({ onClose, onConfirm }: SaveRouteSheetProps) {
             onClick={startEditing}
             className="h-11 w-full truncate rounded-full bg-[#fffdf7] px-6 text-left text-base text-[#2c3930]"
           >
-            {name || <span className="text-[#999]">- - - - - - -</span>}
+            {name || <span className="text-[#999]">동선 이름 입력</span>}
           </button>
         )}
 
@@ -67,7 +70,10 @@ export function SaveRouteSheet({ onClose, onConfirm }: SaveRouteSheetProps) {
           </button>
           <button
             onClick={handleConfirm}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#fffcef] text-base font-semibold tracking-wide text-[#2c3930]"
+            disabled={!canSave}
+            className={`h-[38px] w-[92px] rounded-[12px] bg-[#fffcef] text-base font-semibold tracking-wide text-[#2c3930] transition-opacity ${
+              canSave ? '' : 'opacity-50'
+            }`}
           >
             저장하기
           </button>
