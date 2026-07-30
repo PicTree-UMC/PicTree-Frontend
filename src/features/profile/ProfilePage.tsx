@@ -83,7 +83,7 @@ export function ProfilePage() {
 
   // 하단 여백(pb)은 회원탈퇴가 한 줄 늘어난 만큼 키웠다 — 탭바에 붙어 보이지 않게
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFDF7] pb-36">
+    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-36">
       {/* 헤더 밴드 */}
       <header className="bg-[#C5D89D] px-[31px] pb-8 pt-6">
         <div className="flex items-center gap-5">

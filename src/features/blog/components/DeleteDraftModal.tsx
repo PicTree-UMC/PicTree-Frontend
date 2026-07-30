@@ -17,7 +17,7 @@ export function DeleteDraftModal({ isOpen, onClose, onConfirm }: DeleteDraftModa
       onClick={onClose}
     >
       <section
-        className="w-full rounded-[20px] bg-[#fffdf4] px-6 pb-[15px] pt-[30px] text-center"
+        className="w-full rounded-[20px] bg-[#fffcef] px-6 pb-[15px] pt-[30px] text-center"
         role="dialog"
         aria-modal="true"
         aria-labelledby="delete-draft-title"
