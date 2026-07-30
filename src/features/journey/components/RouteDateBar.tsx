@@ -22,22 +22,29 @@ function CalendarIcon({ className }: { className?: string }) {
 
 interface RouteDateBarProps {
   selectedDates: string[];
+  /** 그날 장소가 전부 꺼져 있는 날짜. 칩은 남고 반투명해진다(화면설계서 6·7번). */
+  disabledDates: ReadonlySet<string>;
   maxDates: number;
   onOpenDatePicker: () => void;
-  onRemoveDate: (dateKey: string) => void;
+  onToggleDate: (dateKey: string) => void;
 }
 
 /**
  * 지도 위에 떠 있는 날짜 관리 바.
  *
  * 예전 시안의 날짜 탭(전체 / 3월 31일 / 4월 1일 …)을 대체한다. 날짜는 캘린더에서 고르고,
- * 여기엔 고른 날짜만 칩으로 늘어놓는다. 칩을 누르면 그 날짜가 빠진다(화면설계서 1·6번).
+ * 여기엔 고른 날짜만 칩으로 늘어놓는다. 칩을 누르면 그날 동선이 꺼진다(화면설계서 1·6번).
+ *
+ * **꺼진 날짜도 칩은 남긴다** — 지워버리면 되돌릴 길이 캘린더뿐이라, 반투명하게 두고
+ * 다시 누르면 살아나게 한다. `n/3일` 은 캘린더에서 고른 날짜 수라 꺼도 줄지 않는다
+ * (줄이면 3/3 인데 캘린더는 4번째를 막는 모순이 생긴다). 줄어드는 건 아래 장소 개수다.
  */
 export function RouteDateBar({
   selectedDates,
+  disabledDates,
   maxDates,
   onOpenDatePicker,
-  onRemoveDate,
+  onToggleDate,
 }: RouteDateBarProps) {
   return (
     <div className="flex flex-col items-start gap-2 px-5 pt-3">
@@ -52,17 +59,26 @@ export function RouteDateBar({
 
       {selectedDates.length > 0 && (
         <div className="flex w-full gap-2 overflow-x-auto pb-1">
-          {selectedDates.map((date) => (
-            <button
-              key={date}
-              type="button"
-              onClick={() => onRemoveDate(date)}
-              aria-label={`${formatDateLabel(date)} 동선 빼기`}
-              className="shrink-0 rounded-[10px] bg-[#fffcef]/90 px-4 py-1.5 text-[15px] font-medium text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
-            >
-              {formatDateLabel(date)}
-            </button>
-          ))}
+          {selectedDates.map((date) => {
+            const disabled = disabledDates.has(date);
+
+            return (
+              <button
+                key={date}
+                type="button"
+                onClick={() => onToggleDate(date)}
+                aria-pressed={!disabled}
+                aria-label={`${formatDateLabel(date)} 동선 ${disabled ? '켜기' : '끄기'}`}
+                className={`shrink-0 rounded-[10px] px-4 py-1.5 text-[15px] font-medium transition-colors ${
+                  disabled
+                    ? 'bg-[#fffcef]/45 text-[#2c3930]/40'
+                    : 'bg-[#fffcef]/90 text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]'
+                }`}
+              >
+                {formatDateLabel(date)}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
