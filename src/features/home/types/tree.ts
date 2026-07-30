@@ -37,6 +37,32 @@ export interface TreeImage {
   timelineRecordId: number | null;
 }
 
+/**
+ * POST /trees 요청 바디.
+ * mood 는 서버가 유저가 고른 이모지 문자를 그대로 저장하므로 문자열이다(읽기용 TreeMood 와 별개).
+ * latitude/longitude/name/mood 는 필수, 나머지는 선택.
+ */
+export interface CreateTreeRequest {
+  name: string;
+  latitude: number;
+  longitude: number;
+  mood: string;
+  description?: string;
+  address?: string;
+  defaultImage?: string;
+}
+
+/** POST /trees 응답 데이터. adRequired: 무료 사용자 2개 등록마다 광고 노출 필요. */
+export interface CreateTreeData {
+  treeId: number;
+  adRequired: boolean;
+}
+
+/** POST /trees/{treeId}/images 응답 데이터(단일 파일 업로드). */
+export interface TreeImageUploadData {
+  image: TreeImage;
+}
+
 /** GET /trees/{treeId} 상세 응답. */
 export interface TreeDetail {
   treeId: number;

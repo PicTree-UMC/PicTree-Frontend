@@ -3,6 +3,10 @@ import { CameraIcon, PencilIcon, SwitchCameraIcon } from './icons';
 interface CameraControlsProps {
   hasPhoto: boolean;
   isWriteMode: boolean;
+  /** 저장 가능 여부(장소명·이모지 충족). false 면 저장/업로드 버튼 비활성화. */
+  canSave: boolean;
+  /** 업로드 진행 중이면 버튼을 잠그고 라벨을 바꾼다. */
+  isSaving: boolean;
   onCapture: () => void;
   onToggleFacing: () => void;
   onToggleWriteMode: () => void;
@@ -14,27 +18,32 @@ interface CameraControlsProps {
 export function CameraControls({
   hasPhoto,
   isWriteMode,
+  canSave,
+  isSaving,
   onCapture,
   onToggleFacing,
   onToggleWriteMode,
   onRetake,
   onSave,
 }: CameraControlsProps) {
+  const saveDisabled = !canSave || isSaving;
   return (
     <div className="pt-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
       {hasPhoto ? (
         <div className="flex items-center gap-3 px-4">
           <button
             onClick={onRetake}
-            className="flex-1 rounded-xl bg-neutral-700/90 py-3 text-sm font-medium text-white"
+            disabled={isSaving}
+            className="flex-1 rounded-xl bg-neutral-700/90 py-3 text-sm font-medium text-white disabled:opacity-50"
           >
             다시찍기
           </button>
           <button
             onClick={onSave}
-            className="flex-1 rounded-xl bg-pictree-500 py-3 text-sm font-semibold text-white"
+            disabled={saveDisabled}
+            className="flex-1 rounded-xl bg-pictree-500 py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-50"
           >
-            업로드
+            {isSaving ? '업로드 중…' : '업로드'}
           </button>
         </div>
       ) : (
@@ -50,9 +59,10 @@ export function CameraControls({
           {isWriteMode ? (
             <button
               onClick={onSave}
-              className="col-start-2 col-end-4 rounded-full bg-pictree-500 py-3 text-sm font-semibold text-white"
+              disabled={saveDisabled}
+              className="col-start-2 col-end-4 rounded-full bg-pictree-500 py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-50"
             >
-              저장
+              {isSaving ? '저장 중…' : '저장'}
             </button>
           ) : (
             <>
