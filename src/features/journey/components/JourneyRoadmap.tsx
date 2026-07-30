@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 
 import { Journey } from '../types/journey';
+import { useJourneyPhotos } from '../hooks/useJourneyPhotos';
 
 /** 사진이 없는 노드를 채우는 플레이스홀더(사진 아이콘, tabler:photo 계열). */
 function PhotoPlaceholder({ className }: { className?: string }) {
@@ -49,12 +50,17 @@ interface JourneyRoadmapProps {
 
 /**
  * 선택된 동선의 장소 이동을 곡선 로드맵으로 그린다.
- * - 노드: 그 장소에서 찍은 사진(placeName 매칭)을 원형 아이콘으로. 없으면 플레이스홀더.
+ * - 노드: 그 장소에서 찍은 사진을 원형 아이콘으로. 없으면 플레이스홀더.
  * - 간선: 노드 사이를 점선 곡선(SVG path)으로 연결.
  * - 라벨: 노드 바깥쪽에 장소명 + 순번.
+ *
+ * 사진은 목록 응답에 없어 동선별로 따로 받아온다(`GET /routes/{id}/images`).
+ * 로드맵은 사진을 기다리지 않고 먼저 그리고, 도착하면 플레이스홀더가 사진으로 바뀐다 —
+ * 장소·순서는 목록 응답만으로 알 수 있으므로 뼈대를 붙잡아 둘 이유가 없다.
  */
 export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
-  const { places, photos } = journey;
+  const { places } = journey;
+  const { data: photos = [] } = useJourneyPhotos(journey.id);
   const listRef = useRef<HTMLOListElement>(null);
   // path 를 그리려면 실제 폭이 필요하다. useLayoutEffect 라 첫 페인트 전에 보정돼 깜빡임이 없다.
   const [width, setWidth] = useState(MAX_W);
@@ -73,9 +79,14 @@ export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
     return () => observer.disconnect();
   }, []);
 
-  /** 장소명이 일치하고 url 이 있는 사진을 노드 썸네일로 쓴다. */
-  const photoFor = (placeName: string) =>
-    photos.find((photo) => photo.placeName === placeName && photo.url)?.url;
+  /**
+   * 노드 썸네일. 사진 API 가 **장소당 한 장을 방문 순서로** 주므로 순번으로 짝지운다.
+   *
+   * 예전엔 장소명으로 찾았는데(목 시절), 실 데이터에서는 같은 이름의 장소가 여러 번
+   * 나올 수 있어 첫 번째 사진이 뒤쪽 노드까지 따라붙는다. 순서는 서버가 보장한다.
+   * 아직 안 도착했거나 사진이 없는 장소는 undefined → 플레이스홀더.
+   */
+  const photoFor = (index: number) => photos[index]?.url ?? undefined;
 
   const nodes = places.map((place, index) => ({
     place,
@@ -116,7 +127,7 @@ export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
       </svg>
 
       {nodes.map(({ place, index, y, isLeft }) => {
-        const photoUrl = photoFor(place.name);
+        const photoUrl = photoFor(index);
         // 노드·라벨은 가까운 쪽 가장자리에 붙인다 — 폭을 몰라도 되고, 컨테이너가 좁아져도
         // 반대쪽으로 밀려나 잘리지 않는다.
         const nodeStyle = isLeft ? { left: NODE_EDGE } : { right: NODE_EDGE };
@@ -127,8 +138,9 @@ export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
         // 위치 지정 transform 과 겹치지 않게 애니메이션은 안쪽 래퍼에만 건다.
         const nodeDelay = `${index * 90}ms`;
         const labelDelay = `${index * 90 + 40}ms`;
+        // key 는 index 를 쓴다 — 서버가 장소 식별자를 주지 않고(이름·기분뿐) 순서가 곧 동선이다.
         return (
-          <li key={place.id} className="contents">
+          <li key={index} className="contents">
             {/* 노드 */}
             <div className="absolute size-14 -translate-y-1/2" style={{ ...nodeStyle, top: y }}>
               <div

@@ -147,7 +147,7 @@ export function JourneyPage() {
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-[#2c3930]">{selectedJourney.date}</p>
                     <p className="text-[11px] font-light text-[#8d8d8d]">
-                      {selectedJourney.places.length}개 장소
+                      {selectedJourney.placeCount}개 장소
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
