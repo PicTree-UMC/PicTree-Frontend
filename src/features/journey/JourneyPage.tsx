@@ -137,18 +137,27 @@ export function JourneyPage() {
           </div>
         ) : isEmpty ? (
           <div className="flex flex-1 flex-col items-center justify-center px-4 text-center">
-            <EmptyJourneyIllustration className="w-[200px]" />
-            <h2 className="mt-6 text-[17px] font-medium text-[#2c3930]">
+            {/* 그림 → 텍스트 → CTA 순으로 등장(stagger). animate-fade-in-up 은 both fill 이라
+                지연 시간 동안 요소가 숨겨져 있다가 순서대로 떠오른다. */}
+            <EmptyJourneyIllustration className="animate-fade-in-up w-[200px]" />
+            <h2
+              className="animate-fade-in-up mt-6 text-[17px] font-medium text-[#2c3930]"
+              style={{ animationDelay: '150ms' }}
+            >
               아직 저장된 동선이 없어요
             </h2>
-            <p className="mt-2 text-[15px] leading-6 text-[#6d7466]">
+            <p
+              className="animate-fade-in-up mt-2 text-[15px] leading-6 text-[#6d7466]"
+              style={{ animationDelay: '150ms' }}
+            >
               여행하며 다녀온 장소들을 이어
               <br />
               나만의 여행 발자국을 남겨보세요.
             </p>
             <button
               onClick={() => navigate(ROUTES.journeyView)}
-              className="mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-[#89986d] text-[15px] font-medium text-white"
+              className="animate-fade-in-up mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-[#89986d] text-[15px] font-medium text-white"
+              style={{ animationDelay: '300ms' }}
             >
               동선 생성하기
             </button>
