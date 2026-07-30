@@ -21,7 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     // 같은 온도의 무채색을 써서 배경이 물러나게 했다. 채도 있는 브랜드색(PicTree/800 등)은
     // 넓은 면적에서 앱과 색이 부딪혀 배경이 앞으로 튄다.
     <div className="min-h-dvh bg-[#efede7]">
-      <div className="mx-auto h-dvh w-full overflow-y-auto overscroll-none bg-white sm:max-w-[390px] sm:shadow-2xl">
+      <div className="mx-auto h-dvh w-full overflow-y-auto overscroll-none bg-[#fffcef] sm:max-w-[390px] sm:shadow-2xl">
         {children}
       </div>
     </div>
