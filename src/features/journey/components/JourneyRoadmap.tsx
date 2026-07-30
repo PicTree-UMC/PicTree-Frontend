@@ -1,3 +1,5 @@
+import { useLayoutEffect, useRef, useState } from 'react';
+
 import { Journey } from '../types/journey';
 
 /** 사진이 없는 노드를 채우는 플레이스홀더(사진 아이콘, tabler:photo 계열). */
@@ -21,16 +23,25 @@ function PhotoPlaceholder({ className }: { className?: string }) {
 }
 
 /**
- * 곡선 로드맵의 좌표 상수. 노드를 좌우로 번갈아 놓고(leftX/rightX),
- * 세로로 STEP 간격으로 내려가며, 노드 사이를 부드러운 S자 곡선(점선)으로 잇는다.
- * 모든 좌표는 W 폭의 고정 좌표계 기준 — 컨테이너를 W 로 고정하고 가운데 정렬한다.
+ * 곡선 로드맵의 좌표 상수. 노드를 좌우로 번갈아 놓고, 세로로 STEP 간격으로 내려가며,
+ * 노드 사이를 부드러운 S자 곡선(점선)으로 잇는다.
+ *
+ * ⚠️ 되돌리지 말 것 — 예전엔 `const W = 320` 고정 폭 좌표계였다. 페이지가 `px-5` 를 주므로
+ * 뷰포트 360px 미만에서 컨테이너(280px)보다 ol 이 넓어져 오른쪽 노드(2·4번)가 통째로
+ * 잘려 나갔다(점검 폭 320 에서 재현). 가로는 유동이어야 한다.
+ *  - 세로(TOP/STEP)와 노드 크기(R)는 고정 px 로 둔다. 규칙상 세로는 고정이 허용된다.
+ *  - 가로는 "가장자리에서 INSET 만큼"이라는 관계로만 표현한다. 노드·라벨은 CSS
+ *    left/right 로 붙이므로 폭을 몰라도 된다.
+ *  - 폭을 알아야 하는 건 SVG path 하나뿐이라 거기만 실제 폭을 측정해 쓴다.
+ *    (viewBox 를 늘려 스케일하면 점선 dash 와 stroke 가 가로로만 찌그러진다)
  */
-const W = 320;
+const MAX_W = 320; // 시안 기준 폭. 넓은 화면에서는 여기서 멈추고 가운데 정렬된다
 const R = 28; // 노드 반지름(지름 56)
 const TOP = R + 12; // 첫 노드 중심 y (순번 배지가 위로 삐져나오므로 여유)
 const STEP = 118; // 노드 간 세로 간격
-const LEFT_X = 46;
-const RIGHT_X = W - 46;
+const INSET = 46; // 컨테이너 가장자리 ~ 노드 중심
+const NODE_EDGE = INSET - R; // 가장자리 ~ 노드 상자 바깥면
+const LABEL_EDGE = INSET + R + 12; // 가장자리 ~ 라벨 시작(노드 반대편)
 
 interface JourneyRoadmapProps {
   journey: Journey;
@@ -44,6 +55,23 @@ interface JourneyRoadmapProps {
  */
 export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
   const { places, photos } = journey;
+  const listRef = useRef<HTMLOListElement>(null);
+  // path 를 그리려면 실제 폭이 필요하다. useLayoutEffect 라 첫 페인트 전에 보정돼 깜빡임이 없다.
+  const [width, setWidth] = useState(MAX_W);
+
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+
+    // 초기값은 동기로 읽는다. ResizeObserver 의 첫 콜백에만 의존하면 콜백이 밀리는 상황
+    // (배경 탭 등)에서 좁은 화면인데도 MAX_W 인 채로 첫 페인트가 나간다.
+    setWidth(el.getBoundingClientRect().width);
+
+    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, []);
 
   /** 장소명이 일치하고 url 이 있는 사진을 노드 썸네일로 쓴다. */
   const photoFor = (placeName: string) =>
@@ -52,7 +80,7 @@ export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
   const nodes = places.map((place, index) => ({
     place,
     index,
-    x: index % 2 === 0 ? LEFT_X : RIGHT_X,
+    x: index % 2 === 0 ? INSET : width - INSET,
     y: TOP + index * STEP,
     isLeft: index % 2 === 0,
   }));
@@ -69,11 +97,11 @@ export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
   }, '');
 
   return (
-    <ol className="relative mx-auto" style={{ width: W, height }}>
+    <ol ref={listRef} className="relative mx-auto w-full max-w-[320px]" style={{ height }}>
       <svg
-        width={W}
+        width={width}
         height={height}
-        viewBox={`0 0 ${W} ${height}`}
+        viewBox={`0 0 ${width} ${height}`}
         className="animate-fade-in pointer-events-none absolute inset-0"
         aria-hidden
       >
@@ -87,11 +115,14 @@ export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
         />
       </svg>
 
-      {nodes.map(({ place, index, x, y, isLeft }) => {
+      {nodes.map(({ place, index, y, isLeft }) => {
         const photoUrl = photoFor(place.name);
+        // 노드·라벨은 가까운 쪽 가장자리에 붙인다 — 폭을 몰라도 되고, 컨테이너가 좁아져도
+        // 반대쪽으로 밀려나 잘리지 않는다.
+        const nodeStyle = isLeft ? { left: NODE_EDGE } : { right: NODE_EDGE };
         const labelStyle = isLeft
-          ? { left: x + R + 12, textAlign: 'left' as const }
-          : { right: W - (x - R - 12), textAlign: 'right' as const };
+          ? { left: LABEL_EDGE, textAlign: 'left' as const }
+          : { right: LABEL_EDGE, textAlign: 'right' as const };
         // 노드가 먼저 튀어오르고 라벨이 살짝 뒤따르도록 순번대로 지연을 준다.
         // 위치 지정 transform 과 겹치지 않게 애니메이션은 안쪽 래퍼에만 건다.
         const nodeDelay = `${index * 90}ms`;
@@ -99,10 +130,7 @@ export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
         return (
           <li key={place.id} className="contents">
             {/* 노드 */}
-            <div
-              className="absolute size-14 -translate-x-1/2 -translate-y-1/2"
-              style={{ left: x, top: y }}
-            >
+            <div className="absolute size-14 -translate-y-1/2" style={{ ...nodeStyle, top: y }}>
               <div
                 className="animate-roadmap-pop relative size-full"
                 style={{ animationDelay: nodeDelay }}
