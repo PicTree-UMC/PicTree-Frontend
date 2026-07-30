@@ -246,9 +246,49 @@ select {
   animation: roadmap-pop-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* 마커 스토리 뷰어 한줄평 말풍선: 은은하게 위아래로 둥둥 떠있는 효과 */
+@keyframes bubble-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-bubble-float {
+  animation: bubble-float 3.2s ease-in-out infinite;
+}
+
+/* 즐겨찾기 하트 탭 피드백: 통통 튀는 팝(인스타 좋아요 느낌) */
+@keyframes heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.35);
+  }
+  55% {
+    transform: scale(0.9);
+  }
+  75% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-heart-pop {
+  animation: heart-pop 0.4s ease-in-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-roadmap-pop,
-  .animate-fade-in {
+  .animate-fade-in,
+  .animate-bubble-float,
+  .animate-heart-pop {
     animation: none;
   }
 }

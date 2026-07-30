@@ -7,7 +7,7 @@ import { useCurrentLocation } from './hooks/useCurrentLocation';
 import { useMapMarkers, type MapMarkerData } from './hooks/useMapMarkers';
 import { useDeleteTree, useToggleFavorite, useTreeDetail, useTrees } from './hooks/useTrees';
 import { JourneyBanner } from './components/JourneyBanner';
-import { MarkerDetailSheet } from './components/MarkerDetailSheet';
+import { MarkerStoryViewer } from './components/MarkerStoryViewer';
 
 /** 위치 권한 거부·미지원 시 지도가 열릴 기본 위치(서울시청). */
 const FALLBACK_CENTER = { lat: 37.5665, lng: 126.978 };
@@ -96,9 +96,9 @@ export function HomePage() {
         <img src="/camera_btn.png" alt="사진 촬영" className="h-[52px] w-[52px]" />
       </button>
 
-      {/* 마커 상세 바텀시트 */}
+      {/* 마커 상세 — 인스타 스토리형 풀스크린 뷰어 */}
       {selectedMarker && (
-        <MarkerDetailSheet
+        <MarkerStoryViewer
           marker={selectedMarker}
           onClose={() => setSelectedMarkerId(null)}
           onToggleFavorite={handleToggleFavorite}
