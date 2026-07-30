@@ -4,8 +4,11 @@ import { ROUTES } from '@/shared/constants/routes';
 import { getLocalDateString } from '@/shared/lib/date';
 import { useLockBodyScroll } from '@/shared/hooks/useLockBodyScroll';
 import { useBodyBackground } from '@/shared/hooks/useBodyBackground';
+import { useGeolocation } from '@/shared/hooks/useGeolocation';
+import { useToast } from '@/shared/components/toast/toastStore';
 import { useCameraStream, type FacingMode } from './hooks/useCameraStream';
 import { useRecordForm } from './hooks/useRecordForm';
+import { useCreateTreeRecord } from './hooks/useCreateTreeRecord';
 import { captureFrame } from './lib/captureFrame';
 import { CameraControls } from './components/CameraControls';
 import { CommentField } from './components/CommentField';
@@ -28,8 +31,11 @@ export function CameraPage() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const isMirrored = facingMode === 'user';
 
-  const { selectedEmoji, setSelectedEmoji, placeName, setPlaceName, comment, setComment } =
+  const { selectedEmoji, setSelectedEmoji, placeName, setPlaceName, comment, setComment, isValid } =
     useRecordForm();
+  const { coords, request: requestLocation } = useGeolocation();
+  const { showToast } = useToast();
+  const { mutate: saveRecord, isPending: isSaving } = useCreateTreeRecord();
   const today = getLocalDateString();
 
   const handleCapture = () => {
@@ -43,8 +49,30 @@ export function CameraPage() {
   const handleRetake = () => setCapturedPhoto(null);
   const handleClose = () => navigate(ROUTES.home);
   const handleSave = () => {
-    // TODO: API 연동 시 useMutation으로 { photo: capturedPhoto, selectedEmoji, placeName, date: today, comment } 업로드
-    navigate(ROUTES.home);
+    if (isSaving) return;
+    if (!isValid || selectedEmoji === null) {
+      showToast('장소명과 기분 이모지를 입력해 주세요.', 'error');
+      return;
+    }
+    if (!coords) {
+      // POST /trees 에 좌표가 필수라 확보될 때까지 막고 위치를 다시 요청한다.
+      showToast('현재 위치를 확인하는 중이에요. 잠시 후 다시 시도해 주세요.', 'info');
+      requestLocation();
+      return;
+    }
+
+    saveRecord(
+      { photo: capturedPhoto, placeName, mood: selectedEmoji, comment, coords },
+      {
+        onSuccess: () => {
+          showToast('기록이 저장되었어요.', 'success');
+          navigate(ROUTES.home);
+        },
+        onError: () => {
+          showToast('저장에 실패했어요. 잠시 후 다시 시도해 주세요.', 'error');
+        },
+      },
+    );
   };
   const toggleWriteMode = () => setIsWriteMode((prev) => !prev);
   const toggleFacing = () =>
@@ -145,6 +173,8 @@ export function CameraPage() {
         <CameraControls
           hasPhoto={!!capturedPhoto}
           isWriteMode={isWriteMode}
+          canSave={isValid}
+          isSaving={isSaving}
           onCapture={handleCapture}
           onToggleFacing={toggleFacing}
           onToggleWriteMode={toggleWriteMode}

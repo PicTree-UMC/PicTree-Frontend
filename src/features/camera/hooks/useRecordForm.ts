@@ -9,6 +9,9 @@ export function useRecordForm() {
   const [placeName, setPlaceName] = useState('');
   const [comment, setComment] = useState('');
 
+  // 서버 필수값 기준: 기분 이모지 선택 + 장소명 비어있지 않음(한줄평은 선택).
+  const isValid = selectedEmoji !== null && placeName.trim() !== '';
+
   return {
     selectedEmoji,
     setSelectedEmoji,
@@ -16,5 +19,6 @@ export function useRecordForm() {
     setPlaceName,
     comment,
     setComment,
+    isValid,
   };
 }

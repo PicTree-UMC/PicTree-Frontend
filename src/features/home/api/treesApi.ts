@@ -1,7 +1,15 @@
 import { httpClient } from '@/shared/lib/httpClient';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import type { MapMarkerData } from '../hooks/useMapMarkers';
-import type { ApiEnvelope, TreeDetail, TreeListData } from '../types/tree';
+import type {
+  ApiEnvelope,
+  CreateTreeData,
+  CreateTreeRequest,
+  TreeDetail,
+  TreeImage,
+  TreeImageUploadData,
+  TreeListData,
+} from '../types/tree';
 import { detailToMarker, listItemToMarker } from '../lib/treeMapping';
 import { DEMO_MARKERS } from '../mocks/markers';
 
@@ -32,6 +40,36 @@ export const getTrees = async (): Promise<MapMarkerData[]> => {
 export const getTreeDetail = async (treeId: number): Promise<MapMarkerData> => {
   const { data } = await httpClient.get<ApiEnvelope<TreeDetail>>(`/trees/${treeId}`);
   return detailToMarker(data.data);
+};
+
+/** 장소(나무) 등록. 등록된 treeId 로 이어서 사진을 업로드한다. */
+export const createTree = async (
+  payload: CreateTreeRequest,
+): Promise<CreateTreeData> => {
+  const { data } = await httpClient.post<ApiEnvelope<CreateTreeData>>('/trees', payload);
+  return data.data;
+};
+
+/**
+ * 나무 사진 업로드. multipart/form-data 의 단일 파일 필드명은 `image`.
+ * timelineRecordId 는 특정 타임라인 기록의 사진일 때만 전달(카메라 등록에서는 생략).
+ */
+export const uploadTreeImage = async (
+  treeId: number,
+  image: File,
+  timelineRecordId?: number,
+): Promise<TreeImage> => {
+  const formData = new FormData();
+  formData.append('image', image);
+  if (timelineRecordId != null) {
+    formData.append('timelineRecordId', String(timelineRecordId));
+  }
+
+  const { data } = await httpClient.post<ApiEnvelope<TreeImageUploadData>>(
+    `/trees/${treeId}/images`,
+    formData,
+  );
+  return data.data.image;
 };
 
 /** 즐겨찾기 추가/삭제 토글. */
