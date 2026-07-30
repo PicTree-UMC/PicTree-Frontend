@@ -11,12 +11,33 @@ import { JourneyRoadmap } from './components/JourneyRoadmap';
 import { DeleteModal } from './components/DeleteModal';
 import { ROUTES } from '../../shared/constants/routes';
 
-/** 빈 상태 안내 카드 아이콘(디자인 octicon:feed-plus-16). 인라인 SVG. */
-function PlusBadge({ className }: { className?: string }) {
+/**
+ * 저장된 동선이 없을 때 보여주는 감성 일러스트.
+ * 점선으로 이어진 동선 위에 출발점·장소 핀·도착 나무를 얹어 "장소를 이어 발자국을 남긴다"를 표현한다.
+ */
+function EmptyJourneyIllustration({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 40 40" className={className} aria-hidden>
-      <circle cx="20" cy="20" r="20" fill="#89986d" />
-      <path d="M20 12v16M12 20h16" stroke="white" strokeWidth="3.5" strokeLinecap="round" />
+    <svg viewBox="0 0 200 150" className={className} fill="none" aria-hidden>
+      {/* 점선 동선 경로: 출발점에서 도착 나무까지 완만하게 이어진다 */}
+      <path
+        d="M34 118 Q 68 116 92 94 T 168 60"
+        stroke="#c5d89d"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeDasharray="1 12"
+      />
+      {/* 출발 지점 */}
+      <circle cx="34" cy="118" r="6.5" fill="#fffcef" stroke="#89986d" strokeWidth="3" />
+      {/* 중간 장소 핀 (뾰족한 끝이 경로 위에 놓인다) */}
+      <path
+        d="M92 54a15 15 0 0 0-15 15c0 10.5 15 25 15 25s15-14.5 15-25a15 15 0 0 0-15-15z"
+        fill="#89986d"
+      />
+      <circle cx="92" cy="69" r="6" fill="#fffcef" />
+      {/* 도착: 나무 */}
+      <rect x="165" y="48" width="6" height="16" rx="3" fill="#89986d" />
+      <circle cx="168" cy="40" r="14" fill="#c5d89d" />
+      <circle cx="168" cy="40" r="7" fill="#89986d" opacity="0.3" />
     </svg>
   );
 }
@@ -115,20 +136,22 @@ export function JourneyPage() {
             </button>
           </div>
         ) : isEmpty ? (
-          <div className="flex flex-1 flex-col justify-center gap-[30px]">
-            <p className="text-center text-xl font-bold text-[#111]">저장된 동선이 없어요</p>
+          <div className="flex flex-1 flex-col items-center justify-center px-4 text-center">
+            <EmptyJourneyIllustration className="w-[200px]" />
+            <h2 className="mt-6 text-[17px] font-medium text-[#2c3930]">
+              아직 저장된 동선이 없어요
+            </h2>
+            <p className="mt-2 text-[15px] leading-6 text-[#6d7466]">
+              여행하며 다녀온 장소들을 이어
+              <br />
+              나만의 여행 발자국을 남겨보세요.
+            </p>
             <button
               onClick={() => navigate(ROUTES.journeyView)}
-              className="mx-auto h-[54px] w-full max-w-[332px] rounded-[24px] bg-[#89986d] text-lg font-bold text-white"
+              className="mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-[#89986d] text-[15px] font-medium text-white"
             >
               동선 보기로 이동
             </button>
-            <div className="flex items-center gap-4 rounded-[12px] border-2 border-[#c5d89d] bg-white px-5 py-6">
-              <PlusBadge className="size-10 shrink-0" />
-              <p className="text-[15px] font-semibold text-[#2c3930]">
-                버튼을 눌러서 동선을 저장해 보세요
-              </p>
-            </div>
           </div>
         ) : (
           <>
