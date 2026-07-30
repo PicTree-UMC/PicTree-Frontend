@@ -150,7 +150,7 @@ export function JourneyPage() {
               onClick={() => navigate(ROUTES.journeyView)}
               className="mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-[#89986d] text-[15px] font-medium text-white"
             >
-              동선 보기로 이동
+              동선 생성하기
             </button>
           </div>
         ) : (
