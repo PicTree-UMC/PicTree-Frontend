@@ -23,12 +23,17 @@ import { DEMO_MARKERS } from '../mocks/markers';
 const hasToken = () => Boolean(useAuthStore.getState().accessToken);
 const USE_MOCK_FALLBACK = import.meta.env.DEV;
 
+/** 지도는 전체 마커를 한 번에 찍어야 하므로 서버 허용 최대치(100)로 요청한다. */
+const MAP_PAGE_SIZE = 100;
+
 /** 지도에 찍을 내 나무 목록 조회. */
 export const getTrees = async (): Promise<MapMarkerData[]> => {
   if (!hasToken()) return USE_MOCK_FALLBACK ? DEMO_MARKERS : [];
 
   try {
-    const { data } = await httpClient.get<ApiEnvelope<TreeListData>>('/trees');
+    const { data } = await httpClient.get<ApiEnvelope<TreeListData>>('/trees', {
+      params: { size: MAP_PAGE_SIZE },
+    });
     return data.data.items.map(listItemToMarker);
   } catch (error) {
     if (USE_MOCK_FALLBACK) return DEMO_MARKERS;
