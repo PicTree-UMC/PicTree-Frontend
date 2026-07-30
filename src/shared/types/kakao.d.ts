@@ -7,6 +7,7 @@ declare namespace kakao.maps {
     panTo(latlng: LatLng): void;
     getProjection(): Projection;
     relayout(): void;
+    setBounds(bounds: LatLngBounds, paddingTop?: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number): void;
   }
   interface MapOptions {
     center: LatLng;
@@ -16,6 +17,11 @@ declare namespace kakao.maps {
     constructor(lat: number, lng: number);
     getLat(): number;
     getLng(): number;
+  }
+  class LatLngBounds {
+    constructor(sw?: LatLng, ne?: LatLng);
+    extend(latlng: LatLng): void;
+    isEmpty(): boolean;
   }
   class Point {
     constructor(x: number, y: number);
