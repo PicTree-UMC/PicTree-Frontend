@@ -139,7 +139,9 @@ export function RouteDateSheet({
   onClearDates,
   onClose,
 }: RouteDateSheetProps) {
-  const [showLimitWarning, setShowLimitWarning] = useState(false);
+  // 0 이면 숨김. 그 외에는 '몇 번째 시도인지'를 담아 문구의 key 로 쓴다 — 문구가 이미 떠 있을 때
+  // 또 누르면 DOM 이 그대로라 흔들림이 다시 재생되지 않기 때문이다.
+  const [limitAttempt, setLimitAttempt] = useState(0);
 
   const months = useMemo(() => {
     const keys = [...placeCountByDate.keys()].sort();
@@ -148,19 +150,22 @@ export function RouteDateSheet({
   }, [placeCountByDate]);
 
   // 경고는 잠깐만 띄운다. 3일을 채운 채 시트에 머무르면 계속 남아 있는 게 이상하다.
+  // 다시 누르면 attempt 가 올라가 타이머도 처음부터 다시 간다.
   useEffect(() => {
-    if (!showLimitWarning) return;
-    const timer = window.setTimeout(() => setShowLimitWarning(false), 3000);
+    if (limitAttempt === 0) return;
+    const timer = window.setTimeout(() => setLimitAttempt(0), 3000);
     return () => window.clearTimeout(timer);
-  }, [showLimitWarning]);
+  }, [limitAttempt]);
 
   const handleSelect = (dateKey: string) => {
     // 한도는 시트가 지킨다 — 안내 문구를 띄우는 곳과 같은 자리에 두는 게 덜 어긋난다.
     if (!selectedDates.includes(dateKey) && selectedDates.length >= maxDates) {
-      setShowLimitWarning(true);
+      setLimitAttempt((attempt) => attempt + 1);
+      // 흔들림만으로는 화면을 안 보고 있으면 놓친다. iOS 사파리는 이 API 가 없어서 조용히 넘어간다.
+      navigator.vibrate?.(20);
       return;
     }
-    setShowLimitWarning(false);
+    setLimitAttempt(0);
     onToggleDate(dateKey);
   };
 
@@ -187,7 +192,7 @@ export function RouteDateSheet({
           <button
             type="button"
             onClick={() => {
-              setShowLimitWarning(false);
+              setLimitAttempt(0);
               onSelectFirstDates();
             }}
             className="h-11 rounded-[8px] bg-[#fffcef] text-[15px] font-medium text-[#2c3930] shadow-[0_1px_4px_rgba(0,0,0,0.12)]"
@@ -197,7 +202,7 @@ export function RouteDateSheet({
           <button
             type="button"
             onClick={() => {
-              setShowLimitWarning(false);
+              setLimitAttempt(0);
               onClearDates();
             }}
             className="h-11 rounded-[8px] bg-[#fffcef] text-[15px] font-medium text-[#2c3930] shadow-[0_1px_4px_rgba(0,0,0,0.12)]"
@@ -206,9 +211,16 @@ export function RouteDateSheet({
           </button>
         </div>
 
-        {showLimitWarning && (
-          <p role="alert" className="mt-3 px-5 text-[13px]" style={{ color: SUNDAY }}>
-            동선은 최대 {maxDates}일까지 선택할 수 있어요. 다른 날짜를 해제한 뒤 선택해주세요.
+        {limitAttempt > 0 && (
+          // key: 문구가 떠 있는 채로 또 막히면 다시 흔들리게 강제로 다시 마운트한다.
+          // 한 줄 안에 들어가야 해서 문구를 줄였다 — 13px 을 지키면서 320px 폭에도 안 접힌다.
+          <p
+            key={limitAttempt}
+            role="alert"
+            className="mt-3 whitespace-nowrap px-5 text-[13px] motion-safe:animate-shake"
+            style={{ color: SUNDAY }}
+          >
+            최대 {maxDates}일까지 선택할 수 있어요
           </p>
         )}
 
