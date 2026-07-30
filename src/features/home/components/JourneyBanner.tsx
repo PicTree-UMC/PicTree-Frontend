@@ -14,13 +14,13 @@ export function JourneyBanner({ placeCount }: JourneyBannerProps) {
           🌳
         </span>
         <div className="flex flex-col leading-tight">
-          <span className="text-sm font-semibold text-neutral-900">나의 여행 발자국</span>
-          <span className="text-xs text-neutral-500">{placeCount}개의 장소를 기록했어요.</span>
+          <span className="text-[15px] font-medium text-neutral-900">나의 여행 발자국</span>
+          <span className="text-[13px] text-neutral-500">{placeCount}개의 장소를 기록했어요.</span>
         </div>
       </div>
       <Link
         to={ROUTES.journeyView}
-        className="shrink-0 rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700 transition hover:bg-neutral-200"
+        className="shrink-0 rounded-full bg-neutral-100 px-3 py-1.5 text-[13px] font-medium text-neutral-700 transition hover:bg-neutral-200"
       >
         동선보기
       </Link>
