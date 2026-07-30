@@ -4,8 +4,8 @@
   "description": "사진과 동선을 기록으로 연결하는 서비스",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#9fdb83",
+  "background_color": "#FFFCEF",
+  "theme_color": "#FFFCEF",
   "icons": [
     {
       "src": "/apple-touch-icon.jpg",
