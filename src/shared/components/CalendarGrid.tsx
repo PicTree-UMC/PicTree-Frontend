@@ -13,14 +13,22 @@ type CalendarGridProps = {
   month: number;
   activityByDate?: Record<string, number>;
   activityIcon?: string;
+  /**
+   * 날짜 → 잔디 농도(level). 값이 있는 날만 색 원을 그린다.
+   * `activityByDate` 는 "있다/없다" 만 표시하는 반면 이쪽은 농도를 나타낸다.
+   */
+  levelByDate?: Record<string, number>;
+  /** level 을 색으로 바꾸는 표. 인덱스가 곧 level 이다 (0 번은 안 쓴다). */
+  levelColors?: string[];
   startDate?: string;
   endDate?: string;
   onDateSelect?: (date: string) => void;
 };
 
-export function CalendarGrid({ year, month, activityByDate = {}, activityIcon, startDate, endDate, onDateSelect }: CalendarGridProps) {
+export function CalendarGrid({ year, month, activityByDate = {}, activityIcon, levelByDate, levelColors = [], startDate, endDate, onDateSelect }: CalendarGridProps) {
   const weeks = buildCalendarWeeks(year, month);
-  const cellHeight = activityIcon ? 'h-14' : 'h-11';
+  // 농도 표시도 아이콘과 같은 높이를 쓴다 — 숫자 아래 한 칸이 더 필요하다
+  const cellHeight = activityIcon || levelByDate ? 'h-14' : 'h-11';
 
   return (
     <div>
@@ -36,12 +44,15 @@ export function CalendarGrid({ year, month, activityByDate = {}, activityIcon, s
           const isEnd = date === endDate;
           const isInRange = Boolean(startDate && endDate && date > startDate && date < endDate);
           const activityCount = activityByDate[date] ?? 0;
+          const level = levelByDate?.[date] ?? 0;
           const content = (
             <>
               <span className={`grid h-8 w-8 place-items-center rounded-full ${isStart || isEnd ? 'bg-[#879b54] font-bold text-white' : columnColor(column)}`}>{day}</span>
-              {activityCount > 0 && (activityIcon
-                ? <img src={activityIcon} alt={`방문 기록 ${activityCount}개`} className="mt-0.5 h-4 w-4" />
-                : <span className={`mt-0.5 h-1.5 w-1.5 rounded-full ${isStart || isEnd ? 'bg-white' : 'bg-[#879b54]'}`} aria-label={`저장된 나무 ${activityCount}개`} />)}
+              {level > 0
+                ? <span className="mt-0.5 h-4 w-4 rounded-full" style={{ backgroundColor: levelColors[level] }} aria-label={`방문 기록 ${level}단계`} />
+                : activityCount > 0 && (activityIcon
+                  ? <img src={activityIcon} alt={`방문 기록 ${activityCount}개`} className="mt-0.5 h-4 w-4" />
+                  : <span className={`mt-0.5 h-1.5 w-1.5 rounded-full ${isStart || isEnd ? 'bg-white' : 'bg-[#879b54]'}`} aria-label={`저장된 나무 ${activityCount}개`} />)}
             </>
           );
 
