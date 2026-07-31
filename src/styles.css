@@ -175,6 +175,32 @@ select {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/*
+ * 하단 탭바가 콘텐츠 위에 얹혀 있어(Layout), 스크롤 끝 콘텐츠가 탭바에 가리지
+ * 않도록 띄우는 여백.
+ *
+ * ⚠️ pb-28 같은 고정값을 쓰면 안 된다. 탭바는 `pb-safe` 로 하단 안전영역만큼
+ * 더 높아지므로(노치 기기 ≈ 86 + 34 = 120px) 112px 짜리 pb-28 로는 실기기에서
+ * 마지막 요소가 가려진다. 시뮬레이터·데스크톱은 안전영역이 0이라 안 드러난다.
+ *
+ * --safe-bottom 을 한 번 거치는 이유: env() 는 값을 덮어쓸 수 없어 테스트에서
+ * 노치 기기를 흉내 낼 방법이 없다. 변수를 두면 검증 시 주입할 수 있다.
+ */
+:root {
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --nav-height: 86px;
+}
+
+/* 스크롤 페이지의 하단 여백 (탭바 + 안전영역 + 여유 24px) */
+.pb-nav {
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 24px);
+}
+
+/* 탭바 바로 위에 띄우는 떠 있는 요소용 (지도 촬영 버튼 등) */
+.bottom-nav {
+  bottom: calc(var(--nav-height) + var(--safe-bottom) + 16px);
+}
+
 /* 촬영 검토 화면 등장 애니메이션 */
 @keyframes fade-in-down {
   from {
