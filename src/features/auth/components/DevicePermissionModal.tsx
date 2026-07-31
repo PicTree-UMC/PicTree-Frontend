@@ -23,7 +23,7 @@ export function DevicePermissionModal({ isOpen, onConfirm }: DevicePermissionMod
     <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto bg-black/40 px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-[max(env(safe-area-inset-top),1.25rem)]">
       <section
         aria-modal="true"
-        className="my-auto w-full max-w-[22rem] shrink-0 rounded-[1.125rem] bg-[#FFFDF4] px-[1.375rem] pb-6 pt-7"
+        className="my-auto w-full max-w-[22rem] shrink-0 rounded-[1.125rem] bg-[#FFFCEF] px-[1.375rem] pb-6 pt-7"
         role="dialog"
       >
         <h2 className="font-['KOROAD'] text-[1.25rem] font-bold text-[#111]">

@@ -156,7 +156,7 @@ export function SubscriptionPage() {
   };
 
   return (
-    <div className="relative flex min-h-full flex-col bg-[#FFFCEF] pb-28">
+    <div className="relative flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       <header className="flex items-center gap-3 px-5 pt-4">
         <button
           type="button"

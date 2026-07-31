@@ -50,7 +50,7 @@ export function TimelinePage() {
   const isSearching = keyword.trim().length > 0;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#FFFCEF] pb-28">
+    <div className="flex min-h-screen flex-col bg-[#FFFCEF] pb-nav">
       <div className="flex flex-col gap-4 px-5 pb-4 pt-6">
         <TimelineSearchBar value={keyword} onChange={setKeyword} />
 

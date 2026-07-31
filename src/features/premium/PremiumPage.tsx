@@ -12,7 +12,7 @@ import { FEATURE_CODE, findFeature, planSummary } from './lib/planDisplay';
 import type { PaymentStep } from './types/premium';
 
 const PAGE_CLASS =
-  'min-h-full w-full bg-[linear-gradient(#c9dfa0_0%,#eef4dc_62%,#fffdf4_100%)] px-[15px] pb-8 pt-[72px] text-[#20251f]';
+  'min-h-full w-full bg-[linear-gradient(#c9dfa0_0%,#eef4dc_62%,#fffdf4_100%)] px-[15px] pb-nav pt-[72px] text-[#20251f]';
 
 export function PremiumPage() {
   const navigate = useNavigate();

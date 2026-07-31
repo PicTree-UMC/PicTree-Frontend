@@ -81,12 +81,16 @@ export function ProfilePage() {
   // 되돌릴 수 없는 동작이라 한 번 더 확인받는다
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
 
-  // 하단 여백(pb)은 회원탈퇴가 한 줄 늘어난 만큼 키웠다 — 탭바에 붙어 보이지 않게
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFDF7] pb-36">
-      {/* 헤더 밴드 */}
+    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
+      {/* 헤더 밴드 — 눌러서 내 정보 화면으로 */}
       <header className="bg-[#C5D89D] px-[31px] pb-8 pt-6">
-        <div className="flex items-center gap-5">
+        <button
+          type="button"
+          onClick={() => navigate(ROUTES.profileEdit)}
+          aria-label="내 정보 보기"
+          className="flex w-full items-center gap-5 text-left"
+        >
           {/* 아바타 — 프로필 이미지가 없으면 기본 나무 아이콘 */}
           <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
             {profile?.profileImageUrl && !isAvatarBroken ? (
@@ -155,7 +159,7 @@ export function ProfilePage() {
               </span>
             </div>
           )}
-        </div>
+        </button>
       </header>
 
       <div className="flex flex-col gap-4 px-5 pt-6">

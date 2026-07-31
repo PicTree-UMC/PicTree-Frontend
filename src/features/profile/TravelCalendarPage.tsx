@@ -1,28 +1,18 @@
 import { useState } from "react";
 import { CalendarGrid } from "../../shared/components";
+import { useTravelCalendar } from "./hooks/useTravelCalendar";
+import { CALENDAR_LEVELS, CALENDAR_LEVEL_COLORS } from "./lib/calendarLevel";
 import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
-import grassIcon from "./assets/icons/grass.svg";
 import treeIcon from "./assets/icons/tree.svg";
-
-const ACTIVITY: Record<string, number> = {
-  "2026-04-01": 2,
-  "2026-04-07": 3,
-  "2026-04-08": 3,
-};
-
-/** 잔디 농도 범례. 색과 라벨이 짝이라 한곳에서 관리한다 (시안 기준). */
-const GRASS_LEGEND = [
-  { shade: "rgba(239,227,177,0.6)", label: "1곳" },
-  { shade: "rgba(197,216,157,0.6)", label: "2곳" },
-  { shade: "rgba(177,195,141,0.6)", label: "3~4곳" },
-  { shade: "rgba(137,152,109,0.6)", label: "5곳+" },
-];
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 
 export function TravelCalendarPage() {
   const [year, setYear] = useState(2026);
   const [month, setMonth] = useState(4); // 1~12
+
+  // 달을 넘길 때마다 그 달치를 받는다 (queryKey 에 연·월이 들어 있어 캐시가 산다)
+  const { levelByDate, isPending, isError, refetch } = useTravelCalendar(year, month);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const goPrevMonth = () => {
@@ -43,7 +33,7 @@ export function TravelCalendarPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFDF7] pb-28">
+    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 밴드 */}
       <header className="bg-[#C5D89D] px-5 pb-12 pt-4">
         <div className="flex items-center gap-3">
@@ -153,7 +143,31 @@ export function TravelCalendarPage() {
             </button>
           </div>
 
-          <CalendarGrid year={year} month={month} activityByDate={ACTIVITY} activityIcon={grassIcon} />
+          {isError ? (
+            <div className="py-8 text-center">
+              <p className="text-sm text-[#FF5858]">캘린더를 불러오지 못했어요.</p>
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-xs font-bold text-white"
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : (
+            /*
+              불러오는 중에도 격자는 그린다. 날짜 칸은 연·월만으로 정해지므로
+              잔디만 나중에 채워지면 되고, 통째로 비우면 달을 넘길 때마다 화면이 튄다.
+            */
+            <div className={isPending ? "opacity-50 transition-opacity" : undefined}>
+              <CalendarGrid
+                year={year}
+                month={month}
+                levelByDate={levelByDate}
+                levelColors={CALENDAR_LEVEL_COLORS}
+              />
+            </div>
+          )}
         </div>
 
         <div className="mt-4 rounded-xl bg-[#ECF6D8] px-5 py-4">
@@ -169,7 +183,7 @@ export function TravelCalendarPage() {
           */}
           <div className="mt-3 flex items-start justify-center gap-2.5">
             <span className="mt-[5px] text-[10px] text-black">적음</span>
-            {GRASS_LEGEND.map(({ shade, label }) => (
+            {CALENDAR_LEVELS.map(({ shade, label }) => (
               <span key={label} className="flex w-5 flex-col items-center gap-1">
                 <span
                   className="h-5 w-5 rounded-full"

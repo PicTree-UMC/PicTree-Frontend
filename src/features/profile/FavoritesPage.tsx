@@ -1,33 +1,12 @@
 import { useState } from "react";
+import { useFavorites, useRemoveFavorite } from "./hooks/useFavorites";
+import type { FavoritePlace } from "./types/favorite";
 import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
 import chevronIcon from "./assets/icons/chevron.svg";
 import starBadgeIcon from "./assets/icons/starBadge.svg";
 import treeIcon from "./assets/icons/tree.svg";
 import trashIcon from "./assets/icons/trash.svg";
 import trashLargeIcon from "./assets/icons/trashLarge.svg";
-
-interface FavoritePlace {
-  id: string;
-  name: string;
-  description: string;
-  savedAt: string; 
-  thumbnailUrl?: string; 
-}
-
-const MOCK_FAVORITES: FavoritePlace[] = [
-  {
-    id: "1",
-    name: "오아시스 만난 곳",
-    description: "길 가다가 오아시스 자만추",
-    savedAt: "2026-03-30",
-  },
-  {
-    id: "2",
-    name: "마트",
-    description: "물사러 갔는데 마트에 공짜 정수기가 있었따",
-    savedAt: "2026-03-30",
-  },
-];
 
 type SortOrder = "latest" | "registered";
 const SORT_LABELS: Record<SortOrder, string> = {
@@ -36,25 +15,36 @@ const SORT_LABELS: Record<SortOrder, string> = {
 };
 
 export function FavoritesPage() {
-  const [favorites, setFavorites] = useState<FavoritePlace[]>(MOCK_FAVORITES);
+  const { data, isPending, isError, refetch } = useFavorites();
+  const { mutate: removeFavorite } = useRemoveFavorite();
+
   const [target, setTarget] = useState<FavoritePlace | null>(null); // 제거 대상
   const [sortOrder, setSortOrder] = useState<SortOrder>("latest");
   const [sortOpen, setSortOpen] = useState(false);
 
-  // 최신순 = 저장일 내림차순, 등록순 = 저장일 오름차순(먼저 등록된 순)
+  const favorites = data?.favorites ?? [];
+  // 개수는 서버가 준 값을 쓴다 (목록 길이와 같지만 응답에 명시돼 있다)
+  const count = data?.count ?? 0;
+
+  /**
+   * 최신순 = 방문일 내림차순, 등록순 = 방문일 오름차순(먼저 다녀온 순).
+   *
+   * ⚠️ 즐겨찾기에 담은 시각은 응답에 없다. `visitedAt`(방문일)이 유일한 날짜라
+   * 그걸로 정렬한다. 같은 날이면 treeId 로 갈라 순서가 흔들리지 않게 한다.
+   */
   const sortedFavorites = [...favorites].sort((a, b) => {
-    const cmp = a.savedAt.localeCompare(b.savedAt) || a.id.localeCompare(b.id);
+    const cmp = a.visitedAt.localeCompare(b.visitedAt) || a.treeId - b.treeId;
     return sortOrder === "latest" ? -cmp : cmp;
   });
 
   const handleRemove = () => {
     if (!target) return;
-    setFavorites((prev) => prev.filter((place) => place.id !== target.id));
+    removeFavorite(target.treeId);
     setTarget(null);
   };
 
   return (
-    <div className="relative flex min-h-full flex-col bg-[#FFFDF7] pb-28">
+    <div className="relative flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 밴드 */}
       <header className="bg-[#C5D89D] px-5 pb-8 pt-4">
         <div className="flex items-center gap-3">
@@ -78,7 +68,7 @@ export function FavoritesPage() {
         <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
           <img src={starBadgeIcon} alt="" className="h-12 w-12 flex-shrink-0" />
           <span className="text-lg font-bold text-black">
-            즐겨찾기 {favorites.length}곳
+            즐겨찾기 {count}곳
           </span>
         </div>
 
@@ -141,20 +131,33 @@ export function FavoritesPage() {
         </div>
 
         {/* 장소 목록 */}
-        {favorites.length === 0 ? (
+        {isPending ? (
+          <p className="py-10 text-center text-sm text-[#90908F]">불러오는 중...</p>
+        ) : isError ? (
+          <div className="py-10 text-center">
+            <p className="text-sm text-[#FF5858]">즐겨찾기를 불러오지 못했어요.</p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-xs font-bold text-white"
+            >
+              다시 시도
+            </button>
+          </div>
+        ) : favorites.length === 0 ? (
           <p className="py-10 text-center text-sm text-[#90908F]">
             즐겨찾기한 장소가 없어요.
           </p>
         ) : (
           sortedFavorites.map((place) => (
             <div
-              key={place.id}
+              key={place.treeId}
               className="relative flex items-start gap-3 rounded-2xl bg-white p-3 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]"
             >
-              {/* 썸네일 (백엔드 연동 시 이미지로 교체) */}
-              {place.thumbnailUrl ? (
+              {/* 썸네일 — 사진이 없는 장소는 회색 자리로 둔다 */}
+              {place.imageUrl ? (
                 <img
-                  src={place.thumbnailUrl}
+                  src={place.imageUrl}
                   alt=""
                   className="h-16 w-16 flex-shrink-0 rounded-xl object-cover"
                 />
@@ -164,10 +167,12 @@ export function FavoritesPage() {
 
               <div className="min-w-0 flex-1 pr-7">
                 <p className="text-base font-bold text-black">{place.name}</p>
-                <p className="mt-0.5 text-xs text-[#90908F]">
-                  {place.description}
-                </p>
-                <p className="mt-1 text-xs text-[#90908F]">{place.savedAt}</p>
+                {place.description && (
+                  <p className="mt-0.5 text-xs text-[#90908F]">
+                    {place.description}
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-[#90908F]">{place.visitedAt}</p>
               </div>
 
               <button
