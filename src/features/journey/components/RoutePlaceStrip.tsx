@@ -5,7 +5,11 @@ interface RoutePlaceStripProps {
   places: RoutePlace[];
   /** 사용자가 꺼둔 장소. 목록에는 남되 번호·개수·지도에서 빠진다(화면설계서 7번). */
   disabledPlaceIds: ReadonlySet<number>;
-  maxPlaces: number;
+  /**
+   * 저장 한도. **저장된 동선을 볼 때는 넘기지 않는다** — 이미 저장된 것이라 한도가 의미 없고,
+   * `3/20개` 처럼 보이면 더 담을 수 있다는 오해를 준다. 없으면 `장소 n개` 로만 쓴다.
+   */
+  maxPlaces?: number;
   onTogglePlace: (placeId: number) => void;
 }
 
@@ -71,7 +75,7 @@ function useScrollIndicator(contentKey: unknown) {
  * 화면 하단의 동선 요약 바.
  *
  * 제목은 고른 날짜 수와 무관하게 '전체 동선' 하나다 — 날짜별 구분은 지도 쪽이 맡는다.
- * 장소 수를 n/20 으로 같이 보여주는 건 저장 한도가 20개이기 때문(화면설계서 0·2번).
+ * 새 동선을 만들 때만 장소 수를 n/20 으로 보여준다 — 저장 한도가 20개이기 때문(설계서 0·2번).
  *
  * 칩을 누르면 그 장소가 꺼지고 **뒤 번호가 당겨진다**(설계서 7번). 켠 장소만 세기 때문에
  * 화면에 보이는 번호는 항상 1부터 빈틈없이 이어진다.
@@ -92,7 +96,7 @@ export function RoutePlaceStrip({
     <div className="bg-[#c5d89d] px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-4">
       <h2 className="text-[15px] font-medium tracking-tight text-[#2c3930]">전체 동선</h2>
       <p className="mt-1 text-[13px] text-[#89986d]">
-        장소 {activeCount}/{maxPlaces}개
+        장소 {maxPlaces === undefined ? activeCount : `${activeCount}/${maxPlaces}`}개
       </p>
 
       {places.length === 0 ? (

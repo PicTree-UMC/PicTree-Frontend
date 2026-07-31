@@ -25,7 +25,11 @@ interface RouteDateBarProps {
   /** 그날 장소가 전부 꺼져 있는 날짜. 칩은 남고 반투명해진다(화면설계서 6·7번). */
   disabledDates: ReadonlySet<string>;
   maxDates: number;
-  onOpenDatePicker: () => void;
+  /**
+   * 캘린더 열기. **저장된 동선을 볼 때는 넘기지 않는다** — 동선이 날짜를 이미 들고 있어서
+   * 고를 게 없다. 없으면 `날짜 관리` 버튼째 사라지고 칩만 남는다.
+   */
+  onOpenDatePicker?: () => void;
   onToggleDate: (dateKey: string) => void;
 }
 
@@ -48,14 +52,16 @@ export function RouteDateBar({
 }: RouteDateBarProps) {
   return (
     <div className="flex flex-col items-start gap-2 px-5 pt-3">
-      <button
-        type="button"
-        onClick={onOpenDatePicker}
-        className="flex h-8 shrink-0 items-center gap-1.5 rounded-[10px] bg-[#2c3930] px-3 text-[13px] font-medium text-[#fffcef] shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
-      >
-        <CalendarIcon className="h-4 w-4" />
-        날짜 관리 {selectedDates.length}/{maxDates}일
-      </button>
+      {onOpenDatePicker && (
+        <button
+          type="button"
+          onClick={onOpenDatePicker}
+          className="flex h-8 shrink-0 items-center gap-1.5 rounded-[10px] bg-[#2c3930] px-3 text-[13px] font-medium text-[#fffcef] shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
+        >
+          <CalendarIcon className="h-4 w-4" />
+          날짜 관리 {selectedDates.length}/{maxDates}일
+        </button>
+      )}
 
       {selectedDates.length > 0 && (
         <div className="flex w-full gap-2 overflow-x-auto pb-1">
