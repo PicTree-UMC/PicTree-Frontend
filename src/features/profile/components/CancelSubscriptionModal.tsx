@@ -6,10 +6,12 @@ const LOSING_BENEFITS = ["용량 업그레이드", "AI 블로그 자동 생성",
 interface Props {
   onKeep: () => void;
   onCancel: () => void;
+  /** 취소 요청이 나가 있는 동안 true. 응답이 올 때까지 모달이 그대로 떠 있어서 필요하다. */
+  isPending?: boolean;
 }
 
 /** 구독 취소 확인 모달. 되돌릴 수 없어 무엇을 잃는지 먼저 보여준다. */
-export function CancelSubscriptionModal({ onKeep, onCancel }: Props) {
+export function CancelSubscriptionModal({ onKeep, onCancel, isPending }: Props) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-5"
@@ -40,16 +42,18 @@ export function CancelSubscriptionModal({ onKeep, onCancel }: Props) {
           <button
             type="button"
             onClick={onKeep}
-            className="h-[38px] w-[120px] rounded-xl bg-[#ECECEC] text-base font-semibold text-[#2C3930]"
+            disabled={isPending}
+            className="h-[38px] w-[120px] rounded-xl bg-[#ECECEC] text-base font-semibold text-[#2C3930] disabled:opacity-60"
           >
             구독 유지
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="h-[38px] w-[120px] rounded-xl bg-[#FF5858] text-base font-semibold text-white"
+            disabled={isPending}
+            className="h-[38px] w-[120px] rounded-xl bg-[#FF5858] text-base font-semibold text-white disabled:opacity-60"
           >
-            구독 취소
+            {isPending ? "처리 중..." : "구독 취소"}
           </button>
         </div>
       </div>

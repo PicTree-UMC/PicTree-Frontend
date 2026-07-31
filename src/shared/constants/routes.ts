@@ -15,6 +15,9 @@ export const ROUTES = {
   blog: '/blog',
   blogCreate: '/blog/create',
   premium: '/premium',
+  // 토스 빌링 인증 후 리다이렉트되는 착지 라우트 (successUrl/failUrl 오리진 뒤 경로)
+  premiumBillingSuccess: '/premium/billing/success',
+  premiumBillingFail: '/premium/billing/fail',
   journey: '/journey',
   journeyView: '/journey/view',
   camera: '/camera',
