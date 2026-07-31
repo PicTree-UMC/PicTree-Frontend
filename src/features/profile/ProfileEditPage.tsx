@@ -112,14 +112,21 @@ export function ProfileEditPage() {
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsSheetOpen(true)}
-            aria-label="프로필 사진 변경"
-            className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#FFFCEF] bg-[#89986D] text-sm text-white"
-          >
-            ✎
-          </button>
+          {/*
+            사진이 없으면 버튼을 아예 띄우지 않는다. 지금 할 수 있는 동작이
+            "제거" 뿐이라, 기본 이미지 상태에서는 눌러도 할 일이 없다.
+            업로드 API 가 생기면 이 조건을 풀고 "사진 선택" 을 붙이면 된다.
+          */}
+          {hasImage && (
+            <button
+              type="button"
+              onClick={() => setIsSheetOpen(true)}
+              aria-label="프로필 사진 제거"
+              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#FFFCEF] bg-[#89986D] text-sm text-white"
+            >
+              ✎
+            </button>
+          )}
         </div>
 
         {profile && (
@@ -183,7 +190,6 @@ export function ProfileEditPage() {
 
       {isSheetOpen && (
         <ProfileImageSheet
-          hasImage={hasImage}
           onRemove={handleRemoveImage}
           onClose={() => setIsSheetOpen(false)}
         />

@@ -1,23 +1,22 @@
 import trashIcon from "../assets/icons/trash.svg";
 
 interface Props {
-  /** 지금 프로필 사진이 있는지. 없으면 "기본 이미지로 변경" 을 띄울 이유가 없다. */
-  hasImage: boolean;
   onRemove: () => void;
   onClose: () => void;
 }
 
 /**
- * 프로필 사진 변경 시트.
+ * 프로필 사진 제거 확인 시트.
  *
- * ⚠️ "사진 선택" 은 아직 못 쓴다. `PATCH /users/me` 는 `profileImageUrl` 을 URL
- * 문자열로만 받는데, 그 URL 을 만들어 줄 업로드 API 가 백엔드에 없다.
- * 파일 업로드는 `POST /trees/{treeId}/images` 하나뿐이고 나무에 종속된 것이다.
+ * 사진을 "교체" 하는 항목은 두지 않았다. `PATCH /users/me` 는 `profileImageUrl` 을
+ * URL 문자열로만 받는데 그 URL 을 만들어 줄 업로드 API 가 백엔드에 없다
+ * (파일 업로드는 `POST /trees/{treeId}/images` 하나뿐이고 나무에 종속된 것).
+ * 업로드 엔드포인트가 생기면 여기에 항목을 하나 더 붙이면 된다.
  *
- * 눌리지 않는 항목을 숨기지 않고 남겨 둔 이유는, 사진을 바꾸려던 사용자가
- * 방법이 아예 없다고 오해하지 않게 하려는 것이다.
+ * 제거를 한 번 더 확인받는 이유: 지금은 사진을 다시 올릴 방법이 없어, 지우면
+ * 소셜 계정에서 가져온 사진이 영영 사라진다.
  */
-export function ProfileImageSheet({ hasImage, onRemove, onClose }: Props) {
+export function ProfileImageSheet({ onRemove, onClose }: Props) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
@@ -25,40 +24,38 @@ export function ProfileImageSheet({ hasImage, onRemove, onClose }: Props) {
     >
       <div
         role="dialog"
-        aria-label="프로필 사진 변경"
+        aria-label="프로필 사진 제거"
         className="w-full rounded-t-[20px] bg-[#FFFCEF] px-6 pb-8 pt-3 sm:max-w-[390px]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto mb-4 h-[5px] w-[134px] rounded-full bg-[#D9D9D9]" />
 
-        <button
-          type="button"
-          disabled
-          className="flex w-full items-center gap-3 py-3 text-left opacity-40"
-        >
-          <span className="text-[22px]">🖼️</span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-base font-semibold text-[#2C3930]">
-              앨범에서 선택
-            </span>
-            <span className="block text-xs text-[#8D8D8D]">
-              사진 업로드는 준비 중이에요
-            </span>
-          </span>
-        </button>
+        <p className="text-center text-base font-bold text-[#2C3930]">
+          프로필 사진을 지울까요?
+        </p>
+        <p className="mt-1 text-center text-xs leading-[18px] text-[#8D8D8D]">
+          기본 이미지로 바뀌어요. 지금은 사진을 다시 올릴 수 없어
+          <br />
+          소셜 계정에서 가져온 사진이 사라집니다.
+        </p>
 
-        {hasImage && (
+        <div className="mt-5 flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-[44px] flex-1 rounded-[12px] bg-[#E6E6E6] text-[15px] font-semibold text-[#2C3930]"
+          >
+            취소
+          </button>
           <button
             type="button"
             onClick={onRemove}
-            className="flex w-full items-center gap-3 border-t border-[#E6E1CC] py-3 text-left"
+            className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#FF5858] text-[15px] font-semibold text-white"
           >
-            <img src={trashIcon} alt="" className="h-[22px] w-[22px]" />
-            <span className="text-base font-semibold text-[#FF5858]">
-              기본 이미지로 변경
-            </span>
+            <img src={trashIcon} alt="" className="h-[18px] w-[18px] brightness-0 invert" />
+            지우기
           </button>
-        )}
+        </div>
       </div>
     </div>
   );
