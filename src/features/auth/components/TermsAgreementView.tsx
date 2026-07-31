@@ -1,29 +1,34 @@
 import { useMemo, useState } from 'react';
 
 import { Button } from '../../../shared/components';
-import { AGREEMENT_TERMS } from '../constants/terms';
-import type { TermId } from '../types/auth';
+import { useTerms } from '../hooks/useTerms';
 
 type TermsAgreementViewProps = {
   onAgree: () => void;
 };
 
 export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
-  const [checkedTerms, setCheckedTerms] = useState<Set<TermId>>(new Set());
-  const [expandedTerms, setExpandedTerms] = useState<Set<TermId>>(new Set());
+  const { terms, isPending, isError, refetch } = useTerms();
+  const [checkedTerms, setCheckedTerms] = useState<Set<string>>(new Set());
+  const [expandedTerms, setExpandedTerms] = useState<Set<string>>(new Set());
 
-  const requiredTermIds = useMemo(
-    () => AGREEMENT_TERMS.filter((term) => term.required).map((term) => term.id),
-    [],
+  const requiredTermKeys = useMemo(
+    () => terms.filter((term) => term.required).map((term) => term.key),
+    [terms],
   );
-  const isAllChecked = checkedTerms.size === AGREEMENT_TERMS.length;
-  const canStart = requiredTermIds.every((id) => checkedTerms.has(id));
+  const isAllChecked = terms.length > 0 && checkedTerms.size === terms.length;
+  /**
+   * 필수 약관을 모두 체크해야 시작할 수 있다.
+   * 목록을 아직 못 받았으면(로딩·실패) 눌리지 않게 막는다 — 빈 배열에 대한
+   * `every` 는 true 라, 그대로 두면 아무것도 동의하지 않고 통과한다.
+   */
+  const canStart = terms.length > 0 && requiredTermKeys.every((key) => checkedTerms.has(key));
 
   const toggleAll = () => {
-    setCheckedTerms(isAllChecked ? new Set() : new Set(AGREEMENT_TERMS.map((term) => term.id)));
+    setCheckedTerms(isAllChecked ? new Set() : new Set(terms.map((term) => term.key)));
   };
 
-  const toggleTerm = (termId: TermId) => {
+  const toggleTerm = (termId: string) => {
     setCheckedTerms((prev) => {
       const next = new Set(prev);
 
@@ -37,7 +42,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
     });
   };
 
-  const toggleExpanded = (termId: TermId) => {
+  const toggleExpanded = (termId: string) => {
     setExpandedTerms((prev) => {
       const next = new Set(prev);
 
@@ -69,19 +74,38 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
 
       <section className="mt-4 rounded-[1.125rem] bg-[#FFFDF7] px-6 py-5">
         <h2 className="mb-5 font-['KOROAD'] text-[1.125rem] font-bold text-[#111]">약관 안내</h2>
+        {isPending ? (
+          <p className="py-6 text-center font-['KOROAD'] text-[0.875rem] text-[#8D8D8D]">
+            약관을 불러오는 중...
+          </p>
+        ) : isError ? (
+          <div className="py-6 text-center">
+            <p className="font-['KOROAD'] text-[0.875rem] text-[#FF5858]">
+              약관을 불러오지 못했어요.
+            </p>
+            <Button
+              unstyled
+              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 font-['KOROAD'] text-[0.75rem] font-bold text-white"
+              type="button"
+              onClick={() => refetch()}
+            >
+              다시 시도
+            </Button>
+          </div>
+        ) : (
         <div className="space-y-4">
-          {AGREEMENT_TERMS.map((term) => {
-            const checked = checkedTerms.has(term.id);
-            const expanded = expandedTerms.has(term.id);
+          {terms.map((term) => {
+            const checked = checkedTerms.has(term.key);
+            const expanded = expandedTerms.has(term.key);
 
             return (
-              <article key={term.id} className="grid grid-cols-[1.75rem_1fr_1.5rem] gap-3">
+              <article key={term.key} className="grid grid-cols-[1.75rem_1fr_1.5rem] gap-3">
                 <Button
                   unstyled
                   aria-label={`${term.title} ${checked ? '동의 취소' : '동의'}`}
                   className="mt-0.5 h-6 w-6"
                   type="button"
-                  onClick={() => toggleTerm(term.id)}
+                  onClick={() => toggleTerm(term.key)}
                 >
                   <CheckCircle checked={checked} compact />
                 </Button>
@@ -91,14 +115,30 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
                       term.required || checked ? 'text-[#111]' : 'text-[#8D8D8D]'
                     }`}
                     type="button"
-                    onClick={() => toggleTerm(term.id)}
+                    onClick={() => toggleTerm(term.key)}
                   >
                     {term.title}
                   </button>
                   {expanded ? (
-                    <p className="mt-1 whitespace-pre-line font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-[#111]">
-                      {term.description}
-                    </p>
+                    /*
+                      서버 응답에는 설명이 없다. 유형별 로컬 문구가 있으면 그걸 쓰고,
+                      없으면 약관 전문 링크로 대신한다 — 펼쳤는데 아무것도 없으면
+                      무엇에 동의하는지 알 수 없다.
+                    */
+                    term.description ? (
+                      <p className="mt-1 whitespace-pre-line font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-[#111]">
+                        {term.description}
+                      </p>
+                    ) : term.contentUrl ? (
+                      <a
+                        href={term.contentUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-1 inline-block font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-[#5C6F2B] underline"
+                      >
+                        약관 전문 보기
+                      </a>
+                    ) : null
                   ) : null}
                 </div>
                 <Button
@@ -106,7 +146,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
                   aria-label={`${term.title} 상세 ${expanded ? '접기' : '보기'}`}
                   className="mt-1 grid h-6 w-6 place-items-center"
                   type="button"
-                  onClick={() => toggleExpanded(term.id)}
+                  onClick={() => toggleExpanded(term.key)}
                 >
                   <ChevronIcon expanded={expanded} />
                 </Button>
@@ -114,6 +154,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
             );
           })}
         </div>
+        )}
       </section>
 
       <Button
