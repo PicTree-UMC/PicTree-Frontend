@@ -220,7 +220,7 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
 
 export function PrivacyPolicyPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-[#FFFCEF] pb-28">
+    <div className="flex min-h-screen flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 */}
       <header className="bg-[#C5D89D] px-5 pb-5 pt-4">
         <div className="flex items-center gap-3">

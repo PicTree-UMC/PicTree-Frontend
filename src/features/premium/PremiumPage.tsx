@@ -27,7 +27,7 @@ export function PremiumPage() {
   };
 
   return (
-    <main className="min-h-full w-full bg-[linear-gradient(#c9dfa0_0%,#eef4dc_62%,#fffdf4_100%)] px-[15px] pb-8 pt-[72px] text-[#20251f]">
+    <main className="min-h-full w-full bg-[linear-gradient(#c9dfa0_0%,#eef4dc_62%,#fffdf4_100%)] px-[15px] pb-nav pt-[72px] text-[#20251f]">
       <div className="flex flex-col items-center"><CrownIcon/><h1 className="mt-2 text-[24px] font-bold">프리미엄으로 업그레이드</h1><p className="mt-1 text-[14px]">나의 여행을 더 특별하게 기록하세요</p></div>
       <BenefitTable/>
       <h2 className="mb-2 mt-3 text-[14px] font-bold">플랜 선택</h2>
