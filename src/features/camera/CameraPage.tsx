@@ -64,8 +64,15 @@ export function CameraPage() {
     saveRecord(
       { photo: capturedPhoto, placeName, mood: selectedEmoji, comment, coords },
       {
-        onSuccess: () => {
-          showToast('기록이 저장되었어요.', 'success');
+        onSuccess: ({ timelineFailed }) => {
+          // 방문 기록만 실패하면 장소는 저장돼 지도에는 뜨지만 동선에서는 빠진다.
+          // 같은 '저장되었어요' 로 뭉뚱그리면 나중에 동선에서 안 보이는 이유를 알 수 없다.
+          showToast(
+            timelineFailed
+              ? '장소는 저장했지만 동선 기록에 담지 못했어요.'
+              : '기록이 저장되었어요.',
+            timelineFailed ? 'info' : 'success',
+          );
           navigate(ROUTES.home);
         },
         onError: () => {
