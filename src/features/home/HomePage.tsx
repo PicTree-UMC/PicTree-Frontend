@@ -86,12 +86,13 @@ export function HomePage() {
       <JourneyBanner placeCount={0} />
 
       {/*
-        카메라 버튼 — 탭바(86px)가 지도 위에 얹히므로 그보다 위에 띄운다.
-        예전에는 탭바가 지도 아래에 흐름상 놓여 bottom-6 으로 충분했다.
+        카메라 버튼 — 탭바가 지도 위에 얹히므로 그보다 위에 띄운다.
+        bottom-nav 는 탭바 높이 + 하단 안전영역을 함께 계산한다. 고정 px 로 두면
+        노치 기기에서 탭바가 안전영역만큼 더 높아져 버튼이 가려진다.
       */}
       <button
         onClick={() => navigate(ROUTES.camera)}
-        className="absolute bottom-[110px] left-1/2 z-20 -translate-x-1/2"
+        className="bottom-nav absolute left-1/2 z-20 -translate-x-1/2"
       >
         <img src="/camera_btn.png" alt="사진 촬영" className="h-[52px] w-[52px]" />
       </button>

@@ -117,7 +117,7 @@ export function JourneyPage() {
   return (
     <div className="flex min-h-full flex-col bg-[#fffcef]">
       {/* pb: 탭바가 콘텐츠 위에 얹히므로 마지막 항목이 가려지지 않을 만큼 띄운다 */}
-      <div className="flex flex-1 flex-col px-5 pb-28 pt-safe">
+      <div className="flex flex-1 flex-col px-5 pb-nav pt-safe">
         {isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
             <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#89986d]" />
