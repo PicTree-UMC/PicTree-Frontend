@@ -74,7 +74,7 @@ export function SubscriptionPage() {
    * 없어서 결제 정보와 취소 버튼을 못 그린다. 두 소스를 섞으면 서로 어긋난 값이
    * 한 화면에 뜨므로 여기서는 구독 응답만 쓴다.
    */
-  const { data: subscription, isPending } = useMySubscription();
+  const { data: subscription, isPending, isError, refetch } = useMySubscription();
   const { data: plans } = useSubscriptionPlans();
   // 카드 표시는 구독과 별개 소스(GET /billing-keys)라 함께 조회한다.
   const { data: billingKeys } = useBillingKeys();
@@ -170,6 +170,25 @@ export function SubscriptionPage() {
       </header>
 
       <div className="flex flex-col gap-4 px-5 pt-6">
+        {/*
+          조회에 실패하면 아래 화면이 "무료 플랜" 으로 그려진다. 유료 사용자에게
+          장애 중 무료로 보이는 건 오해를 부르므로 사유를 먼저 알린다.
+        */}
+        {isError && (
+          <div className="rounded-xl border-2 border-[#FF8A8A] bg-white px-5 py-4 text-center">
+            <p className="text-sm text-[#FF5858]">
+              구독 정보를 불러오지 못했어요. 아래는 실제 플랜과 다를 수 있어요.
+            </p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-xs font-bold text-white"
+            >
+              다시 시도
+            </button>
+          </div>
+        )}
+
         {isPending ? (
           // 플랜 배지 자리를 잡아 둬 레이아웃이 튀지 않게 한다
           <div className="mx-auto h-7 w-32 animate-pulse rounded bg-[#EAE6D2]" />

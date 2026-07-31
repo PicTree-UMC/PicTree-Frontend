@@ -32,7 +32,7 @@ function Field({
 export function ProfileEditPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { data: profile, isPending } = useMyProfile();
+  const { data: profile, isPending, isError, refetch } = useMyProfile();
   const { mutate: updateProfile, isPending: isSaving } = useUpdateMyProfile();
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -137,6 +137,24 @@ export function ProfileEditPage() {
       </div>
 
       <div className="flex flex-col gap-5 px-5 pt-6">
+        {/*
+          조회에 실패하면 빈 폼만 남아 왜 비었는지 알 수 없다. 저장 버튼은 어차피
+          막히므로(값이 없어 변경 판정이 안 선다) 잘못 저장될 위험은 없지만,
+          사유와 재시도 수단은 있어야 한다.
+        */}
+        {isError && (
+          <div className="rounded-xl border-2 border-[#FF8A8A] bg-white px-5 py-4 text-center">
+            <p className="text-sm text-[#FF5858]">내 정보를 불러오지 못했어요.</p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-xs font-bold text-white"
+            >
+              다시 시도
+            </button>
+          </div>
+        )}
+
         <Field
           label="닉네임"
           hint={
