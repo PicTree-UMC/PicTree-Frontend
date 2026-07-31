@@ -16,7 +16,7 @@ export function TimelinePage() {
   const [keyword, setKeyword] = useState("");
   const [sort, setSort] = useState<TimelineSort>("recent");
 
-  const { groups, visibleCount, isLoading, isError } = useTimeline({ keyword, sort });
+  const { groups, visibleCount, isLoading, isError, refetch } = useTimeline({ keyword, sort });
   const deleteMutation = useDeleteRecord();
   const updateMutation = useUpdateTimeline();
   const { showToast } = useToast();
@@ -54,20 +54,30 @@ export function TimelinePage() {
       <div className="flex flex-col gap-4 px-5 pb-4 pt-6">
         <TimelineSearchBar value={keyword} onChange={setKeyword} />
 
-        <div className="flex items-center justify-between">
-          <p className="text-[12px] text-[#8D8D8D]">
-            {isSearching ? `검색 결과 ${visibleCount}개` : `총 ${visibleCount}개의 기록`}
-          </p>
-          <TimelineSortTabs value={sort} onChange={setSort} />
-        </div>
+        {/* 못 불러온 상태에서 "총 0개" 는 기록이 없다는 뜻으로 읽힌다 — 개수·정렬은 숨긴다 */}
+        {!isError && (
+          <div className="flex items-center justify-between">
+            <p className="text-[12px] text-[#8D8D8D]">
+              {isSearching ? `검색 결과 ${visibleCount}개` : `총 ${visibleCount}개의 기록`}
+            </p>
+            <TimelineSortTabs value={sort} onChange={setSort} />
+          </div>
+        )}
 
         {isLoading && (
           <p className="py-10 text-center text-sm text-[#8D8D8D]">불러오는 중...</p>
         )}
         {isError && (
-          <p className="py-10 text-center text-sm text-[#FF5858]">
-            기록을 불러오지 못했습니다.
-          </p>
+          <div className="py-10 text-center">
+            <p className="text-sm text-[#FF5858]">기록을 불러오지 못했어요.</p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-xs font-bold text-white"
+            >
+              다시 시도
+            </button>
+          </div>
         )}
         {!isLoading && !isError && groups.length === 0 && (
           <p className="py-10 text-center text-sm text-[#8D8D8D]">

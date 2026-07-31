@@ -10,26 +10,8 @@ import type {
   TimelineRecord,
   UpdateTimelineRequest,
 } from "../types/timeline.types";
-import { DEMO_TIMELINE_RECORDS } from "../mocks/timelineRecords";
 
 export const TIMELINE_PAGE_SIZE = 20;
-
-/**
- * 개발 환경에서만 목데이터로 폴백한다 (지도 `treesApi` 와 같은 방식).
- *
- * 로그인·백엔드 없이 화면을 볼 수 있어야 퍼블리싱·리뷰가 가능한데, API 연동 이후
- * 로컬에서는 타임라인이 늘 빈 화면이었다. 배포 빌드에서는 폴백 없이 실 API 만 쓰고
- * 에러도 그대로 노출한다 — 목데이터가 프로덕션에 새어 나가면 안 된다.
- */
-const USE_MOCK_FALLBACK = import.meta.env.DEV;
-
-/** 목데이터를 목록 응답 형태로 감싼다. */
-const toMockPage = (page: number, size: number): TimelinePage => ({
-  records: DEMO_TIMELINE_RECORDS,
-  page,
-  size,
-  totalCount: DEMO_TIMELINE_RECORDS.length,
-});
 
 /**
  * API 레코드를 화면이 쓰는 형태로 변환한다.
@@ -60,46 +42,32 @@ const toTimelineRecord = (record: TimelineApiRecord): TimelineRecord => ({
  *
  * 백엔드 컨트롤러에 `AccessTokenGuard` 가 붙어 있어 유효한 토큰이 필요하다.
  * `httpClient` 에 토큰 인터셉터가 없어 호출부가 헤더를 직접 넘긴다.
- *
- * 토큰이 없거나 호출이 실패하면 개발 환경에 한해 목데이터를 돌려준다.
  */
 export const getTimelines = async (
   accessToken: string,
   { page = 1, size = TIMELINE_PAGE_SIZE }: { page?: number; size?: number } = {},
 ): Promise<TimelinePage> => {
-  if (!accessToken && USE_MOCK_FALLBACK) {
-    return toMockPage(page, size);
+  const { data } = await httpClient.get<ApiResponse<TimelineApiPage>>("/timelines", {
+    params: { page, size },
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
+  if (data.resultType === "FAIL") {
+    throw new Error(data.error.message);
   }
 
-  try {
-    const { data } = await httpClient.get<ApiResponse<TimelineApiPage>>("/timelines", {
-      params: { page, size },
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+  const body = data.data;
+  const records = body?.items ?? body?.content ?? [];
 
-    // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-    if (data.resultType === "FAIL") {
-      throw new Error(data.error.message);
-    }
-
-    const body = data.data;
-    const records = body?.items ?? body?.content ?? [];
-
-    return {
-      records: records.map(toTimelineRecord),
-      page: body?.page ?? page,
-      size: body?.size ?? size,
-      totalCount: body?.totalElements ?? body?.totalCount ?? records.length,
-    };
-  } catch (error) {
-    if (USE_MOCK_FALLBACK) {
-      return toMockPage(page, size);
-    }
-
-    throw error;
-  }
+  return {
+    records: records.map(toTimelineRecord),
+    page: body?.page ?? page,
+    size: body?.size ?? size,
+    totalCount: body?.totalElements ?? body?.totalCount ?? records.length,
+  };
 };
 
 /**
