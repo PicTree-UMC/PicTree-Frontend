@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { ROUTES } from '@/shared/constants/routes';
 import { registerBillingKey, startSubscription } from './api/paymentApi';
+import { paymentKeys } from './hooks/useMySubscription';
 import { PENDING_PLAN_STORAGE_KEY } from './lib/tossPayments';
 
 /**
@@ -14,6 +16,7 @@ import { PENDING_PLAN_STORAGE_KEY } from './lib/tossPayments';
 export function BillingSuccessPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState<'processing' | 'error'>('processing');
   const ranRef = useRef(false); // StrictMode 이중 실행 방지
 
@@ -42,7 +45,21 @@ export function BillingSuccessPage() {
           billingKeyId: billingKey.billingKeyId,
         });
         sessionStorage.removeItem(PENDING_PLAN_STORAGE_KEY);
-        // TODO: 완료 화면(PaymentCompleteModal)로 전환하거나 구독 상태를 무효화 후 이동
+
+        /*
+         * 방금 바뀐 두 가지를 무효화한다 — 구독이 생겼고(me), 카드가 등록됐다(billingKeys).
+         *
+         * 이게 없으면 결제 직후 구독 관리 화면이 "이용 중인 구독이 없어요" 로 보인다.
+         * staleTime 이 60초라(shared/lib/queryClient.ts) 결제 전에 그 화면을 한 번이라도
+         * 열었으면 그때 캐시된 null 이 그대로 나온다. 하필 업그레이드 버튼이 그 화면에
+         * 있어서 가장 흔한 경로가 정확히 이 순서다: 구독 관리 → 업그레이드 → 결제 → 복귀.
+         *
+         * 취소·재개(useSubscriptionActions)는 원래 이걸 하고 있었다. 구독 시작만 빠져 있었다.
+         */
+        await queryClient.invalidateQueries({ queryKey: paymentKeys.me });
+        await queryClient.invalidateQueries({ queryKey: paymentKeys.billingKeys });
+
+        // TODO: 완료 화면(PaymentCompleteModal)로 전환 — 지금은 블로그로 바로 보낸다
         navigate(ROUTES.blog, { replace: true });
       } catch (err) {
         // 화면엔 "결제 확인 실패" 한 줄만 뜨므로, 어느 단계(POST /billing-keys vs
@@ -51,7 +68,7 @@ export function BillingSuccessPage() {
         setStatus('error');
       }
     })();
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, queryClient]);
 
   return (
     <main className="flex min-h-full w-full flex-col items-center justify-center gap-4 px-5 text-center text-[#20251f]">
