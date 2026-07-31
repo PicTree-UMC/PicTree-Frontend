@@ -77,9 +77,18 @@ export const uploadTreeImage = async (
   return data.data.image;
 };
 
-/** 즐겨찾기 추가/삭제 토글. */
-export const toggleTreeFavorite = async (treeId: number): Promise<void> => {
-  await httpClient.patch(`/trees/${treeId}/favorite`);
+/**
+ * 즐겨찾기 추가/삭제. `PATCH /trees/{treeId}/favorite`
+ *
+ * 명세서는 본문 `{ isFavorite }` 로 원하는 상태를 지정하게 돼 있다. 서버(develop)는
+ * 아직 본문을 읽지 않고 현재 값을 뒤집지만, 명세서대로 실어 보내야 DTO 가 붙었을 때
+ * 호출부를 고치지 않아도 된다. 즐겨찾기 화면(`profile/api/favoriteApi`)도 같은 형태로 보낸다.
+ */
+export const toggleTreeFavorite = async (
+  treeId: number,
+  isFavorite: boolean,
+): Promise<void> => {
+  await httpClient.patch(`/trees/${treeId}/favorite`, { isFavorite });
 };
 
 /** 나무 삭제. */

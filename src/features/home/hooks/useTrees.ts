@@ -54,7 +54,14 @@ export const useToggleFavorite = () => {
 
   return useMutation({
     mutationFn: async (treeId: string) => {
-      if (isAuthenticated) await toggleTreeFavorite(Number(treeId));
+      // 지금 값의 반대가 목표 상태다 (명세서가 본문으로 상태를 지정하게 돼 있다)
+      const current = queryClient
+        .getQueryData<MapMarkerData[]>(treeKeys.list())
+        ?.find((marker) => marker.id === treeId);
+
+      if (isAuthenticated) {
+        await toggleTreeFavorite(Number(treeId), !current?.isFavorite);
+      }
     },
     onMutate: async (treeId) => {
       await queryClient.cancelQueries({ queryKey: treeKeys.list() });
