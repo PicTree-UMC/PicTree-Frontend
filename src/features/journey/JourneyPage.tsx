@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { BottomSheet } from './components/BottomSheet';
 import { PhotoAlbumSheet } from './components/PhotoAlbumSheet';
 import { RenameModal } from './components/RenameModal';
@@ -9,7 +9,7 @@ import { useRenameJourney } from './hooks/useRenameJourney';
 import { JourneyChips } from './components/JourneyChips';
 import { JourneyRoadmap } from './components/JourneyRoadmap';
 import { DeleteModal } from './components/DeleteModal';
-import { ROUTES } from '../../shared/constants/routes';
+import { ROUTES, journeyViewPath } from '../../shared/constants/routes';
 
 /**
  * 저장된 동선이 없을 때 보여주는 감성 일러스트.
@@ -79,6 +79,17 @@ export function JourneyPage() {
   const renameMutation = useRenameJourney();
   // 칩으로 선택된 동선. 로드맵·액션 시트·삭제 모두 이 동선을 대상으로 한다.
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  /**
+   * 동선을 막 저장하고 넘어왔을 때 골라줄 id (`RouteViewPage` 가 navigate state 로 넘긴다).
+   *
+   * 바로 `selectedId` 로 넣지 않는 이유는 **그 동선이 아직 목록에 없기 때문**이다 —
+   * 저장 직후 목록 무효화가 끝나기 전에 이 화면이 뜬다. 목록에 들어올 때까지 들고 있다가
+   * 그때 고르고 비운다.
+   */
+  const navigationState = useLocation().state as { selectedRouteId?: number } | null;
+  const [pendingSelectId, setPendingSelectId] = useState<number | null>(
+    navigationState?.selectedRouteId ?? null,
+  );
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -92,10 +103,20 @@ export function JourneyPage() {
       if (selectedId !== null) setSelectedId(null);
       return;
     }
+
+    // 방금 저장한 동선이 목록에 도착했으면 그걸 고른다.
+    if (pendingSelectId !== null && journeys.some((journey) => journey.id === pendingSelectId)) {
+      setSelectedId(pendingSelectId);
+      setPendingSelectId(null);
+      return;
+    }
+
+    // 아직 안 왔어도 선택은 비우지 않는다 — 목록이 잠깐 아무것도 안 고른 채로 보이면
+    // 저장이 실패한 것처럼 읽힌다. 도착하면 위 분기가 갈아끼운다.
     if (selectedId === null || !journeys.some((journey) => journey.id === selectedId)) {
       setSelectedId(journeys[0].id);
     }
-  }, [journeys, selectedId]);
+  }, [journeys, selectedId, pendingSelectId]);
 
   const selectedJourney = journeys.find((journey) => journey.id === selectedId) ?? null;
 
@@ -220,7 +241,7 @@ export function JourneyPage() {
           journey={selectedJourney}
           onClose={() => setShowBottomSheet(false)}
           animateIn={animateBottomSheet}
-          onMapView={() => navigate(ROUTES.journeyView)}
+          onMapView={() => navigate(journeyViewPath(selectedJourney.id))}
           onPhotoGallery={() => {
             setShowBottomSheet(false);
             setShowPhotoAlbum(true);

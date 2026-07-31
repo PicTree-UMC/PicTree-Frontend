@@ -121,6 +121,11 @@ export const router = createBrowserRouter([
         path: ROUTES.journeyView,
         element: <RouteViewPage />,
       },
+      {
+        // 같은 페이지가 '저장된 동선 보기' 모드로 뜬다. 데이터 출처와 헤더만 갈린다.
+        path: ROUTES.journeyViewDetail,
+        element: <RouteViewPage />,
+      },
     ],
   },
 ]);
