@@ -6,15 +6,14 @@ interface Props {
 }
 
 /**
- * 프로필 사진 제거 확인 시트.
+ * 프로필 사진 삭제 확인 시트.
  *
- * 사진을 "교체" 하는 항목은 두지 않았다. `PATCH /users/me` 는 `profileImageUrl` 을
- * URL 문자열로만 받는데 그 URL 을 만들어 줄 업로드 API 가 백엔드에 없다
+ * 사진을 바꾸는 기능은 없다 — `PATCH /users/me` 는 `profileImageUrl` 을 URL
+ * 문자열로만 받는데 그 URL 을 만들어 줄 업로드 API 가 백엔드에 없다
  * (파일 업로드는 `POST /trees/{treeId}/images` 하나뿐이고 나무에 종속된 것).
- * 업로드 엔드포인트가 생기면 여기에 항목을 하나 더 붙이면 된다.
  *
- * 제거를 한 번 더 확인받는 이유: 지금은 사진을 다시 올릴 방법이 없어, 지우면
- * 소셜 계정에서 가져온 사진이 영영 사라진다.
+ * 삭제를 한 번 더 확인받는 이유: 다시 올릴 방법이 없어, 지우면 소셜 계정에서
+ * 가져온 사진이 영영 사라진다. 지운 뒤에는 픽트리 나무 아이콘이 기본값이 된다.
  */
 export function ProfileImageSheet({ onRemove, onClose }: Props) {
   return (
@@ -34,9 +33,9 @@ export function ProfileImageSheet({ onRemove, onClose }: Props) {
           프로필 사진을 지울까요?
         </p>
         <p className="mt-1 text-center text-xs leading-[18px] text-[#8D8D8D]">
-          기본 이미지로 바뀌어요. 지금은 사진을 다시 올릴 수 없어
+          기본 이미지로 바뀌어요.
           <br />
-          소셜 계정에서 가져온 사진이 사라집니다.
+          소셜 계정에서 가져온 사진이 지워집니다.
         </p>
 
         <div className="mt-5 flex gap-3">
