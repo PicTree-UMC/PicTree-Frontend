@@ -11,6 +11,7 @@ import { JourneyPage } from '../features/journey/JourneyPage';
 import { RouteViewPage } from '../features/journey/RouteViewPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { PremiumPage } from '../features/premium/PremiumPage';
+import { ProfileEditPage } from '../features/profile/ProfileEditPage';
 import { SubscriptionPage } from '../features/profile/SubscriptionPage';
 import { TravelCalendarPage } from '../features/profile/TravelCalendarPage';
 import { FavoritesPage } from '../features/profile/FavoritesPage';
@@ -74,6 +75,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.profile,
             element: <ProfilePage />,
+          },
+          {
+            path: ROUTES.profileEdit,
+            element: <ProfileEditPage />,
           },
           {
             path: ROUTES.subscription,

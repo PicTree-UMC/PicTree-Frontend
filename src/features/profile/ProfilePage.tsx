@@ -83,9 +83,14 @@ export function ProfilePage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      {/* 헤더 밴드 */}
+      {/* 헤더 밴드 — 눌러서 내 정보 화면으로 */}
       <header className="bg-[#C5D89D] px-[31px] pb-8 pt-6">
-        <div className="flex items-center gap-5">
+        <button
+          type="button"
+          onClick={() => navigate(ROUTES.profileEdit)}
+          aria-label="내 정보 보기"
+          className="flex w-full items-center gap-5 text-left"
+        >
           {/* 아바타 — 프로필 이미지가 없으면 기본 나무 아이콘 */}
           <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
             {profile?.profileImageUrl && !isAvatarBroken ? (
@@ -154,7 +159,7 @@ export function ProfilePage() {
               </span>
             </div>
           )}
-        </div>
+        </button>
       </header>
 
       <div className="flex flex-col gap-4 px-5 pt-6">
