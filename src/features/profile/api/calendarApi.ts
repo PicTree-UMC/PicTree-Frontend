@@ -1,13 +1,6 @@
 import { httpClient } from '@/shared/lib/httpClient';
 import type { ApiResponse } from '@/features/auth/types/auth';
 import type { TravelCalendar } from '../types/calendar';
-import { buildDemoCalendar } from '../mocks/calendar';
-
-/**
- * 개발 환경에서만 목데이터로 폴백한다 (지도·타임라인·즐겨찾기와 같은 방식).
- * 배포 빌드에서는 폴백 없이 실 API 만 쓰고 에러도 그대로 노출한다.
- */
-const USE_MOCK_FALLBACK = import.meta.env.DEV;
 
 /**
  * 여행 캘린더 조회. `GET /calendar?year=&month=`
@@ -23,22 +16,14 @@ export async function getTravelCalendar(
   year: number,
   month: number,
 ): Promise<TravelCalendar> {
-  try {
-    const { data } = await httpClient.get<ApiResponse<TravelCalendar>>('/calendar', {
-      params: { year, month },
-    });
+  const { data } = await httpClient.get<ApiResponse<TravelCalendar>>('/calendar', {
+    params: { year, month },
+  });
 
-    // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-    if (data.resultType === 'FAIL') {
-      throw new Error(data.error.message);
-    }
-
-    return data.data;
-  } catch (error) {
-    if (USE_MOCK_FALLBACK) {
-      return buildDemoCalendar(year, month);
-    }
-
-    throw error;
+  // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
+  if (data.resultType === 'FAIL') {
+    throw new Error(data.error.message);
   }
+
+  return data.data;
 }
