@@ -3,11 +3,13 @@ import { flushSync } from 'react-dom';
 import { useKeyboardOffset } from '@/shared/hooks/useKeyboardOffset';
 
 interface SaveRouteSheetProps {
+  /** 저장 요청이 도는 중. 같은 동선이 두 번 저장되지 않도록 버튼을 잠근다. */
+  isSaving?: boolean;
   onClose: () => void;
   onConfirm: (name: string) => void;
 }
 
-export function SaveRouteSheet({ onClose, onConfirm }: SaveRouteSheetProps) {
+export function SaveRouteSheet({ isSaving = false, onClose, onConfirm }: SaveRouteSheetProps) {
   const [name, setName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -23,7 +25,7 @@ export function SaveRouteSheet({ onClose, onConfirm }: SaveRouteSheetProps) {
 
   // 이름 없는 동선은 목록에서 서로 구분이 안 된다. 시안에 문구가 없어 경고를 띄우는 대신
   // 저장 버튼을 잠가 두는 쪽을 택했다 — 빈 이름으로 저장할 길 자체가 없다.
-  const canSave = name.trim().length > 0;
+  const canSave = name.trim().length > 0 && !isSaving;
   const handleConfirm = () => canSave && onConfirm(name.trim());
 
   return (
@@ -75,7 +77,7 @@ export function SaveRouteSheet({ onClose, onConfirm }: SaveRouteSheetProps) {
               canSave ? '' : 'opacity-50'
             }`}
           >
-            저장하기
+            {isSaving ? '저장 중' : '저장하기'}
           </button>
         </div>
       </div>

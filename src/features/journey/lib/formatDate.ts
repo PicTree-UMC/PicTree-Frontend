@@ -25,6 +25,31 @@ export function formatRecordDate(value: string | null | undefined) {
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
+/**
+ * 방문 날짜 목록 → 한 줄 라벨. 하나면 그 날짜, 여러 날이면 '처음 ~ 마지막' 범위로 줄인다.
+ *
+ * 서버가 `recordDate` 하나에서 **`recordDates` 배열로 바꿨다**(2026-07-31 스웨거) — 한 동선이
+ * 여러 날짜를 걸칠 수 있기 때문이다. 카드는 한 줄이라 전부 나열할 수 없어 범위로 접는다.
+ * 순서는 서버를 믿지 않고 여기서 정렬한다('YYYY-MM-DD' 라 사전순 = 날짜순).
+ */
+export function formatRecordDates(values: string[] | null | undefined) {
+  const dates = [...(values ?? [])].filter(Boolean).sort();
+  if (dates.length === 0) return '';
+  if (dates.length === 1) return formatRecordDate(dates[0]);
+
+  const last = parseDate(dates[dates.length - 1]);
+  if (!last) return formatRecordDate(dates[0]);
+
+  // 끝 날짜는 연도를 떼서 '2026년 3월 31일 ~ 4월 1일' 로 읽히게 한다. 해를 넘기면 붙여준다.
+  const first = parseDate(dates[0]);
+  const sameYear = first?.getFullYear() === last.getFullYear();
+  const tail = sameYear
+    ? `${last.getMonth() + 1}월 ${last.getDate()}일`
+    : formatRecordDate(dates[dates.length - 1]);
+
+  return `${formatRecordDate(dates[0])} ~ ${tail}`;
+}
+
 /** ISO 8601 → '2026.4.2'. 동선 카드 하단의 저장일 표시용. */
 export function formatSavedDate(value: string | null | undefined) {
   const date = parseDate(value);
