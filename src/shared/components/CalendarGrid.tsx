@@ -2,6 +2,8 @@ import { buildCalendarWeeks, toCalendarDate } from '../lib/calendar';
 
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
 
+// Weekend colors follow the Korean calendar convention (Sat blue, Sun red).
+// Kept intentionally despite lower contrast — treated as decorative accents, not primary text.
 function columnColor(column: number) {
   if (column === 5) return 'text-[#78A3FF]';
   if (column === 6) return 'text-[#FF8080]';

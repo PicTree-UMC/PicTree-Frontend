@@ -108,7 +108,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
             </p>
             <Button
               unstyled
-              className="mt-2 rounded-xl bg-[#788F4A] px-4 py-1.5 font-['KOROAD'] text-[0.75rem] font-bold text-white"
+              className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 font-['KOROAD'] text-[0.8125rem] font-medium text-white"
               type="button"
               onClick={() => refetch()}
             >

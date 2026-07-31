@@ -156,7 +156,7 @@ export function JourneyPage() {
             </p>
             <button
               onClick={() => navigate(ROUTES.journeyView)}
-              className="animate-fade-in-up mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-[#788f4a] text-[15px] font-medium text-white"
+              className="animate-fade-in-up mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-[#5B6B38] text-[15px] font-medium text-white"
               style={{ animationDelay: '300ms' }}
             >
               동선 생성하기

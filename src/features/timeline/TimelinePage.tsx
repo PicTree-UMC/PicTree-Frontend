@@ -73,7 +73,7 @@ export function TimelinePage() {
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-2 rounded-xl bg-[#788F4A] px-4 py-1.5 text-xs font-bold text-white"
+              className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
             >
               다시 시도
             </button>
