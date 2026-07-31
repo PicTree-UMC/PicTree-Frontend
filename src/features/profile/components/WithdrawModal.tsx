@@ -30,6 +30,19 @@ export function WithdrawModal({ isWithdrawing, onCancel, onConfirm }: Props) {
           <br />
           되돌릴 수 없어요.
         </p>
+
+        {/*
+          재가입 불가는 "되돌릴 수 없다" 보다 한 단계 더 센 제약이라 따로 떼어
+          강조한다. 탈퇴해도 계정 행은 남고(status: WITHDRAWN) 소셜 계정 연결도
+          그대로라, 같은 카카오·구글 계정으로 로그인하면 서버가 USER_UNAVAILABLE
+          로 막는다. 새 계정으로 시작할 방법이 지금은 없다.
+        */}
+        <p className="mt-3 rounded-[12px] bg-[#FFECEC] px-4 py-3 text-[13px] font-semibold leading-[18px] text-[#FF5858]">
+          탈퇴하면 같은 계정으로
+          <br />
+          다시 가입할 수 없어요.
+        </p>
+
         <div className="mt-4 flex justify-center gap-4">
           <button
             type="button"
