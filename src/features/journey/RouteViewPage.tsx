@@ -195,11 +195,14 @@ export function RouteViewPage() {
   };
 
   return (
-    <div className="relative flex h-full w-full flex-col bg-white">
-      {/* 지도가 헤더 뒤 상태바까지 올라오는 게 시안이다(예전의 라임 그린 밴드는 없어졌다).
+    <div className="relative h-full w-full bg-white">
+      {/* 지도 — 노치(safe-area)까지 덮는 fixed 풀블리드 배경.
+          앱 컬럼(h-dvh)은 상단 safe-area 아래에서 시작하므로, flex-1 로는 지도가 컬럼 안에만
+          그려져 노치 영역이 크림 base 로 비어 '잘려 보인다'. MarkerStoryViewer 와 같은 fixed
+          풀블리드로 visual viewport 를 덮는다(mx-auto sm:max-w-[390px]: 데스크톱 컬럼 폭).
           isolate: 카카오맵이 내부 요소에 큰 z-index 를 부여해도 stacking context 를 가둬서
-          하단 strip 등 형제 UI 위로 새어 나오지 않게 한다. */}
-      <div ref={containerRef} className="isolate flex-1" />
+          헤더·하단 strip 등 위로 뜬 UI 를 덮지 않게 한다. */}
+      <div ref={containerRef} className="isolate fixed inset-0 z-0 mx-auto sm:max-w-[390px]" />
 
       {/* 헤더와 날짜 관리 바는 지도 위에 떠 있다. 지도 영역을 깎지 않도록 absolute. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 pt-safe">
@@ -273,13 +276,17 @@ export function RouteViewPage() {
         </div>
       )}
 
-      <RoutePlaceStrip
-        places={places}
-        disabledPlaceIds={disabledIds}
-        // ② 는 저장 한도가 의미 없다 — `3/20개` 는 더 담을 수 있다는 오해를 준다.
-        maxPlaces={isSavedView ? undefined : MAX_PLACES}
-        onTogglePlace={togglePlace}
-      />
+      {/* 하단 동선 strip — 지도가 fixed 배경이 되면서 흐름에서 빠졌으므로,
+          바텀 패널로 지도 위에 띄운다(내부에서 pb-safe 로 홈 인디케이터를 피한다). */}
+      <div className="absolute inset-x-0 bottom-0 z-10">
+        <RoutePlaceStrip
+          places={places}
+          disabledPlaceIds={disabledIds}
+          // ② 는 저장 한도가 의미 없다 — `3/20개` 는 더 담을 수 있다는 오해를 준다.
+          maxPlaces={isSavedView ? undefined : MAX_PLACES}
+          onTogglePlace={togglePlace}
+        />
+      </div>
 
       {showDateSheet && (
         <RouteDateSheet
