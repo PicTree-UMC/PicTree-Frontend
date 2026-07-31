@@ -7,6 +7,7 @@ export const ROUTES = {
   home: '/home',
   timeline: '/timeline',
   profile: '/profile',
+  profileEdit: '/profile/edit',
   subscription: '/profile/subscription',
   calendar: '/profile/calendar',
   favorites: '/profile/favorites',
