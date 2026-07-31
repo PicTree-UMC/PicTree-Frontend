@@ -1,8 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 
-import { getTerms } from '../api/termsApi';
+import { useToast } from '@/shared/components';
+import { agreeToTerms, getTerms } from '../api/termsApi';
 import { toDisplayTerms } from '../lib/termsDisplay';
+import { getTermsErrorMessage } from '../lib/termsError';
 
 export const termsKeys = {
   all: ['terms'] as const,
@@ -34,4 +36,29 @@ export const useTerms = () => {
   });
 
   return { ...query, terms: toDisplayTerms(query.data) };
+};
+
+/**
+ * 약관 동의 저장 훅. `POST /users/me/terms-agreements`
+ *
+ * 성공해야 다음 단계로 넘어간다 — 동의 기록이 서버에 남지 않은 채로 가입을
+ * 끝내면 나중에 무엇에 동의했는지 확인할 방법이 없다.
+ *
+ * ⚠️ 서버 약관 목록이 비어 로컬 문구로 폴백한 경우에는 보낼 id 가 없다.
+ * 그때는 저장을 건너뛴다 — 없는 약관 id 를 지어내 보내면 404 만 받는다.
+ */
+export const useAgreeToTerms = () => {
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: (agreedTermIds: number[]) => agreeToTerms(agreedTermIds),
+
+    onError: (error) => {
+      showToast(
+        getTermsErrorMessage(error, '약관 동의 저장에 실패했습니다. 다시 시도해주세요.'),
+        'error',
+        { placement: 'top' },
+      );
+    },
+  });
 };

@@ -16,3 +16,10 @@ export type Term = {
   /** 시행일 (ISO 문자열) */
   effectiveFrom: string;
 };
+
+/** `POST /users/me/terms-agreements` 응답의 `data`. */
+export type TermsAgreementResult = {
+  agreedTermIds: number[];
+  /** 동의 시각 (ISO 문자열) */
+  agreedAt: string;
+};

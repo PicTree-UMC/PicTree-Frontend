@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import { Button } from '../../../shared/components';
-import { useTerms } from '../hooks/useTerms';
+import { useAgreeToTerms, useTerms } from '../hooks/useTerms';
 
 type TermsAgreementViewProps = {
   onAgree: () => void;
@@ -9,6 +9,7 @@ type TermsAgreementViewProps = {
 
 export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
   const { terms, isPending, isError, refetch } = useTerms();
+  const { mutate: saveAgreement, isPending: isSaving } = useAgreeToTerms();
   const [checkedTerms, setCheckedTerms] = useState<Set<string>>(new Set());
   const [expandedTerms, setExpandedTerms] = useState<Set<string>>(new Set());
 
@@ -40,6 +41,28 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
 
       return next;
     });
+  };
+
+  /**
+   * 동의 저장 후 다음 단계로 넘어간다. 저장이 실패하면 넘어가지 않는다 —
+   * 기록이 서버에 남지 않은 채 가입이 끝나면 무엇에 동의했는지 확인할 수 없다.
+   *
+   * 서버 약관 목록이 비어 로컬 문구로 폴백한 경우에는 보낼 id 가 없다. 그때는
+   * 저장을 건너뛰고 진행한다 — 없는 id 를 지어내 보내면 404 만 받고, 가입 자체를
+   * 막는 편이 더 나쁘다. (약관이 적재되면 이 분기는 사라진다)
+   */
+  const handleStart = () => {
+    const agreedIds = terms
+      .filter((term) => checkedTerms.has(term.key))
+      .map((term) => term.termId)
+      .filter((id): id is number => id !== null);
+
+    if (agreedIds.length === 0) {
+      onAgree();
+      return;
+    }
+
+    saveAgreement(agreedIds, { onSuccess: onAgree });
   };
 
   const toggleExpanded = (termId: string) => {
@@ -162,11 +185,11 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
         className={`mt-auto flex h-[3.75rem] w-full items-center justify-center rounded-[1.125rem] font-['KOROAD'] text-[1.125rem] font-bold transition ${
           canStart ? 'bg-[#C5D89D] text-[#111] hover:bg-[#b9cf91]' : 'bg-[#EDEDED] text-[#8D8D8D]'
         }`}
-        disabled={!canStart}
+        disabled={!canStart || isSaving}
         type="button"
-        onClick={onAgree}
+        onClick={handleStart}
       >
-        동의하고 시작하기
+        {isSaving ? '저장 중...' : '동의하고 시작하기'}
       </Button>
     </div>
   );

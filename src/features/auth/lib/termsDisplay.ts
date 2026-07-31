@@ -5,6 +5,11 @@ import type { Term } from '../types/terms';
 export type DisplayTerm = {
   /** 체크 상태의 키. 서버 약관이면 `id`, 로컬 폴백이면 로컬 id 문자열. */
   key: string;
+  /**
+   * 서버 약관 id. 동의 저장(`POST /users/me/terms-agreements`)에 이 값을 보낸다.
+   * 로컬 폴백 항목은 서버에 없는 약관이라 `null` 이고, 그때는 저장하지 않는다.
+   */
+  termId: number | null;
   title: string;
   /** 펼쳤을 때 보여 줄 설명. 서버가 안 주므로 유형별 로컬 문구를 쓴다. */
   description: string | null;
@@ -33,6 +38,7 @@ const DESCRIPTION_BY_TYPE: Record<string, string> = {
 /** 로컬 약관을 화면 형태로. 서버 목록이 비었을 때 쓰는 폴백이다. */
 const LOCAL_DISPLAY_TERMS: DisplayTerm[] = AGREEMENT_TERMS.map((term) => ({
   key: term.id,
+  termId: null,
   title: term.title,
   description: term.description,
   contentUrl: null,
@@ -56,6 +62,7 @@ export const toDisplayTerms = (terms: Term[] | undefined): DisplayTerm[] => {
 
   return terms.map((term) => ({
     key: String(term.id),
+    termId: term.id,
     title: `[${term.isRequired ? '필수' : '선택'}] ${term.title}`,
     description: DESCRIPTION_BY_TYPE[term.type.toUpperCase()] ?? null,
     contentUrl: term.contentUrl,
