@@ -11,7 +11,7 @@ type ToneStepProps = {
 export function ToneStep({ toneId, onSelect, onNext }: ToneStepProps) {
   return (
     <div className="flex flex-1 flex-col px-5 pb-6 pt-2">
-      <p className="text-[15px] leading-6 text-[#6d7466]">기록한 기분을 바탕으로 어울리는 어체를 추천했어요. 원하는 문체로 바꿀 수 있어요.</p>
+      <p className="text-[15px] leading-6 text-[#60655c]">기록한 기분을 바탕으로 어울리는 어체를 추천했어요. 원하는 문체로 바꿀 수 있어요.</p>
 
       <div className="mt-4 flex flex-col gap-3">
         {BLOG_TONES.map((tone) => {
@@ -21,15 +21,15 @@ export function ToneStep({ toneId, onSelect, onNext }: ToneStepProps) {
               key={tone.id}
               type="button"
               aria-pressed={selected}
-              className={`rounded-xl border-2 bg-white px-[18px] py-4 text-left transition-colors ${selected ? 'border-[#7f9648]' : 'border-[#e6ecd5]'}`}
+              className={`rounded-xl border-2 bg-white px-[18px] py-4 text-left transition-colors ${selected ? 'border-[#5b6b38]' : 'border-[#ecf6d8]'}`}
               onClick={() => onSelect(tone.id)}
             >
               <div className="flex items-center justify-between">
                 <span className="text-[16px] font-medium">{tone.label}</span>
-                {selected && <span className="scale-[0.55] text-[#7f9648]"><CheckIcon /></span>}
+                {selected && <span className="scale-[0.55] text-[#5b6b38]"><CheckIcon /></span>}
               </div>
-              <p className="mt-[2px] text-[13px] text-[#8a927e]">{tone.description}</p>
-              <p className="mt-2 rounded-lg bg-[#f6f9ec] px-3 py-2 text-[13px] leading-5 text-[#4b5340]">"{tone.example}"</p>
+              <p className="mt-[2px] text-[13px] text-[#60655c]">{tone.description}</p>
+              <p className="mt-2 rounded-lg bg-[#f6f9ec] px-3 py-2 text-[13px] leading-5 text-[#60655c]">"{tone.example}"</p>
             </button>
           );
         })}
@@ -37,7 +37,7 @@ export function ToneStep({ toneId, onSelect, onNext }: ToneStepProps) {
 
       <button
         type="button"
-        className="mt-6 h-[54px] w-full rounded-xl bg-[#7f9648] text-[16px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)]"
+        className="mt-6 h-[54px] w-full rounded-xl bg-[#5b6b38] text-[16px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)]"
         onClick={onNext}
       >
         이 어체로 작성하기

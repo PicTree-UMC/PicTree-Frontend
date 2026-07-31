@@ -7,7 +7,7 @@
  */
 export function RouteClusterMarker({ count }: { count: number }) {
   return (
-    <div className="flex flex-col items-center rounded-[12px] border-2 border-[#9cab84] bg-white px-2 py-1 shadow-md">
+    <div className="flex flex-col items-center rounded-[12px] border-2 border-[#c5d89d] bg-white px-2 py-1 shadow-md">
       <img src="/markers/tree.svg" alt="" className="h-6 w-6" />
       <span className="text-[13px] font-medium leading-tight text-[#2c3930]">{count}</span>
     </div>

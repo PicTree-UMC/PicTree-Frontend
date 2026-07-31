@@ -23,12 +23,12 @@ export function DeleteDraftModal({ isOpen, onClose, onConfirm }: DeleteDraftModa
         aria-labelledby="delete-draft-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mx-auto flex w-fit text-[#ff575d]" aria-hidden><DeleteIcon size={38} /></div>
+        <div className="mx-auto flex w-fit text-[#dc2626]" aria-hidden><DeleteIcon size={38} /></div>
         <h2 id="delete-draft-title" className="mt-2 text-[21px] font-bold">이 초안을 삭제할까요?</h2>
         <p className="mt-1 text-[12px] text-[#60655c]">삭제한 초안은 다시 되돌릴 수 없어요</p>
         <div className="mt-2 flex justify-center gap-[18px]">
           <button type="button" className="h-[39px] w-[92px] rounded-xl bg-[#e4e5e6] text-[14px] font-bold text-[#60655c]" onClick={onClose}>취소</button>
-          <button type="button" className="h-[39px] w-[92px] rounded-xl bg-[#ff575d] text-[14px] font-bold text-white" onClick={onConfirm}>제거</button>
+          <button type="button" className="h-[39px] w-[92px] rounded-xl bg-[#dc2626] text-[14px] font-bold text-white" onClick={onConfirm}>제거</button>
         </div>
       </section>
     </div>,

@@ -12,7 +12,7 @@ import { FEATURE_CODE, findFeature, planSummary } from './lib/planDisplay';
 import type { PaymentStep } from './types/premium';
 
 const PAGE_CLASS =
-  'min-h-full w-full bg-[linear-gradient(#c9dfa0_0%,#eef4dc_62%,#fffdf4_100%)] px-[15px] pb-nav pt-[72px] text-[#20251f]';
+  'min-h-full w-full bg-[linear-gradient(#c5d89d_0%,#eef4dc_62%,#fffdf4_100%)] px-[15px] pb-nav pt-[72px] text-[#2c3930]';
 
 export function PremiumPage() {
   const navigate = useNavigate();
@@ -45,8 +45,8 @@ export function PremiumPage() {
   if (isLoading) {
     return (
       <main className={`${PAGE_CLASS} flex flex-col items-center justify-center gap-3`}>
-        <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#89986d]" />
-        <p className="text-[15px] font-medium text-[#5c6f2b]">요금제를 불러오는 중...</p>
+        <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#788f4a]" />
+        <p className="text-[15px] font-medium text-[#5b6b38]">요금제를 불러오는 중...</p>
       </main>
     );
   }
@@ -61,7 +61,7 @@ export function PremiumPage() {
         </p>
         <button
           onClick={() => refetch()}
-          className="h-[46px] rounded-[24px] bg-[#89986d] px-8 text-[15px] font-medium text-white"
+          className="h-[46px] rounded-[24px] bg-[#788f4a] px-8 text-[15px] font-medium text-white"
         >
           다시 시도
         </button>
@@ -86,7 +86,7 @@ export function PremiumPage() {
           />
         ))}
       </div>
-      <button className="mt-3 h-[51px] w-full rounded-xl bg-[#879b54] text-[16px] font-bold text-white shadow-lg" onClick={() => setStep('confirm')}>월 {planSummary(selectedPlan).price}으로 시작하기</button>
+      <button className="mt-3 h-[51px] w-full rounded-xl bg-[#788f4a] text-[16px] font-bold text-white shadow-lg" onClick={() => setStep('confirm')}>월 {planSummary(selectedPlan).price}으로 시작하기</button>
       <p className="mt-3 text-center text-[10px] leading-4">{freeAiBlog?.isEnabled && <>무료 플랜은 AI 블로그 작성 {freeAiBlog.limitValue}회를 제공합니다.<br/></>}결제 후 즉시 저장 용량과 월 작성 횟수가 적용됩니다.<br/>언제든 상위 요금제로 변경하거나 구독을 취소할 수 있습니다.</p>
       {step === 'confirm' && <PaymentConfirmSheet plan={selectedPlan} onCancel={() => setStep('plan')} onPay={handlePayment}/>}
       {step === 'complete' && <PaymentCompleteModal plan={selectedPlan} onConfirm={handleComplete}/>}

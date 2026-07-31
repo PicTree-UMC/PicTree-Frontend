@@ -54,7 +54,7 @@ function DayCell({ dateKey, day, weekday, placeCount, selected, onSelect }: DayC
         {day}
       </span>
       {placeCount > 0 && (
-        <span className="mt-0.5 text-[10px] leading-none text-[#767676]">{placeCount}곳</span>
+        <span className="mt-0.5 text-[10px] leading-none text-[#60655c]">{placeCount}곳</span>
       )}
     </button>
   );
@@ -183,7 +183,7 @@ export function RouteDateSheet({
                 key 로 다시 마운트시켜야 연달아 눌렀을 때도 매번 재생된다. */}
             <p
               key={limitAttempt}
-              className={`mt-1 text-[13px] text-[#767676] ${
+              className={`mt-1 text-[13px] text-[#60655c] ${
                 limitAttempt > 0 ? 'motion-safe:animate-shake' : ''
               }`}
             >

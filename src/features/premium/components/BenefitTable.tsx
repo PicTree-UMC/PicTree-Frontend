@@ -43,8 +43,8 @@ export function BenefitTable({ plans }: { plans: SubscriptionPlanDto[] }) {
 
   return (
     <div className="mt-7 rounded-xl bg-white px-[22px] py-[18px] shadow-sm">
-      <div className="grid grid-cols-[1.5fr_1fr_1fr] border-b border-[#859754] pb-4 text-[14px] font-bold"><span>혜택 비교</span><span className="text-center">무료</span><span className="text-right">프리미엄</span></div>
-      {rows.map((row) => <div key={row.label} className="grid grid-cols-[1.5fr_1fr_1fr] py-[11px] text-[15px] font-bold"><span>{row.label}</span><span className="text-center text-[12px] font-medium text-[#999]">{row.free}</span><span className="text-right text-[#66802f]">{row.premium}</span></div>)}
+      <div className="grid grid-cols-[1.5fr_1fr_1fr] border-b border-[#788f4a] pb-4 text-[14px] font-bold"><span>혜택 비교</span><span className="text-center">무료</span><span className="text-right">프리미엄</span></div>
+      {rows.map((row) => <div key={row.label} className="grid grid-cols-[1.5fr_1fr_1fr] py-[11px] text-[15px] font-bold"><span>{row.label}</span><span className="text-center text-[12px] font-medium text-[#999]">{row.free}</span><span className="text-right text-[#5b6b38]">{row.premium}</span></div>)}
     </div>
   );
 }

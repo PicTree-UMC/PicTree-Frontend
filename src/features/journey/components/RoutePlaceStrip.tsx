@@ -91,12 +91,12 @@ export function RoutePlaceStrip({
   return (
     <div className="bg-[#c5d89d] px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-4">
       <h2 className="text-[15px] font-medium tracking-tight text-[#2c3930]">전체 동선</h2>
-      <p className="mt-1 text-[13px] text-[#89986d]">
+      <p className="mt-1 text-[13px] text-[#788f4a]">
         장소 {activeCount}/{maxPlaces}개
       </p>
 
       {places.length === 0 ? (
-        <p className="mt-4 text-[13px] text-[#89986d]">표시할 동선이 없어요</p>
+        <p className="mt-4 text-[13px] text-[#788f4a]">표시할 동선이 없어요</p>
       ) : (
         <>
           <div
@@ -118,13 +118,13 @@ export function RoutePlaceStrip({
                       aria-label={`${place.name} 동선 ${disabled ? '켜기' : '끄기'}`}
                       className={`flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] py-1.5 pl-1.5 pr-3 transition-colors ${
                         disabled
-                          ? 'bg-[#fffcef]/45 text-[#89986d]'
+                          ? 'bg-[#fffcef]/45 text-[#788f4a]'
                           : 'bg-[#fffdf7] text-[#111] shadow-[0_2px_6px_rgba(0,0,0,0.12)]'
                       }`}
                     >
                       <span
                         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-medium ${
-                          disabled ? 'bg-[#9cab84]/40 text-[#fffcef]' : 'bg-[#89986d] text-white'
+                          disabled ? 'bg-[#c5d89d]/40 text-[#fffcef]' : 'bg-[#788f4a] text-white'
                         }`}
                       >
                         {/* 꺼진 칩은 번호가 없다 — 남은 번호를 당겨 쓰기 때문에 붙일 번호가 없다. */}
@@ -142,7 +142,7 @@ export function RoutePlaceStrip({
 
           <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#fffcef]">
             <div
-              className="h-full rounded-full bg-[#9cab84]"
+              className="h-full rounded-full bg-[#c5d89d]"
               style={{
                 // 손잡이가 너무 얇아지면 잡히지 않아 최소 폭을 준다.
                 width: `${Math.max(scroller.size, 0.12) * 100}%`,

@@ -50,7 +50,7 @@ export function ResultStep({ status, draft, onSave }: ResultStepProps) {
       >
         {/* 표지 슬라이드 */}
         <div className="w-full shrink-0 snap-center px-5">
-          <section className="relative flex aspect-[4/5] flex-col justify-center overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#7f9648,#9db85f)] px-6 text-white shadow-[0_10px_24px_rgba(45,51,34,0.18)]">
+          <section className="relative flex aspect-[4/5] flex-col justify-center overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#5b6b38,#9db85f)] px-6 text-white shadow-[0_10px_24px_rgba(45,51,34,0.18)]">
             <h2 className="text-center text-[22px] font-medium leading-snug">{draft.title}</h2>
             <p className="absolute bottom-5 right-6 text-[13px] text-white/70">넘겨서 장소별 기록을 확인해 보세요 →</p>
           </section>
@@ -59,7 +59,7 @@ export function ResultStep({ status, draft, onSave }: ResultStepProps) {
         {/* 장소별 슬라이드 */}
         {draft.sections.map((section, i) => (
           <div key={section.treeId} className="w-full shrink-0 snap-center px-5">
-            <article className="flex aspect-[4/5] flex-col overflow-hidden rounded-2xl border-2 border-[#bed793] bg-white shadow-[0_6px_16px_rgba(45,51,34,0.08)]">
+            <article className="flex aspect-[4/5] flex-col overflow-hidden rounded-2xl border-2 border-[#c5d89d] bg-white shadow-[0_6px_16px_rgba(45,51,34,0.08)]">
               <div className="relative h-[60%] w-full shrink-0">
                 <img src={section.image} alt={`${section.heading}에서 촬영한 사진`} className="h-full w-full object-cover" />
                 <span className="absolute left-3 top-3 grid h-8 min-w-8 place-items-center rounded-full bg-black/45 px-2 text-[13px] font-medium text-white backdrop-blur-sm">
@@ -72,7 +72,7 @@ export function ResultStep({ status, draft, onSave }: ResultStepProps) {
                 )}
               </div>
               <div className="flex min-h-0 flex-1 flex-col px-[22px] py-4">
-                <h3 className="text-[15px] font-medium text-[#20251f]">{section.heading}</h3>
+                <h3 className="text-[15px] font-medium text-[#2c3930]">{section.heading}</h3>
                 <p className="mt-2 overflow-hidden text-[15px] leading-6 text-[#555] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:5]">{section.body}</p>
               </div>
             </article>
@@ -85,14 +85,14 @@ export function ResultStep({ status, draft, onSave }: ResultStepProps) {
         {Array.from({ length: slideCount }).map((_, dot) => (
           <span
             key={dot}
-            className={`h-[6px] rounded-full transition-all ${dot === index ? 'w-4 bg-[#7f9648]' : 'w-[6px] bg-[#d5ddc4]'}`}
+            className={`h-[6px] rounded-full transition-all ${dot === index ? 'w-4 bg-[#5b6b38]' : 'w-[6px] bg-[#ecf6d8]'}`}
           />
         ))}
       </div>
 
       <div className="mt-auto flex gap-3 px-5 pt-5">
         <button type="button" className="h-[54px] flex-1 rounded-xl bg-[#e4e5e6] text-[15px] font-medium text-[#60655c]" onClick={handleCopy}>복사하기</button>
-        <button type="button" className="h-[54px] flex-[2] rounded-xl bg-[#7f9648] text-[15px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)]" onClick={onSave}>저장하기</button>
+        <button type="button" className="h-[54px] flex-[2] rounded-xl bg-[#5b6b38] text-[15px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)]" onClick={onSave}>저장하기</button>
       </div>
     </div>
   );

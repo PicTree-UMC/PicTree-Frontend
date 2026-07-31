@@ -76,7 +76,7 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={100}
-            className="h-[45px] w-full rounded-[20px] border-2 border-[#89986D] bg-[#FFFDFD] px-4 text-center text-[14px] font-semibold text-[#2C3930] outline-none"
+            className="h-[45px] w-full rounded-[20px] border-2 border-[#788F4A] bg-[#FFFDFD] px-4 text-center text-[14px] font-semibold text-[#2C3930] outline-none"
           />
         </div>
 
@@ -96,12 +96,12 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
             value={content}
             onChange={(e) => setContent(e.target.value)}
             maxLength={500}
-            className="h-[45px] w-full rounded-[20px] border-2 border-[#89986D] bg-[#FFFDFD] px-4 text-center text-[14px] font-semibold text-[#2C3930] outline-none"
+            className="h-[45px] w-full rounded-[20px] border-2 border-[#788F4A] bg-[#FFFDFD] px-4 text-center text-[14px] font-semibold text-[#2C3930] outline-none"
           />
         </div>
 
         {/* 날짜는 수정 대상이 아니다 — 서버에 visitedAt 을 보내지 않는다 */}
-        <p className="mx-auto w-[250px] text-center text-[12px] font-medium leading-5 tracking-[-0.3px] text-[#8F8E8E]">
+        <p className="mx-auto w-[250px] text-center text-[12px] font-medium leading-5 tracking-[-0.3px] text-[#60655C]">
           날짜는 기록 시점 그대로 유지됩니다.
           {recordedDate && ` (${recordedDate})`}
         </p>

@@ -57,7 +57,7 @@ export function TimelinePage() {
         {/* 못 불러온 상태에서 "총 0개" 는 기록이 없다는 뜻으로 읽힌다 — 개수·정렬은 숨긴다 */}
         {!isError && (
           <div className="flex items-center justify-between">
-            <p className="text-[12px] text-[#8D8D8D]">
+            <p className="text-[12px] text-[#60655C]">
               {isSearching ? `검색 결과 ${visibleCount}개` : `총 ${visibleCount}개의 기록`}
             </p>
             <TimelineSortTabs value={sort} onChange={setSort} />
@@ -65,22 +65,22 @@ export function TimelinePage() {
         )}
 
         {isLoading && (
-          <p className="py-10 text-center text-sm text-[#8D8D8D]">불러오는 중...</p>
+          <p className="py-10 text-center text-sm text-[#60655C]">불러오는 중...</p>
         )}
         {isError && (
           <div className="py-10 text-center">
-            <p className="text-sm text-[#FF5858]">기록을 불러오지 못했어요.</p>
+            <p className="text-sm text-[#DC2626]">기록을 불러오지 못했어요.</p>
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-xs font-bold text-white"
+              className="mt-2 rounded-xl bg-[#788F4A] px-4 py-1.5 text-xs font-bold text-white"
             >
               다시 시도
             </button>
           </div>
         )}
         {!isLoading && !isError && groups.length === 0 && (
-          <p className="py-10 text-center text-sm text-[#8D8D8D]">
+          <p className="py-10 text-center text-sm text-[#60655C]">
             {isSearching
               ? "검색과 일치하는 기록이 없어요."
               : "아직 저장된 기록이 없어요."}

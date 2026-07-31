@@ -50,7 +50,7 @@ export function DeleteModal({ journeyTitle, onClose, onConfirm }: DeleteModalPro
         className="w-full max-w-[350px] rounded-[20px] bg-[#fffcef] px-6 py-7 text-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <TrashIcon className="mx-auto h-8 w-8 text-[#ff5858]" />
+        <TrashIcon className="mx-auto h-8 w-8 text-[#dc2626]" />
         <h2 className="mt-3 text-xl font-bold tracking-[2px] text-black">동선을 삭제할까요?</h2>
         <p className="mt-2 text-[11px] text-[#2c3930]">
           “{journeyTitle}”이(가) 영구 삭제됩니다.
@@ -64,7 +64,7 @@ export function DeleteModal({ journeyTitle, onClose, onConfirm }: DeleteModalPro
           </button>
           <button
             onClick={onConfirm}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#ff5858] text-base font-semibold tracking-wide text-white"
+            className="h-[38px] w-[92px] rounded-[12px] bg-[#dc2626] text-base font-semibold tracking-wide text-white"
           >
             삭제
           </button>

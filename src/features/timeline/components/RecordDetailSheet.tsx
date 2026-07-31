@@ -35,7 +35,7 @@ interface Props {
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start gap-3 py-1.5">
-      <span className="w-[64px] shrink-0 text-[13px] text-[#8D8D8D]">{label}</span>
+      <span className="w-[64px] shrink-0 text-[13px] text-[#60655C]">{label}</span>
       <span className="flex-1 text-[13px] text-[#2C3930]">{value}</span>
     </div>
   );
@@ -108,7 +108,7 @@ export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) 
           <button
             type="button"
             onClick={onDelete}
-            className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#E6E6E6] text-[15px] font-semibold text-[#FF5858]"
+            className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#E6E6E6] text-[15px] font-semibold text-[#DC2626]"
           >
             <img src={trashIcon} alt="" className="h-[18px] w-[18px]" />
             삭제하기

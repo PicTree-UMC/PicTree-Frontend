@@ -40,7 +40,7 @@ export function DeleteRecordModal({
             type="button"
             onClick={onConfirm}
             disabled={isDeleting}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#FF5858] text-base font-semibold text-white disabled:opacity-50"
+            className="h-[38px] w-[92px] rounded-[12px] bg-[#DC2626] text-base font-semibold text-white disabled:opacity-50"
           >
             제거
           </button>

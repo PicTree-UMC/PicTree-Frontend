@@ -37,7 +37,7 @@ export function PlaceTrail({ places, className }: PlaceTrailProps) {
       {places.map((place, index) => (
         <Fragment key={index}>
           {index > 0 && (
-            <span className="mt-3 h-0 flex-1 border-t border-dashed border-[#8d8d8d]" />
+            <span className="mt-3 h-0 flex-1 border-t border-dashed border-[#60655c]" />
           )}
           <div className="flex w-16 flex-col items-center gap-1">
             {/* 사용자가 나무를 심을 때 고른 기분 이모지. SVG 얼굴과 높이(24px)를 맞춘다. */}

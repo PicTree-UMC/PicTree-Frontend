@@ -16,7 +16,7 @@ export function BlogCreateFab() {
       <button
         type="button"
         aria-label="블로그 작성하기"
-        className="bottom-nav pointer-events-auto absolute right-5 grid h-14 w-14 place-items-center rounded-full bg-[#7f9648] text-white shadow-[0_10px_22px_rgba(45,51,34,0.32)] transition-transform active:scale-95"
+        className="bottom-nav pointer-events-auto absolute right-5 grid h-14 w-14 place-items-center rounded-full bg-[#5b6b38] text-white shadow-[0_10px_22px_rgba(45,51,34,0.32)] transition-transform active:scale-95"
         onClick={() => navigate(ROUTES.blogCreate)}
       >
         <PencilIcon />

@@ -7,12 +7,12 @@
 export function NumberedMarker({ index }: { index: number | null }) {
   if (index === null) {
     return (
-      <div className="h-[30px] w-[30px] rounded-full border-2 border-[#9cab84] bg-white shadow-md" />
+      <div className="h-[30px] w-[30px] rounded-full border-2 border-[#c5d89d] bg-white shadow-md" />
     );
   }
 
   return (
-    <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full border-2 border-white bg-[#89986d] text-sm font-semibold text-white shadow-md">
+    <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full border-2 border-white bg-[#788f4a] text-sm font-semibold text-white shadow-md">
       {index}
     </div>
   );

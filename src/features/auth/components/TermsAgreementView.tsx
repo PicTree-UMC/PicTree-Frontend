@@ -87,7 +87,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
 
       <Button
         unstyled
-        className="mt-6 flex h-[3.75rem] w-full items-center gap-4 rounded-[1.125rem] bg-[#E1EBC4] px-6 font-['KOROAD'] text-[1.125rem] font-bold text-[#111]"
+        className="mt-6 flex h-[3.75rem] w-full items-center gap-4 rounded-[1.125rem] bg-[#ECF6D8] px-6 font-['KOROAD'] text-[1.125rem] font-bold text-[#111]"
         type="button"
         onClick={toggleAll}
       >
@@ -98,17 +98,17 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
       <section className="mt-4 rounded-[1.125rem] bg-[#FFFDF7] px-6 py-5">
         <h2 className="mb-5 font-['KOROAD'] text-[1.125rem] font-bold text-[#111]">약관 안내</h2>
         {isPending ? (
-          <p className="py-6 text-center font-['KOROAD'] text-[0.875rem] text-[#8D8D8D]">
+          <p className="py-6 text-center font-['KOROAD'] text-[0.875rem] text-[#60655C]">
             약관을 불러오는 중...
           </p>
         ) : isError ? (
           <div className="py-6 text-center">
-            <p className="font-['KOROAD'] text-[0.875rem] text-[#FF5858]">
+            <p className="font-['KOROAD'] text-[0.875rem] text-[#DC2626]">
               약관을 불러오지 못했어요.
             </p>
             <Button
               unstyled
-              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 font-['KOROAD'] text-[0.75rem] font-bold text-white"
+              className="mt-2 rounded-xl bg-[#788F4A] px-4 py-1.5 font-['KOROAD'] text-[0.75rem] font-bold text-white"
               type="button"
               onClick={() => refetch()}
             >
@@ -135,7 +135,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
                 <div>
                   <button
                     className={`whitespace-pre-line text-left font-['KOROAD'] text-[1rem] font-medium leading-7 ${
-                      term.required || checked ? 'text-[#111]' : 'text-[#8D8D8D]'
+                      term.required || checked ? 'text-[#111]' : 'text-[#60655C]'
                     }`}
                     type="button"
                     onClick={() => toggleTerm(term.key)}
@@ -157,7 +157,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
                         href={term.contentUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-1 inline-block font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-[#5C6F2B] underline"
+                        className="mt-1 inline-block font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-[#5B6B38] underline"
                       >
                         약관 전문 보기
                       </a>
@@ -183,7 +183,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
       <Button
         unstyled
         className={`mt-auto flex h-[3.75rem] w-full items-center justify-center rounded-[1.125rem] font-['KOROAD'] text-[1.125rem] font-bold transition ${
-          canStart ? 'bg-[#C5D89D] text-[#111] hover:bg-[#b9cf91]' : 'bg-[#EDEDED] text-[#8D8D8D]'
+          canStart ? 'bg-[#C5D89D] text-[#111] hover:bg-[#c5d89d]' : 'bg-[#EDEDED] text-[#60655C]'
         }`}
         disabled={!canStart || isSaving}
         type="button"
@@ -200,13 +200,13 @@ function CheckCircle({ checked, compact = false }: { checked: boolean; compact?:
     <span
       className={`grid shrink-0 place-items-center rounded-full border-2 ${
         compact ? 'h-6 w-6' : 'h-7 w-7'
-      } ${checked ? 'border-[#89986D] bg-[#89986D]' : 'border-[#9B9B9B] bg-white'}`}
+      } ${checked ? 'border-[#788F4A] bg-[#788F4A]' : 'border-[#9B9B9B] bg-white'}`}
       aria-hidden="true"
     >
       <svg width="15" height="12" viewBox="0 0 15 12" fill="none">
         <path
           d="M1.5 6L5.4 9.8L13.5 1.8"
-          stroke={checked ? '#FFFDF4' : '#8D8D8D'}
+          stroke={checked ? '#FFFDF4' : '#60655C'}
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth="2.2"

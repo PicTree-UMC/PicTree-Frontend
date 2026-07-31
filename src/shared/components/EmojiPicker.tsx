@@ -29,7 +29,7 @@ export function EmojiPicker({ selected, onSelect, variant }: EmojiPickerProps) {
   const unselected =
     variant === 'grid' ? 'bg-neutral-800' : variant === 'modal' ? '' : 'bg-black/40';
   const selectedStyle =
-    variant === 'modal' ? 'bg-[#C5D89D] ring-2 ring-[#89986D]' : 'bg-white/90';
+    variant === 'modal' ? 'bg-[#C5D89D] ring-2 ring-[#788F4A]' : 'bg-white/90';
   const fontSize = variant === 'modal' ? 'text-[22px]' : 'text-lg';
 
   return (
