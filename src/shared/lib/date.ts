@@ -5,3 +5,9 @@ export function getLocalDateString(date = new Date()): string {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+/** ISO 8601 문자열을 "2026년 4월 29일" 형식으로. 구독 결제일·만료일 표시에 쓴다. */
+export function formatKoreanDate(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
