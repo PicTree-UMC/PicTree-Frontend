@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useToast } from '@/shared/components';
-import { getApiErrorMessage } from '@/features/auth/lib/apiError';
-import { getFavorites, toggleFavorite } from '../api/favoriteApi';
+import { getFavorites, setFavorite } from '../api/favoriteApi';
 import { isClientError } from '../lib/profileError';
+import { getFavoriteErrorMessage } from '../lib/favoriteError';
 import type { FavoriteList } from '../types/favorite';
 
 export const favoriteKeys = {
@@ -44,7 +45,8 @@ export const useRemoveFavorite = () => {
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: (treeId: number) => toggleFavorite(treeId),
+    // 이 화면은 담긴 장소만 다루므로 목표 상태는 항상 "해제" 다
+    mutationFn: (treeId: number) => setFavorite(treeId, false),
 
     onMutate: async (treeId) => {
       await queryClient.cancelQueries({ queryKey: favoriteKeys.all });
@@ -74,9 +76,14 @@ export const useRemoveFavorite = () => {
       }
 
       showToast(
-        getApiErrorMessage(error, '즐겨찾기 제거에 실패했습니다. 다시 시도해주세요.'),
+        getFavoriteErrorMessage(error, '즐겨찾기 제거에 실패했습니다. 다시 시도해주세요.'),
         'error',
       );
+
+      // 이미 지워진 나무(404)면 목록 자체가 낡은 것이라 다시 받아온다
+      if (isAxiosError(error) && error.response?.status === 404) {
+        queryClient.invalidateQueries({ queryKey: favoriteKeys.all });
+      }
     },
   });
 };

@@ -35,15 +35,28 @@ export async function getFavorites(): Promise<FavoriteList> {
 }
 
 /**
- * 즐겨찾기 추가/삭제 토글. `PATCH /trees/{treeId}/favorite`
+ * 즐겨찾기 추가/삭제. `PATCH /trees/{treeId}/favorite`
  *
- * ⚠️ 해제 전용이 아니라 토글이다. 즐겨찾기 화면에서는 이미 담긴 장소만 다루므로
- * 결과적으로 "제거" 로 쓰이지만, 같은 나무에 두 번 부르면 다시 담긴다.
- * 응답의 `isFavorite` 로 실제 상태를 확인할 수 있다.
+ * ⚠️ 명세서와 서버 구현이 다르다.
+ *   - 명세서: 본문 `{ isFavorite }` 로 원하는 상태를 **지정**한다
+ *   - 서버(develop): 본문을 읽지 않고 `!tree.isFavorite` 로 **뒤집는다** (순수 토글)
+ *
+ * 명세서대로 본문을 실어 보낸다. 지금 서버는 무시하지만, 나중에 DTO 가 붙어도
+ * 호출부를 고칠 필요가 없다. 대신 요청한 값을 믿지 않고 **응답의 `isFavorite` 을
+ * 실제 상태로 쓴다** — 서버가 토글이면 요청값과 결과가 어긋날 수 있다.
+ *
+ * 서버가 토글인 동안은 현재 상태를 아는 곳에서만 불러야 한다. 이미 담긴 장소를
+ * 다시 "추가" 하면 토글이라 오히려 빠진다.
+ *
+ * 실패 코드: 403 `TREE403`(타인의 나무), 404 `TREE404`(없는 나무).
  */
-export async function toggleFavorite(treeId: number): Promise<ToggledFavorite> {
+export async function setFavorite(
+  treeId: number,
+  isFavorite: boolean,
+): Promise<ToggledFavorite> {
   const { data } = await httpClient.patch<ApiResponse<ToggledFavorite>>(
     `/trees/${treeId}/favorite`,
+    { isFavorite },
   );
 
   if (data.resultType === 'FAIL') {
