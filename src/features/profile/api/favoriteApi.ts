@@ -1,13 +1,6 @@
 import { httpClient } from '@/shared/lib/httpClient';
 import type { ApiResponse } from '@/features/auth/types/auth';
 import type { FavoriteList, ToggledFavorite } from '../types/favorite';
-import { DEMO_FAVORITES } from '../mocks/favorites';
-
-/**
- * 개발 환경에서만 목데이터로 폴백한다 (지도 `treesApi`·타임라인과 같은 방식).
- * 배포 빌드에서는 폴백 없이 실 API 만 쓰고 에러도 그대로 노출한다.
- */
-const USE_MOCK_FALLBACK = import.meta.env.DEV;
 
 /**
  * 즐겨찾기 장소 목록·개수 조회. `GET /trees/favorites`
@@ -16,22 +9,14 @@ const USE_MOCK_FALLBACK = import.meta.env.DEV;
  * 좌표·기분은 없고 방문일과 대표 이미지가 오는, 지도 목록과 다른 형태다.
  */
 export async function getFavorites(): Promise<FavoriteList> {
-  try {
-    const { data } = await httpClient.get<ApiResponse<FavoriteList>>('/trees/favorites');
+  const { data } = await httpClient.get<ApiResponse<FavoriteList>>('/trees/favorites');
 
-    // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-    if (data.resultType === 'FAIL') {
-      throw new Error(data.error.message);
-    }
-
-    return data.data;
-  } catch (error) {
-    if (USE_MOCK_FALLBACK) {
-      return DEMO_FAVORITES;
-    }
-
-    throw error;
+  // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
+  if (data.resultType === 'FAIL') {
+    throw new Error(data.error.message);
   }
+
+  return data.data;
 }
 
 /**
