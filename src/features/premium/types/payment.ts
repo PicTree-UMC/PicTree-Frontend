@@ -4,26 +4,44 @@
  * 공통 래퍼 { success, code, message, data } 확인됨 → api/paymentApi.ts 에서 data 언랩.
  * 날짜는 ISO 8601 확인됨.
  *
- * 확정: customer-key, POST /billing-keys(요청·응답), POST /subscriptions(응답).
- * 미확정(? 표시): /subscription-plans 항목 필드(실서버 data:[]), POST /subscriptions 요청 바디,
- *   GET /subscriptions/me 응답. 스펙 나오면 이 파일과 api 만 고친다.
+ * 확정: customer-key, POST /billing-keys(요청·응답), POST /subscriptions(응답),
+ *   /subscription-plans (2026-07-31 요금제 DB 등록 완료 → 실응답으로 검증).
+ * 미확정(? 표시): POST /subscriptions 요청 바디, GET /subscriptions/me 응답.
  */
 
 /**
- * GET /subscription-plans — 요금제 1건.
+ * 요금제에 딸린 혜택 1건. 화면의 혜택표·플랜 카드 문구는 전부 여기서 파생된다
+ * (하드코딩 금지 — 값이 바뀌면 서버만 고치면 되도록).
  *
- * ⚠️ 필드명은 노션 스펙 기준 추측이다. 실서버(tenma.store)는 현재 data:[] (요금제 미등록)
- *    이라 실제 항목 형태를 확인 못 했다. 데이터가 들어오면 검증 필요.
- *    래퍼는 실서버 확인 결과 COMMON200(ApiResponse) 형식 — 노션의 resultType 형식이 아님.
+ * valueType 이 표시 방법을 정한다:
+ *   BOOLEAN → isEnabled 로 켬/끔, 문구는 textValue ('광고 제거' / '광고 표시')
+ *   LIMIT   → limitValue + unit ('COUNT' 회, 'MB' 용량). textValue 는 null 이다.
+ */
+export interface PlanFeatureDto {
+  code: string; // 'AD_FREE' | 'AI_BLOG_MONTHLY' | 'PHOTO_STORAGE' (그 외 추가될 수 있음)
+  name: string; // '광고 제거'
+  description: string;
+  valueType: 'BOOLEAN' | 'LIMIT';
+  unit: 'COUNT' | 'MB' | null;
+  isEnabled: boolean;
+  limitValue: number | null;
+  textValue: string | null;
+}
+
+/**
+ * GET /subscription-plans — 요금제 1건. 2026-07-31 실서버 응답으로 검증됨.
+ *
+ * 무료(FREE)도 목록에 함께 온다 — 혜택표의 '무료' 열이 이걸 쓴다.
+ * 결제 카드에 그리는 건 price > 0 인 것만.
  */
 export interface SubscriptionPlanDto {
-  id: number;
-  name: string; // 내부 코드 'PREMIUM_MONTHLY' / 'PREMIUM_YEARLY'
-  displayName: string; // 표시명 '프리미엄 월간'
-  price: number; // 9900
-  currency: string; // 'KRW'
-  billingCycle: 'MONTHLY' | 'YEARLY';
+  id: number; // POST /subscriptions 의 subscriptionPlanId 로 그대로 넘긴다
+  code: string; // 'FREE' | 'PLUS' | 'PRO' | 'MAX'
+  name: string; // '플러스 플랜'
+  price: number; // 2900 (원, 부가세 포함 여부는 백엔드 확인 필요)
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'NONE'; // 무료는 'NONE'
   description: string;
+  features: PlanFeatureDto[];
 }
 
 /** GET /billing-keys/customer-key — 프론트가 SDK 에 넘길 customerKey 를 백엔드가 발급 */
@@ -64,9 +82,9 @@ export interface StartSubscriptionRequest {
 export interface SubscriptionPlanSummary {
   id: number;
   code: string; // 'PLUS' 등 대문자 코드
-  name: string; // '플러스'
+  name: string; // '플러스 플랜'
   price: number;
-  billingCycle: 'MONTHLY' | 'YEARLY';
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'NONE';
 }
 
 /** 구독 상태. POST /subscriptions 응답 확정. GET /subscriptions/me 도 이 형태로 추정. */

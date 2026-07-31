@@ -1,34 +1,9 @@
-export type SubscriptionPlan = 'plus' | 'pro' | 'max';
+/**
+ * 프리미엄 화면의 로컬 UI 상태 타입만 남는다.
+ *
+ * 요금제 자체(이름·가격·용량·횟수)는 GET /subscription-plans 가 진실이다.
+ * 여기 있던 PLAN_DETAILS 상수와 'plus'|'pro'|'max' 유니온은 제거했다 —
+ * 서버 가격과 어긋난 채(플러스 4,900원 vs 실제 2,900원) 굳어 있었고,
+ * 요금제가 늘면 화면 코드를 같이 고쳐야 했다. 표시 문구는 lib/planDisplay.ts 참조.
+ */
 export type PaymentStep = 'plan' | 'confirm' | 'complete';
-
-export type PlanDetails = {
-  name: string;
-  storage: string;
-  generations: string;
-  price: string;
-  description: string;
-};
-
-export const PLAN_DETAILS: Record<SubscriptionPlan, PlanDetails> = {
-  plus: {
-    name: '플러스',
-    storage: '1GB',
-    generations: '월 5회',
-    price: '4,900원',
-    description: '가볍게 여행을 기록하는 사용자',
-  },
-  pro: {
-    name: '프로',
-    storage: '5GB',
-    generations: '월 20회',
-    price: '6,900원',
-    description: '사진과 블로그를 자주 남기는 사용자',
-  },
-  max: {
-    name: '맥스',
-    storage: '20GB',
-    generations: '월 50회',
-    price: '12,900원',
-    description: '여행 기록을 콘텐츠로 운영하는 사용자',
-  },
-};

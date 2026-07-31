@@ -3,15 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 import { registerBillingKey, startSubscription } from './api/paymentApi';
 import { PENDING_PLAN_STORAGE_KEY } from './lib/tossPayments';
-import type { SubscriptionPlan } from './types/premium';
 
 /**
  * 토스 빌링 인증 성공 후 착지하는 페이지.
  * 토스가 쿼리스트링에 붙여준 authKey·customerKey 를 백엔드로 넘겨
  * 빌링키 발급 → 구독 시작까지 이어서 처리한다.
  *
- * ⚠️ startSubscription 이 넘길 planId 는 백엔드 스펙 확정 후 매핑한다.
- *    지금은 sessionStorage 의 로컬 플랜('monthly'/'annual')을 그대로 전달한다.
+ * 청구할 요금제는 sessionStorage 의 서버 요금제 id 를 그대로 쓴다(PremiumPage 가 저장).
  */
 export function BillingSuccessPage() {
   const navigate = useNavigate();
@@ -25,9 +23,11 @@ export function BillingSuccessPage() {
 
     const authKey = searchParams.get('authKey');
     const customerKey = searchParams.get('customerKey');
-    const plan = sessionStorage.getItem(PENDING_PLAN_STORAGE_KEY) as SubscriptionPlan | null;
+    const storedPlanId = Number(sessionStorage.getItem(PENDING_PLAN_STORAGE_KEY));
 
-    if (!authKey || !customerKey) {
+    // 요금제 id 가 없으면(세션 유실·직접 진입) 여기서 멈춘다. 예전엔 최상위 플랜으로
+    // 넘어가 있었는데, 그건 고르지도 않은 요금제를 청구하는 것이라 더 나쁘다.
+    if (!authKey || !customerKey || !Number.isInteger(storedPlanId) || storedPlanId <= 0) {
       setStatus('error');
       return;
     }
@@ -36,12 +36,9 @@ export function BillingSuccessPage() {
       try {
         // 1) authKey → 빌링키 발급. 응답의 billingKeyId 를 구독 시작에 넘긴다.
         const billingKey = await registerBillingKey({ authKey, customerKey });
-        // 2) 구독 시작. subscriptionPlanId 는 숫자 요금제 id.
-        // TODO: 선택 플랜(plan)을 실제 요금제 id 로 매핑 — GET /subscription-plans 의 id.
-        //   요금제 미등록(data:[]) + plus/pro/max↔백엔드 구조 미합의라 아래는 임시 매핑.
-        const TEMP_PLAN_ID: Record<SubscriptionPlan, number> = { plus: 1, pro: 2, max: 3 };
+        // 2) 구독 시작. GET /subscription-plans 의 id 를 그대로 넘긴다.
         await startSubscription({
-          subscriptionPlanId: TEMP_PLAN_ID[plan ?? 'max'],
+          subscriptionPlanId: storedPlanId,
           billingKeyId: billingKey.billingKeyId,
         });
         sessionStorage.removeItem(PENDING_PLAN_STORAGE_KEY);

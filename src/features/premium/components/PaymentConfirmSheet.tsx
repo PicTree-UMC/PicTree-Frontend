@@ -1,11 +1,11 @@
-import type { SubscriptionPlan } from '../types/premium';
-import { PLAN_DETAILS } from '../types/premium';
+import { planSummary } from '../lib/planDisplay';
+import type { SubscriptionPlanDto } from '../types/payment';
 import { ModalShell } from './ModalShell';
 
-type Props = { plan: SubscriptionPlan; onCancel: () => void; onPay: () => void };
+type Props = { plan: SubscriptionPlanDto; onCancel: () => void; onPay: () => void };
 
 export function PaymentConfirmSheet({ plan, onCancel, onPay }: Props) {
-  const details = PLAN_DETAILS[plan];
+  const details = planSummary(plan);
   return (
     <ModalShell bottom>
       <h2 className="text-center text-[21px] font-bold">결제 확인</h2>
