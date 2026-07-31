@@ -1,7 +1,38 @@
 import { useEffect } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { clusterByPixelDistance } from '@/shared/lib/markerCluster';
 import { RoutePlace } from '../types/route';
 import { NumberedMarker } from '../components/NumberedMarker';
+import { RouteClusterMarker } from '../components/RouteClusterMarker';
+
+/**
+ * 이 화면 픽셀 거리 안에 들어온 마커는 하나로 묶는다(화면설계서 9번).
+ *
+ * **지도 거리(m)가 아니라 화면 px 이다** — 겹쳐 보이는지는 축척이 정하기 때문이고,
+ * 날짜가 달라도 화면에서 붙어 있으면 묶는다.
+ *
+ * **값이 마커 지름과 같은 30 인 건 우연이 아니다** — 순번 마커가 30×30 이라, 중심 거리가
+ * 30 미만이면 두 원이 실제로 겹친다는 뜻이다. 즉 "겹치기 시작하면 묶는다"가 규칙이다.
+ * 시안 값은 42 였는데 그러면 12px 떨어져 아직 안 겹친 마커까지 묶인다.
+ *
+ * ⚠️ 묶음 뱃지는 마커보다 크다(44×52 vs 30×30). 기준을 조일수록 뱃지가 **안 묶인 옆 마커를
+ * 덮을** 확률이 올라가므로, 실기기에서 그 장면을 특히 확인할 것. 어색하면 34~36 이 절충점.
+ *
+ * 개발 중에는 코드를 고치지 않고 콘솔에서 바로 바꿔볼 수 있다
+ * (지도를 살짝 움직이면 그 값으로 다시 묶인다):
+ *
+ * ```js
+ * localStorage.setItem('pictree.routeClusterPx', '36'); // 되돌리려면 removeItem
+ * ```
+ */
+const CLUSTER_DISTANCE_PX = 30;
+
+function readClusterDistance(): number {
+  if (!import.meta.env.DEV) return CLUSTER_DISTANCE_PX;
+
+  const raw = Number(localStorage.getItem('pictree.routeClusterPx'));
+  return Number.isFinite(raw) && raw > 0 ? raw : CLUSTER_DISTANCE_PX;
+}
 
 /**
  * 지도 위에 순번 마커를 찍고 점선 폴리라인으로 잇는다. points 순서가 곧 경로 순서.
@@ -22,31 +53,70 @@ export function useRoutePath(
 
     // 번호는 켜진 장소에만 매긴다. 2번을 끄면 3번이 2번이 되는 재순서화가 여기서 나온다.
     let sequence = 0;
-    const overlays = points.map((point) => {
-      const active = !disabledIds.has(point.id);
-      if (active) sequence += 1;
+    const numbered = points
+      .filter((point) => !disabledIds.has(point.id))
+      .map((point) => {
+        sequence += 1;
+        return { ...point, sequence };
+      });
 
-      const content = renderToStaticMarkup(<NumberedMarker index={active ? sequence : null} />);
+    const disabled = points.filter((point) => disabledIds.has(point.id));
+
+    let overlays: kakao.maps.CustomOverlay[] = [];
+
+    const addOverlay = (lat: number, lng: number, markup: string, zIndex: number) => {
       const overlay = new window.kakao.maps.CustomOverlay({
-        position: new window.kakao.maps.LatLng(point.lat, point.lng),
-        content,
+        position: new window.kakao.maps.LatLng(lat, lng),
+        content: markup,
         yAnchor: 0.5,
-        // 꺼진 마커가 켜진 마커를 가리지 않게 한 층 아래로 내린다.
-        zIndex: active ? 1 : 0,
+        zIndex,
       });
       overlay.setMap(map);
-      return overlay;
-    });
+      overlays.push(overlay);
+    };
 
-    const byDate = new Map<string, RoutePlace[]>();
-    points
-      .filter((point) => !disabledIds.has(point.id))
-      .forEach((point) => {
-        const group = byDate.get(point.date) ?? [];
-        group.push(point);
-        byDate.set(point.date, group);
+    /**
+     * 줌이 바뀌면 화면상 거리가 달라져 묶임도 달라진다 → 그때마다 다시 그린다.
+     * 이동(pan)만으로는 상대 거리가 변하지 않지만, 카카오는 둘을 `idle` 하나로 알려준다.
+     */
+    const render = () => {
+      overlays.forEach((overlay) => overlay.setMap(null));
+      overlays = [];
+
+      // 꺼진 장소는 묶지 않는다 — 동선에서 빠진 것들이라 묶음 개수에 섞이면 숫자가 거짓말이 된다.
+      disabled.forEach((point) => {
+        addOverlay(point.lat, point.lng, renderToStaticMarkup(<NumberedMarker index={null} />), 0);
       });
 
+      clusterByPixelDistance(map, numbered, readClusterDistance()).forEach((cluster) => {
+        const markup =
+          cluster.items.length === 1 ? (
+            <NumberedMarker index={cluster.items[0].sequence} />
+          ) : (
+            <RouteClusterMarker count={cluster.items.length} />
+          );
+
+        // 묶음 뱃지는 개별 마커보다 위에 둔다 — 겹칠 만큼 가까우니 아래 깔리면 안 보인다.
+        addOverlay(
+          cluster.lat,
+          cluster.lng,
+          renderToStaticMarkup(markup),
+          cluster.items.length === 1 ? 1 : 2,
+        );
+      });
+    };
+
+    render();
+    window.kakao.maps.event.addListener(map, 'idle', render);
+
+    const byDate = new Map<string, RoutePlace[]>();
+    numbered.forEach((point) => {
+      const group = byDate.get(point.date) ?? [];
+      group.push(point);
+      byDate.set(point.date, group);
+    });
+
+    // 선은 묶음과 무관하게 원래 좌표를 잇는다 — 묶인 중심으로 당기면 경로 모양이 바뀐다.
     const polylines = [...byDate.values()]
       .filter((group) => group.length > 1)
       .map((group) => {
@@ -62,6 +132,7 @@ export function useRoutePath(
       });
 
     return () => {
+      window.kakao.maps.event.removeListener(map, 'idle', render);
       overlays.forEach((overlay) => overlay.setMap(null));
       polylines.forEach((polyline) => polyline.setMap(null));
     };
