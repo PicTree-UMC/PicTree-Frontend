@@ -43,7 +43,7 @@ export function BlogDateRangePicker({ startDate, endDate, activityByDate, onClos
 
   return createPortal(
     <div className="fixed inset-y-0 left-1/2 z-[60] flex w-full -translate-x-1/2 items-center justify-center bg-black/50 px-5 sm:max-w-[390px]" role="presentation" onClick={onClose}>
-      <section className="w-full rounded-[20px] bg-[#fffdf4] p-5" role="dialog" aria-modal="true" aria-labelledby="blog-calendar-title" onClick={(event) => event.stopPropagation()}>
+      <section className="w-full rounded-[20px] bg-[#fffcef] p-5" role="dialog" aria-modal="true" aria-labelledby="blog-calendar-title" onClick={(event) => event.stopPropagation()}>
         <div className="flex items-center justify-between">
           <button type="button" onClick={() => moveMonth(-1)} aria-label="이전 달" className="p-2 text-2xl">‹</button>
           <h2 id="blog-calendar-title" className="text-[18px] font-medium">{year}년 {month}월</h2>

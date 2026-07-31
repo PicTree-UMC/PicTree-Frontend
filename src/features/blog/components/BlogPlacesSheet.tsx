@@ -10,7 +10,7 @@ export function BlogPlacesSheet({ sections, onClose }: BlogPlacesSheetProps) {
   return createPortal(
     <div className="fixed inset-0 z-[60] bg-black/50" role="presentation" onClick={onClose}>
       <section
-        className="absolute inset-x-0 bottom-0 mx-auto flex w-full flex-col rounded-t-[22px] bg-[#fffdf4] px-5 pb-6 pt-8 sm:max-w-[390px]"
+        className="absolute inset-x-0 bottom-0 mx-auto flex w-full flex-col rounded-t-[22px] bg-[#fffcef] px-5 pb-6 pt-8 sm:max-w-[390px]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="blog-places-title"
