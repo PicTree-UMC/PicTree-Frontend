@@ -71,14 +71,14 @@ export function BillingSuccessPage() {
   }, [navigate, searchParams, queryClient]);
 
   return (
-    <main className="flex min-h-full w-full flex-col items-center justify-center gap-4 px-5 text-center text-[#20251f]">
+    <main className="flex min-h-full w-full flex-col items-center justify-center gap-4 px-5 text-center text-[#2c3930]">
       {status === 'processing' ? (
         <p className="text-[15px]">결제를 확인하고 있어요…</p>
       ) : (
         <>
           <p className="text-[15px]">결제 확인에 실패했어요.</p>
           <button
-            className="h-[45px] rounded-xl bg-[#879b54] px-6 font-bold text-white"
+            className="h-[45px] rounded-xl bg-[#788f4a] px-6 font-bold text-white"
             onClick={() => navigate(ROUTES.premium, { replace: true })}
           >
             다시 시도

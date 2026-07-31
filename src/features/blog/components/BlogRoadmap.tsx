@@ -97,7 +97,7 @@ export function BlogRoadmap({ trees, selectedIds, onToggle }: BlogRoadmapProps) 
         <path
           d={path}
           fill="none"
-          stroke="#7f9648"
+          stroke="#5b6b38"
           strokeWidth={2.5}
           strokeDasharray="2 8"
           strokeLinecap="round"
@@ -130,7 +130,7 @@ export function BlogRoadmap({ trees, selectedIds, onToggle }: BlogRoadmapProps) 
               >
                 <span
                   className={`relative block size-full overflow-hidden rounded-full border-2 transition ${
-                    selected ? 'border-[#7f9648] bg-[#e9ffbb]' : 'border-[#d4d4d4] bg-[#f0f0f0]'
+                    selected ? 'border-[#5b6b38] bg-[#c5d89d]' : 'border-[#d4d4d4] bg-[#f0f0f0]'
                   }`}
                 >
                   {tree.defaultImage ? (
@@ -144,7 +144,7 @@ export function BlogRoadmap({ trees, selectedIds, onToggle }: BlogRoadmapProps) 
                   ) : (
                     <span
                       className={`flex size-full items-center justify-center ${
-                        selected ? 'text-[#7f9648]' : 'text-[#b4b4b4]'
+                        selected ? 'text-[#5b6b38]' : 'text-[#b4b4b4]'
                       }`}
                     >
                       <PhotoPlaceholder className="size-7" />
@@ -154,7 +154,7 @@ export function BlogRoadmap({ trees, selectedIds, onToggle }: BlogRoadmapProps) 
                 {/* 상태 배지: 선택=체크 / 해제=빈 원 */}
                 <span
                   className={`absolute -right-1 -top-1 flex size-[22px] items-center justify-center rounded-full border-2 border-white transition ${
-                    selected ? 'bg-[#7f9648] text-white' : 'bg-white text-transparent ring-1 ring-inset ring-[#d4d4d4]'
+                    selected ? 'bg-[#5b6b38] text-white' : 'bg-white text-transparent ring-1 ring-inset ring-[#d4d4d4]'
                   }`}
                 >
                   <CheckIcon className="size-3" />
@@ -170,7 +170,7 @@ export function BlogRoadmap({ trees, selectedIds, onToggle }: BlogRoadmapProps) 
               <div className="animate-roadmap-pop" style={{ animationDelay: labelDelay }}>
                 <p
                   className={`line-clamp-2 text-[15px] font-medium transition-colors ${
-                    selected ? 'text-[#20251f]' : 'text-[#b4b4b4]'
+                    selected ? 'text-[#2c3930]' : 'text-[#b4b4b4]'
                   }`}
                 >
                   {tree.name}

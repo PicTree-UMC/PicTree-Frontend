@@ -27,17 +27,17 @@ function EmptyJourneyIllustration({ className }: { className?: string }) {
         strokeDasharray="1 12"
       />
       {/* 출발 지점 */}
-      <circle cx="34" cy="118" r="6.5" fill="#fffcef" stroke="#89986d" strokeWidth="3" />
+      <circle cx="34" cy="118" r="6.5" fill="#fffcef" stroke="#788f4a" strokeWidth="3" />
       {/* 중간 장소 핀 (뾰족한 끝이 경로 위에 놓인다) */}
       <path
         d="M92 54a15 15 0 0 0-15 15c0 10.5 15 25 15 25s15-14.5 15-25a15 15 0 0 0-15-15z"
-        fill="#89986d"
+        fill="#788f4a"
       />
       <circle cx="92" cy="69" r="6" fill="#fffcef" />
       {/* 도착: 나무 */}
-      <rect x="165" y="48" width="6" height="16" rx="3" fill="#89986d" />
+      <rect x="165" y="48" width="6" height="16" rx="3" fill="#788f4a" />
       <circle cx="168" cy="40" r="14" fill="#c5d89d" />
-      <circle cx="168" cy="40" r="7" fill="#89986d" opacity="0.3" />
+      <circle cx="168" cy="40" r="7" fill="#788f4a" opacity="0.3" />
     </svg>
   );
 }
@@ -141,8 +141,8 @@ export function JourneyPage() {
       <div className="flex flex-1 flex-col px-5 pb-nav pt-safe">
         {isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
-            <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#89986d]" />
-            <p className="text-[15px] font-medium text-[#5c6f2b]">동선을 불러오는 중...</p>
+            <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#788f4a]" />
+            <p className="text-[15px] font-medium text-[#5b6b38]">동선을 불러오는 중...</p>
           </div>
         ) : isError ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4">
@@ -151,7 +151,7 @@ export function JourneyPage() {
             </p>
             <button
               onClick={() => refetch()}
-              className="h-[46px] rounded-[24px] bg-[#89986d] px-8 text-base font-bold text-white"
+              className="h-[46px] rounded-[24px] bg-[#788f4a] px-8 text-base font-bold text-white"
             >
               다시 시도
             </button>
@@ -168,7 +168,7 @@ export function JourneyPage() {
               아직 저장된 동선이 없어요
             </h2>
             <p
-              className="animate-fade-in-up mt-2 text-[15px] leading-6 text-[#6d7466]"
+              className="animate-fade-in-up mt-2 text-[15px] leading-6 text-[#60655c]"
               style={{ animationDelay: '150ms' }}
             >
               여행하며 다녀온 장소들을 이어
@@ -177,7 +177,7 @@ export function JourneyPage() {
             </p>
             <button
               onClick={() => navigate(ROUTES.journeyView)}
-              className="animate-fade-in-up mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-[#89986d] text-[15px] font-medium text-white"
+              className="animate-fade-in-up mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-[#5B6B38] text-[15px] font-medium text-white"
               style={{ animationDelay: '300ms' }}
             >
               동선 생성하기
@@ -200,7 +200,7 @@ export function JourneyPage() {
                 <div className="mt-5 flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-[#2c3930]">{selectedJourney.date}</p>
-                    <p className="text-[11px] font-light text-[#8d8d8d]">
+                    <p className="text-[11px] font-light text-[#60655c]">
                       {selectedJourney.placeCount}개 장소
                     </p>
                   </div>
@@ -218,7 +218,7 @@ export function JourneyPage() {
                     <button
                       onClick={() => setShowDeleteModal(true)}
                       aria-label="동선 삭제"
-                      className="flex size-9 items-center justify-center rounded-full border-[1.5px] border-[#ff9797] text-[#ff9797]"
+                      className="flex size-9 items-center justify-center rounded-full border-[1.5px] border-[#dc2626] text-[#dc2626]"
                     >
                       <TrashIcon className="size-[18px]" />
                     </button>

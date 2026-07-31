@@ -67,7 +67,7 @@ function PermissionRow({
 }) {
   return (
     <div className="flex items-center gap-4 py-2">
-      <span className="grid h-8 w-8 shrink-0 place-items-center text-[#5C6F2B]">{icon}</span>
+      <span className="grid h-8 w-8 shrink-0 place-items-center text-[#5B6B38]">{icon}</span>
       <div>
         <p className="font-['KOROAD'] text-[1rem] font-bold text-[#111]">{title}</p>
         <p className="mt-0.5 font-['KOROAD'] text-[0.75rem] font-medium text-[#111]">

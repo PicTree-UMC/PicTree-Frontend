@@ -68,19 +68,19 @@ export function PhotoAlbumSheet({ journey, onClose }: PhotoAlbumSheetProps) {
         <div className="flex-1 overflow-y-auto px-6 pb-6 pt-[22px]">
           <p className="text-base font-semibold tracking-[0.16px] text-black">
             방문한 장소 사진
-            {!isLoading && !isError && <span className="ml-2 text-[#5c6f2b]">{photos.length}</span>}
+            {!isLoading && !isError && <span className="ml-2 text-[#5b6b38]">{photos.length}</span>}
           </p>
 
           {isLoading ? (
             <div className="mt-[22px] flex justify-center">
-              <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#89986d]" />
+              <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#788f4a]" />
             </div>
           ) : isError ? (
             <div className="mt-[22px] flex flex-col items-center gap-4">
               <p className="text-sm font-semibold text-[#2c3930]">사진을 불러오지 못했어요</p>
               <button
                 onClick={() => refetch()}
-                className="h-[38px] rounded-[19px] bg-[#89986d] px-6 text-sm font-bold text-white"
+                className="h-[38px] rounded-[19px] bg-[#788f4a] px-6 text-sm font-bold text-white"
               >
                 다시 시도
               </button>

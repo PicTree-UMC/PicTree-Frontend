@@ -119,7 +119,7 @@ export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
         <path
           d={path}
           fill="none"
-          stroke="#89986d"
+          stroke="#788f4a"
           strokeWidth={2.5}
           strokeDasharray="2 8"
           strokeLinecap="round"
@@ -147,17 +147,17 @@ export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
                 className="animate-roadmap-pop relative size-full"
                 style={{ animationDelay: nodeDelay }}
               >
-                <div className="relative size-full overflow-hidden rounded-full border-2 border-[#89986d] bg-[#ecf6d8]">
+                <div className="relative size-full overflow-hidden rounded-full border-2 border-[#788f4a] bg-[#ecf6d8]">
                   {photoUrl ? (
                     <img src={photoUrl} alt="" className="size-full object-cover" />
                   ) : (
-                    <span className="flex size-full items-center justify-center text-[#89986d]">
+                    <span className="flex size-full items-center justify-center text-[#788f4a]">
                       <PhotoPlaceholder className="size-7" />
                     </span>
                   )}
                 </div>
                 {/* 순번 배지 */}
-                <span className="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full border-2 border-white bg-[#5c6f2b] text-[10px] font-bold text-white">
+                <span className="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full border-2 border-white bg-[#5b6b38] text-[10px] font-bold text-white">
                   {index + 1}
                 </span>
               </div>
@@ -170,7 +170,7 @@ export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
             >
               <div className="animate-roadmap-pop" style={{ animationDelay: labelDelay }}>
                 <p className="line-clamp-2 text-base font-bold text-[#111]">{place.name}</p>
-                <p className="mt-0.5 text-xs font-medium text-[#8d8d8d]">
+                <p className="mt-0.5 text-xs font-medium text-[#60655c]">
                   {index + 1}번째 장소
                 </p>
               </div>

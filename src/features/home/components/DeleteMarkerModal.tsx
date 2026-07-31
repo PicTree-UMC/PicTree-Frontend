@@ -47,7 +47,7 @@ export function DeleteMarkerModal({ placeName, onClose, onConfirm }: DeleteMarke
         className="w-full max-w-[320px] rounded-2xl bg-[#fffcef] px-6 py-7 text-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <TrashIcon className="mx-auto h-8 w-8 text-[#ff5858]" />
+        <TrashIcon className="mx-auto h-8 w-8 text-[#dc2626]" />
         <h2 className="mt-3 text-lg font-medium text-neutral-900">이 장소를 삭제할까요?</h2>
         <p className="mt-2 text-[13px] text-neutral-500">
           “{placeName}”의 기록이 영구 삭제됩니다.
@@ -61,7 +61,7 @@ export function DeleteMarkerModal({ placeName, onClose, onConfirm }: DeleteMarke
           </button>
           <button
             onClick={onConfirm}
-            className="h-11 flex-1 rounded-xl bg-[#ff5858] text-[15px] font-medium text-white"
+            className="h-11 flex-1 rounded-xl bg-[#dc2626] text-[15px] font-medium text-white"
           >
             삭제
           </button>

@@ -39,7 +39,7 @@ export function BlogCreatePage() {
   };
 
   return (
-    <main className="flex min-h-dvh flex-col bg-[#fffcef] text-[#20251f]">
+    <main className="flex min-h-dvh flex-col bg-[#fffcef] text-[#2c3930]">
       <CreateStepHeader step={flow.step} onBack={handleBack} />
       <div className="flex flex-1 flex-col">
         {flow.step === 1 && (

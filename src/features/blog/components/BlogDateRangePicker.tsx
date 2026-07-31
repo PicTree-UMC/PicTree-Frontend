@@ -53,7 +53,7 @@ export function BlogDateRangePicker({ startDate, endDate, activityByDate, onClos
         <CalendarGrid year={year} month={month} activityByDate={activityByDate} startDate={rangeStart} endDate={rangeEnd} onDateSelect={selectDate} />
         <div className="mt-4 flex gap-3">
           <button type="button" className="h-11 flex-1 rounded-xl bg-[#e4e5e6] font-medium text-[#60655c]" onClick={onClose}>취소</button>
-          <button type="button" className="h-11 flex-1 rounded-xl bg-[#879b54] font-medium text-white disabled:opacity-40" disabled={!rangeStart || !rangeEnd} onClick={() => onApply(rangeStart, rangeEnd)}>적용</button>
+          <button type="button" className="h-11 flex-1 rounded-xl bg-[#788f4a] font-medium text-white disabled:opacity-40" disabled={!rangeStart || !rangeEnd} onClick={() => onApply(rangeStart, rangeEnd)}>적용</button>
         </div>
       </section>
     </div>,

@@ -27,7 +27,7 @@ export function TimelineSortTabs({ value, onChange }: Props) {
             className={`rounded-full px-3 py-1 text-[12px] transition-colors ${
               isActive
                 ? "bg-[#C5D89D] font-bold text-[#2C3930]"
-                : "text-[#8D8D8D]"
+                : "text-[#60655C]"
             }`}
           >
             {label}

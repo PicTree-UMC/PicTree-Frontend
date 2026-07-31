@@ -30,27 +30,27 @@ export function DateStep({ startDate, endDate, trees, selectedTreeIds, onToggleT
 
   return (
     <div className="flex flex-1 flex-col px-5 pb-6 pt-2">
-      <p className="text-[15px] leading-6 text-[#6d7466]">블로그로 만들 여행 기간을 골라주세요.</p>
+      <p className="text-[15px] leading-6 text-[#60655c]">블로그로 만들 여행 기간을 골라주세요.</p>
 
       <button
         type="button"
         onClick={() => setPickerOpen(true)}
         aria-label="여행 기간 선택"
-        className="mt-4 flex w-full items-center gap-4 rounded-2xl border border-[#e4ecd2] bg-white px-5 py-[18px] text-left shadow-[0_6px_18px_rgba(45,51,34,0.06)] transition active:scale-[0.99]"
+        className="mt-4 flex w-full items-center gap-4 rounded-2xl border border-[#ecf6d8] bg-white px-5 py-[18px] text-left shadow-[0_6px_18px_rgba(45,51,34,0.06)] transition active:scale-[0.99]"
       >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#eaf4d2] text-[#7f9648]">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#ecf6d8] text-[#5b6b38]">
           <CalendarIcon />
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
-            <span className="text-[13px] font-medium text-[#8d8d8d]">여행 기간</span>
-            <span className="rounded-full bg-[#eaf4d2] px-2 py-[1px] text-[13px] font-medium text-[#5c6f2b]">
+            <span className="text-[13px] font-medium text-[#60655c]">여행 기간</span>
+            <span className="rounded-full bg-[#ecf6d8] px-2 py-[1px] text-[13px] font-medium text-[#5b6b38]">
               {durationLabel(startDate, endDate)}
             </span>
           </span>
-          <span className="mt-1.5 flex items-center gap-2 text-[16px] font-medium text-[#20251f]">
+          <span className="mt-1.5 flex items-center gap-2 text-[16px] font-medium text-[#2c3930]">
             {formatDot(startDate)}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7f9648" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b6b38" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
             {formatDot(endDate)}
@@ -62,14 +62,14 @@ export function DateStep({ startDate, endDate, trees, selectedTreeIds, onToggleT
       </button>
 
       <div className="mt-5">
-        <p className="text-[13px] font-medium text-[#20251f]">
-          이 기간의 기록 <span className="text-[#7f9648]">{selectedTreeIds.length}/{trees.length}개</span>
+        <p className="text-[13px] font-medium text-[#2c3930]">
+          이 기간의 기록 <span className="text-[#5b6b38]">{selectedTreeIds.length}/{trees.length}개</span>
         </p>
         {trees.length === 0 ? (
           <p className="py-2 text-[13px] text-[#999]">선택한 기간에 저장된 기록이 없어요.</p>
         ) : (
           <>
-            <p className="mt-1 text-[13px] text-[#8d8d8d]">초안에 넣을 기록을 탭해서 골라주세요.</p>
+            <p className="mt-1 text-[13px] text-[#60655c]">초안에 넣을 기록을 탭해서 골라주세요.</p>
             <div className="mt-4">
               <BlogRoadmap trees={trees} selectedIds={selectedTreeIds} onToggle={onToggleTree} />
             </div>
@@ -79,7 +79,7 @@ export function DateStep({ startDate, endDate, trees, selectedTreeIds, onToggleT
 
       <button
         type="button"
-        className="mt-auto h-[54px] w-full rounded-xl bg-[#7f9648] text-[16px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)] disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-auto h-[54px] w-full rounded-xl bg-[#5b6b38] text-[16px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)] disabled:cursor-not-allowed disabled:opacity-40"
         onClick={onNext}
         disabled={selectedTreeIds.length === 0}
       >

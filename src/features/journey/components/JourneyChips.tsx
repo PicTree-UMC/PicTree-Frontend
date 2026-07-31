@@ -59,7 +59,7 @@ export function JourneyChips({ journeys, selectedId, onSelect }: JourneyChipsPro
             aria-pressed={isSelected}
             className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
               isSelected
-                ? 'bg-[#89986d] text-white'
+                ? 'bg-[#788f4a] text-white'
                 : 'border border-[#c5d89d] bg-white text-[#2c3930]'
             }`}
           >

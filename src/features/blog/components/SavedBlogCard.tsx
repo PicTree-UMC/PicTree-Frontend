@@ -17,8 +17,8 @@ export function SavedBlogCard({ blog }: SavedBlogCardProps) {
       {/* 제목 · 본문 미리보기 · 썸네일 */}
       <div className="flex gap-3">
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-[15px] font-bold text-[#20251f]">{blog.title}</h2>
-          <p className="mt-1.5 overflow-hidden text-[13px] leading-[1.6] text-[#7c7c72] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">{preview}</p>
+          <h2 className="truncate text-[15px] font-bold text-[#2c3930]">{blog.title}</h2>
+          <p className="mt-1.5 overflow-hidden text-[13px] leading-[1.6] text-[#60655c] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">{preview}</p>
         </div>
         {cover && (
           <div className="w-[92px] shrink-0 overflow-hidden rounded-lg">
@@ -28,10 +28,10 @@ export function SavedBlogCard({ blog }: SavedBlogCardProps) {
       </div>
 
       {/* 장소 개수 · 작성일 */}
-      <div className="mt-3 flex items-center gap-3 text-[13px] text-[#9a9a90]">
+      <div className="mt-3 flex items-center gap-3 text-[13px] text-[#60655c]">
         <button
           type="button"
-          className="flex items-center gap-1 rounded-full bg-[#e9ffbb] py-1 pl-2.5 pr-2 text-[13px] font-bold text-[#5c6f2b] transition active:scale-95"
+          className="flex items-center gap-1 rounded-full bg-[#c5d89d] py-1 pl-2.5 pr-2 text-[13px] font-bold text-[#5b6b38] transition active:scale-95"
           onClick={() => setPlacesOpen(true)}
           aria-label={`방문한 장소 ${blog.sections.length}곳 보기`}
         >
