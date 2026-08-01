@@ -22,9 +22,12 @@ export interface TimelineRecord {
   comment: string;
   recordedAt: string;
   /**
-   * 서버에 기록이 만들어진 시각. `recordedAt`(방문 시각)과 다르다 —
-   * 지난 여행을 나중에 올릴 수 있어서, 정렬 기준을 "최신순/등록순" 으로 나눈다.
-   * 서버가 안 주는 경우가 있어 없으면 `recordedAt` 으로 대체한다.
+   * 서버에 기록이 만들어진 시각(`@default(now())`). `recordedAt`(방문 시각)과
+   * 다르다 — 지난 여행을 나중에 올릴 수 있어서다.
+   *
+   * 상세 시트의 "등록" 줄에만 쓴다. **정렬에는 쓰지 않는다** — 서버가
+   * `visitedAt` 으로 페이지를 잘라 주므로 다른 기준으로 다시 정렬하면
+   * 순서가 어긋난다.
    */
   createdAt?: string;
   thumbnailUrl?: string | null;
