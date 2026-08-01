@@ -11,19 +11,24 @@ import { MarkerStoryViewer } from './components/MarkerStoryViewer';
 const FALLBACK_CENTER = { lat: 37.5665, lng: 126.978 };
 
 export function HomePage() {
-  const { coords, loading: locating, request: refreshLocation } = useGeolocation();
+  // 지도는 이동을 따라가야 하므로 추적 모드로 받는다. request(refreshLocation)는
+  // 추적 중에도 수동 재조회로 쓸 수 있어 우하단 새로고침 버튼에서 사용한다.
+  const { coords, loading: locating, request: refreshLocation } = useGeolocation({ watch: true });
 
-  // 지도의 최초 중심은 "처음 위치가 확인되는 순간" 딱 한 번만 정하고 그 뒤로 고정한다.
-  // 이렇게 두지 않으면, 나중에 위치 새로고침으로 locating 이 다시 true 가 될 때 중심이 null 로
-  // 돌아가 지도가 파괴·재생성되며 화면이 깜빡인다. 이동은 아래 panTo(부드러운 따라가기)에 맡긴다.
+  /*
+   * 현재 위치가 확인될 때까지 지도 생성을 미루고, 확인되면 그 위치에서 연다.
+   * 권한 거부·미지원이면 서울시청으로 폴백한다.
+   *
+   * ⚠️ 한 번 정해지면 다시 바꾸지 않는다. useKakaoMap 은 중심 좌표가 바뀌면 지도를
+   * 새로 만드는데, 추적 모드에서는 좌표가 계속 들어오므로 그때마다 지도가 다시 그려져
+   * 사용자가 움직여 둔 화면과 마커가 통째로 날아간다. 이후 좌표는 내 위치 점만 옮긴다.
+   */
   const [initialCenter, setInitialCenter] = useState<{ lat: number; lng: number } | null>(null);
+
   useEffect(() => {
-    if (initialCenter || locating) return; // 이미 정했거나 최초 확인 중이면 대기
-    // 권한 거부·미지원이면 서울시청으로 폴백한다.
-    setInitialCenter(
-      coords ? { lat: coords.latitude, lng: coords.longitude } : FALLBACK_CENTER,
-    );
-  }, [locating, coords, initialCenter]);
+    if (initialCenter || locating) return;
+    setInitialCenter(coords ? { lat: coords.latitude, lng: coords.longitude } : FALLBACK_CENTER);
+  }, [initialCenter, locating, coords]);
 
   const { containerRef, map } = useKakaoMap(initialCenter, 3);
   useCurrentLocation(map, coords);

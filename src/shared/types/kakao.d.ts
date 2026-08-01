@@ -40,6 +40,7 @@ declare namespace kakao.maps {
   class CustomOverlay {
     constructor(options: CustomOverlayOptions);
     setMap(map: Map | null): void;
+    setPosition(latlng: LatLng): void;
   }
   interface CustomOverlayOptions {
     position: LatLng;
