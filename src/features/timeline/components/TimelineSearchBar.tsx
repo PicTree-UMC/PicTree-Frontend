@@ -36,7 +36,17 @@ export function TimelineSearchBar({ value, onChange }: Props) {
         onChange={(event) => onChange(event.target.value)}
         placeholder="원하는 장소를 검색해보세요"
         aria-label="장소 또는 한줄평 검색"
-        className="h-[38px] w-full rounded-full border border-[#2C3930] bg-white px-4 text-center text-[13px] text-[#2C3930] placeholder:text-[#2C3930] focus:outline-none focus:ring-2 focus:ring-[#C5D89D]"
+        /*
+          입력값과 플레이스홀더 모두 왼쪽에서 시작한다 — 가운데 정렬이면 글자를
+          칠 때마다 이미 친 부분이 좌우로 밀려 읽기 어렵다.
+
+          포커스는 링이 아니라 테두리 색으로 알린다. 링은 테두리 바깥에 겹쳐 그려져
+          알약 모양이 두 겹으로 보였다. 굵기는 그대로 두고 색만 바꿔야 레이아웃이
+          흔들리지 않는다.
+
+          플레이스홀더는 본문보다 흐리게 — 같은 색이면 이미 입력된 값처럼 읽힌다.
+        */
+        className="h-[44px] w-full rounded-full border border-[#2C3930] bg-white px-4 text-left text-[14px] text-[#2C3930] placeholder:text-[#8D8D8D] focus:border-[#89986D] focus:outline-none"
       />
     </div>
   );

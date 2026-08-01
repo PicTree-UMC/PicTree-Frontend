@@ -24,7 +24,7 @@ export function TimelineSortTabs({ value, onChange }: Props) {
             role="radio"
             aria-checked={isActive}
             onClick={() => onChange(key)}
-            className={`rounded-full px-3 py-1 text-[12px] transition-colors ${
+            className={`rounded-full px-3 py-1 text-[15px] transition-colors ${
               isActive
                 ? "bg-[#C5D89D] font-bold text-[#2C3930]"
                 : "text-[#60655C]"
