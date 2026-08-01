@@ -24,7 +24,7 @@ export function DeleteRecordModal({
         onClick={(e) => e.stopPropagation()}
       >
         <img src={trashIcon} alt="" className="mx-auto h-[30px] w-[30px]" />
-        <p className="mt-2 text-xl font-bold text-black">
+        <p className="mt-2 text-xl font-medium text-black">
           이 타임라인을 제거할까요?
         </p>
         <p className="mt-1 text-[13px] text-[#2C3930]">{record.placeName}</p>
@@ -32,7 +32,7 @@ export function DeleteRecordModal({
           <button
             type="button"
             onClick={onCancel}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#E6E6E6] text-base font-semibold text-[#2C3930]"
+            className="h-[38px] w-[92px] rounded-[12px] bg-[#E6E6E6] text-base font-medium text-[#2C3930]"
           >
             취소
           </button>
@@ -40,7 +40,7 @@ export function DeleteRecordModal({
             type="button"
             onClick={onConfirm}
             disabled={isDeleting}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#DC2626] text-base font-semibold text-white disabled:opacity-50"
+            className="h-[38px] w-[92px] rounded-[12px] bg-[#DC2626] text-base font-medium text-white disabled:opacity-50"
           >
             제거
           </button>

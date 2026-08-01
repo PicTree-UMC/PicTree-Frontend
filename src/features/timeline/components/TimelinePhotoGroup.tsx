@@ -2,34 +2,70 @@ import type { TimelineGroup, TimelineRecord } from "../types/timeline.types";
 
 interface Props {
   group: TimelineGroup;
+  /** 그리드(돋보기 탭처럼 격자) 또는 피드(게시물처럼 한 칸씩 크게). */
+  view: "grid" | "feed";
   onOpenDetail: (record: TimelineRecord) => void;
+  /** 피드에서 하트를 눌러 즐겨찾기를 토글한다. */
+  onToggleFavorite: (record: TimelineRecord) => void;
+  /** 피드 머리글의 수정 아이콘. 상세 없이 바로 수정 모달로 간다. */
+  onEdit: (record: TimelineRecord) => void;
+  /** 피드 머리글의 삭제 아이콘. */
+  onDelete: (record: TimelineRecord) => void;
 }
 
-/**
- * 장소명 앞에 붙는 위치 핀. 12px 글자 옆에 서므로 획을 굵게(2) 잡았다 —
- * 기본 굵기로는 이 크기에서 흐릿하게 뭉갠다.
- */
-function PinIcon() {
+/** 수정(연필) 아이콘. 즐겨찾기 하트와 같은 크기(h-7). */
+function PencilIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
-      className="h-3 w-3 shrink-0"
+      className="h-7 w-7"
       fill="none"
       stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
       aria-hidden
     >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-      />
+      <path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+      <path d="M19.5 7.125L16.875 4.5" />
+    </svg>
+  );
+}
+
+/** 삭제(휴지통) 아이콘. 즐겨찾기 하트와 같은 크기(h-7). */
+function TrashIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-7 w-7"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 7h16M10 11v6M14 11v6M5 7l1 13a2 2 0 002 2h8a2 2 0 002-2l1-13M9 7V4h6v3" />
+    </svg>
+  );
+}
+
+/** 프로필 아이콘 느낌으로 장소명 앞에 두는 나무 아바타(지도 마커와 같은 에셋). */
+const TREE_AVATAR = "/markers/tree.svg";
+
+/** 즐겨찾기 하트. 켜지면 분홍으로 채우고, 꺼지면 외곽선만. */
+function HeartIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-7 w-7"
+      fill={filled ? "#ff4d6d" : "none"}
+      stroke={filled ? "#ff4d6d" : "#2C3930"}
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
     </svg>
   );
 }
@@ -44,56 +80,152 @@ function PinIcon() {
 const getThumbnail = (record: TimelineRecord) =>
   record.thumbnailUrl ?? "/apple-touch-icon.jpg";
 
+type GridBodyProps = Pick<Props, "group" | "onOpenDetail">;
+
 /**
- * 날짜 한 덩어리 — 머리글 + 사진 3열 그리드.
- *
- * 사진(과 그 아래 장소명)을 누르면 상세가 열린다. 시안에는 사진만 있지만
- * 사진만으로는 어디였는지 알 수 없어 장소명을 함께 보여준다.
+ * 날짜 한 덩어리를 그리드로 — 인스타 돋보기 탭처럼 썸네일 간 갭을 최소로(2px)
+ * 좁히고 세로(3:4) 비율로 둔다. 사진을 누르면 상세가 열린다.
  */
-export function TimelinePhotoGroup({ group, onOpenDetail }: Props) {
+function GridBody({ group, onOpenDetail }: GridBodyProps) {
   return (
     <section>
-      <h2 className="mb-2 text-[15px] font-bold text-black">{group.label}</h2>
-
-      <ul className="grid grid-cols-3 gap-2.5">
+      <h2 className="mb-2 px-5 text-[18px] text-[#60655C]">{group.label}</h2>
+      <ul className="grid grid-cols-3 gap-0.5">
         {group.records.map((record) => (
           <li key={record.id}>
             {/*
-              사진과 장소명을 통째로 하나의 버튼으로 묶는다. 사진을 누르면 상세가
-              열리므로 "더보기" 텍스트는 두지 않는다 — 장소명도 같은 버튼 안에
-              있어야 눌리는 영역이 사진에서 끊기지 않는다.
-
-              썸네일은 시안대로 모서리를 깎지 않고 직각으로 둔다.
+              썸네일 하나가 곧 버튼이다. 장소명 캡션은 시안대로 빼고 사진만 남긴다.
+              span은 inline이라 aspect가 안 먹으므로 block으로 만들어 열 너비를 채운다.
             */}
             <button
               type="button"
               onClick={() => onOpenDetail(record)}
               aria-label={`${record.placeName} 자세히 보기`}
-              className="flex w-full flex-col gap-1 text-left"
+              className="block aspect-[3/4] w-full overflow-hidden bg-[#EDE7D2]"
             >
-              {/*
-                span은 기본적으로 inline이라 w-full/aspect-square가 적용되지 않는다.
-                block으로 만들어야 열 너비를 정확히 채우는 정사각형 썸네일이 되고,
-                원본 이미지의 고유 너비가 그리드 밖으로 밀려나지 않는다.
-              */}
-              <span className="block aspect-square w-full overflow-hidden bg-[#EDE7D2]">
-                <img
-                  src={getThumbnail(record)}
-                  alt=""
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                />
-              </span>
-
-              {/* 칸 폭이 좁아 긴 장소명은 말줄임한다 — 줄이 늘면 그리드가 어긋난다 */}
-              <span className="flex h-[18px] min-w-0 items-center gap-1 text-[12px] font-semibold text-[#2C3930]">
-                <PinIcon />
-                <span className="min-w-0 truncate">{record.placeName}</span>
-              </span>
+              <img
+                src={getThumbnail(record)}
+                alt=""
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
             </button>
           </li>
         ))}
       </ul>
     </section>
   );
+}
+
+type FeedBodyProps = Pick<
+  Props,
+  "group" | "onToggleFavorite" | "onEdit" | "onDelete"
+>;
+
+/**
+ * 날짜 한 덩어리를 피드로 — 인스타 피드 게시물처럼 한 칸씩 크게 본다.
+ *
+ * 사진 위 머리글은 인스타 게시물처럼 좌측에 프로필(나무 아바타)+장소명, 우측에 날짜.
+ * 사진 아래엔 즐겨찾기 하트와 수정·삭제, 그 아래 한줄평을 둔다.
+ * 그리드에 있던 날짜 머리글은 게시물마다 날짜가 있으므로 여기서 접는다.
+ *
+ * 게시물 모드에는 상세 화면이 없다 — 사진 자체는 눌러도 아무 동작이 없고,
+ * 즐겨찾기 하트·머리글 아이콘만 반응한다.
+ */
+function FeedBody({ group, onToggleFavorite, onEdit, onDelete }: FeedBodyProps) {
+  return (
+    <ul className="flex flex-col gap-5">
+      {group.records.map((record) => (
+        <li key={record.id}>
+          <article>
+            {/* 머리글: 좌측 나무 아바타 + 장소명 / 우측 날짜 */}
+            <div className="flex items-center gap-2 px-3 pb-2">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#EDE7D2]">
+                <img src={TREE_AVATAR} alt="" className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1 truncate text-[15px] text-[#2C3930]">
+                {record.placeName}
+              </span>
+              <span className="shrink-0 text-[15px] text-[#60655C]">{group.label}</span>
+            </div>
+
+            <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#EDE7D2]">
+              <img
+                src={getThumbnail(record)}
+                alt=""
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </div>
+
+            {/* 사진 아래 한 줄에 클릭 요소를 모은다: 좌측 즐겨찾기 / 우측 수정·삭제. */}
+            <div className="px-3 pt-2">
+              <div className="flex items-center">
+                {record.treeId != null && (
+                  <button
+                    type="button"
+                    onClick={() => onToggleFavorite(record)}
+                    aria-label="즐겨찾기"
+                    aria-pressed={!!record.isFavorite}
+                    className="-ml-1 p-1 transition active:scale-90"
+                  >
+                    <HeartIcon filled={!!record.isFavorite} />
+                  </button>
+                )}
+
+                <div className="ml-auto flex items-center text-[#2C3930]">
+                  <button
+                    type="button"
+                    onClick={() => onEdit(record)}
+                    aria-label="수정"
+                    className="p-1 transition active:scale-90"
+                  >
+                    <PencilIcon />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(record)}
+                    aria-label="삭제"
+                    className="-mr-1 p-1 transition active:scale-90"
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
+              </div>
+
+              {/* 한줄평이 있을 때만 캡션을 단다. font-light 로 medium 느낌을 뺀다. */}
+              {record.comment && (
+                <p className="pt-1 text-[15px] font-light leading-[22px] text-[#2C3930]">
+                  {record.comment}
+                </p>
+              )}
+            </div>
+          </article>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** 날짜 한 덩어리 — 그리드/피드 뷰를 갈아 끼운다. */
+export function TimelinePhotoGroup({
+  group,
+  view,
+  onOpenDetail,
+  onToggleFavorite,
+  onEdit,
+  onDelete,
+}: Props) {
+  if (view === "feed") {
+    return (
+      <FeedBody
+        group={group}
+        onToggleFavorite={onToggleFavorite}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    );
+  }
+
+  return <GridBody group={group} onOpenDetail={onOpenDetail} />;
 }

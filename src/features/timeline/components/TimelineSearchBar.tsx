@@ -36,6 +36,8 @@ export function TimelineSearchBar({ value, onChange }: Props) {
         onChange={(event) => onChange(event.target.value)}
         placeholder="원하는 장소를 검색해보세요"
         aria-label="장소 또는 한줄평 검색"
+        // 검색 버튼으로 열릴 때 마운트되므로 바로 포커스를 준다.
+        autoFocus
         /*
           입력값과 플레이스홀더 모두 왼쪽에서 시작한다 — 가운데 정렬이면 글자를
           칠 때마다 이미 친 부분이 좌우로 밀려 읽기 어렵다.
