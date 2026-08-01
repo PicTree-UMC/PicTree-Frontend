@@ -166,6 +166,45 @@ select {
   }
 }
 
+/* 홈 지도 마커 등장: 아래에서 살짝 튀어오르며 팝-인(사용자 위치 가까운 순으로 stagger). */
+@keyframes marker-pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.5);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* both: 지연(animation-delay) 동안 0% 상태(투명)를 유지 → 차례가 오기 전엔 숨어 있는다. */
+/* 애니메이션 시간(0.3s)은 useMapMarkers 의 MARKER_ANIM_MS(300ms)와 반드시 일치해야 순차 등장이 유지된다. */
+.animate-marker-pop {
+  transform-origin: bottom center;
+  animation: marker-pop-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marker-pop {
+    animation: none;
+  }
+}
+
+/* 스크롤바를 숨기는 유틸(가로 스크롤 캐러셀 등). 스크롤 기능은 유지, 막대만 감춘다. */
+.no-scrollbar {
+  -ms-overflow-style: none; /* 구형 Edge/IE */
+  scrollbar-width: none; /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
 /* 노치/홈 인디케이터 등 안전영역을 침범하지 않도록 하는 유틸. viewport-fit=cover 와 함께 사용. */
 .pt-safe {
   padding-top: env(safe-area-inset-top);

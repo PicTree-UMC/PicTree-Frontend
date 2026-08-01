@@ -1,6 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@/shared/constants/routes';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGeolocation } from '@/shared/hooks/useGeolocation';
 import { useKakaoMap } from './hooks/useKakaoMap';
 import { useCurrentLocation } from './hooks/useCurrentLocation';
@@ -13,69 +11,112 @@ import { MarkerStoryViewer } from './components/MarkerStoryViewer';
 const FALLBACK_CENTER = { lat: 37.5665, lng: 126.978 };
 
 export function HomePage() {
-  const navigate = useNavigate();
-  // 지도는 이동을 따라가야 하므로 추적 모드로 받는다.
-  const { coords, loading: locating } = useGeolocation({ watch: true });
+  // 지도는 이동을 따라가야 하므로 추적 모드로 받는다. request 는 아래 '내 위치' 버튼이
+  // 쓰는 수동 재조회다 — 추적 중에도 즉시 한 번 더 읽어 버튼 반응을 빠르게 한다.
+  const {
+    coords,
+    loading: locating,
+    request: refreshLocation,
+  } = useGeolocation({ watch: true });
 
-  /*
-   * 현재 위치가 확인될 때까지 지도 생성을 미루고, 확인되면 그 위치에서 연다.
-   * 권한 거부·미지원이면 서울시청으로 폴백한다.
-   *
-   * ⚠️ 한 번 정해지면 다시 바꾸지 않는다. useKakaoMap 은 중심 좌표가 바뀌면 지도를
-   * 새로 만드는데, 추적 모드에서는 좌표가 계속 들어오므로 그때마다 지도가 다시 그려져
-   * 사용자가 움직여 둔 화면과 마커가 통째로 날아간다. 이후 좌표는 내 위치 점만 옮긴다.
-   */
+  // 지도의 최초 중심은 "처음 위치가 확인되는 순간" 딱 한 번만 정하고 그 뒤로 고정한다.
+  // useKakaoMap 은 중심 좌표가 바뀌면 지도를 새로 만드는데, 추적 모드에서는 좌표가 계속
+  // 들어오므로 따라가게 두면 그때마다 지도가 파괴·재생성되며 화면과 마커가 통째로 날아간다.
+  // (위치 새로고침으로 locating 이 다시 true 가 될 때 중심이 null 로 돌아가는 문제도 함께 막는다.)
+  // 이동 표시는 내 위치 점이, 화면 복귀는 아래 panTo 가 맡는다.
   const [initialCenter, setInitialCenter] = useState<{ lat: number; lng: number } | null>(null);
-
   useEffect(() => {
-    if (initialCenter || locating) return;
+    if (initialCenter || locating) return; // 이미 정했거나 최초 확인 중이면 대기
+    // 권한 거부·미지원이면 서울시청으로 폴백한다.
     setInitialCenter(coords ? { lat: coords.latitude, lng: coords.longitude } : FALLBACK_CENTER);
-  }, [initialCenter, locating, coords]);
+  }, [locating, coords, initialCenter]);
 
   const { containerRef, map } = useKakaoMap(initialCenter, 3);
   useCurrentLocation(map, coords);
 
   const { data: markers = [] } = useTrees();
-  const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  // 탭한 마커/클러스터에 묶인 나무들의 id 목록과, 지금 보고 있는 슬라이드 위치.
+  // 단일 마커는 길이 1, 클러스터는 묶인 개수만큼 담겨 좌우로 넘겨 본다.
+  const [selection, setSelection] = useState<{ ids: string[]; index: number } | null>(null);
 
   const toggleFavorite = useToggleFavorite();
   const deleteTree = useDeleteTree();
-  const { data: selectedDetail } = useTreeDetail(selectedMarkerId);
 
-  const handleMarkerClick = useCallback((marker: MapMarkerData) => {
-    setSelectedMarkerId(marker.id);
+  // 지금 보고 있는 슬라이드의 나무만 상세 조회로 보강한다(넘길 때마다 그 나무를 조회).
+  const activeId = selection ? selection.ids[selection.index] : null;
+  const { data: selectedDetail } = useTreeDetail(activeId);
+
+  const handleSelect = useCallback((group: MapMarkerData[]) => {
+    setSelection({ ids: group.map((marker) => marker.id), index: 0 });
   }, []);
 
-  useMapMarkers(map, markers, handleMarkerClick);
+  // 마커 등장 애니메이션의 기준점 = 사용자 위치(없으면 지도 중심으로 폴백).
+  const markerOrigin = useMemo(
+    () => (coords ? { lat: coords.latitude, lng: coords.longitude } : null),
+    [coords],
+  );
+
+  useMapMarkers(map, markers, handleSelect, markerOrigin);
 
   /**
-   * 상세시트에 넘길 데이터. 목록 마커(즐겨찾기·이름 등)를 기본으로 쓰되,
-   * 코멘트·사진·날짜는 상세 조회 결과로 채운다(로그인 시).
+   * 상세 뷰어에 넘길 마커 배열. 목록 마커(즐겨찾기·이름 등)를 기본으로 쓰되,
+   * 지금 보고 있는 나무만 코멘트·사진·날짜를 상세 조회 결과로 채운다(로그인 시).
    */
-  const selectedMarker = useMemo<MapMarkerData | null>(() => {
-    const listMarker = markers.find((marker) => marker.id === selectedMarkerId);
-    if (!listMarker) return null;
-    return {
-      ...listMarker,
-      comment: selectedDetail?.comment ?? listMarker.comment,
-      photo: selectedDetail?.photo ?? listMarker.photo,
-      date: selectedDetail?.date || listMarker.date,
-    };
-  }, [markers, selectedMarkerId, selectedDetail]);
+  const selectedMarkers = useMemo<MapMarkerData[] | null>(() => {
+    if (!selection) return null;
+    const resolved = selection.ids
+      .map((id) => markers.find((marker) => marker.id === id))
+      .filter((marker): marker is MapMarkerData => Boolean(marker));
+    if (resolved.length === 0) return null;
+    return resolved.map((marker) =>
+      marker.id === activeId
+        ? {
+            ...marker,
+            comment: selectedDetail?.comment ?? marker.comment,
+            photo: selectedDetail?.photo ?? marker.photo,
+            date: selectedDetail?.date || marker.date,
+          }
+        : marker,
+    );
+  }, [markers, selection, activeId, selectedDetail]);
+
+  const handleNavigate = useCallback((index: number) => {
+    setSelection((prev) => (prev ? { ...prev, index } : prev));
+  }, []);
 
   const handleToggleFavorite = () => {
-    if (!selectedMarkerId) return;
-    toggleFavorite.mutate(selectedMarkerId);
+    if (!activeId) return;
+    toggleFavorite.mutate(activeId);
   };
 
   const handleEdit = () => {
     // TODO: 장소 정보 수정 화면/폼 연동
   };
 
+  // 우하단 버튼 — 누르면 GPS 를 새로 읽고(refreshLocation), 갱신된 좌표가 도착하면
+  // 그 위치로 지도를 옮긴다. 좌표 갱신은 비동기라 ref 플래그를 세워 두고 아래 effect 에서 처리한다.
+  const recenterPendingRef = useRef(false);
+  const handleRecenter = () => {
+    recenterPendingRef.current = true;
+    refreshLocation();
+  };
+
+  useEffect(() => {
+    if (!recenterPendingRef.current || !map || !coords) return;
+    map.panTo(new window.kakao.maps.LatLng(coords.latitude, coords.longitude));
+    recenterPendingRef.current = false;
+  }, [map, coords]);
+
   const handleDelete = () => {
-    if (!selectedMarkerId) return;
-    deleteTree.mutate(selectedMarkerId);
-    setSelectedMarkerId(null);
+    if (!activeId) return;
+    deleteTree.mutate(activeId);
+    // 삭제한 나무를 그룹에서 빼고, 남은 게 있으면 위치를 안전하게 당겨 유지한다.
+    setSelection((prev) => {
+      if (!prev) return prev;
+      const ids = prev.ids.filter((id) => id !== activeId);
+      if (ids.length === 0) return null;
+      return { ids, index: Math.min(prev.index, ids.length - 1) };
+    });
   };
 
   return (
@@ -96,31 +137,55 @@ export function HomePage() {
         </div>
       )}
 
-      {/* 동선 추가 알림 카드 */}
-      <JourneyBanner placeCount={0} />
+      {/* 상단 안내 카드 — 기록한 장소 수 표시 + 장소 기록하기(카메라) 버튼 */}
+      <JourneyBanner placeCount={markers.length} />
 
       {/*
-        카메라 버튼 — 탭바가 지도 위에 얹히므로 그보다 위에 띄운다.
-        bottom-nav 는 탭바 높이 + 하단 안전영역을 함께 계산한다. 고정 px 로 두면
-        노치 기기에서 탭바가 안전영역만큼 더 높아져 버튼이 가려진다.
+        현재 위치 새로고침 — 우하단 플로팅 버튼. 탭바 위에 띄운다(bottom-nav).
+        지도가 준비됐을 때만 노출하고, 탭하면 GPS 를 새로 읽어 그 위치로 이동한다.
+        읽는 동안엔 아이콘을 회전시키고 중복 탭을 막는다.
       */}
-      <button
-        onClick={() => navigate(ROUTES.camera)}
-        className="bottom-nav absolute left-1/2 z-20 -translate-x-1/2"
-      >
-        <img src="/camera_btn.png" alt="사진 촬영" className="h-[52px] w-[52px]" />
-      </button>
+      {map && (
+        <button
+          onClick={handleRecenter}
+          disabled={locating}
+          aria-label="현재 위치 새로고침"
+          /* 흰 배경 + GREEN-500(#788F4A) 아이콘 — 흰 위 3.6:1 로 그래픽 요소(3:1) 충족. */
+          className="bottom-nav absolute right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#788F4A] shadow-lg ring-1 ring-black/5 transition active:scale-95 disabled:opacity-70"
+        >
+          <MyLocationIcon spinning={locating} />
+        </button>
+      )}
 
-      {/* 마커 상세 — 인스타 스토리형 풀스크린 뷰어 */}
-      {selectedMarker && (
+      {/* 마커 상세 — 인스타 스토리형 풀스크린 뷰어. 클러스터는 좌우로 넘겨 본다. */}
+      {selectedMarkers && selection && (
         <MarkerStoryViewer
-          marker={selectedMarker}
-          onClose={() => setSelectedMarkerId(null)}
+          markers={selectedMarkers}
+          activeIndex={Math.min(selection.index, selectedMarkers.length - 1)}
+          onNavigate={handleNavigate}
+          onClose={() => setSelection(null)}
           onToggleFavorite={handleToggleFavorite}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
       )}
     </div>
+  );
+}
+
+/** 내 위치로 이동 아이콘 — 중심 점 + 십자선이 있는 조준(locate) 형태. 새로고침 중엔 회전. */
+function MyLocationIcon({ spinning }: { spinning?: boolean }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={`h-5 w-5 ${spinning ? 'animate-spin' : ''}`}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+    >
+      <circle cx="12" cy="12" r="3.25" />
+      <path strokeLinecap="round" d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3" />
+    </svg>
   );
 }

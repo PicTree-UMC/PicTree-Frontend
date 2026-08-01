@@ -1,11 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
 import { DeleteMarkerModal } from './DeleteMarkerModal';
 import type { MapMarkerData } from '../hooks/useMapMarkers';
 
 interface MarkerStoryViewerProps {
-  marker: MapMarkerData;
+  /** 이 뷰어가 넘겨 볼 나무 목록. 단일 마커는 1개, 클러스터는 묶인 개수만큼. */
+  markers: MapMarkerData[];
+  /** 지금 보고 있는 슬라이드 위치. */
+  activeIndex: number;
+  /** 좌우로 넘겨 다른 슬라이드로 이동. */
+  onNavigate: (index: number) => void;
   onClose: () => void;
   onToggleFavorite: () => void;
   onEdit: () => void;
@@ -25,11 +30,12 @@ const FALLBACK_AVATAR = '/markers/tree.svg';
  *    (좌: 즐겨찾기 하트 / 중앙: 점 인디케이터 / 우: 수정·삭제 아이콘).
  *  - 사진이 없으면 어두운 배경에 이모지 플레이스홀더를 중앙에 둔다.
  *
- * 스토리처럼 사진(빈 배경)을 탭하면 닫힌다. 헤더 버튼·하단 스크림 영역은
- * stopPropagation 으로 닫힘에서 제외한다. Esc 로도 닫힌다.
+ * 닫기는 우상단 X 버튼(또는 Esc)로만 — 사진을 탭해도 닫히지 않는다.
  */
 export function MarkerStoryViewer({
-  marker,
+  markers,
+  activeIndex,
+  onNavigate,
   onClose,
   onToggleFavorite,
   onEdit,
@@ -40,6 +46,28 @@ export function MarkerStoryViewer({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [favBump, setFavBump] = useState(false);
 
+  const marker = markers[activeIndex];
+
+  // 가로 스크롤 스냅 컨테이너. 스크롤 위치로 현재 슬라이드를 판단하고(onScroll),
+  // 밖에서 activeIndex 가 바뀌면(삭제·키보드) 해당 슬라이드로 맞춰 스크롤한다.
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el || el.clientWidth === 0) return;
+    const index = Math.round(el.scrollLeft / el.clientWidth);
+    if (index !== activeIndex) onNavigate(index);
+  };
+
+  // activeIndex 가 스크롤과 어긋나면(삭제로 슬라이드가 빠지거나 키보드로 이동) 맞춰 준다.
+  // 즉시 점프(behavior 'auto')로 이동해 중간 슬라이드에서 onScroll 이 튀지 않게 한다.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || el.clientWidth === 0) return;
+    const target = activeIndex * el.clientWidth;
+    if (Math.abs(el.scrollLeft - target) > 1) el.scrollTo({ left: target });
+  }, [activeIndex]);
+
   const handleToggleFavorite = () => {
     // 즐겨찾기로 켜질 때만 팝(인스타 좋아요 느낌). 해제 시엔 조용히.
     if (!marker.isFavorite) setFavBump(true);
@@ -47,10 +75,15 @@ export function MarkerStoryViewer({
   };
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      else if (e.key === 'ArrowLeft' && activeIndex > 0) onNavigate(activeIndex - 1);
+      else if (e.key === 'ArrowRight' && activeIndex < markers.length - 1)
+        onNavigate(activeIndex + 1);
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  });
 
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
@@ -58,22 +91,34 @@ export function MarkerStoryViewer({
     <>
       <div
         className="animate-fade-in fixed inset-0 z-50 mx-auto overflow-hidden bg-neutral-950 sm:max-w-[390px]"
-        onClick={onClose}
         role="dialog"
         aria-modal="true"
       >
-        {/* 풀블리드 대표 사진(없으면 이모지 플레이스홀더). 탭하면 닫힌다(스토리 동작). */}
-        {marker.photo ? (
-          <img
-            src={marker.photo}
-            alt={marker.label}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-7xl opacity-80">{marker.emoji}</span>
-          </div>
-        )}
+        {/*
+          슬라이드들을 가로로 깔고 스크롤-스냅으로 한 장씩 넘긴다.
+          닫기는 우상단 X(또는 Esc)로만 — 사진을 아무 데나 탭해도 닫히지 않는다.
+        */}
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
+        >
+          {markers.map((item) => (
+            <div key={item.id} className="relative h-full w-full shrink-0 snap-center">
+              {item.photo ? (
+                <img
+                  src={item.photo}
+                  alt={item.label}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-7xl opacity-80">{item.emoji}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
 
         {/* 상단 스크림 + 헤더: 좌측 기분 이모지·장소명·날짜(가로) / 우측 닫기 */}
         <div className="absolute inset-x-0 top-0 flex items-center gap-3 bg-gradient-to-b from-black/55 to-transparent px-4 pt-[max(env(safe-area-inset-top),0.75rem)] pb-10">
@@ -109,7 +154,7 @@ export function MarkerStoryViewer({
                 alt=""
                 className="h-8 w-8 shrink-0 rounded-full bg-white/15 object-cover"
               />
-              <p className="animate-bubble-float mb-2 rounded-full bg-white px-4 py-2.5 text-[13px] font-light leading-snug text-neutral-900">
+              <p className="animate-bubble-float mb-2 rounded-full bg-white px-4 py-2.5 text-[13px] font-medium leading-snug text-neutral-900">
                 {marker.comment}
               </p>
             </div>
@@ -128,8 +173,16 @@ export function MarkerStoryViewer({
               </button>
             </div>
 
+            {/* 점 인디케이터 — 그룹에 묶인 나무 수만큼, 현재 슬라이드는 길게 강조. */}
             <div className="flex justify-center gap-1.5 justify-self-center">
-              <span className="h-1.5 w-1.5 rounded-full bg-white" />
+              {markers.map((item, i) => (
+                <span
+                  key={item.id}
+                  className={`h-1.5 rounded-full transition-all ${
+                    i === activeIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/40'
+                  }`}
+                />
+              ))}
             </div>
 
             <div className="flex items-center gap-3 justify-self-end">
