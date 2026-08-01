@@ -22,9 +22,12 @@ export interface TimelineRecord {
   comment: string;
   recordedAt: string;
   /**
-   * 서버에 기록이 만들어진 시각. `recordedAt`(방문 시각)과 다르다 —
-   * 지난 여행을 나중에 올릴 수 있어서, 정렬 기준을 "최신순/등록순" 으로 나눈다.
-   * 서버가 안 주는 경우가 있어 없으면 `recordedAt` 으로 대체한다.
+   * 서버에 기록이 만들어진 시각(`@default(now())`). `recordedAt`(방문 시각)과
+   * 다르다 — 지난 여행을 나중에 올릴 수 있어서다.
+   *
+   * 상세 시트의 "등록" 줄에만 쓴다. **정렬에는 쓰지 않는다** — 서버가
+   * `visitedAt` 으로 페이지를 잘라 주므로 다른 기준으로 다시 정렬하면
+   * 순서가 어긋난다.
    */
   createdAt?: string;
   thumbnailUrl?: string | null;
@@ -34,7 +37,13 @@ export interface TimelineRecord {
   treeId?: number | null;
   /** 기록 분류. 서버가 enum 으로 내려주며 값 목록은 아직 미확정. */
   category?: string;
-  /** 사진 없는 기록일 때 쓸 기본 이미지 식별자 */
+  /**
+   * 기본 이미지 **식별자** (`"DEFAULT_1"` 같은 값, 서버 `VarChar(20)`).
+   *
+   * ⚠️ URL 이 아니다. `<img src>` 에 넣으면 깨진다 — 실제로 그래서 사진이
+   * 안 뜨고 있었다. 로컬 일러스트와 이어 붙이는 매핑이 생기기 전까지는
+   * 화면에서 쓰지 않는다.
+   */
   defaultImage?: string | null;
   isFavorite?: boolean;
 }
@@ -119,22 +128,45 @@ export interface TimelineImage {
 }
 
 /**
+ * `GET /trees` 응답에서 타임라인이 쓰는 부분만.
+ *
+ * 목록 썸네일을 잇기 위한 것이라 `treeId` 와 `imageUrl` 만 있으면 된다.
+ * 전체 형태는 `features/home/types/tree.ts` 의 `TreeListItem` 에 있다.
+ */
+export interface TreeListPage {
+  items?: {
+    treeId: number;
+    /** 대표 사진 presigned URL. 사진이 없으면 null. */
+    imageUrl: string | null;
+  }[];
+}
+
+/** `GET /trees/{treeId}/images` 응답의 `data`. */
+export interface TreeImageListData {
+  images?: {
+    imageId: number;
+    /** presigned URL, 24시간 유효. */
+    imageUrl: string;
+    timelineRecordId: number | null;
+  }[];
+}
+
+/**
  * `GET /timelines/{timelineId}` 응답의 `data`.
  *
- * 목록 레코드와 같은 필드에 `images` 가 더 붙는 형태다.
+ * 목록 레코드와 같은 필드에 나무 이름이 더 붙는 정도다.
  *
- * ⚠️ `images` 는 명세서에만 있고 서버 `TimelineResponseDto` 에는 없다
- * (이미지는 별도 `tree-images` 모듈). 없으면 빈 배열로 떨어진다.
+ * ⚠️ 사진은 여기 없다. 명세서에는 `images` 가 적혀 있지만 서버
+ * `TimelineResponseDto` 에는 없고, `toResponseDto` 도 안 실어 준다.
+ * 기록별 사진은 `GET /trees/{treeId}/images?timelineRecordId=` 로 따로 받는다
+ * (`useTimelineImages`).
  */
-export interface TimelineDetailApiRecord extends TimelineApiRecord {
-  images?: TimelineImage[];
-}
+export type TimelineDetailApiRecord = TimelineApiRecord;
 
 /** 정규화된 상세 — 화면·훅이 실제로 쓰는 형태 */
 export interface TimelineDetail extends TimelineRecord {
   /** 연결된 나무 이름. 나무 없이 남긴 기록이면 null. */
   treeName: string | null;
-  images: TimelineImage[];
 }
 
 /**

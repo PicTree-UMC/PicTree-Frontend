@@ -34,9 +34,15 @@ function PinIcon() {
   );
 }
 
-/** 사진이 없는 기록에 쓸 대체 이미지. 서버가 준 나무 기본 이미지를 먼저 쓴다. */
+/**
+ * 사진이 없는 기록에 쓸 대체 이미지.
+ *
+ * ⚠️ `record.defaultImage` 는 여기 쓰면 안 된다. `"DEFAULT_1"` 같은
+ * **식별자**(서버 `VarChar(20)`)라 URL 이 아니고, `<img src>` 에 넣으면
+ * 그대로 깨진 이미지가 된다 — 사진이 안 뜨던 원인이었다.
+ */
 const getThumbnail = (record: TimelineRecord) =>
-  record.thumbnailUrl ?? record.defaultImage ?? "/apple-touch-icon.jpg";
+  record.thumbnailUrl ?? "/apple-touch-icon.jpg";
 
 /**
  * 날짜 한 덩어리 — 머리글 + 사진 3열 그리드.
