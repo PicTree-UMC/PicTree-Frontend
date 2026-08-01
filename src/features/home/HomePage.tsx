@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 import { useGeolocation } from '@/shared/hooks/useGeolocation';
@@ -14,15 +14,23 @@ const FALLBACK_CENTER = { lat: 37.5665, lng: 126.978 };
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { coords, loading: locating } = useGeolocation();
+  // 지도는 이동을 따라가야 하므로 추적 모드로 받는다.
+  const { coords, loading: locating } = useGeolocation({ watch: true });
 
-  // 현재 위치가 확인될 때까지 지도 생성을 미루고, 확인되면 그 위치에서 연다.
-  // 권한 거부·미지원이면 서울시청으로 폴백한다.
-  const initialCenter = useMemo(() => {
-    if (locating) return null;
-    if (coords) return { lat: coords.latitude, lng: coords.longitude };
-    return FALLBACK_CENTER;
-  }, [locating, coords]);
+  /*
+   * 현재 위치가 확인될 때까지 지도 생성을 미루고, 확인되면 그 위치에서 연다.
+   * 권한 거부·미지원이면 서울시청으로 폴백한다.
+   *
+   * ⚠️ 한 번 정해지면 다시 바꾸지 않는다. useKakaoMap 은 중심 좌표가 바뀌면 지도를
+   * 새로 만드는데, 추적 모드에서는 좌표가 계속 들어오므로 그때마다 지도가 다시 그려져
+   * 사용자가 움직여 둔 화면과 마커가 통째로 날아간다. 이후 좌표는 내 위치 점만 옮긴다.
+   */
+  const [initialCenter, setInitialCenter] = useState<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (initialCenter || locating) return;
+    setInitialCenter(coords ? { lat: coords.latitude, lng: coords.longitude } : FALLBACK_CENTER);
+  }, [initialCenter, locating, coords]);
 
   const { containerRef, map } = useKakaoMap(initialCenter, 3);
   useCurrentLocation(map, coords);
