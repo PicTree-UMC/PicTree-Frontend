@@ -2,7 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { getTimelines, TIMELINE_PAGE_SIZE } from "../api/timelineApi";
+import {
+  getTimelines,
+  getTreeThumbnails,
+  TIMELINE_PAGE_SIZE,
+} from "../api/timelineApi";
 import type {
   TimelineGroup,
   TimelineRecord,
@@ -19,6 +23,8 @@ export const timelineKeys = {
   all: ["timeline"] as const,
   list: (page: number, size: number) => ["timeline", "list", page, size] as const,
   detail: (timelineId: string) => ["timeline", "detail", timelineId] as const,
+  thumbnails: () => ["timeline", "thumbnails"] as const,
+  images: (timelineId: string) => ["timeline", "images", timelineId] as const,
 };
 
 const toDateKey = (d: Date) =>
@@ -104,12 +110,12 @@ export const useTimeline = ({
   sort = "recent",
 }: UseTimelineOptions = {}): UseTimelineResult => {
   const accessToken = useAuthStore((state) => state.accessToken);
-  const hasToken = Boolean(accessToken);
   /**
-   * 토큰이 없어도 개발 환경에서는 쿼리를 돌린다 — `timelineApi` 가 목데이터로
-   * 폴백하므로, 여기서 막아 버리면 로컬에서 화면이 계속 비어 있게 된다.
+   * 토큰이 없으면 부르지 않는다. `GET /timelines` 에 `AccessTokenGuard` 가 걸려
+   * 있어 빈 토큰으로 보내면 반드시 401 이 떨어진다 — 실패가 뻔한 요청이다.
+   * (`ProtectedRoute` 가 토큰을 보장하니 실제로는 닿기 어려운 경로다)
    */
-  const isEnabled = hasToken || import.meta.env.DEV;
+  const isEnabled = Boolean(accessToken);
 
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: timelineKeys.list(page, size),
@@ -130,7 +136,29 @@ export const useTimeline = ({
     },
   });
 
-  const visible = sortRecords(searchRecords(data?.records ?? [], keyword), sort);
+  /**
+   * 목록 썸네일. 타임라인 응답에 사진이 없어 나무 목록에서 가져와 잇는다
+   * (자세한 사정은 `getTreeThumbnails` 주석).
+   *
+   * 사진이 없어도 목록 자체는 읽을 수 있어야 하므로 실패해도 에러로 올리지
+   * 않는다 — 썸네일만 기본 이미지로 떨어진다. presigned URL 이 24시간짜리라
+   * `staleTime` 은 그보다 훨씬 짧게 둔다.
+   */
+  const { data: thumbnails } = useQuery({
+    queryKey: timelineKeys.thumbnails(),
+    queryFn: getTreeThumbnails,
+    enabled: isEnabled,
+    staleTime: 1000 * 60 * 10,
+    retry: false,
+  });
+
+  const withThumbnails = (data?.records ?? []).map((record) => {
+    const joined = record.treeId != null ? thumbnails?.get(record.treeId) : undefined;
+
+    return joined ? { ...record, thumbnailUrl: joined } : record;
+  });
+
+  const visible = sortRecords(searchRecords(withThumbnails, keyword), sort);
 
   return {
     groups: groupByDate(visible, sort),

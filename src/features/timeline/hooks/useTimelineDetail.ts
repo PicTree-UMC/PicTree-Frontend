@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { getTimelineDetail } from "../api/timelineApi";
+import { getTimelineDetail, getTimelineImages } from "../api/timelineApi";
 import { timelineKeys } from "./useTimeline";
 
 /**
@@ -32,5 +32,33 @@ export const useTimelineDetail = (timelineId?: string) => {
 
       return failureCount < 1;
     },
+  });
+};
+
+/**
+ * 한 기록에 붙은 사진 조회 훅. `GET /trees/{treeId}/images?timelineRecordId=`
+ *
+ * ⚠️ 사진은 타임라인 응답에 없다 — 서버 `toResponseDto` 가 안 실어 준다.
+ * 기록별 사진은 `TreeImage.timelineRecordId` 로 저장돼 있고 이 엔드포인트로만
+ * 꺼낼 수 있다. 상세 시트는 한 번에 한 기록만 열리므로 호출도 한 번이다.
+ * (목록은 기록 수만큼 호출해야 해서 나무 대표 사진으로 대신한다)
+ *
+ * 나무 없이 남긴 기록(`treeId` 가 null)은 사진이 붙을 자리가 없어 부르지 않는다.
+ *
+ * presigned URL 이 24시간짜리라 오래 들고 있지 않는다.
+ */
+export const useTimelineImages = (
+  timelineId?: string,
+  treeId?: number | null,
+) => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  return useQuery({
+    queryKey: timelineKeys.images(timelineId ?? ""),
+    queryFn: () => getTimelineImages(treeId as number, timelineId as string),
+    enabled: Boolean(accessToken) && Boolean(timelineId) && treeId != null,
+    staleTime: 1000 * 60 * 10,
+    // 사진이 없어도 상세는 읽을 수 있어야 한다. 실패하면 기본 이미지로 떨어진다.
+    retry: false,
   });
 };

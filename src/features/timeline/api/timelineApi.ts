@@ -6,12 +6,79 @@ import type {
   TimelineApiRecord,
   TimelineDetail,
   TimelineDetailApiRecord,
+  TimelineImage,
   TimelinePage,
   TimelineRecord,
+  TreeImageListData,
+  TreeListPage,
   UpdateTimelineRequest,
 } from "../types/timeline.types";
 
 export const TIMELINE_PAGE_SIZE = 20;
+
+/** 나무 목록을 한 번에 받기 위한 크기. 서버 허용 최대치다(지도와 같은 값). */
+const TREE_PAGE_SIZE = 100;
+
+/**
+ * 나무별 대표 사진 URL. `GET /trees`
+ *
+ * ⚠️ 타임라인 목록(`GET /timelines`)에는 사진이 아예 없다 — 서버
+ * `toResponseDto` 가 `tree { id, name, mood, defaultImage }` 만 매핑한다.
+ * `tree.defaultImage` 는 `"DEFAULT_1"` 같은 **식별자**(VarChar(20))라
+ * `<img src>` 에 넣으면 깨진다.
+ *
+ * 그래서 사진 URL 이 있는 유일한 목록인 나무 목록을 받아 `treeId` 로 잇는다.
+ * 기록별 사진이 아니라 **장소 대표 사진**이라는 한계가 있다. 기록마다 다른
+ * 사진을 목록에 띄우려면 `GET /timelines` 응답에 `imageUrl` 이 필요하다
+ * (기록별 사진 자체는 `TreeImage.timelineRecordId` 로 이미 저장돼 있고
+ * `GET /trees/{treeId}/images` 로 꺼낼 수 있다 — 목록에서 쓰기엔 기록 수만큼
+ * 호출해야 해서 안 쓴다).
+ */
+export const getTreeThumbnails = async (): Promise<Map<number, string>> => {
+  const { data } = await httpClient.get<ApiResponse<TreeListPage>>("/trees", {
+    params: { size: TREE_PAGE_SIZE },
+  });
+
+  if (data.resultType === "FAIL") {
+    throw new Error(data.error.message);
+  }
+
+  const thumbnails = new Map<number, string>();
+  for (const tree of data.data?.items ?? []) {
+    // 사진이 없는 나무는 imageUrl 이 null 이다. 넣어 두면 깨진 이미지가 된다.
+    if (tree.imageUrl) {
+      thumbnails.set(tree.treeId, tree.imageUrl);
+    }
+  }
+
+  return thumbnails;
+};
+
+/**
+ * 한 기록에 붙은 사진. `GET /trees/{treeId}/images?timelineRecordId=`
+ *
+ * 상세 시트에서만 쓴다 — 한 번에 한 기록만 열리므로 호출도 한 번이다.
+ * `imageUrl` 은 24시간짜리 presigned URL 이라 오래 캐시하면 안 된다.
+ */
+export const getTimelineImages = async (
+  treeId: number,
+  timelineRecordId: string,
+): Promise<TimelineImage[]> => {
+  const { data } = await httpClient.get<ApiResponse<TreeImageListData>>(
+    `/trees/${treeId}/images`,
+    { params: { timelineRecordId } },
+  );
+
+  if (data.resultType === "FAIL") {
+    throw new Error(data.error.message);
+  }
+
+  return (data.data?.images ?? []).map((image, index) => ({
+    imageId: image.imageId,
+    imageUrl: image.imageUrl,
+    sortOrder: index,
+  }));
+};
 
 /**
  * API 레코드를 화면이 쓰는 형태로 변환한다.
@@ -98,10 +165,6 @@ export const getTimelineDetail = async (
   return {
     ...toTimelineRecord(record),
     treeName: record.treeName ?? record.tree?.name ?? null,
-    // sortOrder 가 없으면 배열 순서를 그대로 쓴다
-    images: (record.images ?? [])
-      .map((image, index) => ({ ...image, sortOrder: image.sortOrder ?? index }))
-      .sort((a, b) => a.sortOrder - b.sortOrder),
   };
 };
 

@@ -1,4 +1,4 @@
-import { useTimelineDetail } from "../hooks/useTimelineDetail";
+import { useTimelineDetail, useTimelineImages } from "../hooks/useTimelineDetail";
 import type { TimelineRecord } from "../types/timeline.types";
 import penIcon from "../assets/penLine.svg";
 import trashIcon from "../assets/trashcan.svg";
@@ -50,12 +50,17 @@ function InfoRow({ label, value }: { label: string; value: string }) {
  */
 export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) {
   const { data: detail } = useTimelineDetail(record.id);
+  const { data: images } = useTimelineImages(record.id, record.treeId);
 
+  /*
+    이 기록에 붙은 사진이 있으면 그걸 쓰고, 없으면 목록에서 이어 온 나무 대표
+    사진으로 떨어진다.
+
+    ⚠️ `record.defaultImage` 는 쓰지 않는다 — `"DEFAULT_1"` 같은 식별자라
+    URL 이 아니다. 예전에 여기 있어서 사진이 깨져 보였다.
+  */
   const photo =
-    detail?.images?.[0]?.imageUrl ??
-    record.thumbnailUrl ??
-    record.defaultImage ??
-    "/apple-touch-icon.jpg";
+    images?.[0]?.imageUrl ?? record.thumbnailUrl ?? "/apple-touch-icon.jpg";
 
   const visitedAt = formatFull(record.recordedAt);
   const createdAt = formatFull(record.createdAt);
