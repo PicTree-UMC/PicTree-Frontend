@@ -5,7 +5,7 @@ type JourneyBannerProps = {
   placeCount: number;
 };
 
-/** 홈 상단에 뜨는 "나의 여행 발자국" 안내 카드. 동선 페이지로 이동하는 버튼 포함. */
+/** 홈 상단에 뜨는 "나의 여행 발자국" 안내 카드. 카메라(장소 기록) 화면으로 이동하는 버튼 포함. */
 export function JourneyBanner({ placeCount }: JourneyBannerProps) {
   return (
     <div className="absolute inset-x-4 top-4 z-30 flex items-center justify-between gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
@@ -19,10 +19,10 @@ export function JourneyBanner({ placeCount }: JourneyBannerProps) {
         </div>
       </div>
       <Link
-        to={ROUTES.journeyView}
-        className="shrink-0 rounded-full bg-neutral-100 px-3 py-1.5 text-[13px] font-medium text-neutral-700 transition hover:bg-neutral-200"
+        to={ROUTES.camera}
+        className="shrink-0 rounded-full bg-pictree-700 px-3.5 py-1.5 text-[13px] font-medium text-white shadow-sm transition hover:bg-pictree-700/90"
       >
-        동선보기
+        기록하기
       </Link>
     </div>
   );
