@@ -206,6 +206,23 @@ export function RouteViewPage() {
 
       {/* 헤더와 날짜 관리 바는 지도 위에 떠 있다. 지도 영역을 깎지 않도록 absolute. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 pt-safe">
+        {/* 스크림 — 제목·뒤로가기가 지도에 묻히던 문제(#103). 이 둘만 배경 없는 맨 글자라
+            카카오맵의 지하철 아이콘·POI 라벨과 겹치면 아예 안 읽힌다(옆의 `동선저장`·
+            `날짜 관리` 는 어두운 알약이라 멀쩡했다).
+
+            알약을 하나 더 붙이는 대신 그라데이션을 깐 이유: 상단에 배경 있는 요소가 넷이 되면
+            지도 위가 칩 밭이 된다. CameraPage·MarkerStoryViewer 가 쓰는 것과 같은 수법이고,
+            색만 검정 대신 앱 base 크림이다 — 글자가 어두운 초록이라 검정 스크림은 오히려
+            대비가 줄고, 크림/짙은초록은 앱이 원래 쓰는 짝이다.
+
+            아래로 24px 더 내려 컨텐츠 끝에서 딱 끊기지 않게 한다. 날짜 칩이 생기면 부모가
+            높아지면서 스크림도 같이 늘어난다. to-[#fffcef]/0 은 `to-transparent`(=투명한 검정)
+            로 중간이 탁해지는 걸 피하려는 것. */}
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 -bottom-6 -z-10 bg-gradient-to-b from-[#fffcef] via-[#fffcef]/85 to-[#fffcef]/0"
+        />
+
         <header className="pointer-events-auto flex items-center gap-2 px-5 pt-4">
           <button
             onClick={() => navigate(-1)}
