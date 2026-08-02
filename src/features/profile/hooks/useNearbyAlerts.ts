@@ -1,6 +1,12 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { checkNearbyAlerts } from '../api/nearbyAlertApi';
+import { useAuthStore } from '@/features/auth/store/authStore';
+import {
+  checkNearbyAlerts,
+  getNearbyAlertLogs,
+  NEARBY_ALERT_PAGE_SIZE,
+} from '../api/nearbyAlertApi';
+import { isClientError } from '../lib/profileError';
 
 export const nearbyAlertKeys = {
   all: ['nearby-alerts'] as const,
@@ -28,3 +34,28 @@ export const useCheckNearbyAlerts = () =>
       checkNearbyAlerts(lat, lng),
     retry: false,
   });
+
+/**
+ * 근처 나무 알림 기록 조회 훅. `GET /nearby-alerts/logs`
+ *
+ * 푸시를 놓쳤을 때 여기서 다시 확인한다.
+ *
+ * 알림은 앱이 꺼져 있는 동안에도 쌓이므로, 화면에 돌아왔을 때는 다시 받아야
+ * 한다. 그래서 `staleTime` 을 짧게 두고 창 포커스 시 갱신을 막지 않는다.
+ */
+export const useNearbyAlertLogs = ({
+  page = 1,
+  size = NEARBY_ALERT_PAGE_SIZE,
+}: { page?: number; size?: number } = {}) => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  return useQuery({
+    queryKey: nearbyAlertKeys.logs(page, size),
+    queryFn: () => getNearbyAlertLogs({ page, size }),
+    enabled: Boolean(accessToken),
+    staleTime: 1000 * 30,
+    /** 4xx 는 반복해도 결과가 같다. 5xx·네트워크 오류만 1회 재시도한다. */
+    retry: (failureCount, error) => (isClientError(error) ? false : failureCount < 1),
+    refetchOnWindowFocus: (query) => !isClientError(query.state.error),
+  });
+};

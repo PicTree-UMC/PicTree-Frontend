@@ -1,6 +1,12 @@
 import { httpClient } from '@/shared/lib/httpClient';
 import type { ApiResponse } from '@/features/auth/types/auth';
-import type { NearbyAlertCheckResult } from '../types/nearbyAlert';
+import type {
+  NearbyAlertCheckResult,
+  NearbyAlertLogPage,
+} from '../types/nearbyAlert';
+
+/** 서버 기본값과 같다(`NearbyAlertQueryDto`). 최대 100 까지 받는다. */
+export const NEARBY_ALERT_PAGE_SIZE = 20;
 
 /**
  * 근처 나무 알림 체크. `POST /nearby-alerts/check`
@@ -39,4 +45,41 @@ export async function checkNearbyAlerts(
   }
 
   return data.data;
+}
+
+/**
+ * 근처 나무 알림 기록 조회. `GET /nearby-alerts/logs?page=&size=`
+ *
+ * 지금까지 발송된(또는 발송 실패한) 알림 목록이다. 푸시를 놓쳤을 때 여기서
+ * 다시 확인할 수 있다.
+ *
+ * ⚠️ 명세서 RequestParam 표는 비어 있지만 서버 `NearbyAlertQueryDto` 는
+ * `page`(기본 1, 최소 1) 와 `size`(기본 20, 최대 100) 를 받는다.
+ *
+ * ⚠️ 명세서에는 이 엔드포인트의 기능 설명이 확인 처리(`open`) 쪽 문구로
+ * 잘못 적혀 있다. 응답 형태는 목록이 맞다.
+ */
+export async function getNearbyAlertLogs({
+  page = 1,
+  size = NEARBY_ALERT_PAGE_SIZE,
+}: { page?: number; size?: number } = {}): Promise<NearbyAlertLogPage> {
+  const { data } = await httpClient.get<ApiResponse<NearbyAlertLogPage>>(
+    '/nearby-alerts/logs',
+    { params: { page, size } },
+  );
+
+  if (data.resultType === 'FAIL') {
+    throw new Error(data.error.message);
+  }
+
+  const body = data.data;
+
+  return {
+    items: body?.items ?? [],
+    page: body?.page ?? page,
+    size: body?.size ?? size,
+    totalElements: body?.totalElements ?? 0,
+    totalPages: body?.totalPages ?? 0,
+    hasNext: body?.hasNext ?? false,
+  };
 }
