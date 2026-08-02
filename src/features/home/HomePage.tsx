@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/shared/constants/routes';
 import { useGeolocation } from '@/shared/hooks/useGeolocation';
 import { useKakaoMap } from './hooks/useKakaoMap';
 import { useCurrentLocation } from './hooks/useCurrentLocation';
@@ -11,6 +13,7 @@ import { MarkerStoryViewer } from './components/MarkerStoryViewer';
 const FALLBACK_CENTER = { lat: 37.5665, lng: 126.978 };
 
 export function HomePage() {
+  const navigate = useNavigate();
   // 지도는 이동을 따라가야 하므로 추적 모드로 받는다. request(refreshLocation)는
   // 추적 중에도 수동 재조회로 쓸 수 있어 우하단 새로고침 버튼에서 사용한다.
   const { coords, loading: locating, request: refreshLocation } = useGeolocation({ watch: true });
@@ -136,8 +139,42 @@ export function HomePage() {
         </div>
       )}
 
-      {/* 상단 안내 카드 — 기록한 장소 수 표시 + 장소 기록하기(카메라) 버튼 */}
+      {/* 상단 안내 카드 — 기록한 장소 수만 보여준다 */}
       <JourneyBanner placeCount={markers.length} />
+
+      {/*
+        장소 기록(카메라) — 하단 좌측 플로팅 버튼. 탭바가 지도 위에 얹히므로
+        그보다 위에 띄운다(bottom-nav = 탭바 높이 + 하단 안전영역). 고정 px 로 두면
+        노치 기기에서 탭바가 안전영역만큼 높아져 버튼이 가려진다.
+        우하단 새로고침 버튼과 대칭 — 흰 배경 + GREEN-500(#788F4A) 아이콘.
+        흰 위 GREEN-500 아이콘은 3.6:1 로 그래픽 요소(3:1) 충족.
+      */}
+      <button
+        onClick={() => navigate(ROUTES.camera)}
+        aria-label="장소 기록하기"
+        className="bottom-nav absolute left-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#788F4A] shadow-lg ring-1 ring-black/5 transition active:scale-95"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+        </svg>
+      </button>
 
       {/*
         현재 위치 새로고침 — 우하단 플로팅 버튼. 탭바 위에 띄운다(bottom-nav).
