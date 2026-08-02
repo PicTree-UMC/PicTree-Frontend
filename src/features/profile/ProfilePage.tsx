@@ -4,7 +4,10 @@ import { useLogout } from "@/features/auth/hooks/useLogout";
 import { ROUTES } from "@/shared/constants/routes";
 import { useSessionExpiredRedirect } from "@/features/auth/hooks/useSessionExpiredRedirect";
 import { useMyProfile } from "./hooks/useMyProfile";
-import { useUpdateMyProfile } from "./hooks/useUpdateMyProfile";
+import { useNearbyAlertOpenListener } from "./hooks/useNearbyAlertOpenListener";
+import { useNearbyAlertToggle } from "./hooks/useNearbyAlertToggle";
+import { useMyPushSubscriptions } from "./hooks/usePushSubscription";
+import { getPushUnavailableReason } from "./lib/webPush";
 import { getPlanLabel } from "./lib/plan";
 import { getApiErrorMessage, getProfileErrorKind } from "./lib/profileError";
 import treeIcon from "./assets/icons/tree.svg";
@@ -54,7 +57,11 @@ export function ProfilePage() {
    */
   const { data: profile, isPending, isError, error, refetch } = useMyProfile();
 
-  const { mutate: updateProfile, isPending: isUpdating } = useUpdateMyProfile();
+  const { mutate: toggleAlarm, isPending: isUpdating } = useNearbyAlertToggle();
+  const { isEnabled: hasPushSubscription } = useMyPushSubscriptions();
+
+  // 푸시를 눌러 돌아온 경우 확인 처리를 건다.
+  useNearbyAlertOpenListener();
 
   const errorKind = isError ? getProfileErrorKind(error) : null;
 
@@ -69,11 +76,21 @@ export function ProfilePage() {
   const [isAvatarBroken, setIsAvatarBroken] = useState(false);
 
   /**
-   * 근처 나무 알림. 서버 값이 곧 화면 값이다.
-   * 토글하면 `PATCH /users/me` 가 나가고, 훅이 캐시를 낙관적으로 갱신하므로
-   * 별도 로컬 상태 없이 즉시 반영된다 (실패하면 훅이 되돌린다).
+   * 근처 나무 알림이 실제로 켜져 있는가.
+   *
+   * **두 조건이 모두 맞아야 켜진 것이다** — 서버 `check` 가 둘 다 볼 때만
+   * 알림을 쏘기 때문이다.
+   * 1. `notification` 플래그 (사용자의 의사)
+   * 2. 활성 푸시 구독 (실제로 보낼 통로)
+   *
+   * 플래그만 켜진 상태를 "켜짐" 으로 보여 주면, 알림이 안 오는데 화면은
+   * 켜졌다고 말하는 꼴이 된다. 다른 기기에서 껐거나 브라우저 알림 권한이
+   * 취소되면 실제로 이 상태가 된다.
    */
-  const alarmOn = profile?.notification ?? false;
+  const alarmOn = (profile?.notification ?? false) && hasPushSubscription;
+
+  /** 이 브라우저에서 아예 푸시를 못 쓰는 경우(예: iOS 를 홈 화면에 추가 안 함). */
+  const pushUnavailable = getPushUnavailableReason();
 
   const planLabel = profile ? getPlanLabel(profile.currentPlan) : null;
 
@@ -167,8 +184,14 @@ export function ProfilePage() {
         <div className="flex items-center justify-between rounded-xl border-2 border-[#C5D89D] bg-white px-6 py-4">
           <div>
             <p className="text-lg font-semibold text-[#111]">근처 나무 알림</p>
+            {/*
+              아이폰은 홈 화면에 추가해야만 푸시를 받을 수 있다(웹 표준 제약).
+              그냥 "꺼짐" 이라고만 하면 켜지지 않는 이유를 알 수 없어 따로 안내한다.
+            */}
             <p className="mt-0.5 text-xs font-medium text-[#90908F]">
-              {alarmOn ? "켜짐" : "꺼짐"} · 홈에서 바로 켤 수 있어요
+              {pushUnavailable === "ios-needs-install"
+                ? "홈 화면에 추가하면 알림을 받을 수 있어요"
+                : `${alarmOn ? "켜짐" : "꺼짐"} · 100m 안에 내 나무가 있으면 알려드려요`}
             </p>
           </div>
           {/* 토글 */}
@@ -179,7 +202,7 @@ export function ProfilePage() {
             aria-label="근처 나무 알림"
             // 프로필을 못 불러왔으면 무엇을 바꿀지 알 수 없어 막는다
             disabled={!profile || isUpdating}
-            onClick={() => updateProfile({ notification: !alarmOn })}
+            onClick={() => toggleAlarm(!alarmOn)}
             className={`relative h-6 w-10 flex-shrink-0 rounded-full transition-colors disabled:opacity-50 ${
               alarmOn ? "bg-[#9CAB84]" : "bg-[#CCC]"
             }`}
