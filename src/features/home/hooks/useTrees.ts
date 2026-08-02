@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import {
   deleteTree,
+  getNearbyTrees,
   getTreeDetail,
   getTrees,
   toggleTreeFavorite,
@@ -13,6 +14,13 @@ export const treeKeys = {
   all: ['trees'] as const,
   list: () => [...treeKeys.all, 'list'] as const,
   detail: (id: string) => [...treeKeys.all, 'detail', id] as const,
+  /**
+   * 좌표를 소수점 4자리로 깎아 키에 넣는다 — 약 11m 단위다.
+   * 원본 좌표를 그대로 쓰면 GPS 가 미세하게 떨릴 때마다 키가 바뀌어
+   * 가만히 서 있어도 요청이 계속 나간다.
+   */
+  nearby: (lat: number, lng: number) =>
+    [...treeKeys.all, 'nearby', lat.toFixed(4), lng.toFixed(4)] as const,
 };
 
 /** 지도 마커 목록. 토큰 없으면 api 레이어에서 목데이터 폴백. */
@@ -21,6 +29,35 @@ export const useTrees = () =>
     queryKey: treeKeys.list(),
     queryFn: getTrees,
   });
+
+/**
+ * 현재 위치 반경 100m 안의 나무. `GET /trees/nearby`
+ *
+ * 좌표가 없으면(위치 권한 거부·측위 전) 부르지 않는다. 반경은 서버 상수라
+ * 프론트에서 조절할 수 없다.
+ *
+ * 근처에 없으면 빈 배열이 오고, 그건 정상이다 — 에러가 아니다.
+ *
+ * ⚠️ 지금은 다른 사람 나무도 섞여 온다(서버 쿼리에 `userId` 조건 없음).
+ * 화면에 붙일 때 이 점을 감안해야 한다. 백엔드 수정 요청해 둔 상태다.
+ */
+export const useNearbyTrees = (
+  coords: { lat: number; lng: number } | null,
+) => {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  return useQuery({
+    queryKey: treeKeys.nearby(coords?.lat ?? 0, coords?.lng ?? 0),
+    queryFn: () => getNearbyTrees(coords!.lat, coords!.lng),
+    enabled: isAuthenticated && coords != null,
+    /**
+     * 걸어서 100m 를 벗어나는 데 1~2분은 걸린다. 그 전에 다시 물어도 답이
+     * 같으므로 1분은 들고 있는다.
+     */
+    staleTime: 1000 * 60,
+    retry: false,
+  });
+};
 
 /**
  * 마커 탭 시 상세(코멘트·사진·날짜) 조회.
