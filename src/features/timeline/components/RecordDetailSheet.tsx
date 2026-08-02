@@ -87,7 +87,7 @@ export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) 
           className="mb-4 aspect-square w-full object-cover"
         />
 
-        <h2 className="text-xl font-bold text-black">{record.placeName}</h2>
+        <h2 className="text-xl font-medium text-black">{record.placeName}</h2>
         {record.comment && (
           <p className="mt-1 text-[14px] leading-[20px] text-[#2C3930]">
             {record.comment}
@@ -105,7 +105,7 @@ export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) 
           <button
             type="button"
             onClick={onEdit}
-            className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#C5D89D] text-[15px] font-semibold text-[#2C3930]"
+            className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#C5D89D] text-[15px] font-medium text-[#2C3930]"
           >
             <img src={penIcon} alt="" className="h-[18px] w-[18px]" />
             기록 수정
@@ -113,7 +113,7 @@ export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) 
           <button
             type="button"
             onClick={onDelete}
-            className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#E6E6E6] text-[15px] font-semibold text-[#DC2626]"
+            className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#E6E6E6] text-[15px] font-medium text-[#DC2626]"
           >
             <img src={trashIcon} alt="" className="h-[18px] w-[18px]" />
             삭제하기

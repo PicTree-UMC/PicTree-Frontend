@@ -55,7 +55,7 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
       >
         {/* 상단 제목 */}
         <div className="relative flex items-center justify-center px-[19px] pb-2 pt-4">
-          <h2 className="text-[20px] font-bold text-[#2C3930]">기록 수정</h2>
+          <h2 className="text-[20px] font-medium text-[#2C3930]">기록 수정</h2>
           <button
             type="button"
             onClick={onClose}
@@ -68,7 +68,7 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
 
         {/* 장소명 */}
         <div className="flex flex-col gap-2.5 px-[19px] py-3">
-          <label htmlFor="edit-title" className="text-[16px] font-semibold text-[#2C3930]">
+          <label htmlFor="edit-title" className="text-[16px] font-medium text-[#2C3930]">
             장소명
           </label>
           <input
@@ -76,19 +76,19 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={100}
-            className="h-[45px] w-full rounded-[20px] border-2 border-[#788F4A] bg-[#FFFDFD] px-4 text-center text-[14px] font-semibold text-[#2C3930] outline-none"
+            className="h-[45px] w-full rounded-[20px] border-2 border-[#788F4A] bg-[#FFFDFD] px-4 text-center text-[14px] font-medium text-[#2C3930] outline-none"
           />
         </div>
 
         {/* 기분 이모지 */}
         <div className="flex flex-col gap-1.5 px-4 py-1.5">
-          <p className="text-[16px] font-semibold text-[#2C3930]">기분 이모지</p>
+          <p className="text-[16px] font-medium text-[#2C3930]">기분 이모지</p>
           <EmojiPicker variant="modal" selected={emoji} onSelect={setEmoji} />
         </div>
 
         {/* 한줄평 */}
         <div className="flex flex-col gap-2.5 px-[19px] py-3">
-          <label htmlFor="edit-content" className="text-[16px] font-semibold text-[#2C3930]">
+          <label htmlFor="edit-content" className="text-[16px] font-medium text-[#2C3930]">
             한줄평
           </label>
           <input
@@ -96,12 +96,12 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
             value={content}
             onChange={(e) => setContent(e.target.value)}
             maxLength={500}
-            className="h-[45px] w-full rounded-[20px] border-2 border-[#788F4A] bg-[#FFFDFD] px-4 text-center text-[14px] font-semibold text-[#2C3930] outline-none"
+            className="h-[45px] w-full rounded-[20px] border-2 border-[#788F4A] bg-[#FFFDFD] px-4 text-center text-[14px] font-medium text-[#2C3930] outline-none"
           />
         </div>
 
         {/* 날짜는 수정 대상이 아니다 — 서버에 visitedAt 을 보내지 않는다 */}
-        <p className="mx-auto w-[250px] text-center text-[12px] font-medium leading-5 tracking-[-0.3px] text-[#60655C]">
+        <p className="mx-auto w-[250px] text-center text-[13px] font-medium leading-5 tracking-[-0.3px] text-[#60655C]">
           날짜는 기록 시점 그대로 유지됩니다.
           {recordedDate && ` (${recordedDate})`}
         </p>
@@ -110,7 +110,7 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
           <button
             type="button"
             onClick={onClose}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#E6E6E6] text-[16px] font-semibold tracking-[0.8px] text-[#2C3930]"
+            className="h-[38px] w-[92px] rounded-[12px] bg-[#E6E6E6] text-[16px] font-medium tracking-[0.8px] text-[#2C3930]"
           >
             취소
           </button>
@@ -118,7 +118,7 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
             type="button"
             disabled={!canSave}
             onClick={() => onSave({ title: title.trim(), content: content.trim() })}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#C5D89D] text-[16px] font-semibold tracking-[0.8px] text-[#2C3930] disabled:opacity-50"
+            className="h-[38px] w-[92px] rounded-[12px] bg-[#C5D89D] text-[16px] font-medium tracking-[0.8px] text-[#2C3930] disabled:opacity-50"
           >
             {isSaving ? "저장 중" : "저장하기"}
           </button>
