@@ -4,7 +4,7 @@ import { ROUTES } from '@/shared/constants/routes';
 import { getLocalDateString } from '@/shared/lib/date';
 import { useLockBodyScroll } from '@/shared/hooks/useLockBodyScroll';
 import { useBodyBackground } from '@/shared/hooks/useBodyBackground';
-import { useGeolocation } from '@/shared/hooks/useGeolocation';
+import { useGeolocation, type GeoCoords } from '@/shared/hooks/useGeolocation';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { useCameraStream, type FacingMode } from './hooks/useCameraStream';
 import { useRecordForm } from './hooks/useRecordForm';
@@ -12,6 +12,8 @@ import { useCreateTreeRecord } from './hooks/useCreateTreeRecord';
 import { captureFrame } from './lib/captureFrame';
 import { CameraControls } from './components/CameraControls';
 import { CommentField } from './components/CommentField';
+import { LocationAccuracyBar } from './components/LocationAccuracyBar';
+import { LocationPickerSheet } from './components/LocationPickerSheet';
 import { PlaceNameBar } from './components/PlaceNameBar';
 import { RecordForm } from './components/RecordForm';
 import { XIcon } from './components/icons';
@@ -33,10 +35,21 @@ export function CameraPage() {
 
   const { selectedEmoji, setSelectedEmoji, placeName, setPlaceName, comment, setComment, isValid } =
     useRecordForm();
-  const { coords, request: requestLocation } = useGeolocation();
+  const { coords: gpsCoords, request: requestLocation } = useGeolocation();
   const { showToast } = useToast();
   const { mutate: saveRecord, isPending: isSaving } = useCreateTreeRecord();
   const today = getLocalDateString();
+
+  /*
+   * 지도에서 직접 고른 좌표. 있으면 GPS 좌표 대신 이걸 저장한다.
+   *
+   * 자동으로 갈아끼우지 않고 사용자가 고르게 하는 이유: 정확도 판정(30m)은 도심
+   * 빌딩숲에서 오탐이 난다. 게다가 Wi-Fi 측위는 틀린 좌표를 작은 신뢰반경과 함께
+   * 자신 있게 돌려주기도 해서, 기계 판정만으로는 옳고 그름을 가릴 수 없다.
+   */
+  const [pickedCoords, setPickedCoords] = useState<GeoCoords | null>(null);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const coords = pickedCoords ?? gpsCoords;
 
   const handleCapture = () => {
     if (!videoRef.current || !viewportRef.current) return;
@@ -177,6 +190,17 @@ export function CameraPage() {
           </div>
         )}
 
+        {/* 저장 직전(촬영 검토·작성 모드)에만 위치 상태를 알린다. 라이브 프리뷰에서는
+            아직 저장할 것이 없어 위치를 따질 이유가 없다. */}
+        {(capturedPhoto || isWriteMode) && (
+          <LocationAccuracyBar
+            coords={coords}
+            isManual={pickedCoords !== null}
+            onPick={() => setIsPickerOpen(true)}
+            onReset={() => setPickedCoords(null)}
+          />
+        )}
+
         <CameraControls
           hasPhoto={!!capturedPhoto}
           isWriteMode={isWriteMode}
@@ -189,6 +213,19 @@ export function CameraPage() {
           onSave={handleSave}
         />
       </div>
+
+      {isPickerOpen && (
+        <LocationPickerSheet
+          initialCoords={coords}
+          onClose={() => setIsPickerOpen(false)}
+          // 토스트를 띄우지 않는다 — 시트가 닫히면 그 자리의 줄이 곧바로
+          // '위치를 직접 지정했어요'로 바뀌어 같은 말을 두 번 하게 된다.
+          onConfirm={(picked) => {
+            setPickedCoords(picked);
+            setIsPickerOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
