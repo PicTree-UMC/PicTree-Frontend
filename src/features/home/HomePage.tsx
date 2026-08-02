@@ -143,16 +143,16 @@ export function HomePage() {
       <JourneyBanner placeCount={markers.length} />
 
       {/*
-        장소 기록(카메라) — 하단 좌측 플로팅 버튼. 탭바가 지도 위에 얹히므로
+        장소 기록(카메라) — 하단 중앙 플로팅 버튼. 탭바가 지도 위에 얹히므로
         그보다 위에 띄운다(bottom-nav = 탭바 높이 + 하단 안전영역). 고정 px 로 두면
         노치 기기에서 탭바가 안전영역만큼 높아져 버튼이 가려진다.
-        우하단 새로고침 버튼과 대칭 — 흰 배경 + GREEN-500(#788F4A) 아이콘.
-        흰 위 GREEN-500 아이콘은 3.6:1 로 그래픽 요소(3:1) 충족.
+        left-1/2 + -translate-x-1/2 로 화면 가로 중앙에 정렬한다.
+        흰 배경 + GREEN-500(#788F4A) 아이콘 — 흰 위 3.6:1 로 그래픽 요소(3:1) 충족.
       */}
       <button
         onClick={() => navigate(ROUTES.camera)}
         aria-label="장소 기록하기"
-        className="bottom-nav absolute left-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#788F4A] shadow-lg ring-1 ring-black/5 transition active:scale-95"
+        className="bottom-nav absolute left-1/2 z-20 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full bg-white text-[#788F4A] shadow-lg ring-1 ring-black/5 transition active:scale-95"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -177,9 +177,9 @@ export function HomePage() {
       </button>
 
       {/*
-        현재 위치 새로고침 — 우하단 플로팅 버튼. 탭바 위에 띄운다(bottom-nav).
-        지도가 준비됐을 때만 노출하고, 탭하면 GPS 를 새로 읽어 그 위치로 이동한다.
-        읽는 동안엔 아이콘을 회전시키고 중복 탭을 막는다.
+        현재 위치 새로고침 — 우측 상단 플로팅 버튼. 상단 안내 카드(top-4, 높이 약 60px)
+        바로 아래(top-20)에 두어 배너와 겹치지 않게 한다. 지도가 준비됐을 때만 노출하고,
+        탭하면 GPS 를 새로 읽어 그 위치로 이동한다. 읽는 동안엔 아이콘을 회전시키고 중복 탭을 막는다.
       */}
       {map && (
         <button
@@ -187,7 +187,7 @@ export function HomePage() {
           disabled={locating}
           aria-label="현재 위치 새로고침"
           /* 흰 배경 + GREEN-500(#788F4A) 아이콘 — 흰 위 3.6:1 로 그래픽 요소(3:1) 충족. */
-          className="bottom-nav absolute right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#788F4A] shadow-lg ring-1 ring-black/5 transition active:scale-95 disabled:opacity-70"
+          className="absolute right-4 top-24 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#788F4A] shadow-lg ring-1 ring-black/5 transition active:scale-95 disabled:opacity-70"
         >
           <MyLocationIcon spinning={locating} />
         </button>
