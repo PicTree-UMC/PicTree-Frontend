@@ -2,6 +2,7 @@ import { httpClient } from '@/shared/lib/httpClient';
 import type { ApiResponse } from '@/features/auth/types/auth';
 import type {
   NearbyAlertCheckResult,
+  NearbyAlertLog,
   NearbyAlertLogPage,
 } from '../types/nearbyAlert';
 
@@ -82,4 +83,26 @@ export async function getNearbyAlertLogs({
     totalPages: body?.totalPages ?? 0,
     hasNext: body?.hasNext ?? false,
   };
+}
+
+/**
+ * 알림 확인 처리. `PATCH /nearby-alerts/logs/{alertLogId}/open`
+ *
+ * 푸시를 눌렀거나 기록 목록에서 내용을 봤을 때 부른다. `status` 가 `OPENED` 로
+ * 바뀌고 `openedAt` 이 채워진 기록 한 건이 돌아온다.
+ *
+ * 실패 코드: 404 `NEARBY_ALERT_NOT_FOUND`(없거나 내 것이 아닌 기록).
+ */
+export async function openNearbyAlertLog(
+  alertLogId: number,
+): Promise<NearbyAlertLog> {
+  const { data } = await httpClient.patch<ApiResponse<NearbyAlertLog>>(
+    `/nearby-alerts/logs/${alertLogId}/open`,
+  );
+
+  if (data.resultType === 'FAIL') {
+    throw new Error(data.error.message);
+  }
+
+  return data.data;
 }

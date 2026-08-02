@@ -1,12 +1,14 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
 import {
   checkNearbyAlerts,
   getNearbyAlertLogs,
   NEARBY_ALERT_PAGE_SIZE,
+  openNearbyAlertLog,
 } from '../api/nearbyAlertApi';
 import { isClientError } from '../lib/profileError';
+import type { NearbyAlertLogPage } from '../types/nearbyAlert';
 
 export const nearbyAlertKeys = {
   all: ['nearby-alerts'] as const,
@@ -57,5 +59,66 @@ export const useNearbyAlertLogs = ({
     /** 4xx 는 반복해도 결과가 같다. 5xx·네트워크 오류만 1회 재시도한다. */
     retry: (failureCount, error) => (isClientError(error) ? false : failureCount < 1),
     refetchOnWindowFocus: (query) => !isClientError(query.state.error),
+  });
+};
+
+/**
+ * 알림 확인 처리 훅. `PATCH /nearby-alerts/logs/{alertLogId}/open`
+ *
+ * 푸시를 눌렀거나 기록 목록에서 내용을 봤을 때 부른다.
+ *
+ * 낙관적으로 먼저 `OPENED` 로 바꾼다 — 확인 표시는 사용자가 이미 한 행동의
+ * 결과라, 응답을 기다리는 동안 안 읽음으로 남아 있으면 눌리지 않은 것처럼
+ * 보인다. 실패하면 되돌린다.
+ *
+ * 목록이 페이지마다 캐시 키가 달라서 열려 있는 페이지를 전부 훑어 갱신한다.
+ *
+ * 실패해도 토스트를 띄우지 않는다. "읽음 표시" 가 안 된 것뿐이라 사용자가
+ * 할 일이 없고, 다음 조회에서 서버 값으로 맞춰진다.
+ */
+export const useOpenNearbyAlertLog = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: openNearbyAlertLog,
+
+    onMutate: async (alertLogId) => {
+      await queryClient.cancelQueries({ queryKey: nearbyAlertKeys.all });
+
+      const previous = queryClient.getQueriesData<NearbyAlertLogPage>({
+        queryKey: nearbyAlertKeys.all,
+      });
+
+      queryClient.setQueriesData<NearbyAlertLogPage>(
+        { queryKey: nearbyAlertKeys.all },
+        (old) =>
+          old
+            ? {
+                ...old,
+                items: old.items.map((item) =>
+                  item.alertLogId === alertLogId
+                    ? {
+                        ...item,
+                        status: 'OPENED' as const,
+                        openedAt: item.openedAt ?? new Date().toISOString(),
+                      }
+                    : item,
+                ),
+              }
+            : old,
+      );
+
+      return { previous };
+    },
+
+    onError: (_error, _alertLogId, context) => {
+      for (const [key, value] of context?.previous ?? []) {
+        queryClient.setQueryData(key, value);
+      }
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: nearbyAlertKeys.all });
+    },
   });
 };
