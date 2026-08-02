@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { TreeMarker } from '../components/TreeMarker';
 import { ClusterMarker } from '../components/ClusterMarker';
 import { clusterMarkers } from '../lib/cluster';
+import { MIN_ZOOM_LEVEL } from './useKakaoMap';
 
 export interface MapMarkerData {
   id: string;
@@ -67,6 +68,30 @@ function createOverlay(
   });
   overlay.setMap(map);
   return overlay;
+}
+
+/**
+ * 클러스터 뱃지 클릭 처리.
+ *
+ * 기본 동작은 '줌 인' 이다 — 클러스터 자리로 한 단계 확대하면 묶여 있던 마커가 흩어지며
+ * 개별 나무로 풀린다(anchor 로 클러스터 중심을 고정해 그 지점을 향해 확대).
+ *
+ * 단, 이미 최대 줌인(MIN_ZOOM_LEVEL)인데도 여전히 묶여 있으면 좌표가 사실상 겹친
+ * 경우라 더 확대해도 흩어지지 않는다. 이때는 예외적으로 상세 뷰어(onSelect)로 넘긴다.
+ */
+function handleClusterClick(
+  map: kakao.maps.Map,
+  cluster: { lat: number; lng: number; items: MapMarkerData[] },
+  onSelect: (group: MapMarkerData[]) => void,
+) {
+  if (map.getLevel() > MIN_ZOOM_LEVEL) {
+    map.setLevel(map.getLevel() - 1, {
+      anchor: new window.kakao.maps.LatLng(cluster.lat, cluster.lng),
+      animate: true, // 즉시 점프 대신 부드럽게 확대되도록 트랜지션을 붙인다.
+    });
+    return;
+  }
+  onSelect(cluster.items);
 }
 
 /**
@@ -138,7 +163,7 @@ export function useMapMarkers(
           cluster.lat,
           cluster.lng,
           renderToStaticMarkup(<ClusterMarker count={cluster.items.length} />),
-          () => onSelect(cluster.items),
+          () => handleClusterClick(map, cluster, onSelect),
           0.5, // 원형 뱃지를 좌표 정중앙에 놓는다.
           delays[index],
         );
