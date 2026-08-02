@@ -33,3 +33,27 @@ export async function registerPushSubscription(
 
   return data.data;
 }
+
+/**
+ * 내 푸시 구독 목록 조회. `GET /push-subscriptions/me`
+ *
+ * ⚠️ **배열이다.** 명세서는 객체 하나로 적어 뒀지만 구독은 기기·브라우저마다
+ * 하나씩 생긴다 — 폰과 노트북에서 각각 로그인하면 두 개다.
+ *
+ * ⚠️ 구독이 없어도 **빈 배열로 200** 이 온다. 명세서의 404
+ * `PUSH_SUBSCRIPTION_NOT_FOUND` 는 이 경로로 나가지 않는다. 구독이 없는 것은
+ * 에러가 아니라 "알림을 안 켠 상태" 라서 그게 맞다.
+ *
+ * 알림이 켜져 있는지는 `isActive` 가 하나라도 true 인지로 판단한다
+ * (`hasActivePushSubscription`).
+ */
+export async function getMyPushSubscriptions(): Promise<PushSubscription[]> {
+  const { data } =
+    await httpClient.get<ApiResponse<PushSubscription[]>>('/push-subscriptions/me');
+
+  if (data.resultType === 'FAIL') {
+    throw new Error(data.error.message);
+  }
+
+  return data.data ?? [];
+}
