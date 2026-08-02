@@ -45,7 +45,7 @@ export function LocationPickerSheet({
       <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose} />
 
       <div className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[390px] rounded-t-[24px] bg-[#fffcef] px-4 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-5">
-        <h2 className="text-base font-medium tracking-wide text-[#2c3930]">위치 직접 지정</h2>
+        <h2 className="text-[15px] font-medium tracking-wide text-[#2c3930]">위치 직접 지정</h2>
         <p className="mt-1 text-[13px] text-[#5c6f2b]">
           지도를 움직여 핀을 실제 위치에 맞춰 주세요.
         </p>
@@ -72,14 +72,14 @@ export function LocationPickerSheet({
         <div className="mt-4 flex justify-center gap-6">
           <button
             onClick={onClose}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#d9d9d9] text-base font-medium tracking-wide text-[#2c3930]"
+            className="h-[38px] w-[92px] rounded-[12px] bg-[#d9d9d9] text-[15px] font-medium tracking-wide text-[#2c3930]"
           >
             취소
           </button>
           <button
             onClick={handleConfirm}
             disabled={!map}
-            className={`h-[38px] w-[110px] rounded-[12px] bg-[#c5d89d] text-base font-medium tracking-wide text-[#2c3930] transition-opacity ${
+            className={`h-[38px] w-[110px] rounded-[12px] bg-[#c5d89d] text-[15px] font-medium tracking-wide text-[#2c3930] transition-opacity ${
               map ? '' : 'opacity-50'
             }`}
           >

@@ -84,7 +84,7 @@ export function PlaceNameBar({
               onKeyDown={handleKeyDown}
               onBlur={() => setIsEditing(false)}
               placeholder="장소명을 입력하세요"
-              className="w-full rounded-full bg-black/45 py-2.5 pl-4 pr-11 text-base text-white outline-none placeholder:text-white/60"
+              className="w-full rounded-full bg-black/45 py-2.5 pl-4 pr-11 text-[15px] text-white outline-none placeholder:text-white/60"
             />
             {placeName && (
               <button
@@ -103,7 +103,7 @@ export function PlaceNameBar({
           <button
             type="button"
             onClick={startEditing}
-            className="flex flex-1 items-center gap-1.5 rounded-full bg-black/45 px-4 py-2.5 text-left text-base"
+            className="flex flex-1 items-center gap-1.5 rounded-full bg-black/45 px-4 py-2.5 text-left text-[15px]"
           >
             <PinIcon />
             <span className={`truncate ${placeName ? 'text-white' : 'text-white/60'}`}>

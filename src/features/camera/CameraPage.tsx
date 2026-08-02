@@ -112,7 +112,7 @@ export function CameraPage() {
         className="absolute inset-0 h-full w-full origin-center object-cover"
       />
       {error && (
-        <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-white">
+        <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-[15px] text-white">
           {error}
         </p>
       )}
@@ -146,13 +146,13 @@ export function CameraPage() {
           {capturedPhoto ? (
             <>
               <div className="flex-1" />
-              <span className="animate-fade-in-down shrink-0 text-sm text-white/80">{today}</span>
+              <span className="animate-fade-in-down shrink-0 text-[15px] text-white/80">{today}</span>
             </>
           ) : (
             <>
               <div className="flex flex-1 items-center justify-center gap-1.5">
                 <img src="/apple-touch-icon.jpg" alt="" className="h-6 w-6 rounded-md" />
-                <span className="text-lg font-bold">PicTree</span>
+                <span className="text-lg font-medium">PicTree</span>
               </div>
               <div className="w-9 shrink-0" />
             </>
@@ -183,7 +183,7 @@ export function CameraPage() {
           <div className="relative flex-1">
             <button
               onClick={cycleZoom}
-              className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs text-white"
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-[13px] text-white"
             >
               {zoom.toFixed(1)}x
             </button>
