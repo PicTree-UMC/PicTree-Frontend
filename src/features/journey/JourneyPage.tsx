@@ -191,6 +191,9 @@ export function JourneyPage() {
                 journeys={journeys}
                 selectedId={selectedId}
                 onSelect={(journey) => setSelectedId(journey.id)}
+                // 빈 상태의 '동선 생성하기' CTA 는 목록이 차면 사라진다 — 그때부터
+                // 새 동선을 만들 입구가 아예 없었다. 칩 줄의 + 가 그 자리를 잇는다.
+                onCreate={() => navigate(ROUTES.journeyView)}
               />
             </div>
 
