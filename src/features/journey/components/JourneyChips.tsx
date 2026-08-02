@@ -1,10 +1,29 @@
 import { useEffect, useRef } from 'react';
 import { Journey } from '../types/journey';
 
+/** 새 동선 만들기 칩의 + 아이콘. */
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
 interface JourneyChipsProps {
   journeys: Journey[];
   selectedId: number | null;
   onSelect: (journey: Journey) => void;
+  /** 새 동선 만들기(`/journey/view`). 칩 줄 맨 왼쪽의 + 버튼이 부른다. */
+  onCreate: () => void;
 }
 
 /** 선택된 칩이 스크롤 밖으로 나갔을 때 남기는 여백. */
@@ -20,8 +39,12 @@ const SCROLL_MARGIN = 16;
  *
  * ⚠️ `scrollIntoView` 를 쓰지 않는다 — 조상 스크롤 컨테이너까지 세로로 움직일 수 있다.
  * 이 컨테이너의 `scrollLeft` 만 건드린다.
+ *
+ * 맨 왼쪽 + 칩은 **스크롤 밖에 고정한다.** 동선이 많아지면 스크롤에 딸려 사라지는데,
+ * 이건 새 동선을 만드는 유일한 입구라 항상 닿을 수 있어야 한다. 위의 자동 스크롤도
+ * 한몫한다 — 저장 직후처럼 사용자가 누르지 않았는데 선택이 바뀌면 줄이 저절로 밀린다.
  */
-export function JourneyChips({ journeys, selectedId, onSelect }: JourneyChipsProps) {
+export function JourneyChips({ journeys, selectedId, onSelect, onCreate }: JourneyChipsProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<HTMLButtonElement>(null);
 
@@ -45,28 +68,43 @@ export function JourneyChips({ journeys, selectedId, onSelect }: JourneyChipsPro
   }, [selectedId]);
 
   return (
-    <div
-      ref={scrollerRef}
-      className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-    >
-      {journeys.map((journey) => {
-        const isSelected = journey.id === selectedId;
-        return (
-          <button
-            key={journey.id}
-            ref={isSelected ? selectedRef : undefined}
-            onClick={() => onSelect(journey)}
-            aria-pressed={isSelected}
-            className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-              isSelected
-                ? 'bg-[#788f4a] text-white'
-                : 'border border-[#c5d89d] bg-white text-[#2c3930]'
-            }`}
-          >
-            {journey.title}
-          </button>
-        );
-      })}
+    <div className="flex items-start gap-2">
+      {/* 점선 테두리 — 옆의 동선 칩들과 달리 '고르는 것'이 아니라 '만드는 것'이라
+          한눈에 갈리게 한다. 그래서 `aria-pressed` 도 붙이지 않는다(토글이 아니다).
+          색은 선택된 칩과 같은 #788f4a 를 쓴다. 팔레트 정리(#58) 대상 파일이라
+          여기만 피그마 값을 쓰면 한 줄에 초록이 셋이 되고 정리가 더 어려워진다. */}
+      <button
+        type="button"
+        onClick={onCreate}
+        aria-label="새 동선 만들기"
+        className="flex shrink-0 items-center rounded-full border border-dashed border-[#788f4a] px-3 py-2 text-[#788f4a]"
+      >
+        <PlusIcon className="size-5" />
+      </button>
+
+      <div
+        ref={scrollerRef}
+        className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {journeys.map((journey) => {
+          const isSelected = journey.id === selectedId;
+          return (
+            <button
+              key={journey.id}
+              ref={isSelected ? selectedRef : undefined}
+              onClick={() => onSelect(journey)}
+              aria-pressed={isSelected}
+              className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+                isSelected
+                  ? 'bg-[#788f4a] text-white'
+                  : 'border border-[#c5d89d] bg-white text-[#2c3930]'
+              }`}
+            >
+              {journey.title}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
