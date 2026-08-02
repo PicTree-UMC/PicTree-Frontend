@@ -43,13 +43,13 @@ export function CommentField({ comment, onCommentChange }: CommentFieldProps) {
           className="absolute inset-0 flex items-center justify-center px-8"
         >
           {comment ? (
-            <span className="whitespace-pre-wrap break-words text-center text-xl font-semibold leading-snug text-white [text-shadow:0_1px_8px_rgba(0,0,0,0.6)]">
+            <span className="whitespace-pre-wrap break-words text-center text-xl font-medium leading-snug text-white [text-shadow:0_1px_8px_rgba(0,0,0,0.6)]">
               {comment}
             </span>
           ) : (
             <span className="flex flex-col items-center gap-1.5 text-white/55">
               <TapIcon />
-              <span className="text-sm">화면을 탭해 한줄평을 남겨보세요</span>
+              <span className="text-[15px]">화면을 탭해 한줄평을 남겨보세요</span>
             </span>
           )}
         </button>
@@ -81,7 +81,7 @@ export function CommentField({ comment, onCommentChange }: CommentFieldProps) {
             onBlur={() => setIsEditing(false)}
             rows={2}
             placeholder="한줄평을 남겨주세요"
-            className="w-full resize-none bg-transparent text-center text-xl font-semibold leading-snug text-white outline-none placeholder:text-white/50 [text-shadow:0_1px_8px_rgba(0,0,0,0.6)]"
+            className="w-full resize-none bg-transparent text-center text-xl font-medium leading-snug text-white outline-none placeholder:text-white/50 [text-shadow:0_1px_8px_rgba(0,0,0,0.6)]"
           />
         </div>
       )}
