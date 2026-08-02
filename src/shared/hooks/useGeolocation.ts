@@ -1,8 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface GeoCoords {
   latitude: number;
   longitude: number;
+  /**
+   * 이 좌표의 신뢰반경(m). 기기가 스스로 추정한 값이지 실측 오차가 아니다.
+   *
+   * 사용자가 지도에서 직접 찍은 좌표에는 없다 — 그래서 optional 이다.
+   * `undefined` 는 "정확도를 모른다"가 아니라 "GPS 가 준 값이 아니다"로 읽는다.
+   */
+  accuracy?: number;
 }
 
 interface GeolocationState {
@@ -28,6 +35,26 @@ export interface UseGeolocationOptions extends PositionOptions {
  * 느려지므로, 연속 호출만 아껴주는 정도로 짧게 잡는다.
  */
 const DEFAULT_MAXIMUM_AGE = 5000;
+
+/**
+ * 이 값을 넘는 신뢰반경(m)이면 "부정확"으로 보고 사용자에게 수동 지정을 권한다.
+ *
+ * 실외 GPS 는 보통 5~20m, 지하에서 Wi-Fi 측위로 내려앉으면 30~150m, 기지국까지
+ * 떨어지면 수백 m 가 나온다. 30 은 그 첫 경계다.
+ *
+ * ⚠️ 도심 빌딩숲에서는 실외에서도 20~50m 가 나오므로 **오탐이 있다.** 그래서 이
+ * 판정으로 좌표를 자동으로 갈아끼우지 않고, 권하기만 하고 결정은 사용자가 한다.
+ * (실기기 실측 전까지는 임시값 — TROUBLESHOOTING 에 실측치를 남길 것)
+ */
+export const LOW_ACCURACY_THRESHOLD_M = 30;
+
+/**
+ * 직전 좌표보다 정확도가 이 배수 이상 나빠지고, 그것이 아래 시간(ms) 안에
+ * 일어나면 새 좌표를 버린다 — 지하 진입 순간 점이 수백 m 튀는 것을 막는다.
+ * 창을 짧게 두는 이유는, 오래 붙들면 실제로 이동했을 때 따라가지 못해서다.
+ */
+const ACCURACY_REGRESSION_RATIO = 3;
+const ACCURACY_REGRESSION_WINDOW_MS = 10000;
 
 const isSupported = () => typeof navigator !== 'undefined' && 'geolocation' in navigator;
 
@@ -59,16 +86,45 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     loading: true,
   });
 
-  const handleSuccess = useCallback((position: GeolocationPosition) => {
-    setState({
-      coords: {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      },
-      error: null,
-      loading: false,
-    });
-  }, []);
+  /** 마지막으로 받아들인 측위의 정확도·시각. 아래 역행 필터의 기준점. */
+  const lastFixRef = useRef<{ accuracy: number; timestamp: number } | null>(null);
+
+  const handleSuccess = useCallback(
+    (position: GeolocationPosition) => {
+      const { latitude, longitude, accuracy } = position.coords;
+      const last = lastFixRef.current;
+
+      /*
+       * 정확도가 갑자기 크게 나빠진 좌표는 버린다.
+       *
+       * 지하로 내려가면 브라우저는 에러를 주지 않는다 — GPS 대신 Wi-Fi·기지국 측위로
+       * 조용히 내려앉아 수백 m 떨어진 좌표를 '성공'으로 돌려준다. 그래서 handleError
+       * 의 방어가 여기엔 안 먹고, 그대로 받으면 내 위치 점이 순간이동한다.
+       *
+       * 추적 모드에서만 건다. 1회 조회에서 버리면 뒤이어 올 좌표가 없어 영영 로딩이다.
+       */
+      const regressed =
+        watch &&
+        last !== null &&
+        last.accuracy > 0 &&
+        accuracy > last.accuracy * ACCURACY_REGRESSION_RATIO &&
+        position.timestamp - last.timestamp < ACCURACY_REGRESSION_WINDOW_MS;
+
+      if (regressed) {
+        // 좌표는 직전 것을 유지하되 로딩은 푼다 — 응답 자체는 왔으므로.
+        setState((prev) => ({ ...prev, loading: false }));
+        return;
+      }
+
+      lastFixRef.current = { accuracy, timestamp: position.timestamp };
+      setState({
+        coords: { latitude, longitude, accuracy },
+        error: null,
+        loading: false,
+      });
+    },
+    [watch],
+  );
 
   /*
    * 실패해도 이미 받아둔 좌표는 남긴다. 추적 중에는 터널·지하처럼 잠깐 측위가
