@@ -2,9 +2,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useToast } from '@/shared/components';
-import { getMyPushSubscriptions, registerPushSubscription } from '../api/pushApi';
+import {
+  deactivatePushSubscription,
+  getMyPushSubscriptions,
+  registerPushSubscription,
+} from '../api/pushApi';
 import { isClientError } from '../lib/profileError';
-import { hasActivePushSubscription } from '../lib/pushSubscription';
+import {
+  activeSubscriptionIds,
+  hasActivePushSubscription,
+} from '../lib/pushSubscription';
 
 export const pushKeys = {
   all: ['push-subscriptions'] as const,
@@ -57,6 +64,52 @@ export const useRegisterPushSubscription = () => {
 
     onError: () => {
       showToast('알림 설정에 실패했어요. 잠시 후 다시 시도해 주세요.', 'error');
+    },
+  });
+};
+
+/**
+ * 푸시 구독 비활성화 훅. `PATCH /push-subscriptions/{id}/deactivate`
+ *
+ * 알림을 끌 때 부른다. id 를 주면 그 구독만, 안 주면 **활성 구독 전부**를 끈다.
+ * 마이페이지 토글은 "이 계정의 알림" 을 끄는 것이므로 전부가 기본이다.
+ *
+ * 여러 건을 `allSettled` 로 돌린다 — 한 기기 구독이 이미 서버에서 정리됐어도
+ * (404) 나머지는 꺼져야 한다. 하나라도 성공하면 토글은 꺼진 상태가 된다.
+ * 전부 실패했을 때만 에러로 올린다.
+ */
+export const useDeactivatePushSubscription = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: async (subscriptionId?: number) => {
+      const targets =
+        subscriptionId != null
+          ? [subscriptionId]
+          : activeSubscriptionIds(
+              queryClient.getQueryData(pushKeys.mine()),
+            );
+
+      if (targets.length === 0) {
+        return;
+      }
+
+      const results = await Promise.allSettled(
+        targets.map((id) => deactivatePushSubscription(id)),
+      );
+
+      if (results.every((result) => result.status === 'rejected')) {
+        throw new Error('푸시 구독 비활성화에 모두 실패했습니다.');
+      }
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: pushKeys.mine() });
+    },
+
+    onError: () => {
+      showToast('알림 해제에 실패했어요. 잠시 후 다시 시도해 주세요.', 'error');
     },
   });
 };

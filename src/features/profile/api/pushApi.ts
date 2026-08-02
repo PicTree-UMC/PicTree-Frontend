@@ -57,3 +57,29 @@ export async function getMyPushSubscriptions(): Promise<PushSubscription[]> {
 
   return data.data ?? [];
 }
+
+/**
+ * 푸시 구독 비활성화. `PATCH /push-subscriptions/{subscriptionId}/deactivate`
+ *
+ * 근처 나무 알림을 끌 때 부른다. 구독을 지우는 게 아니라 `isActive` 를 false 로
+ * 내린다 — 다시 켤 때 브라우저 구독을 새로 만들지 않아도 된다.
+ *
+ * ⚠️ 구독은 기기마다 하나씩이라 **끄려는 만큼 각각 불러야 한다.** 하나만 끄면
+ * 다른 기기로는 알림이 계속 간다. 전부 끄려면 `activeSubscriptionIds` 가 주는
+ * id 를 모두 돌려야 한다.
+ *
+ * 이미 꺼진 구독에 불러도 서버가 확인하고 넘어가므로 에러는 아니다.
+ *
+ * 실패 코드: 404 `PUSH_SUBSCRIPTION_NOT_FOUND`(없거나 내 것이 아닌 구독).
+ */
+export async function deactivatePushSubscription(
+  subscriptionId: number,
+): Promise<void> {
+  const { data } = await httpClient.patch<ApiResponse<null>>(
+    `/push-subscriptions/${subscriptionId}/deactivate`,
+  );
+
+  if (data.resultType === 'FAIL') {
+    throw new Error(data.error.message);
+  }
+}
