@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Sheet } from '@/shared/components';
 import {
   buildMonthRange,
   parseDateKey,
@@ -170,80 +171,90 @@ export function RouteDateSheet({
   };
 
   return (
-    <>
-      {/* SaveRouteSheet 과 같은 규칙 — 뒤를 어둡게 깔지 않고 바깥 탭으로만 닫는다. */}
-      <div className="fixed inset-0 z-40" onClick={onClose} />
-
-      <div className="fixed inset-x-0 bottom-0 top-[calc(env(safe-area-inset-top)+104px)] z-50 mx-auto flex w-full flex-col rounded-t-[24px] bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.12)] sm:max-w-[390px]">
-        <div className="flex items-start justify-between px-5 pt-5">
-          <div>
-            <h2 className="text-[17px] font-medium text-[#111]">날짜 관리</h2>
-            {/* 한도에 막히면 이 줄이 흔들린다. 새로 뜨는 문구는 등장 자체가 움직임이라
+    /*
+      SaveRouteSheet 과 같은 규칙 — 뒤를 어둡게 깔지 않고 바깥 탭으로만 닫는다.
+      닫기는 헤더의 X 가 맡으므로 손잡이는 없다.
+      아래 여백은 안쪽 달 목록이 갖고 있어 셸의 safe-area 여백은 끈다.
+    */
+    <Sheet
+      onClose={onClose}
+      label="날짜 관리"
+      dim="none"
+      handle={false}
+      animateIn={false}
+      top="calc(env(safe-area-inset-top) + 104px)"
+      className="rounded-t-[24px] bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.12)]"
+      contentClassName="flex flex-col overflow-hidden"
+      bottomPadding="0"
+    >
+      <div className="flex items-start justify-between px-5 pt-5">
+        <div>
+          <h2 className="text-[17px] font-medium text-[#111]">날짜 관리</h2>
+          {/* 한도에 막히면 이 줄이 흔들린다. 새로 뜨는 문구는 등장 자체가 움직임이라
                 흔들려도 눈에 안 들어와서, 계속 떠 있던 요소를 흔들어야 신호가 된다.
                 key 로 다시 마운트시켜야 연달아 눌렀을 때도 매번 재생된다. */}
-            <p
-              key={limitAttempt}
-              className={`mt-1 text-[13px] text-[#60655c] ${
-                limitAttempt > 0 ? 'motion-safe:animate-shake' : ''
-              }`}
-            >
-              선택한 날짜 {selectedDates.length}/{maxDates}일 · 선택한 장소 {selectedPlaceCount}/
-              {maxPlaces}
-            </p>
-          </div>
-          <button type="button" onClick={onClose} aria-label="닫기" className="-mr-1 p-1 text-[#111]">
-            <CloseIcon className="h-6 w-6" />
-          </button>
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-2 px-5">
-          <button
-            type="button"
-            onClick={() => {
-              setLimitAttempt(0);
-              onSelectFirstDates();
-            }}
-            className="h-11 rounded-[8px] bg-[#fffcef] text-[15px] font-medium text-[#2c3930] shadow-[0_1px_4px_rgba(0,0,0,0.12)]"
-          >
-            앞의 {maxDates}일 선택
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setLimitAttempt(0);
-              onClearDates();
-            }}
-            className="h-11 rounded-[8px] bg-[#fffcef] text-[15px] font-medium text-[#2c3930] shadow-[0_1px_4px_rgba(0,0,0,0.12)]"
-          >
-            전체 해제
-          </button>
-        </div>
-
-        {limitAttempt > 0 && (
-          // key: 문구가 떠 있는 채로 또 막히면 다시 흔들리게 강제로 다시 마운트한다.
-          // 한 줄 안에 들어가야 해서 문구를 줄였다 — 13px 을 지키면서 320px 폭에도 안 접힌다.
           <p
             key={limitAttempt}
-            role="alert"
-            className="mt-3 whitespace-nowrap px-5 text-[13px] motion-safe:animate-shake"
-            style={{ color: SUNDAY }}
+            className={`mt-1 text-[13px] text-[#60655c] ${
+              limitAttempt > 0 ? 'motion-safe:animate-shake' : ''
+            }`}
           >
-            최대 {maxDates}일까지 선택할 수 있어요
+            선택한 날짜 {selectedDates.length}/{maxDates}일 · 선택한 장소 {selectedPlaceCount}/
+            {maxPlaces}
           </p>
-        )}
-
-        <div className="mt-5 flex-1 overflow-y-auto px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
-          {months.map((month) => (
-            <MonthGrid
-              key={`${month.year}-${month.month}`}
-              month={month}
-              placeCountByDate={placeCountByDate}
-              selectedDates={selectedDates}
-              onSelect={handleSelect}
-            />
-          ))}
         </div>
+        <button type="button" onClick={onClose} aria-label="닫기" className="-mr-1 p-1 text-[#111]">
+          <CloseIcon className="h-6 w-6" />
+        </button>
       </div>
-    </>
+
+      <div className="mt-4 grid grid-cols-2 gap-2 px-5">
+        <button
+          type="button"
+          onClick={() => {
+            setLimitAttempt(0);
+            onSelectFirstDates();
+          }}
+          className="h-11 rounded-[8px] bg-[#fffcef] text-[15px] font-medium text-[#2c3930] shadow-[0_1px_4px_rgba(0,0,0,0.12)]"
+        >
+          앞의 {maxDates}일 선택
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setLimitAttempt(0);
+            onClearDates();
+          }}
+          className="h-11 rounded-[8px] bg-[#fffcef] text-[15px] font-medium text-[#2c3930] shadow-[0_1px_4px_rgba(0,0,0,0.12)]"
+        >
+          전체 해제
+        </button>
+      </div>
+
+      {limitAttempt > 0 && (
+        // key: 문구가 떠 있는 채로 또 막히면 다시 흔들리게 강제로 다시 마운트한다.
+        // 한 줄 안에 들어가야 해서 문구를 줄였다 — 13px 을 지키면서 320px 폭에도 안 접힌다.
+        <p
+          key={limitAttempt}
+          role="alert"
+          className="mt-3 whitespace-nowrap px-5 text-[13px] motion-safe:animate-shake"
+          style={{ color: SUNDAY }}
+        >
+          최대 {maxDates}일까지 선택할 수 있어요
+        </p>
+      )}
+
+      <div className="mt-5 flex-1 overflow-y-auto px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
+        {months.map((month) => (
+          <MonthGrid
+            key={`${month.year}-${month.month}`}
+            month={month}
+            placeCountByDate={placeCountByDate}
+            selectedDates={selectedDates}
+            onSelect={handleSelect}
+          />
+        ))}
+      </div>
+    </Sheet>
   );
 }
