@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useLockBodyScroll } from '@/shared/hooks/useLockBodyScroll';
+import { useSheetDrag } from '@/shared/hooks/useSheetDrag';
 import { Journey } from '../types/journey';
 import { PlaceTrail } from './PlaceTrail';
 
@@ -102,6 +103,10 @@ export function BottomSheet({
   animateIn = true,
 }: BottomSheetProps) {
   useLockBodyScroll();
+  const { sheetRef, animationClass, onAnimationEnd, handleProps } = useSheetDrag({
+    onClose,
+    animateIn,
+  });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -117,12 +122,23 @@ export function BottomSheet({
       />
 
       <div
-        className={`fixed inset-x-0 bottom-0 z-50 mx-auto rounded-t-[20px] bg-[#fffcef] px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 sm:max-w-[390px] ${animateIn ? 'animate-slide-up-sheet' : ''}`}
+        ref={sheetRef}
+        onAnimationEnd={onAnimationEnd}
+        className={`fixed inset-x-0 bottom-0 z-50 mx-auto rounded-t-[20px] bg-[#fffcef] px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-1 sm:max-w-[390px] ${animationClass}`}
         role="dialog"
         aria-modal="true"
       >
-        {/* 홈 인디케이터 핸들 */}
-        <div className="mx-auto mb-4 h-[5px] w-[134px] rounded-full bg-[#111]" />
+        {/* 홈 인디케이터 핸들. 아래로 끌면 닫히고, 탭해도 닫힌다 —
+            드래그를 못 하는 입력에도 딤 바깥 탭 말고 다른 길을 남겨 둔다.
+            시트 pt-1 + 여기 py-2 로 핸들 위치는 그대로 두고 잡을 영역만 21px 로 넓혔다. */}
+        <button
+          type="button"
+          aria-label="닫기"
+          {...handleProps}
+          className="mb-2 flex w-full justify-center py-2"
+        >
+          <span className="h-[5px] w-[134px] rounded-full bg-[#111]" aria-hidden />
+        </button>
 
         {/* 헤더: 제목 + 날짜, 미니 동선 */}
         <div className="flex items-baseline gap-2.5">

@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+import { useSheetDrag } from '@/shared/hooks/useSheetDrag';
 import type { BlogSection } from '../types/blog';
 
 type BlogPlacesSheetProps = {
@@ -7,16 +8,28 @@ type BlogPlacesSheetProps = {
 };
 
 export function BlogPlacesSheet({ sections, onClose }: BlogPlacesSheetProps) {
+  // 등장 애니메이션은 원래 없다 — 여기서 붙이면 이 시트만 다른 시트와 다르게 뜬다.
+  const { sheetRef, handleProps } = useSheetDrag<HTMLElement>({ onClose, animateIn: false });
+
   return createPortal(
     <div className="fixed inset-0 z-[60] bg-black/50" role="presentation" onClick={onClose}>
       <section
+        ref={sheetRef}
         className="absolute inset-x-0 bottom-0 mx-auto flex w-full flex-col rounded-t-[22px] bg-[#fffcef] px-5 pb-6 pt-8 sm:max-w-[390px]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="blog-places-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <i className="absolute left-1/2 top-2 h-1 w-[132px] -translate-x-1/2 rounded-full bg-black/70" aria-hidden />
+        {/* 핸들: 아래로 끌거나 탭하면 닫힌다. 목록이 스크롤되므로 드래그는 여기서만 받는다. */}
+        <button
+          type="button"
+          aria-label="닫기"
+          {...handleProps}
+          className="absolute inset-x-0 top-0 flex h-8 items-center justify-center"
+        >
+          <i className="h-1 w-[132px] rounded-full bg-black/70" aria-hidden />
+        </button>
         <h2 id="blog-places-title" className="text-[17px] font-bold text-[#2c3930]">
           방문한 장소 <span className="text-[#5b6b38]">{sections.length}곳</span>
         </h2>
