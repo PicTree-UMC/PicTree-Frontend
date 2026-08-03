@@ -1,3 +1,4 @@
+import { useSheetDrag } from "@/shared/hooks/useSheetDrag";
 import { useTimelineDetail, useTimelineImages } from "../hooks/useTimelineDetail";
 import type { TimelineRecord } from "../types/timeline.types";
 import penIcon from "../assets/penLine.svg";
@@ -49,6 +50,8 @@ function InfoRow({ label, value }: { label: string; value: string }) {
  * 상세 호출이 실패해도 목록 값만으로 읽을 수 있으므로 에러로 막지 않는다.
  */
 export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) {
+  // 등장 애니메이션이 없는 시트라 animateIn 을 끈다.
+  const { sheetRef, handleProps } = useSheetDrag({ onClose, animateIn: false });
   const { data: detail } = useTimelineDetail(record.id);
   const { data: images } = useTimelineImages(record.id, record.treeId);
 
@@ -73,13 +76,22 @@ export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) 
       onClick={onClose}
     >
       <div
+        ref={sheetRef}
         role="dialog"
         aria-label={`${record.placeName} 상세`}
-        className="max-h-[85vh] w-full overflow-y-auto rounded-t-[20px] bg-[#FFFCEF] px-6 pb-8 pt-3"
+        className="max-h-[85vh] w-full overflow-y-auto rounded-t-[20px] bg-[#FFFCEF] px-6 pb-8 pt-1"
         onClick={(event) => event.stopPropagation()}
       >
-        {/* 손잡이 */}
-        <div className="mx-auto mb-4 h-[5px] w-[134px] rounded-full bg-[#D9D9D9]" />
+        {/* 손잡이. 아래로 끌거나 탭하면 닫힌다.
+            시트가 스크롤되므로(max-h-85vh) 드래그는 여기서만 받는다. */}
+        <button
+          type="button"
+          aria-label="닫기"
+          {...handleProps}
+          className="mb-2 flex w-full justify-center py-2"
+        >
+          <span className="h-[5px] w-[134px] rounded-full bg-[#D9D9D9]" aria-hidden />
+        </button>
 
         <img
           src={photo}

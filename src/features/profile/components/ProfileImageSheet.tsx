@@ -1,3 +1,4 @@
+import { useSheetDrag } from "@/shared/hooks/useSheetDrag";
 import trashIcon from "../assets/icons/trash.svg";
 
 interface Props {
@@ -16,18 +17,30 @@ interface Props {
  * 가져온 사진이 영영 사라진다. 지운 뒤에는 픽트리 나무 아이콘이 기본값이 된다.
  */
 export function ProfileImageSheet({ onRemove, onClose }: Props) {
+  // 등장 애니메이션이 없는 시트라 animateIn 을 끈다.
+  const { sheetRef, handleProps } = useSheetDrag({ onClose, animateIn: false });
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
       onClick={onClose}
     >
       <div
+        ref={sheetRef}
         role="dialog"
         aria-label="프로필 사진 제거"
-        className="w-full rounded-t-[20px] bg-[#FFFCEF] px-6 pb-8 pt-3 sm:max-w-[390px]"
+        className="w-full rounded-t-[20px] bg-[#FFFCEF] px-6 pb-8 pt-1 sm:max-w-[390px]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mx-auto mb-4 h-[5px] w-[134px] rounded-full bg-[#D9D9D9]" />
+        {/* 손잡이. 아래로 끌거나 탭하면 닫힌다(취소와 같은 결과). */}
+        <button
+          type="button"
+          aria-label="닫기"
+          {...handleProps}
+          className="mb-2 flex w-full justify-center py-2"
+        >
+          <span className="h-[5px] w-[134px] rounded-full bg-[#D9D9D9]" aria-hidden />
+        </button>
 
         <p className="text-center text-base font-bold text-[#2C3930]">
           프로필 사진을 지울까요?

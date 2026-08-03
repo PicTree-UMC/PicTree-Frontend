@@ -6,8 +6,9 @@ type Props = { plan: SubscriptionPlanDto; onCancel: () => void; onPay: () => voi
 
 export function PaymentConfirmSheet({ plan, onCancel, onPay }: Props) {
   const details = planSummary(plan);
+  // 손잡이를 끌어 닫는 건 '취소' 와 같다 — 결제는 아무것도 진행되지 않는다.
   return (
-    <ModalShell bottom>
+    <ModalShell bottom onClose={onCancel}>
       <h2 className="text-center text-[21px] font-bold">결제 확인</h2>
       <div className="mt-4 overflow-hidden rounded-xl border-2 border-[#c5d89d] bg-white text-[13px]">
         {/*
