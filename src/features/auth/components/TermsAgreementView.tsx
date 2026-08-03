@@ -47,18 +47,17 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
    * 동의 저장 후 다음 단계로 넘어간다. 저장이 실패하면 넘어가지 않는다 —
    * 기록이 서버에 남지 않은 채 가입이 끝나면 무엇에 동의했는지 확인할 수 없다.
    *
-   * 서버 약관 목록이 비어 로컬 문구로 폴백한 경우에는 보낼 id 가 없다. 그때는
-   * 저장을 건너뛰고 진행한다 — 없는 id 를 지어내 보내면 404 만 받고, 가입 자체를
-   * 막는 편이 더 나쁘다. (약관이 적재되면 이 분기는 사라진다)
+   * ⚠️ 보낼 id 가 하나도 없으면 **진행하지 않는다.** 약관을 못 불러왔거나
+   * 아무것도 체크되지 않은 상태인데, 그대로 통과시키면 동의 기록 없이 가입이
+   * 끝난다. 예전에는 로컬 문구 폴백 때문에 id 가 없을 수 있어 건너뛰었지만,
+   * 서버에 약관이 적재되면서 그 폴백을 지웠다.
    */
   const handleStart = () => {
     const agreedIds = terms
       .filter((term) => checkedTerms.has(term.key))
-      .map((term) => term.termId)
-      .filter((id): id is number => id !== null);
+      .map((term) => term.termId);
 
     if (agreedIds.length === 0) {
-      onAgree();
       return;
     }
 
@@ -144,9 +143,9 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
                   </button>
                   {expanded ? (
                     /*
-                      서버 응답에는 설명이 없다. 유형별 로컬 문구가 있으면 그걸 쓰고,
-                      없으면 약관 전문 링크로 대신한다 — 펼쳤는데 아무것도 없으면
-                      무엇에 동의하는지 알 수 없다.
+                      서버가 주는 `summary` 를 그대로 보여준다. 없으면 약관 전문
+                      링크로 대신한다 — 펼쳤는데 아무것도 없으면 무엇에 동의하는지
+                      알 수 없다. (현재 실서버는 5개 모두 summary 를 채워 준다)
                     */
                     term.description ? (
                       <p className="mt-1 whitespace-pre-line font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-[#111]">

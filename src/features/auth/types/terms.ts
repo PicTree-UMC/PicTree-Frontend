@@ -7,11 +7,18 @@
 export type Term = {
   id: number;
   title: string;
-  /** `SERVICE` · `MARKETING` 등. 화면 설명 문구를 고르는 열쇠로도 쓴다. */
+  /** `SERVICE` · `MARKETING` 등. */
   type: string;
   version: string;
-  /** 약관 전문 링크. 없을 수 있다. */
+  /**
+   * 약관 전문 링크. 없을 수 있다.
+   *
+   * 현재 실서버는 5개 모두 `null` 이다 — 약관을 URL 이 아니라 본문 텍스트
+   * (`summary`)로 내려주는 방식으로 바뀌었다.
+   */
   contentUrl: string | null;
+  /** 화면에 그대로 띄울 약관 설명. 서버가 준다. */
+  summary: string | null;
   isRequired: boolean;
   /** 시행일 (ISO 문자열) */
   effectiveFrom: string;
