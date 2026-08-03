@@ -47,17 +47,25 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
    * 동의 저장 후 다음 단계로 넘어간다. 저장이 실패하면 넘어가지 않는다 —
    * 기록이 서버에 남지 않은 채 가입이 끝나면 무엇에 동의했는지 확인할 수 없다.
    *
-   * ⚠️ 보낼 id 가 하나도 없으면 **진행하지 않는다.** 약관을 못 불러왔거나
-   * 아무것도 체크되지 않은 상태인데, 그대로 통과시키면 동의 기록 없이 가입이
-   * 끝난다. 예전에는 로컬 문구 폴백 때문에 id 가 없을 수 있어 건너뛰었지만,
-   * 서버에 약관이 적재되면서 그 폴백을 지웠다.
+   * ⚠️ **약관을 못 불러왔으면 진행하지 않는다.** 그 상태로 통과시키면 동의
+   * 기록 없이 가입이 끝난다. (버튼도 `canStart` 로 막혀 있지만, 여기서 한 번
+   * 더 본다 — 통과하면 되돌릴 수 없는 일이라서다.)
+   *
+   * 반대로 목록은 받았는데 보낼 id 가 없는 경우 — 선택 약관뿐이고 아무것도
+   * 체크하지 않은 상황 — 는 정상이므로 저장만 건너뛰고 넘어간다. 서버가
+   * `@ArrayNotEmpty` 로 빈 배열을 거부하기 때문에 부를 수도 없다.
    */
   const handleStart = () => {
+    if (terms.length === 0) {
+      return;
+    }
+
     const agreedIds = terms
       .filter((term) => checkedTerms.has(term.key))
       .map((term) => term.termId);
 
     if (agreedIds.length === 0) {
+      onAgree();
       return;
     }
 
