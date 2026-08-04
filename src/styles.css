@@ -252,15 +252,11 @@ select {
   }
 }
 
-/* 바텀시트 등장 애니메이션 */
-@keyframes slide-up-sheet {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
+/*
+  바텀시트 등장은 여기 없다 — `useSheetDrag` 가 인라인 transform 으로 직접 굴린다.
+  키프레임(`animation-fill-mode: both`)은 끝난 뒤에도 transform 을 물고 있어서
+  같은 속성을 쓰는 드래그를 이겨 버린다. 상세는 TROUBLESHOOTING 2-9.
+*/
 
 @keyframes fade-in-up {
   from {
@@ -288,10 +284,6 @@ select {
 
 .animate-fade-in-up {
   animation: fade-in-up 0.28s ease-out both;
-}
-
-.animate-slide-up-sheet {
-  animation: slide-up-sheet 0.25s ease-out both;
 }
 
 .animate-fade-in {

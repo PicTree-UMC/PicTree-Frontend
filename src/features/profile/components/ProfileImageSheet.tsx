@@ -1,4 +1,5 @@
-import trashIcon from "../assets/icons/trash.svg";
+import { Sheet } from '@/shared/components';
+import trashIcon from '../assets/icons/trash.svg';
 
 interface Props {
   onRemove: () => void;
@@ -17,45 +18,40 @@ interface Props {
  */
 export function ProfileImageSheet({ onRemove, onClose }: Props) {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
-      onClick={onClose}
+    /* 손잡이를 끌어 닫는 건 '취소' 와 같다. */
+    <Sheet
+      onClose={onClose}
+      label="프로필 사진 제거"
+      handleColor="#D9D9D9"
+      animateIn={false}
+      className="rounded-t-[20px] bg-[#FFFCEF]"
+      contentClassName="px-6"
+      bottomPadding="2rem"
     >
-      <div
-        role="dialog"
-        aria-label="프로필 사진 제거"
-        className="w-full rounded-t-[20px] bg-[#FFFCEF] px-6 pb-8 pt-3 sm:max-w-[390px]"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="mx-auto mb-4 h-[5px] w-[134px] rounded-full bg-[#D9D9D9]" />
+      <p className="text-center text-base font-bold text-[#2C3930]">프로필 사진을 지울까요?</p>
+      <p className="mt-1 text-center text-xs leading-[18px] text-[#8D8D8D]">
+        기본 이미지로 바뀌어요.
+        <br />
+        소셜 계정에서 가져온 사진이 지워집니다.
+      </p>
 
-        <p className="text-center text-base font-bold text-[#2C3930]">
-          프로필 사진을 지울까요?
-        </p>
-        <p className="mt-1 text-center text-xs leading-[18px] text-[#8D8D8D]">
-          기본 이미지로 바뀌어요.
-          <br />
-          소셜 계정에서 가져온 사진이 지워집니다.
-        </p>
-
-        <div className="mt-5 flex gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-[44px] flex-1 rounded-[12px] bg-[#E6E6E6] text-[15px] font-semibold text-[#2C3930]"
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            onClick={onRemove}
-            className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#FF5858] text-[15px] font-semibold text-white"
-          >
-            <img src={trashIcon} alt="" className="h-[18px] w-[18px] brightness-0 invert" />
-            지우기
-          </button>
-        </div>
+      <div className="mt-5 flex gap-3">
+        <button
+          type="button"
+          onClick={onClose}
+          className="h-[44px] flex-1 rounded-[12px] bg-[#E6E6E6] text-[15px] font-semibold text-[#2C3930]"
+        >
+          취소
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#FF5858] text-[15px] font-semibold text-white"
+        >
+          <img src={trashIcon} alt="" className="h-[18px] w-[18px] brightness-0 invert" />
+          지우기
+        </button>
       </div>
-    </div>
+    </Sheet>
   );
 }

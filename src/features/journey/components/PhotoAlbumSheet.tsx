@@ -1,6 +1,4 @@
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { useLockBodyScroll } from '@/shared/hooks/useLockBodyScroll';
+import { Sheet } from '@/shared/components';
 import { Journey } from '../types/journey';
 import { useJourneyPhotos } from '../hooks/useJourneyPhotos';
 
@@ -32,84 +30,79 @@ interface PhotoAlbumSheetProps {
  * 상단 80px는 뒤 화면이 비치도록 비워 둔다(시안 기준).
  */
 export function PhotoAlbumSheet({ journey, onClose }: PhotoAlbumSheetProps) {
-  useLockBodyScroll();
   const { data: photos = [], isLoading, isError, refetch } = useJourneyPhotos(journey.id);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  return (
+    /*
+      전체 높이 시트라 손잡이가 없다 — 헤더의 뒤로 가기가 닫기 역할을 한다.
+      아래 여백은 안쪽 스크롤 영역이 갖고 있어 셸의 safe-area 여백은 끈다.
+    */
+    <Sheet
+      onClose={onClose}
+      label={`${journey.title} 사진 앨범`}
+      dim="dark"
+      handle={false}
+      top="5rem"
+      className="overflow-hidden rounded-t-[20px] bg-[#fffcef] shadow-[0_-4px_6px_0_rgba(0,0,0,0.12)]"
+      contentClassName="flex flex-col overflow-hidden"
+      bottomPadding="0"
+    >
+      {/* 헤더: 뒤로 가기 + 동선 이름 + 날짜 */}
+      <header className="flex h-[70px] shrink-0 items-center gap-[11px] bg-[#f6f0d7] px-[17px]">
+        <button onClick={onClose} className="shrink-0 text-[#111]" aria-label="뒤로 가기">
+          <ChevronLeftIcon className="size-[30px]" />
+        </button>
+        <h2 className="truncate text-xl font-bold tracking-[0.2px] text-[#111]">{journey.title}</h2>
+        <span className="shrink-0 text-xs font-medium tracking-[0.12px] text-[#2c3930]">
+          {journey.date}
+        </span>
+      </header>
 
-  return createPortal(
-    <>
-      <div className="fixed inset-0 z-50 animate-fade-in bg-black/60" onClick={onClose} />
+      {/* 본문: 사진 개수 + 2열 그리드. 로딩·에러 중에는 개수를 숨긴다(목록 화면과 같은 규칙). */}
+      {/* 안쪽 스크롤 영역이 아래 여백을 갖는다 — 홈 인디케이터를 피하려면 여기여야 한다. */}
+      <div className="flex-1 overflow-y-auto px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-[22px]">
+        <p className="text-base font-semibold tracking-[0.16px] text-black">
+          방문한 장소 사진
+          {!isLoading && !isError && <span className="ml-2 text-[#5b6b38]">{photos.length}</span>}
+        </p>
 
-      <div
-        className="fixed inset-x-0 bottom-0 top-20 z-50 mx-auto flex animate-slide-up-sheet flex-col overflow-hidden rounded-t-[20px] bg-[#fffcef] shadow-[0_-4px_6px_0_rgba(0,0,0,0.12)] sm:max-w-[390px]"
-        role="dialog"
-        aria-modal="true"
-        aria-label={`${journey.title} 사진 앨범`}
-      >
-        {/* 헤더: 뒤로 가기 + 동선 이름 + 날짜 */}
-        <header className="flex h-[70px] shrink-0 items-center gap-[11px] bg-[#f6f0d7] px-[17px]">
-          <button onClick={onClose} className="shrink-0 text-[#111]" aria-label="뒤로 가기">
-            <ChevronLeftIcon className="size-[30px]" />
-          </button>
-          <h2 className="truncate text-xl font-bold tracking-[0.2px] text-[#111]">
-            {journey.title}
-          </h2>
-          <span className="shrink-0 text-xs font-medium tracking-[0.12px] text-[#2c3930]">
-            {journey.date}
-          </span>
-        </header>
-
-        {/* 본문: 사진 개수 + 2열 그리드. 로딩·에러 중에는 개수를 숨긴다(목록 화면과 같은 규칙). */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6 pt-[22px]">
-          <p className="text-base font-semibold tracking-[0.16px] text-black">
-            방문한 장소 사진
-            {!isLoading && !isError && <span className="ml-2 text-[#5b6b38]">{photos.length}</span>}
+        {isLoading ? (
+          <div className="mt-[22px] flex justify-center">
+            <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#788f4a]" />
+          </div>
+        ) : isError ? (
+          <div className="mt-[22px] flex flex-col items-center gap-4">
+            <p className="text-sm font-semibold text-[#2c3930]">사진을 불러오지 못했어요</p>
+            <button
+              onClick={() => refetch()}
+              className="h-[38px] rounded-[19px] bg-[#788f4a] px-6 text-sm font-bold text-white"
+            >
+              다시 시도
+            </button>
+          </div>
+        ) : photos.length === 0 ? (
+          <p className="mt-[22px] text-sm font-medium text-[#2c3930]">
+            이 동선에는 아직 사진이 없어요
           </p>
-
-          {isLoading ? (
-            <div className="mt-[22px] flex justify-center">
-              <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#788f4a]" />
-            </div>
-          ) : isError ? (
-            <div className="mt-[22px] flex flex-col items-center gap-4">
-              <p className="text-sm font-semibold text-[#2c3930]">사진을 불러오지 못했어요</p>
-              <button
-                onClick={() => refetch()}
-                className="h-[38px] rounded-[19px] bg-[#788f4a] px-6 text-sm font-bold text-white"
-              >
-                다시 시도
-              </button>
-            </div>
-          ) : photos.length === 0 ? (
-            <p className="mt-[22px] text-sm font-medium text-[#2c3930]">
-              이 동선에는 아직 사진이 없어요
-            </p>
-          ) : (
-            <ul className="mt-[22px] grid grid-cols-2 gap-5">
-              {photos.map((photo) => (
-                <li key={photo.treeId} className="aspect-square overflow-hidden bg-[#d9d9d9]">
-                  {/*
+        ) : (
+          <ul className="mt-[22px] grid grid-cols-2 gap-5">
+            {photos.map((photo) => (
+              <li key={photo.treeId} className="aspect-square overflow-hidden bg-[#d9d9d9]">
+                {/*
                     사진 없는 장소는 앱 아이콘으로 대체한다(백엔드가 url=null 로 내려주는 자리).
                     아이콘 이미지에 둥근 모서리가 그려져 있어 scale 로 살짝 키워 잘라낸다 —
                     타임라인 썸네일과 같은 처리(TimelineCard).
                   */}
-                  <img
-                    src={photo.url ?? '/apple-touch-icon.jpg'}
-                    alt={photo.placeName}
-                    className={`size-full object-cover ${photo.url ? '' : 'scale-[1.12]'}`}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                <img
+                  src={photo.url ?? '/apple-touch-icon.jpg'}
+                  alt={photo.placeName}
+                  className={`size-full object-cover ${photo.url ? '' : 'scale-[1.12]'}`}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-    </>,
-    document.body,
+    </Sheet>
   );
 }

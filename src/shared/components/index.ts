@@ -6,6 +6,7 @@ export { BottomTabBar } from './BottomTabBar';
 export type { TabItem } from './BottomTabBar';
 export { Layout } from './Layout';
 export { Modal, ConfirmModal } from './Modal';
+export { Sheet } from './Sheet';
 export { ErrorPage } from './ErrorPage';
 export { PicTreeMark } from './PicTreeMark';
 export { CalendarGrid } from './CalendarGrid';

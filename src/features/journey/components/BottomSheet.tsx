@@ -1,6 +1,5 @@
-import { useEffect, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
-import { useLockBodyScroll } from '@/shared/hooks/useLockBodyScroll';
+import { type ReactNode } from 'react';
+import { Sheet } from '@/shared/components';
 import { Journey } from '../types/journey';
 import { PlaceTrail } from './PlaceTrail';
 
@@ -101,67 +100,52 @@ export function BottomSheet({
   onRename,
   animateIn = true,
 }: BottomSheetProps) {
-  useLockBodyScroll();
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
-  return createPortal(
-    <>
-      <div
-        className={`fixed inset-0 z-50 bg-black/60 ${animateIn ? 'animate-fade-in' : ''}`}
-        onClick={onClose}
-      />
-
-      <div
-        className={`fixed inset-x-0 bottom-0 z-50 mx-auto rounded-t-[20px] bg-[#fffcef] px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 sm:max-w-[390px] ${animateIn ? 'animate-slide-up-sheet' : ''}`}
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* 홈 인디케이터 핸들 */}
-        <div className="mx-auto mb-4 h-[5px] w-[134px] rounded-full bg-[#111]" />
-
-        {/* 헤더: 제목 + 날짜, 미니 동선 */}
-        <div className="flex items-baseline gap-2.5">
-          <h2 className="truncate text-xl font-bold text-[#111]">{journey.title}</h2>
-          <span className="shrink-0 text-xs font-medium text-[#2c3930]">{journey.date}</span>
-        </div>
-        <PlaceTrail places={journey.places} className="mt-4" />
-
-        <hr className="my-4 border-t border-[#e5e5e5]" />
-
-        {/* 메뉴 */}
-        <div className="flex flex-col">
-          <SheetMenuItem
-            icon={<MapIcon className="size-[30px]" />}
-            title="지도에서 보기"
-            desc="옵션을 지도 위에서 확인해요"
-            onClick={onMapView}
-          />
-          <SheetMenuItem
-            icon={<PhotoIcon className="size-[30px]" />}
-            title="사진 앨범"
-            desc="이 경로의 사진을 모아볼 수 있어요"
-            onClick={onPhotoGallery}
-          />
-          <SheetMenuItem
-            icon={<BookIcon className="size-[30px]" />}
-            title="AI 블로그 작성"
-            desc="이 동선으로 여행 블로그를 생성해요"
-            onClick={onAIBlog}
-          />
-          <SheetMenuItem
-            icon={<PenIcon className="size-[30px]" />}
-            title="이름 변경"
-            desc="동선의 이름을 수정해요"
-            onClick={onRename}
-          />
-        </div>
+  return (
+    <Sheet
+      onClose={onClose}
+      label={`${journey.title} 옵션`}
+      dim="dark"
+      animateIn={animateIn}
+      className="rounded-t-[20px] bg-[#fffcef]"
+      contentClassName="px-6"
+      bottomPadding="1.5rem"
+    >
+      {/* 헤더: 제목 + 날짜, 미니 동선 */}
+      <div className="flex items-baseline gap-2.5">
+        <h2 className="truncate text-xl font-bold text-[#111]">{journey.title}</h2>
+        <span className="shrink-0 text-xs font-medium text-[#2c3930]">{journey.date}</span>
       </div>
-    </>,
-    document.body,
+      <PlaceTrail places={journey.places} className="mt-4" />
+
+      <hr className="my-4 border-t border-[#e5e5e5]" />
+
+      {/* 메뉴 */}
+      <div className="flex flex-col">
+        <SheetMenuItem
+          icon={<MapIcon className="size-[30px]" />}
+          title="지도에서 보기"
+          desc="옵션을 지도 위에서 확인해요"
+          onClick={onMapView}
+        />
+        <SheetMenuItem
+          icon={<PhotoIcon className="size-[30px]" />}
+          title="사진 앨범"
+          desc="이 경로의 사진을 모아볼 수 있어요"
+          onClick={onPhotoGallery}
+        />
+        <SheetMenuItem
+          icon={<BookIcon className="size-[30px]" />}
+          title="AI 블로그 작성"
+          desc="이 동선으로 여행 블로그를 생성해요"
+          onClick={onAIBlog}
+        />
+        <SheetMenuItem
+          icon={<PenIcon className="size-[30px]" />}
+          title="이름 변경"
+          desc="동선의 이름을 수정해요"
+          onClick={onRename}
+        />
+      </div>
+    </Sheet>
   );
 }
