@@ -59,10 +59,10 @@ const HIGHLIGHT_SCROLL_MARGIN_PX = 12;
 const DRAG_THRESHOLD_PX = 8;
 
 /**
- * 손잡이·요약 줄을 잡고 위아래로 끌어 접고 펴는 조작. 카카오맵 하단 패널과 같은 감각이다.
+ * 시트를 잡고 위아래로 끌어 접고 펴는 조작. 카카오맵 하단 패널과 같은 감각이다.
  *
- * 끌기를 **손잡이·요약 줄에만** 붙인다 — 아래 장소 목록도 세로로 움직이는 영역이라, 거기서
- * 세로 제스처를 가로채면 목록을 굴리려는 손짓이 전부 시트 접기로 먹힌다.
+ * 끌기를 **위아래 끝(손잡이·저장 버튼 줄)에만** 붙인다 — 가운데 장소 목록도 세로로 움직이는
+ * 영역이라, 거기서 세로 제스처를 가로채면 목록을 굴리려는 손짓이 전부 시트 접기로 먹힌다.
  */
 function useCollapseDrag(setCollapsed: (collapsed: boolean) => void) {
   const startYRef = useRef<number | null>(null);
@@ -107,8 +107,9 @@ function useCollapseDrag(setCollapsed: (collapsed: boolean) => void) {
  * 화면 하단의 동선 시트. **이 화면의 조작이 전부 여기 모여 있다** — 날짜 켜고 끄기,
  * 장소 켜고 끄기, 동선 저장. 지도 위에 남는 건 뒤로가기(와 저장된 동선의 제목)뿐이다.
  *
- * 세 층으로 읽힌다(카카오맵 하단 패널과 같은 순서): **요약 줄**(무엇을 보고 있는지 + 저장)
- * → **날짜 필터**(볼 범위 좁히기) → **장소 목록**(하나씩 다루기).
+ * 위에서부터 **날짜 필터**(볼 범위 좁히기) → **개수·전체 선택 줄** → **장소 목록**
+ * (하나씩 다루기) → **저장 버튼**. 가운데 셋만 여닫히고, 저장 버튼은 시트 맨 아래에
+ * 붙박이다 — 접을 때 버튼이 위아래로 뛰어다니면 어디를 누르려던 건지 놓친다.
  *
  * **접으면 `전체 동선` 과 `동선저장` 만 남는다.** 접기는 지도를 넓게 보려는 것이지 작업을
  * 멈추는 게 아니라서 저장은 손에 닿아야 하고, 그 밖의 것은 지도에 자리를 내준다.
@@ -121,21 +122,19 @@ function useCollapseDrag(setCollapsed: (collapsed: boolean) => void) {
  * 세로로 세우면 한 줄이 화면 폭을 다 쓰므로 사진·이름·날짜가 한눈에 들어오고, 위아래 순서가
  * 곧 방문 순서라 번호와 두 번 말하는 셈이 된다.
  *
- * 위쪽 두 층(요약·날짜)은 **스크롤과 함께 밀려나지 않는다** — 목록을 굴리는 동안에도
- * `장소 n/20개`·`동선저장`·날짜 필터는 제자리에 있어야 한다.
+ * 목록만 굴러간다 — 날짜 필터와 저장 줄은 위아래에 붙박이라 굴리는 내내 제자리에 있다.
  *
  * ⚠️ **사진은 ① 새 동선 만들기에만 온다** — 저장된 동선 상세(`GET /routes/{id}`)에는 없어서
  * ② 는 전부 기본 나무 아이콘이 된다. 서버가 사진을 실어주면 그대로 채워진다.
  *
- * 제목은 고른 날짜 수와 무관하게 '전체 동선' 하나다 — 날짜별 구분은 지도 쪽이 맡는다.
+ * 이름은 고른 날짜 수와 무관하게 '전체 동선' 하나다 — 날짜별 구분은 필터와 지도가 맡는다.
  * 새 동선을 만들 때만 장소 수를 n/20 으로 보여준다 — 저장 한도가 20개이기 때문(설계서 0·2번).
  *
  * 줄을 누르면 그 장소가 꺼지고 **뒤 번호가 당겨진다**(설계서 7번). 켠 장소만 세기 때문에
  * 화면에 보이는 번호는 항상 1부터 빈틈없이 이어진다.
  *
- * **접을 수 있다**(손잡이 탭 또는 끌기). 지도가 이 화면의 본체인데 시트가 아래를 계속 물고
- * 있으면 남쪽 마커가 가려진다. 접어도 `장소 n/20개`·`동선저장` 은 남긴다 — 접힌 상태가
- * 작업을 멈추는 게 아니라 지도를 넓게 보는 것뿐이어야 한다.
+ * **접을 수 있다**(손잡이 탭, 또는 손잡이·저장 줄에서 끌기). 지도가 이 화면의 본체인데
+ * 시트가 아래를 계속 물고 있으면 남쪽 마커가 가려진다.
  */
 export function RoutePlaceStrip({
   places,
@@ -191,7 +190,8 @@ export function RoutePlaceStrip({
       (날짜 칩·손잡이·`제외됨`)은 흰 바닥에선 안 보이므로 각각 제 역할색을 찾아갔다.
     */
     <div className="rounded-t-[20px] bg-white px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
-      {/* touch-none: 세로 끌기를 브라우저 기본 제스처에 뺏기지 않게. 손잡이 줄에만 건다. */}
+      {/* touch-none: 세로 끌기를 브라우저 기본 제스처에 뺏기지 않게.
+          손잡이와 맨 아래 줄에만 건다 — 가운데(날짜 칩·목록)는 저희끼리 굴러가야 한다. */}
       <div className="touch-none" {...drag.handlers}>
         <button
           type="button"
@@ -208,36 +208,13 @@ export function RoutePlaceStrip({
           <span className="h-1 w-10 rounded-full bg-[#d9d9d9]" />
         </button>
 
-        {/* 접어도 남는 줄. 접힌 시트는 **이름과 저장**, 딱 둘이다 — 접기는 지도를 넓게
-            보려는 것이지 작업을 멈추는 게 아니라서 저장은 손에 닿아야 하고, 그 외에는
-            지도를 한 줄이라도 더 내주는 게 맞다. */}
-        <div className="flex items-center gap-3 pb-1 pt-2">
-          <div className="min-w-0 flex-1">
-            <h2 className="text-[15px] font-medium tracking-tight text-[#2c3930]">전체 동선</h2>
-            {/* 개수는 펼쳤을 때만. 접힌 상태에서 `3/20개` 는 지금 할 일이 없는 정보다 —
-                한도가 문제가 되는 건 목록을 보며 고르는 중이거나 저장할 때뿐이고, 저장은
-                넘치면 눌린 뒤에 이유를 알려준다.
-                (색은 GREEN-500 이었다 — 연초록 바닥 위 2.35:1 로 가이드라인이 결함이라고
-                집어둔 조합이라 INK-muted 로 왔다. 흰 위 5.98:1.) */}
-            {!collapsed && (
-              <p className="mt-1 text-[13px] text-[#60655c]">
-                장소 {maxPlaces === undefined ? activeCount : `${activeCount}/${maxPlaces}`}개
-              </p>
-            )}
-          </div>
-
-          {/* 저장에 성공하면 동선 탭으로 넘어가므로 '저장됨' 같은 완료 상태가 필요 없다 —
-              이 화면에 남아 있다는 건 아직 저장 전이라는 뜻이다. */}
-          {onSave && (
-            <button
-              type="button"
-              onClick={onSave}
-              className="h-11 shrink-0 rounded-[10px] bg-[#2c3930] px-5 text-[15px] font-medium tracking-wide text-[#fffcef]"
-            >
-              동선저장
-            </button>
-          )}
-        </div>
+        {/* 접혔을 때만. 그때는 시트가 무엇인지 말해줄 게 이 한 줄뿐이다 — 펼치면 날짜
+            필터와 목록이 이미 그 말을 하고 있어서 자리만 먹는다. */}
+        {collapsed && (
+          <h2 className="truncate pb-1 pt-1 text-[15px] font-medium tracking-tight text-[#2c3930]">
+            전체 동선
+          </h2>
+        )}
       </div>
 
       {/* 접히는 영역. 안쪽 목록이 제 높이(`LIST_VIEWPORT_PX`)로 잘려 있으므로 이 영역의 높이도
@@ -256,16 +233,30 @@ export function RoutePlaceStrip({
             음수 마진: 칩 그림자가 좌우 스크롤 끝에서 잘리지 않게 패딩만큼 밖으로 뺐다가
             같은 값으로 되돌린다. 날짜가 없으면 `pt-4` 만 남아 빈 틈이 되므로 감싼 채로 뺀다. */}
         {dates.length > 0 && (
-          <div className="-mx-5 px-5 pt-4">
-            <RouteDateChips
-              dates={dates}
-              filter={dateFilter}
-              onChangeFilter={onChangeDateFilter}
-              allSelected={allVisibleSelected}
-              onToggleAll={onToggleAllVisible}
-            />
+          <div className="-mx-5 px-5 pt-2">
+            <RouteDateChips dates={dates} filter={dateFilter} onChangeFilter={onChangeDateFilter} />
           </div>
         )}
+
+        {/* 필터 바로 밑에 붙는 줄: 지금 몇 곳이고, 한 번에 넣거나 뺄 수 있다.
+            칩 줄과 목록 사이에 두는 이유는 **둘 다에 걸쳐 있어서**다 — 개수는 목록이 만든
+            결과이고, `전체 선택`/`전체 해제` 는 위에서 고른 필터 범위에 적용된다.
+            문구는 지금 상태가 아니라 **누르면 무슨 일이 일어나는지**를 말한다. */}
+        <div className="flex items-center gap-3 pt-3">
+          {/* 색이 GREEN-500 이었다 — 연초록 바닥 위 2.35:1 로, 가이드라인이 결함이라고
+              집어둔 조합이다. 보조 텍스트 자리이므로 INK-muted(흰 위 5.98:1). */}
+          <p className="min-w-0 flex-1 truncate text-[13px] text-[#60655c]">
+            장소 {maxPlaces === undefined ? activeCount : `${activeCount}/${maxPlaces}`}개
+          </p>
+
+          <button
+            type="button"
+            onClick={onToggleAllVisible}
+            className="shrink-0 text-[13px] font-medium text-[#60655c] underline underline-offset-2"
+          >
+            {allVisibleSelected ? '전체 해제' : '전체 선택'}
+          </button>
+        </div>
 
         {places.length === 0 ? (
           <p className="mt-4 text-[13px] text-[#60655c]">표시할 동선이 없어요</p>
@@ -362,16 +353,6 @@ export function RoutePlaceStrip({
                           />
                         </span>
                       )}
-
-                      {/* 꺼진 줄은 번호가 없다 — 남은 번호를 당겨 쓰기 때문에 붙일 번호가 없다.
-                          빈 원을 남기지 않고 통째로 뺀다(사진을 덜 가린다). */}
-                      {!disabled && (
-                        // 채움이 GREEN-500 이었다 — 흰 숫자가 3.6:1 이라 §1.2 의 '데코 전용'
-                        // 규칙에 걸린다. 흰 글자를 얹는 초록은 GREEN-700 하나뿐(5.83:1).
-                        <span className="absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-pictree-700 text-[13px] font-medium text-white shadow-[0_1px_4px_rgba(0,0,0,0.35)]">
-                          {sequence}
-                        </span>
-                      )}
                     </div>
 
                     <div className="min-w-0 flex-1">
@@ -383,11 +364,25 @@ export function RoutePlaceStrip({
                       </p>
                     </div>
 
-                    {/* 흑백 사진만으로는 '꺼짐'이 안 읽힐 수 있어 글자로 한 번 더 말한다.
-                        켜진 줄에는 아무것도 안 붙인다 — 기본 상태에 라벨을 붙이면 목록이 시끄럽다. */}
-                    {disabled && (
+                    {/*
+                      줄의 오른쪽 끝은 **이 장소가 동선의 몇 번째인지**를 말하는 자리다.
+                      번호는 사진 위에 얹혀 있었는데, 사진의 왼쪽 위 모서리를 가려서 정작
+                      어디였는지 알아보기 어려웠고 줄마다 위치가 사진에 묻혔다. 오른쪽에
+                      세로로 줄을 맞추면 번호만 훑어 내려가며 순서를 읽을 수 있다.
+
+                      꺼진 줄은 번호가 없다(남은 번호를 당겨 쓴다) — 그 자리에 `제외됨` 이
+                      대신 들어간다. 둘이 같은 자리를 쓰므로 줄 높이가 흔들리지 않는다.
+
+                      채움이 GREEN-500 이었다 — 흰 숫자가 3.6:1 이라 §1.2 의 '데코 전용'
+                      규칙에 걸린다. 흰 글자를 얹는 초록은 GREEN-700 하나뿐(5.83:1).
+                    */}
+                    {disabled ? (
                       <span className="shrink-0 rounded-[8px] bg-pictree-100 px-2 py-1 text-[13px] font-medium text-[#5b6b38]">
                         제외됨
+                      </span>
+                    ) : (
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-pictree-700 text-[13px] font-medium text-white">
+                        {sequence}
                       </span>
                     )}
                   </button>
@@ -397,6 +392,37 @@ export function RoutePlaceStrip({
           </ul>
         )}
       </div>
+
+      {/*
+        시트 맨 아래에 붙박인 저장 버튼. **접히든 펴지든 자리가 안 바뀐다** — 접을 때 버튼이
+        위아래로 뛰어다니면 어디를 누르려던 건지 놓친다. 가운데(필터·개수·목록)만 여닫히고
+        이 줄은 그 아래에 그대로 있다.
+
+        폭을 꽉 채운다. 이 화면에서 되돌릴 수 없는 유일한 동작이고, 목록을 다 고른 뒤 마지막에
+        누르는 것이라 끝에 놓인 큰 버튼이 맞다. 엄지가 닿는 자리이기도 하다.
+
+        끌기 영역이기도 하다 — 손잡이만으로는 잡을 데가 20px 남짓이라 좁다. 버튼 위에서
+        시작한 세로 끌기도 시트를 여닫고, 그냥 누르면 저장된다(끌기로 판정되면 click 을 삼킨다).
+
+        저장에 성공하면 동선 탭으로 넘어가므로 '저장됨' 같은 완료 상태가 필요 없다 —
+        이 화면에 남아 있다는 건 아직 저장 전이라는 뜻이다.
+      */}
+      {onSave && (
+        <div className="touch-none pt-3" {...drag.handlers}>
+          <button
+            type="button"
+            onClick={() => {
+              // 끌어서 시트를 여닫은 손짓이면 저장까지 하면 안 된다 — 끌기로 판정된 뒤에
+              // 따라오는 click 을 삼킨다(손잡이 탭과 같은 처리).
+              if (drag.consumeDrag()) return;
+              onSave();
+            }}
+            className="h-12 w-full rounded-[12px] bg-[#2c3930] text-[15px] font-medium tracking-wide text-[#fffcef]"
+          >
+            동선저장
+          </button>
+        </div>
+      )}
     </div>
   );
 }

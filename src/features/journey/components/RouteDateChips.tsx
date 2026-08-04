@@ -7,12 +7,6 @@ interface RouteDateChipsProps {
   /** 지금 걸린 필터. `null` 이면 전체. */
   filter: string | null;
   onChangeFilter: (date: string | null) => void;
-  /**
-   * 지금 보이는 장소가 **전부 켜져 있는가**. 버튼이 `전체 해제`/`전체 선택` 중 무엇이 될지
-   * 정한다. 버튼 문구는 **누르면 무슨 일이 일어나는지**를 말한다(지금 상태가 아니라).
-   */
-  allSelected: boolean;
-  onToggleAll: () => void;
 }
 
 /**
@@ -25,43 +19,25 @@ interface RouteDateChipsProps {
  *
  * 맨 앞 `전체` 는 날짜가 둘 이상일 때만 나온다 — 하나뿐이면 그 칩과 같은 뜻이라 자리만 먹는다.
  *
- * `전체 선택`/`전체 해제` 버튼은 **스크롤 밖에 고정한다**(`JourneyChips` 의 + 버튼과 같은
- * 이유) — 날짜가 많아지면 칩 줄에 딸려 밀려나 사라지는데, 그러면 손이 닿지 않는다.
+ * 이 줄은 **거르기만** 한다. 장소를 넣고 빼는 `전체 선택`/`전체 해제` 는 바로 아래 줄에
+ * 따로 있다 — 같은 줄에 두면 알약들 사이에 섞여 같은 무리로 읽힌다.
  */
-export function RouteDateChips({
-  dates,
-  filter,
-  onChangeFilter,
-  allSelected,
-  onToggleAll,
-}: RouteDateChipsProps) {
+export function RouteDateChips({ dates, filter, onChangeFilter }: RouteDateChipsProps) {
   if (dates.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {dates.length > 1 && (
-          <Chip selected={filter === null} onClick={() => onChangeFilter(null)}>
-            전체
-          </Chip>
-        )}
+    <div className="flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {dates.length > 1 && (
+        <Chip selected={filter === null} onClick={() => onChangeFilter(null)}>
+          전체
+        </Chip>
+      )}
 
-        {dates.map((date) => (
-          <Chip key={date} selected={filter === date} onClick={() => onChangeFilter(date)}>
-            {formatDateLabel(date)}
-          </Chip>
-        ))}
-      </div>
-
-      {/* 칩이 아니다 — 고르는 게 아니라 한 번 하고 끝나는 동작이라 알약을 입히면 옆의
-          필터 칩들과 같은 무리로 읽힌다. 대신 높이만 맞춰 한 줄로 떨어지게 한다. */}
-      <button
-        type="button"
-        onClick={onToggleAll}
-        className="h-10 shrink-0 px-1 text-[13px] font-medium text-[#60655c] underline underline-offset-2"
-      >
-        {allSelected ? '전체 해제' : '전체 선택'}
-      </button>
+      {dates.map((date) => (
+        <Chip key={date} selected={filter === date} onClick={() => onChangeFilter(date)}>
+          {formatDateLabel(date)}
+        </Chip>
+      ))}
     </div>
   );
 }
