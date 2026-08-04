@@ -22,6 +22,12 @@ export function useCurrentLocation(map: kakao.maps.Map | null, coords: GeoCoords
 
     const container = document.createElement('div');
     container.innerHTML = renderToStaticMarkup(<CurrentLocationMarker />);
+    /*
+     * 위치 점은 순수 표시용이라 클릭을 받을 이유가 없다. 그런데 zIndex 가 나무/클러스터
+     * 마커보다 높아, 그냥 두면 겹친 자리에서 아래 마커의 클릭을 가로채 탭이 안 먹는다.
+     * (맥동 링은 transform 으로 커져 히트 영역이 더 넓어지므로 증상이 산발적으로 보인다)
+     */
+    container.style.pointerEvents = 'none';
     const overlay = new window.kakao.maps.CustomOverlay({
       // 첫 좌표가 오기 전에는 지도에 붙이지 않으므로 초기 위치는 의미가 없다.
       position: new window.kakao.maps.LatLng(0, 0),

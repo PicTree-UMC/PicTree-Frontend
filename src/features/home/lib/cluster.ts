@@ -1,4 +1,5 @@
-import { clusterByPixelDistance, type PixelCluster } from '@/shared/lib/markerCluster';
+import { clusterByPixelDistance, findSplitLevel, type PixelCluster } from '@/shared/lib/markerCluster';
+import { MIN_ZOOM_LEVEL } from '../hooks/useKakaoMap';
 import type { MapMarkerData } from '../hooks/useMapMarkers';
 
 export type MarkerCluster = PixelCluster<MapMarkerData>;
@@ -14,4 +15,12 @@ const CLUSTER_DISTANCE_PX = 60;
  */
 export function clusterMarkers(map: kakao.maps.Map, markers: MapMarkerData[]): MarkerCluster[] {
   return clusterByPixelDistance(map, markers, CLUSTER_DISTANCE_PX);
+}
+
+/**
+ * 이 클러스터가 둘 이상으로 풀리는 줌 레벨. 끝까지(최대 줌인) 안 풀리면 null.
+ * 클러스터 뱃지를 탭했을 때 어디까지 확대할지 정하는 데 쓴다.
+ */
+export function findClusterSplitLevel(map: kakao.maps.Map, items: MapMarkerData[]): number | null {
+  return findSplitLevel(map, items, CLUSTER_DISTANCE_PX, MIN_ZOOM_LEVEL);
 }
