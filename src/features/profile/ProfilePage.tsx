@@ -191,7 +191,7 @@ export function ProfilePage() {
             <p className="mt-0.5 text-xs font-medium text-[#90908F]">
               {pushUnavailable === "ios-needs-install"
                 ? "홈 화면에 추가하면 알림을 받을 수 있어요"
-                : `${alarmOn ? "켜짐" : "꺼짐"} · 100m 안에 내 나무가 있으면 알려드려요`}
+                : `${alarmOn ? "켜짐" : "꺼짐"} · 50m 안에 내 나무가 있으면 알려드려요`}
             </p>
           </div>
           {/* 토글 */}
