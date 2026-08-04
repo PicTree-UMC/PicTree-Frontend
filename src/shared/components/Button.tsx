@@ -14,8 +14,11 @@ export function Button({
   unstyled = false,
   ...props
 }: ButtonProps) {
+  // hover 가 `bg-pictree-500` 이었다 — 눌렀을 때 배경이 **밝아지면서** 흰 글자 대비가 무너진다
+  // (옛 값에서는 1.88:1). 500 은 흰 글자를 못 얹는 색이라 새 값으로도 3.5:1 이라 여전히 미달.
+  // 초록을 하나 더 만드는 대신 같은 700 을 옅게 눌러 상태 변화만 준다.
   const baseClass =
-    'rounded-md bg-pictree-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pictree-500 disabled:cursor-not-allowed disabled:opacity-50';
+    'rounded-md bg-pictree-700 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50';
 
   return (
     <button
