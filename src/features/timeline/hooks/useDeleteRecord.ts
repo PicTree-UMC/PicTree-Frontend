@@ -27,7 +27,8 @@ export const useDeleteRecord = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: timelineKeys.all });
       queryClient.invalidateQueries({ queryKey: treeKeys.all });
-      showToast("기록이 삭제되었습니다.", "success");
+      // 확인 문구와 같은 말을 쓴다 — '기록' 이라고 하면 지도의 장소는 남은 줄 안다.
+      showToast("장소가 삭제되었습니다.", "success");
     },
 
     onError: (error) => {
