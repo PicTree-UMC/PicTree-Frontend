@@ -24,6 +24,12 @@ export function hideSplash() {
     return;
   }
 
+  // 외부 리다이렉트 착지 경로에선 index.html 이 이미 숨겨 뒀다. 기다릴 이유가 없으니 바로 뗀다.
+  if (document.documentElement.classList.contains('no-splash')) {
+    splash.remove();
+    return;
+  }
+
   const remaining = Math.max(0, MIN_VISIBLE_MS - performance.now());
 
   window.setTimeout(() => {

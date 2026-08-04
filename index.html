@@ -83,6 +83,11 @@
         }
       }
 
+      /* 외부 리다이렉트로 돌아온 착지 경로 — 아래 스크립트 참고 */
+      .no-splash #splash {
+        display: none;
+      }
+
       @media (prefers-reduced-motion: reduce) {
         #splash {
           transition: none;
@@ -93,6 +98,23 @@
         }
       }
     </style>
+    <script>
+      /*
+       * 소셜 로그인·결제는 외부 서비스로 페이지를 통째로 넘겼다가 돌아온다(location.assign,
+       * 토스 successUrl). 돌아오는 길이 '새 문서 로드'라 스플래시가 앱을 켤 때와 똑같이 다시
+       * 뜨는데, 사용자 입장에선 앱 시작이 아니라 진행하던 흐름의 복귀 지점이다. 그 경로에서만 끈다.
+       *
+       * head 에서 클래스로 거는 이유: 스플래시가 그려지기 전에 숨겨야 깜빡임이 없다.
+       * 경로는 shared/constants/routes.ts 의 authCallback / premiumBilling* 과 같아야 한다.
+       */
+      if (
+        ['/auth/callback', '/premium/billing/success', '/premium/billing/fail'].includes(
+          location.pathname,
+        )
+      ) {
+        document.documentElement.classList.add('no-splash');
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
