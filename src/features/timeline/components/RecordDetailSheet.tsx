@@ -55,9 +55,17 @@ export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) 
   */
   const photo = images?.[0]?.imageUrl ?? record.thumbnailUrl ?? '/apple-touch-icon.jpg';
 
-  const visitedAt = formatFull(record.recordedAt);
-  const createdAt = formatFull(record.createdAt);
-  const treeName = detail?.treeName ?? null;
+  /*
+    '방문'·'등록'·'나무' 세 줄이 한 줄로 줄었다 (#123).
+
+    통합 뒤로 방문일과 등록일은 **같은 값**이다 — 촬영이 곧 등록이라 두 줄로 나누면
+    같은 시각이 두 번 찍힌다(지난 여행을 나중에 올리는 경로는 앱에 없다).
+    '나무' 줄도 마찬가지로 위 제목(`placeName`)과 같은 문자열이 됐다.
+
+    `??` 가 아니라 `||` 인 이유 — 목록이 날짜를 못 받으면 `recordedAt` 이 **빈 문자열**이라
+    `??` 로는 안 넘어간다. 상세 응답에는 날짜가 있으므로 이 폴백이 실제로 값을 채운다.
+  */
+  const visitedAt = formatFull(record.recordedAt || detail?.recordedAt);
 
   return (
     <Sheet
@@ -78,8 +86,6 @@ export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) 
 
       <div className="mt-4 border-t border-[#E6E1CC] pt-3">
         {visitedAt && <InfoRow label="방문" value={visitedAt} />}
-        {createdAt && <InfoRow label="등록" value={createdAt} />}
-        {treeName && <InfoRow label="나무" value={treeName} />}
       </div>
 
       <div className="mt-5 flex gap-3">

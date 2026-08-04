@@ -13,11 +13,11 @@ export interface TimelineRecord {
   comment: string;
   recordedAt: string;
   /**
-   * 나무가 서버에 만들어진 시각. 원래 `recordedAt`(방문 시각)과 다른 값이었지만,
-   * **통합 뒤로는 둘이 같다** — `Tree` 에 방문일이 없어서 등록 시각이 그 자리를 대신한다.
-   * 백엔드가 `visitedAt` 을 주면 갈라진다(HANDOFF 1-1절 1번).
+   * 나무가 서버에 만들어진 시각.
    *
-   * **정렬에는 쓰지 않는다** — 서버 페이지 순서와 어긋난다.
+   * **`recordedAt` 과 같은 값이다** — 촬영이 곧 등록이라 방문일과 등록일을 구분하지
+   * 않기로 했다(#123). 별도 필드로 남겨 둔 건, 지난 여행을 나중에 올리는 기능이
+   * 생기면 그때 둘이 갈라지기 때문이다.
    */
   createdAt?: string;
   thumbnailUrl?: string | null;

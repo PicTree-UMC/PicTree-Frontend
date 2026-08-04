@@ -14,24 +14,15 @@ export const TIMELINE_SORTS = [
 export type TimelineSort = (typeof TIMELINE_SORTS)[number]["key"];
 
 /**
- * 정렬이 보는 날짜 = 방문 시각(`recordedAt` = 서버의 `visitedAt`).
+ * 정렬이 보는 날짜 = `recordedAt`.
  *
- * ⚠️ 예전에는 등록 시각(`createdAt`)을 봤는데 그게 순서가 뒤죽박죽이던 원인이다.
- * 서버는 `visitedAt desc` 로 정렬해 페이지를 잘라 주는데(`timelines.repository`
- * 의 `orderBy: [{ visitedAt: 'desc' }, { id: 'desc' }]`) 프론트가 받아서 다른
- * 기준으로 다시 정렬하니, 한 페이지 안에서만 뒤집힌 목록이 나왔다.
+ * **2026-08-04 — 방문일과 등록일을 같은 것으로 본다(#123).** timeline 이 tree 로 합쳐지며
+ * `visitedAt` 이 사라졌고, `Tree.createdAt`(등록 시각)을 방문일로 쓰기로 했다.
+ * 촬영이 곧 등록이라 두 값이 실제로 같은 순간이다 — **지난 여행을 나중에 올리는 경로가
+ * 앱에 없기 때문에** 성립하는 전제다. 그 기능이 생기면 여기부터 깨진다.
  *
- * 세 날짜의 역할은 이렇다:
- * - `visitedAt` — 사용자가 넣는 방문 시각. 수정 가능하고 화면이 보여줄 값이다.
- * - `createdAt` — 행이 DB 에 꽂힌 시각(`@default(now())`). 서버 기록용.
- * - `updatedAt` — 수정할 때마다 자동 갱신(`@updatedAt`). 정렬에 쓰면 기록을
- *   고칠 때마다 순서가 튄다.
- *
+ * `updatedAt` 은 여전히 정렬에 쓰지 않는다 — 기록을 고칠 때마다 순서가 튄다.
  * 그룹 머리글도 같은 값을 써야 머리글 순서가 어긋나지 않는다.
- *
- * 🔴 **2026-08-04 — `visitedAt` 자체가 사라졌다.** timeline 이 tree 로 합쳐졌는데(#123)
- * `Tree` 에는 방문일이 없다. 지금 `recordedAt` 에는 등록 시각이 들어오거나(상세) 아예
- * 비어 있다(목록). 위 구분은 백엔드가 `visitedAt` 을 다시 줄 때 그대로 살아난다.
  */
 export const getSortDate = (record: TimelineRecord): string =>
   record.recordedAt;

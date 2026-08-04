@@ -32,18 +32,17 @@ export const TIMELINE_PAGE_SIZE = 20;
  */
 
 /**
- * 🔴 **목록에 날짜와 코멘트가 없다.**
+ * 🔴 **목록에 날짜와 코멘트가 없다 — 실서버로 확인함(2026-08-04).**
  *
- * `GET /trees` 아이템은 `treeId·name·latitude·longitude·mood·defaultImage·imageUrl·isFavorite`
- * 뿐이다(2026-08-04 스웨거). 타임라인 목록은 **날짜로 묶고 정렬하고 검색**하므로 그대로면
- * 그룹이 무너진다.
+ * `GET /trees` 아이템은 정확히
+ * `treeId·name·latitude·longitude·mood·defaultImage·imageUrl·isFavorite` 뿐이다.
+ * 타임라인 목록은 **날짜로 묶고 정렬하고 검색**하므로 그대로면 그룹이 무너진다.
+ * 상세(`GET /trees/{id}`)에는 `createdAt`·`description` 이 다 있다 — 목록에만 없다.
  *
- * 그래서 아래 매핑은 날짜·설명을 **있으면 쓰고 없으면 비운다.** 백엔드가 필드를 붙이는
- * 순간 코드를 안 고치고 살아나게 하려는 것이다. 붙여 달라고 요청해야 할 것:
- * `visitedAt`(없으면 `createdAt`) 과 `description`.
- *
- * ⚠️ 스웨거의 `example` 은 손으로 쓴 값이라 실제 응답에 더 들어 있을 수 있다.
- * **토큰을 가진 상태로 한 번 찍어 확인할 것.**
+ * **백엔드 요청은 `createdAt` 과 `description` 을 목록 아이템에 얹어 달라는 것 하나다.**
+ * 방문일과 등록일은 같은 것으로 보기로 했으므로(#123, `timelineQuery` 주석) `visitedAt`
+ * 이라는 새 필드는 필요 없다. 아래 매핑은 그래도 `visitedAt` 을 먼저 본다 — 나중에 그
+ * 필드가 생겨도 코드를 안 고치게 하려는 것뿐이다.
  */
 type TreeListItemMaybeDated = TreeListItem & {
   visitedAt?: string;
@@ -56,7 +55,7 @@ const toRecordFromListItem = (tree: TreeListItemMaybeDated): TimelineRecord => (
   id: String(tree.treeId),
   placeName: tree.name,
   comment: tree.description ?? '',
-  // visitedAt 이 오면 그걸 쓴다. 지금은 대개 빈 문자열로 떨어진다(위 주석).
+  // 등록 시각이 곧 방문 시각이다. 지금은 둘 다 안 와서 빈 문자열로 떨어진다(위 주석).
   recordedAt: tree.visitedAt ?? tree.createdAt ?? '',
   createdAt: tree.createdAt ?? '',
   thumbnailUrl: tree.imageUrl,
@@ -98,8 +97,7 @@ export const getTimelines = async ({
  * 목록과 달리 상세에는 `description`·`createdAt`·`address`·`images` 가 다 있다.
  * 그래서 **날짜가 실제로 보이는 유일한 자리**이기도 하다(목록 주석 참고).
  *
- * ⚠️ `visitedAt` 은 상세에도 없다. 방문일 자리에 `createdAt`(등록 시각)이 들어간다 —
- * 통합 전부터 있던 문제이고 백엔드 요청이 걸려 있다(HANDOFF 1-1절 1번).
+ * 방문일 자리에는 `createdAt` 을 넣는다 — 촬영이 곧 등록이라 둘을 같은 것으로 본다(#123).
  */
 export const getTimelineDetail = async (treeId: string): Promise<TimelineDetail> => {
   const { data } = await httpClient.get<ApiEnvelope<TreeDetail>>(`/trees/${treeId}`);
@@ -109,7 +107,7 @@ export const getTimelineDetail = async (treeId: string): Promise<TimelineDetail>
     id: String(tree.treeId),
     placeName: tree.name,
     comment: tree.description ?? '',
-    // TODO: 서버가 visitedAt 을 주면 교체한다. 지금은 등록 시각이 방문일 자리에 뜬다.
+    // 등록 시각이 곧 방문 시각이다(#123).
     recordedAt: tree.createdAt,
     createdAt: tree.createdAt,
     thumbnailUrl: tree.images?.[0]?.imageUrl ?? null,
