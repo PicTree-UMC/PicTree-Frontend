@@ -1,4 +1,5 @@
-import { TIMELINE_SORTS, type TimelineSort } from "../lib/timelineQuery";
+import { Chip } from '@/shared/components';
+import { TIMELINE_SORTS, type TimelineSort } from '../lib/timelineQuery';
 
 interface Props {
   value: TimelineSort;
@@ -18,20 +19,19 @@ export function TimelineSortTabs({ value, onChange }: Props) {
         const isActive = key === value;
 
         return (
-          <button
+          // 화면의 주역이 아닌 보조 전환이라 `ghost` + `sm`. 라디오라서 상태는
+          // `aria-checked` 로 알리고, Chip 은 `role` 이 있으면 `aria-pressed` 를 안 붙인다.
+          <Chip
             key={key}
-            type="button"
+            tone="ghost"
+            size="sm"
             role="radio"
             aria-checked={isActive}
+            selected={isActive}
             onClick={() => onChange(key)}
-            className={`rounded-full px-3 py-1 text-[15px] transition-colors ${
-              isActive
-                ? "bg-[#C5D89D] font-medium text-[#2C3930]"
-                : "text-[#60655C]"
-            }`}
           >
             {label}
-          </button>
+          </Chip>
         );
       })}
     </div>

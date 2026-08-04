@@ -11,6 +11,7 @@ import {
   parseDatesParam,
   toDatesParam,
 } from './lib/routeParams';
+import { Chip } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { ROUTES } from '@/shared/constants/routes';
 
@@ -155,18 +156,20 @@ export function RouteCreatePage() {
           limitAttempt > 0 ? 'motion-safe:animate-shake' : ''
         }`}
       >
-        <div className="flex min-h-[34px] w-full items-center gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-h-[40px] w-full items-center gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+          {/* `selected` 를 안 넘긴다 — 누르면 켜졌다 꺼지는 토글이 아니라 **빼는 동작**이고,
+              고른 날짜만 여기 있으니 '골랐음'을 색으로 또 말할 이유도 없다. Chip 은
+              `selected` 가 없으면 `aria-pressed` 도 안 붙인다. */}
           {pickedDates.map((date) => (
-            <button
+            <Chip
               key={date}
-              type="button"
               onClick={() => toggleDate(date)}
               aria-label={`${formatDateLabel(date)} 선택 해제`}
-              className="flex h-[34px] shrink-0 items-center gap-1 rounded-full bg-white pl-3.5 pr-2.5 text-[15px] font-medium text-[#2c3930] shadow-[0_1px_4px_rgba(0,0,0,0.12)]"
+              trailing={<CloseIcon className="h-4 w-4 text-[#60655c]" />}
+              className="pr-2.5"
             >
               {formatDateLabel(date)}
-              <CloseIcon className="h-4 w-4 text-[#60655c]" />
-            </button>
+            </Chip>
           ))}
         </div>
       </div>

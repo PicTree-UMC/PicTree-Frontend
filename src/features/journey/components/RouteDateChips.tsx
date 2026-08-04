@@ -1,3 +1,4 @@
+import { Chip } from '@/shared/components';
 import { formatDateLabel } from '../lib/formatDate';
 
 interface RouteDateChipsProps {
@@ -33,22 +34,17 @@ export function RouteDateChips({
         const disabled = disabledDates.has(date);
 
         return (
-          <button
+          // 초록 시트 위에 놓이므로 `cream`. 꺼진 칩의 글자는 흐려지는 게 아니라
+          // GREEN-700 으로 **바뀐다** — 다시 눌러 켤 수 있는 버튼이라 읽혀야 한다(4.6:1).
+          <Chip
             key={date}
-            type="button"
+            tone="cream"
+            selected={!disabled}
             onClick={() => onToggleDate(date)}
-            aria-pressed={!disabled}
             aria-label={`${formatDateLabel(date)} 동선 ${disabled ? '켜기' : '끄기'}`}
-            // h-10: 아래 장소 칩(44px)보다 한 단 낮다 — 날짜가 상위 필터인데 같은 높이면
-            // 두 줄이 한 덩어리로 뭉쳐 어느 쪽이 큰 단위인지 안 읽힌다.
-            className={`flex h-10 shrink-0 items-center rounded-[10px] px-4 text-[15px] font-medium transition-colors ${
-              disabled
-                ? 'bg-[#fffcef]/45 text-[#2c3930]/40'
-                : 'bg-[#fffcef]/90 text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]'
-            }`}
           >
             {formatDateLabel(date)}
-          </button>
+          </Chip>
         );
       })}
     </div>
