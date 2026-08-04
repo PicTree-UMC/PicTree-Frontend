@@ -1,37 +1,40 @@
 import { useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useKakaoMap } from '../home/hooks/useKakaoMap';
 import { useRoutePath } from './hooks/useRoutePath';
 import { useRouteDetail } from './hooks/useRouteDetail';
 import { useRoutePlaceCandidates } from './hooks/useRoutePlaceCandidates';
 import { useCreateRoute } from './hooks/useCreateRoute';
-import { RouteDateBar } from './components/RouteDateBar';
-import { RouteDateSheet } from './components/RouteDateSheet';
 import { RoutePlaceStrip } from './components/RoutePlaceStrip';
 import { SaveRouteSheet } from './components/SaveRouteSheet';
+import { DATES_PARAM, MAX_PLACES, parseDatesParam, toDatesParam } from './lib/routeParams';
+import { useGoBack } from '@/shared/hooks/useGoBack';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
-
-/** 화면설계서 0번: 한 번에 고를 수 있는 날짜는 3일, 저장할 수 있는 장소는 20개까지. */
-const MAX_DATES = 3;
-const MAX_PLACES = 20;
 
 /**
  * 지도 위 동선 화면. **성격이 다른 두 모드를 한 페이지가 겸한다.**
  *
- * | | ① 새 동선 만들기 `/journey/view` | ② 저장된 동선 보기 `/journey/view/:routeId` |
+ * | | ① 새 동선 만들기 `/journey/view?dates=` | ② 저장된 동선 보기 `/journey/view/:routeId` |
  * |---|---|---|
- * | 출처 | `GET /trees` 중 고른 날짜 | `GET /routes/{id}` 한 번 |
- * | 날짜 관리·캘린더 | 있음 | 없음 (동선이 날짜를 이미 들고 있다) |
+ * | 출처 | `GET /trees` 중 쿼리로 받은 날짜 | `GET /routes/{id}` 한 번 |
  * | 동선저장 | 있음 (`POST /routes`) | 없음 |
  *
  * **갈리는 건 `places` 를 만드는 자리 하나뿐이다.** 끄기·번호 재순서화·마커 묶음
  * (설계서 6·7·9번)은 `RoutePlace[]` 만 보므로 두 모드가 그대로 공유한다.
+ *
+ * ① 의 날짜 고르기는 **앞 단계(`RouteCreatePage`)로 떼어냈다** — 이 화면은 고른 날짜를
+ * 쿼리로 받아 지도를 그리는 일만 한다. 날짜를 바꾸려면 뒤로 가면 되므로 상단에 캘린더를
+ * 여는 버튼이 없다.
+ *
+ * **화면 위에는 뒤로가기(② 는 제목까지)만 띄우고, 조작은 전부 하단 시트에 모았다** —
+ * 날짜 칩·장소 칩·동선저장이 한 덩어리로 있고 시트째 접어 지도를 넓게 볼 수 있다.
  */
 export function RouteViewPage() {
   const navigate = useNavigate();
   const { containerRef, map } = useKakaoMap();
   const { showToast } = useToast();
+  const [searchParams] = useSearchParams();
 
   // URL 에 id 가 있으면 ② 모드. 손으로 친 주소가 들어올 수 있어 숫자인지까지 본다.
   const { routeId: routeIdParam } = useParams();
@@ -55,23 +58,27 @@ export function RouteViewPage() {
    */
   const isOffline = source.isPaused && source.data === undefined;
 
-  // 시안의 기본 상태는 '아무 날짜도 안 고른 상태'다. 전체 동선을 미리 그려주지 않는다
-  // — 날짜를 골라야 지도에 동선이 뜬다(화면설계서 2번). ② 에서는 쓰이지 않는다.
-  const [pickedDates, setPickedDates] = useState<string[]>([]);
+  /** 앞 단계에서 고른 날짜. 형식·중복·개수는 파서가 이미 걸러낸다. ② 에서는 쓰이지 않는다. */
+  const pickedDates = useMemo(() => parseDatesParam(searchParams.get(DATES_PARAM)), [searchParams]);
+
+  /*
+    되돌아갈 곳: ① 은 앞 단계(고른 날짜를 들려서), ② 는 동선 탭.
+    보통은 `-1` 이라 이 값이 안 쓰이고, 링크로 이 화면에 바로 들어왔을 때만 쓰인다.
+    ⚠️ 명시 경로로 **항상** 되돌리면 안 된다 — push 라 지도가 스택에 남아, 앞 단계의
+    뒤로가기가 그걸 되짚으면서 두 화면을 오가는 루프가 된다(2026-08-04 실측).
+  */
+  const goBack = useGoBack(
+    isSavedView
+      ? ROUTES.journey
+      : `${ROUTES.journeyCreate}?${DATES_PARAM}=${toDatesParam(pickedDates)}`,
+  );
+
   // 하단바에서 꺼둔 장소(설계서 7번). 목록에는 남기고 번호·개수·동선에서만 뺀다.
   const [disabledPlaceIds, setDisabledPlaceIds] = useState<number[]>([]);
-  const [showDateSheet, setShowDateSheet] = useState(false);
   const [showSaveSheet, setShowSaveSheet] = useState(false);
 
   /** ① 에서 고를 수 있는 장소 전부(방문 기록이 있는 것만). ② 에서는 비어 있다. */
   const candidates = useMemo(() => candidatesQuery.data ?? [], [candidatesQuery.data]);
-
-  // 캘린더가 '방문한 날짜 + 그날 장소 수'를 요구한다(설계서 1번). ① 에서만 쓴다.
-  const placeCountByDate = useMemo(() => {
-    const counts = new Map<string, number>();
-    candidates.forEach((place) => counts.set(place.date, (counts.get(place.date) ?? 0) + 1));
-    return counts;
-  }, [candidates]);
 
   /** 두 모드가 갈리는 유일한 자리. 아래 로직은 전부 이 배열만 본다. */
   const places = useMemo(
@@ -82,7 +89,7 @@ export function RouteViewPage() {
     [isSavedView, routeDetail, candidates, pickedDates],
   );
 
-  // 상단 칩에 늘어놓을 날짜. ① 은 캘린더에서 고른 것, ② 는 동선이 걸친 날짜에서 도출한다.
+  // 시트의 칩 줄에 늘어놓을 날짜. ① 은 캘린더에서 고른 것, ② 는 동선이 걸친 날짜에서 도출한다.
   const dates = useMemo(
     () => (isSavedView ? [...new Set(places.map((place) => place.date))].sort() : pickedDates),
     [isSavedView, places, pickedDates],
@@ -111,23 +118,9 @@ export function RouteViewPage() {
 
   useRoutePath(map, places, disabledIds);
 
-  const toggleDate = (dateKey: string) => {
-    setPickedDates((current) =>
-      current.includes(dateKey)
-        ? current.filter((date) => date !== dateKey)
-        : // 지도·하단바의 순번이 날짜 순서를 따라가도록 항상 오름차순으로 유지한다.
-          [...current, dateKey].sort(),
-    );
-    // 날짜가 빠지면 그 날짜에서 껐던 기억도 지운다 — 다시 고르면 전부 켜진 상태로 돌아온다.
-    // (안 지우면 며칠 전에 끈 장소가 되살아난 날짜에서 소리 없이 빠져 있다.)
-    setDisabledPlaceIds((ids) =>
-      ids.filter((id) => candidates.find((place) => place.id === id)?.date !== dateKey),
-    );
-  };
-
   /**
-   * 하단바 장소 칩 탭(설계서 7번). 그 장소를 껐다 켜고, 켜진 것만 세어 번호를 다시 매긴다.
-   * 마지막 남은 장소를 끄면 `disabledDates` 가 따라 켜져 상단 날짜도 같이 흐려진다.
+   * 장소 칩 탭(설계서 7번). 그 장소를 껐다 켜고, 켜진 것만 세어 번호를 다시 매긴다.
+   * 마지막 남은 장소를 끄면 `disabledDates` 가 따라 켜져 그 날짜 칩도 같이 흐려진다.
    */
   const togglePlace = (placeId: number) =>
     setDisabledPlaceIds((ids) =>
@@ -135,7 +128,7 @@ export function RouteViewPage() {
     );
 
   /**
-   * 상단 날짜 칩 탭(설계서 6번). 날짜를 목록에서 빼지 않고 **그날 장소를 통째로 껐다 켠다** —
+   * 날짜 칩 탭(설계서 6번). 날짜를 목록에서 빼지 않고 **그날 장소를 통째로 껐다 켠다** —
    * 칩이 사라지면 되돌릴 길이 캘린더뿐이라, 흐려진 채로 남겨 다시 누를 수 있게 한다.
    */
   const toggleDateActive = (dateKey: string) => {
@@ -149,14 +142,9 @@ export function RouteViewPage() {
     );
   };
 
-  const selectFirstDates = () => {
-    setPickedDates([...placeCountByDate.keys()].sort().slice(0, MAX_DATES));
-    setDisabledPlaceIds([]); // 선택을 통째로 갈아끼우는 동작이라 껐던 기억도 같이 비운다
-  };
-
   const handleSave = () => {
     if (activePlaces.length === 0) {
-      showToast('날짜를 선택하면 동선을 저장할 수 있어요', 'error', { placement: 'top' });
+      showToast('장소를 하나 이상 켜야 동선을 저장할 수 있어요', 'error', { placement: 'top' });
       return;
     }
     if (activePlaces.length > MAX_PLACES) {
@@ -194,6 +182,12 @@ export function RouteViewPage() {
     );
   };
 
+  // 날짜 없이 ① 로 들어오는 길은 없다(앞 단계가 항상 쿼리를 달아 보낸다) — 주소를 손으로
+  // 치거나 예전 링크를 눌렀을 때다. 빈 지도를 보여주는 대신 날짜 고르기로 돌려보낸다.
+  if (!isSavedView && pickedDates.length === 0) {
+    return <Navigate to={ROUTES.journeyCreate} replace />;
+  }
+
   return (
     <div className="relative h-full w-full bg-white">
       {/* 지도 — 노치(safe-area)까지 덮는 fixed 풀블리드 배경.
@@ -206,28 +200,18 @@ export function RouteViewPage() {
 
       {/* 헤더와 날짜 관리 바는 지도 위에 떠 있다. 지도 영역을 깎지 않도록 absolute. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 pt-safe">
-        {/* 스크림 — 제목·뒤로가기가 지도에 묻히던 문제(#103). 이 둘만 배경 없는 맨 글자라
-            카카오맵의 지하철 아이콘·POI 라벨과 겹치면 아예 안 읽힌다(옆의 `동선저장`·
-            `날짜 관리` 는 어두운 알약이라 멀쩡했다).
+        {/* 스크림이 없다 — 예전엔 상단 전체에 크림 그라데이션을 깔아 제목·뒤로가기가 지도
+            라벨에 묻히는 걸 막았다(#103). 지금은 **요소마다 자기 배경을 갖는다**: 뒤로가기는
+            크림 원, 제목은 크림 알약. 지도를 덮는 면적이 그라데이션보다 훨씬 작아
+            상단 지형이 그대로 보이고, 대비는 오히려 더 확실하다(반투명 크림 위 짙은 초록).
 
-            알약을 하나 더 붙이는 대신 그라데이션을 깐 이유: 상단에 배경 있는 요소가 넷이 되면
-            지도 위가 칩 밭이 된다. CameraPage·MarkerStoryViewer 가 쓰는 것과 같은 수법이고,
-            색만 검정 대신 앱 base 크림이다 — 글자가 어두운 초록이라 검정 스크림은 오히려
-            대비가 줄고, 크림/짙은초록은 앱이 원래 쓰는 짝이다.
-
-            아래로 24px 더 내려 컨텐츠 끝에서 딱 끊기지 않게 한다. 날짜 칩이 생기면 부모가
-            높아지면서 스크림도 같이 늘어난다. to-[#fffcef]/0 은 `to-transparent`(=투명한 검정)
-            로 중간이 탁해지는 걸 피하려는 것. */}
-        <div
-          aria-hidden
-          className="absolute inset-x-0 top-0 -bottom-6 -z-10 bg-gradient-to-b from-[#fffcef] via-[#fffcef]/85 to-[#fffcef]/0"
-        />
-
+            날짜 칩까지 하단 시트로 내려가면서 ① 모드의 헤더는 **뒤로가기 하나**만 남았다.
+            조작은 아래 한 곳에 모으고 지도 위쪽은 비워 두는 게 이 화면의 원칙이다. */}
         <header className="pointer-events-auto flex items-center gap-2 px-5 pt-4">
           <button
-            onClick={() => navigate(-1)}
+            onClick={goBack}
             aria-label="뒤로가기"
-            className="-ml-1 p-1 text-[#2c3930]"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#fffcef]/90 text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
           >
             <svg
               viewBox="0 0 24 24"
@@ -241,33 +225,25 @@ export function RouteViewPage() {
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
-          {/* ② 는 어느 동선을 보고 있는지가 '동선 보기' 보다 훨씬 쓸모 있다. 이름이 길 수 있어
-              한 줄로 자른다. 아직 안 불러왔으면 자리를 비워 제목이 깜빡이지 않게 한다. */}
-          <h1 className="flex-1 truncate text-xl font-medium text-[#2c3930]">
-            {isSavedView ? (routeDetail?.name ?? '') : '동선 보기'}
-          </h1>
-          {/* 저장에 성공하면 동선 탭으로 넘어가므로 '저장됨' 같은 완료 상태가 필요 없다 —
-              이 화면에 남아 있다는 건 아직 저장 전이라는 뜻이다. */}
-          {!isSavedView && (
-            <button
-              onClick={handleSave}
-              className="shrink-0 rounded-[8px] bg-[#2c3930] px-3 py-1.5 text-[13px] font-medium tracking-wide text-[#fffcef] shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
-            >
-              동선저장
-            </button>
+          {/* ② 는 어느 동선을 보고 있는지가 제목 자리에 들어간다. 이름이 길 수 있어 한 줄로
+              자르고, 아직 안 불러왔으면 자리를 비워 제목이 깜빡이지 않게 한다.
+              ① 은 제목이 아예 없다 — '동선 보기' 는 앞 단계를 거쳐 온 사용자에게 알려주는 게
+              없는데 헤더 한 줄을 통째로 차지하고 있었다.
+
+              제목은 뒤로가기와 같은 톤의 크림 알약이다. `inline-block` 인 이유: 줄 전체를
+              채우는 알약은 이름이 짧을 때 지도를 괜히 가린다 — 글자 길이만큼만 차지하게 둔다. */}
+          {isSavedView && (
+            <div className="min-w-0 flex-1">
+              {/* 알약이 자기 배경을 갖게 되면서, 이름이 없는 동안 빈 알약이 뜨면 그게 더
+                  눈에 띈다 — 이름이 올 때까지 통째로 안 그린다. */}
+              {routeDetail?.name && (
+                <h1 className="inline-block h-10 max-w-full truncate rounded-[10px] bg-[#fffcef]/90 px-4 text-[15px] font-medium leading-10 text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
+                  {routeDetail.name}
+                </h1>
+              )}
+            </div>
           )}
         </header>
-
-        <div className="pointer-events-auto">
-          <RouteDateBar
-            selectedDates={dates}
-            disabledDates={disabledDates}
-            maxDates={MAX_DATES}
-            // ② 는 캘린더가 없다 → 넘기지 않으면 `날짜 관리` 버튼째 사라진다.
-            onOpenDatePicker={isSavedView ? undefined : () => setShowDateSheet(true)}
-            onToggleDate={toggleDateActive}
-          />
-        </div>
       </div>
 
       {/* 불러오는 동안·실패했을 때 지도 위에 얹는다. 하단 strip 을 가리지 않아서
@@ -299,28 +275,19 @@ export function RouteViewPage() {
         <RoutePlaceStrip
           places={places}
           disabledPlaceIds={disabledIds}
+          // 날짜 칩이 헤더에서 여기로 내려왔다 — 날짜 켜고 끄기와 장소 켜고 끄기는 같은 성격의
+          // 조작인데 화면 위아래 끝으로 갈라져 있었다. 이제 조작은 전부 이 시트 안에 있다.
+          dates={dates}
+          disabledDates={disabledDates}
+          onToggleDate={toggleDateActive}
           // ② 는 저장 한도가 의미 없다 — `3/20개` 는 더 담을 수 있다는 오해를 준다.
           maxPlaces={isSavedView ? undefined : MAX_PLACES}
+          // 저장 버튼이 헤더에서 여기로 내려왔다. 저장되는 건 이 목록이고 한도(n/20)도 이 줄이
+          // 들고 있어서, 지도 반대편 끝에 떨어져 있는 것보다 맥락이 이어진다.
+          onSave={isSavedView ? undefined : handleSave}
           onTogglePlace={togglePlace}
         />
       </div>
-
-      {showDateSheet && (
-        <RouteDateSheet
-          placeCountByDate={placeCountByDate}
-          selectedDates={pickedDates}
-          selectedPlaceCount={activePlaces.length}
-          maxDates={MAX_DATES}
-          maxPlaces={MAX_PLACES}
-          onToggleDate={toggleDate}
-          onSelectFirstDates={selectFirstDates}
-          onClearDates={() => {
-            setPickedDates([]);
-            setDisabledPlaceIds([]);
-          }}
-          onClose={() => setShowDateSheet(false)}
-        />
-      )}
 
       {showSaveSheet && (
         <SaveRouteSheet

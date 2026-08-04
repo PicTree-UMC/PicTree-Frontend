@@ -39,6 +39,8 @@ interface TreeItem {
   latitude: number;
   longitude: number;
   mood: string | null;
+  /** 대표 사진 presigned URL. 사진이 없으면 null. 날짜 고르기의 장소 미리보기가 쓴다. */
+  imageUrl: string | null;
   /** 등록 시각 = 방문 시각. 촬영이 곧 등록이라 같은 순간이다(#123). */
   createdAt: string;
 }
@@ -107,6 +109,7 @@ export const getRoutePlaceCandidates = async (): Promise<RoutePlace[]> => {
         lng: tree.longitude,
         date,
         mood: tree.mood ?? undefined,
+        imageUrl: tree.imageUrl,
       }),
     );
 };

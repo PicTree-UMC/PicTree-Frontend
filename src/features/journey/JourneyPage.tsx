@@ -176,7 +176,7 @@ export function JourneyPage() {
               나만의 여행 발자국을 남겨보세요.
             </p>
             <button
-              onClick={() => navigate(ROUTES.journeyView)}
+              onClick={() => navigate(ROUTES.journeyCreate)}
               className="animate-fade-in-up mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-[#5B6B38] text-[15px] font-medium text-white"
               style={{ animationDelay: '300ms' }}
             >
@@ -193,7 +193,7 @@ export function JourneyPage() {
                 onSelect={(journey) => setSelectedId(journey.id)}
                 // 빈 상태의 '동선 생성하기' CTA 는 목록이 차면 사라진다 — 그때부터
                 // 새 동선을 만들 입구가 아예 없었다. 칩 줄의 + 가 그 자리를 잇는다.
-                onCreate={() => navigate(ROUTES.journeyView)}
+                onCreate={() => navigate(ROUTES.journeyCreate)}
               />
             </div>
 

@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { clusterByPixelDistance } from '@/shared/lib/markerCluster';
+import { ClusterMarker } from '@/shared/components';
 import { RoutePlace } from '../types/route';
 import { NumberedMarker } from '../components/NumberedMarker';
-import { RouteClusterMarker } from '../components/RouteClusterMarker';
 
 /**
  * 이 화면 픽셀 거리 안에 들어온 마커는 하나로 묶는다(화면설계서 9번).
@@ -11,21 +11,24 @@ import { RouteClusterMarker } from '../components/RouteClusterMarker';
  * **지도 거리(m)가 아니라 화면 px 이다** — 겹쳐 보이는지는 축척이 정하기 때문이고,
  * 날짜가 달라도 화면에서 붙어 있으면 묶는다.
  *
- * **값이 마커 지름과 같은 30 인 건 우연이 아니다** — 순번 마커가 30×30 이라, 중심 거리가
- * 30 미만이면 두 원이 실제로 겹친다는 뜻이다. 즉 "겹치기 시작하면 묶는다"가 규칙이다.
- * 시안 값은 42 였는데 그러면 12px 떨어져 아직 안 겹친 마커까지 묶인다.
+ * **값이 순번 마커 지름과 같은 36 인 건 우연이 아니다** — 마커가 36×36 이라, 중심 거리가
+ * 36 미만이면 두 원이 실제로 겹친다는 뜻이다. 즉 "겹치기 시작하면 묶는다"가 규칙이다.
+ * **마커 크기를 바꾸면 이 값도 같이 바꿔야 한다** — 안 그러면 겹쳐 놓고도 안 묶이거나(작을 때),
+ * 멀쩡히 떨어진 것까지 묶인다(클 때). (`NumberedMarker` 40 → 36 과 함께 내렸다.)
  *
- * ⚠️ 묶음 뱃지는 마커보다 크다(44×52 vs 30×30). 기준을 조일수록 뱃지가 **안 묶인 옆 마커를
- * 덮을** 확률이 올라가므로, 실기기에서 그 장면을 특히 확인할 것. 어색하면 34~36 이 절충점.
+ * ⚠️ 묶음 뱃지는 48 로 마커(36)보다 크다 — 마커가 작아지면서 차이가 12px 로 벌어졌고, 기준도
+ * 같이 조여졌으니 뱃지가 **안 묶인 옆 마커를 덮는** 장면을 실기기에서 확인할 것. 과하면 아래
+ * localStorage 로 40~44 를 시험해 보고 정한다. (뱃지 쪽 크기는 홈 지도와 공유하는
+ * `shared/components/ClusterMarker` 라 여기서 혼자 못 줄인다.)
  *
  * 개발 중에는 코드를 고치지 않고 콘솔에서 바로 바꿔볼 수 있다
  * (지도를 살짝 움직이면 그 값으로 다시 묶인다):
  *
  * ```js
- * localStorage.setItem('pictree.routeClusterPx', '36'); // 되돌리려면 removeItem
+ * localStorage.setItem('pictree.routeClusterPx', '44'); // 되돌리려면 removeItem
  * ```
  */
-const CLUSTER_DISTANCE_PX = 30;
+const CLUSTER_DISTANCE_PX = 36;
 
 function readClusterDistance(): number {
   if (!import.meta.env.DEV) return CLUSTER_DISTANCE_PX;
@@ -93,7 +96,7 @@ export function useRoutePath(
           cluster.items.length === 1 ? (
             <NumberedMarker index={cluster.items[0].sequence} />
           ) : (
-            <RouteClusterMarker count={cluster.items.length} />
+            <ClusterMarker count={cluster.items.length} />
           );
 
         // 묶음 뱃지는 개별 마커보다 위에 둔다 — 겹칠 만큼 가까우니 아래 깔리면 안 보인다.
@@ -123,7 +126,15 @@ export function useRoutePath(
         const polyline = new window.kakao.maps.Polyline({
           path: group.map((point) => new window.kakao.maps.LatLng(point.lat, point.lng)),
           strokeWeight: 4,
-          strokeColor: '#000000',
+          /*
+            BARK(줄기 갈색). 팔레트에 순수 검정이 없어서(아이콘의 #111 조차 INK 로 흡수됐다)
+            바꿔야 했고, 마커가 GREEN-500 이 되면서 선도 초록이면 둘이 한 덩어리로 뭉갠다.
+
+            나무를 잇는 선이라 줄기 색을 쓴다. 값은 눈대중이 아니라 **GREEN-700(L*43)과 같은
+            밝기 단**으로 맞춘 것(L*41) — 초록 옆에 놓아도 한쪽만 튀지 않는다.
+            docs/design-guidelines.md 의 BARK 항목과 같은 값이다.
+          */
+          strokeColor: '#7A5C3A',
           strokeOpacity: 0.9,
           strokeStyle: 'shortdash',
         });

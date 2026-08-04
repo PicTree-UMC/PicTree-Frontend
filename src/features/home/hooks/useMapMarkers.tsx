@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TreeMarker } from '../components/TreeMarker';
-import { ClusterMarker } from '../components/ClusterMarker';
+import { ClusterMarker } from '@/shared/components';
 import { clusterMarkers, findClusterSplitLevel } from '../lib/cluster';
 
 export interface MapMarkerData {

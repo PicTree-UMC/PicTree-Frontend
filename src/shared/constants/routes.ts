@@ -19,7 +19,9 @@ export const ROUTES = {
   premiumBillingSuccess: '/premium/billing/success',
   premiumBillingFail: '/premium/billing/fail',
   journey: '/journey',
-  /** 새 동선 만들기(날짜를 골라 동선을 그리고 저장한다). */
+  /** 새 동선 만들기 ①단계 — 날짜 고르기. 여기서 고른 날짜를 `?dates=` 로 ② 에 넘긴다. */
+  journeyCreate: '/journey/create',
+  /** 새 동선 만들기 ②단계 — 지도에서 장소를 다듬고 저장한다(`?dates=` 필수). */
   journeyView: '/journey/view',
   /** 저장된 동선 보기. **패턴**이라 이동할 땐 아래 `journeyViewPath` 를 쓴다. */
   journeyViewDetail: '/journey/view/:routeId',

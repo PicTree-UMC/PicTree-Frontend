@@ -10,6 +10,7 @@ import { BillingSuccessPage } from '../features/premium/BillingSuccessPage';
 import { CameraPage } from '../features/camera/CameraPage';
 import { HomePage } from '../features/home/HomePage';
 import { JourneyPage } from '../features/journey/JourneyPage';
+import { RouteCreatePage } from '../features/journey/RouteCreatePage';
 import { RouteViewPage } from '../features/journey/RouteViewPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { PremiumPage } from '../features/premium/PremiumPage';
@@ -116,6 +117,11 @@ export const router = createBrowserRouter([
             element: <PremiumPage />,
           },
         ],
+      },
+      {
+        // 새 동선 만들기 ①단계. 지도가 필요 없는 화면이라 탭바 밖에 둔다(② 와 같은 층).
+        path: ROUTES.journeyCreate,
+        element: <RouteCreatePage />,
       },
       {
         path: ROUTES.journeyView,
