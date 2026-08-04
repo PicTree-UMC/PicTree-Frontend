@@ -1,10 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { useAuthStore } from '@/features/auth/store/authStore';
 import { createTree, uploadTreeImage } from '@/features/home/api/treesApi';
 import { treeKeys } from '@/features/home/hooks/useTrees';
 import { routePlaceCandidateKey } from '@/features/journey/hooks/useRoutePlaceCandidates';
-import { createTimeline } from '@/features/timeline/api/timelineApi';
 import { timelineKeys } from '@/features/timeline/hooks/useTimeline';
 import type { GeoCoords } from '@/shared/hooks/useGeolocation';
 import { dataUrlToFile } from '../lib/dataUrlToFile';
@@ -24,31 +22,23 @@ export interface CreateTreeRecordInput {
 
 export interface CreateTreeRecordResult {
   treeId: number;
-  /**
-   * 장소는 저장됐지만 방문 기록(3번)이 실패한 상태. **이 장소는 동선에 뜨지 않는다.**
-   * 실패를 통째로 에러로 만들지 않는 이유는 아래 mutationFn 주석 참조.
-   */
-  timelineFailed: boolean;
 }
 
 /**
  * 카메라 촬영 → 장소 등록 흐름.
  * 1) POST /trees 로 장소를 만들고 treeId 를 받는다.
  * 2) 사진이 있으면 그 treeId 로 POST /trees/{treeId}/images (단일 파일) 업로드.
- * 3) POST /timelines 로 같은 treeId 의 방문 기록을 남긴다.
  *
- * **3번이 없으면 찍은 장소가 동선 보기 화면에 영원히 안 뜬다.** 동선 후보는 나무가 아니라
- * 방문 기록을 기준으로 만들어지기 때문이다(`journey/api/routeCandidatesApi.ts`) —
- * `GET /trees` 에 날짜가 없어서 `/timelines` 의 `visitedAt` 과 조인할 수밖에 없고,
- * 기록이 없는 나무는 찍을 날짜가 없어 그 조인에서 통째로 빠진다.
- * 앱에는 방문 기록을 만드는 다른 입구가 없다(타임라인 화면은 조회·수정·삭제뿐).
+ * **2026-08-04 — 3단계였던 흐름이 2단계가 됐다.** 예전에는 `POST /timelines` 로 방문
+ * 기록을 따로 남겨야 했다. 그게 없으면 찍은 장소가 동선에 안 떴기 때문인데, 나무를 만들고
+ * 기록을 또 만드는 사이에 실패하면 **장소만 남고 동선엔 안 뜨는 반쪽 상태**가 됐다.
+ * 그 상태를 화면에 알리려고 `timelineFailed` 를 결과에 실어 보냈었다.
  *
- * → 백엔드가 `POST /trees` 안에서 기록까지 만들어 주거나 `GET /trees` 가 날짜를 주게 되면
- *   3번은 지워도 된다. 그때까지는 이 호출이 카메라와 동선을 잇는 유일한 연결이다.
+ * 백엔드가 timeline 을 tree 로 합치면서(#123) 그 실패 자체가 사라졌다 — 나무가 곧 기록이다.
+ * 반쪽 상태가 없으니 분기도 없앴다.
  */
 export function useCreateTreeRecord() {
   const queryClient = useQueryClient();
-  const accessToken = useAuthStore((state) => state.accessToken);
 
   return useMutation({
     mutationFn: async ({
@@ -72,29 +62,7 @@ export function useCreateTreeRecord() {
         await uploadTreeImage(treeId, dataUrlToFile(photo, `tree-${treeId}.jpg`));
       }
 
-      /**
-       * 여기서 던지지 않는 이유: 나무는 이미 만들어졌다. 실패로 처리하면 사용자가 같은
-       * 촬영을 다시 저장하고 나무만 두 개가 된다(POST /trees 는 멱등이 아니다).
-       * 대신 결과에 실어 보내 화면이 "장소는 저장됐지만 동선엔 안 뜬다"를 말하게 한다
-       * — 조용히 삼키면 나중에 동선에서 안 보이는 이유를 아무도 모른다.
-       */
-      let timelineFailed = false;
-
-      try {
-        await createTimeline(accessToken ?? '', {
-          treeId,
-          title: name,
-          // 카메라에는 분류 UI 가 없다. 촬영 = 그 장소에 다녀온 기록이므로 VISIT 로 고정한다.
-          category: 'VISIT',
-          // 촬영 시각이 곧 방문 시각이다. 지난 여행을 나중에 올리는 경로는 아직 없다.
-          visitedAt: new Date().toISOString(),
-          ...(description ? { content: description } : {}),
-        });
-      } catch {
-        timelineFailed = true;
-      }
-
-      return { treeId, timelineFailed };
+      return { treeId };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: treeKeys.list() });

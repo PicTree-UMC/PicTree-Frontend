@@ -2,11 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 
 import { useAuthStore } from "@/features/auth/store/authStore";
-import {
-  getTimelines,
-  getTreeThumbnails,
-  TIMELINE_PAGE_SIZE,
-} from "../api/timelineApi";
+import { getTimelines, TIMELINE_PAGE_SIZE } from "../api/timelineApi";
 import type {
   TimelineGroup,
   TimelineRecord,
@@ -23,7 +19,7 @@ export const timelineKeys = {
   all: ["timeline"] as const,
   list: (page: number, size: number) => ["timeline", "list", page, size] as const,
   detail: (timelineId: string) => ["timeline", "detail", timelineId] as const,
-  thumbnails: () => ["timeline", "thumbnails"] as const,
+  // thumbnails 키는 지웠다 — 목록이 사진 URL 을 직접 준다(#123).
   images: (timelineId: string) => ["timeline", "images", timelineId] as const,
 };
 
@@ -50,13 +46,28 @@ const buildLabel = (date: Date): string =>
  * 그룹의 앞뒤 순서도 정렬 방향을 따른다. 오래된 순인데 날짜 머리글이 최신부터면
  * 안쪽만 뒤집힌 꼴이 된다. 그룹 안쪽은 `sortRecords` 가 잡아 둔 순서를 그대로 쓴다.
  */
+/**
+ * 날짜를 못 받은 기록들이 모이는 그룹의 키.
+ *
+ * ⚠️ **이 방어가 없으면 화면에 `NaN월 NaN일` 이 찍힌다.** `new Date('')` 는 Invalid Date 이고
+ * 그걸로 만든 키가 `"NaN-NaN-NaN"`, 머리글이 `"NaN월 NaN일"` 이 된다.
+ * 목록에 날짜가 없던 시절 실제로 그렇게 떴다(#123).
+ *
+ * 지금은 서버가 `createdAt` 을 주므로 이 그룹에 아무도 안 들어온다. 그래도 남긴다 —
+ * **서버가 필드를 빠뜨릴 수 있다는 걸 이미 한 번 겪었다.**
+ * 날짜가 없다고 기록을 숨기지는 않는다. 사진과 장소명은 멀쩡히 보여줄 수 있다.
+ */
+const NO_DATE_KEY = "";
+
 const groupByDate = (
   records: TimelineRecord[],
   sort: TimelineSort
 ): TimelineGroup[] => {
   const map = new Map<string, TimelineRecord[]>();
   for (const r of records) {
-    const key = toDateKey(new Date(getSortDate(r)));
+    const raw = getSortDate(r);
+    const date = new Date(raw);
+    const key = raw && !Number.isNaN(date.getTime()) ? toDateKey(date) : NO_DATE_KEY;
     const b = map.get(key);
     if (b) b.push(r);
     else map.set(key, [r]);
@@ -68,7 +79,8 @@ const groupByDate = (
     .sort(([a], [b]) => (a < b ? -direction : direction))
     .map(([dateKey, items]) => ({
       dateKey,
-      label: buildLabel(new Date(dateKey)),
+      // 날짜 없는 그룹은 머리글을 비운다. 화면은 빈 문자열이면 아무것도 안 그린다.
+      label: dateKey === NO_DATE_KEY ? "" : buildLabel(new Date(dateKey)),
       records: items,
     }));
 };
@@ -94,13 +106,13 @@ interface UseTimelineOptions {
 }
 
 /**
- * 타임라인 목록 조회 훅. `GET /timelines`
+ * 타임라인 목록 조회 훅. `GET /trees` (통합 전에는 `GET /timelines` — #123)
  *
  * 화면은 날짜별 그룹을 요구하므로 여기서 묶는다.
  *
- * ⚠️ 검색·정렬은 서버가 아니라 여기서 한다. `GET /timelines` 의 쿼리 파라미터가
- * `page`·`size` 뿐이라 서버에 넘길 수단이 없다. 따라서 받아온 페이지 안에서만
- * 동작하며, 기록이 한 페이지를 넘어가면 뒤쪽은 검색에 걸리지 않는다.
+ * ⚠️ 검색·정렬은 서버가 아니라 여기서 한다. 쿼리 파라미터가 `page`·`size` 뿐이라
+ * 서버에 넘길 수단이 없다. 따라서 받아온 페이지 안에서만 동작하며, 기록이 한 페이지를
+ * 넘어가면 뒤쪽은 검색에 걸리지 않는다.
  * 백엔드에 `keyword`·`sort` 가 생기면 `timelineApi` 로 옮겨야 한다.
  */
 export const useTimeline = ({
@@ -111,15 +123,15 @@ export const useTimeline = ({
 }: UseTimelineOptions = {}): UseTimelineResult => {
   const accessToken = useAuthStore((state) => state.accessToken);
   /**
-   * 토큰이 없으면 부르지 않는다. `GET /timelines` 에 `AccessTokenGuard` 가 걸려
-   * 있어 빈 토큰으로 보내면 반드시 401 이 떨어진다 — 실패가 뻔한 요청이다.
+   * 토큰이 없으면 부르지 않는다. `GET /trees` 에 인증이 걸려 있어 빈 토큰으로
+   * 보내면 반드시 401 이 떨어진다 — 실패가 뻔한 요청이다.
    * (`ProtectedRoute` 가 토큰을 보장하니 실제로는 닿기 어려운 경로다)
    */
   const isEnabled = Boolean(accessToken);
 
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: timelineKeys.list(page, size),
-    queryFn: () => getTimelines(accessToken ?? "", { page, size }),
+    queryFn: () => getTimelines({ page, size }),
     enabled: isEnabled,
     /**
      * 4xx 는 재시도하지 않는다. 401(토큰 무효)·400(잘못된 요청)은 같은 요청을
@@ -136,29 +148,11 @@ export const useTimeline = ({
     },
   });
 
-  /**
-   * 목록 썸네일. 타임라인 응답에 사진이 없어 나무 목록에서 가져와 잇는다
-   * (자세한 사정은 `getTreeThumbnails` 주석).
-   *
-   * 사진이 없어도 목록 자체는 읽을 수 있어야 하므로 실패해도 에러로 올리지
-   * 않는다 — 썸네일만 기본 이미지로 떨어진다. presigned URL 이 24시간짜리라
-   * `staleTime` 은 그보다 훨씬 짧게 둔다.
+  /*
+   * 썸네일 조인이 사라졌다 — 목록(`GET /trees`)이 `imageUrl` 을 직접 준다(#123).
+   * 예전에는 타임라인 응답에 사진이 아예 없어 나무 목록을 따로 받아 `treeId` 로 이었다.
    */
-  const { data: thumbnails } = useQuery({
-    queryKey: timelineKeys.thumbnails(),
-    queryFn: getTreeThumbnails,
-    enabled: isEnabled,
-    staleTime: 1000 * 60 * 10,
-    retry: false,
-  });
-
-  const withThumbnails = (data?.records ?? []).map((record) => {
-    const joined = record.treeId != null ? thumbnails?.get(record.treeId) : undefined;
-
-    return joined ? { ...record, thumbnailUrl: joined } : record;
-  });
-
-  const visible = sortRecords(searchRecords(withThumbnails, keyword), sort);
+  const visible = sortRecords(searchRecords(data?.records ?? [], keyword), sort);
 
   return {
     groups: groupByDate(visible, sort),

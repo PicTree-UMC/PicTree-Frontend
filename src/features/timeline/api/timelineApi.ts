@@ -1,77 +1,126 @@
-import { httpClient } from "@/shared/lib/httpClient";
-import type { ApiResponse } from "@/features/auth/types/auth";
+import { httpClient } from '@/shared/lib/httpClient';
+import type { ApiEnvelope, TreeDetail, TreeListData, TreeListItem } from '@/features/home/types/tree';
 import type {
-  CreateTimelineRequest,
-  TimelineApiPage,
-  TimelineApiRecord,
   TimelineDetail,
-  TimelineDetailApiRecord,
   TimelineImage,
   TimelinePage,
   TimelineRecord,
   TreeImageListData,
-  TreeListPage,
   UpdateTimelineRequest,
-} from "../types/timeline.types";
+} from '../types/timeline.types';
 
 export const TIMELINE_PAGE_SIZE = 20;
 
-/** 나무 목록을 한 번에 받기 위한 크기. 서버 허용 최대치다(지도와 같은 값). */
-const TREE_PAGE_SIZE = 100;
+/**
+ * 타임라인 API 레이어.
+ *
+ * ⚠️ **2026-08-04 — `/timelines` 는 더 이상 없다.** 백엔드가 timeline 엔티티를 지우고
+ * tree 로 합쳤다(이슈 #123). 라우트 자체가 사라져 호출하면 404 다.
+ * **이제 타임라인의 한 '기록'은 나무 하나(`Tree`)와 같은 것이다.**
+ *
+ * 화면이 쓰는 용어(`placeName`·`comment`·`recordedAt`)는 그대로 두고 여기서만 매핑한다
+ * — `journeyApi` 가 `/routes` ↔ `Journey` 를 처리하는 방식과 같다. 그래서 이 파일만
+ * 갈아끼우면 훅·화면은 거의 그대로 산다.
+ *
+ * 통합으로 사라진 것:
+ * - `createTimeline` — 카메라가 이미 `POST /trees` 로 만든다(`useCreateTreeRecord`).
+ *   나무를 만든 뒤 기록을 또 만들던 2단계가 1단계가 됐다.
+ * - `getTreeThumbnails` — 목록(`GET /trees`)이 `imageUrl` 을 직접 준다.
+ *   사진을 얻으려고 나무 목록을 따로 받아 `treeId` 로 잇던 조인이 필요 없다.
+ * - `accessToken` 인자 — `httpClient` 인터셉터가 Bearer 를 붙인다(PR #53).
+ *   전부 수동으로 헤더를 싣던 시절의 잔재였다.
+ */
 
 /**
- * 나무별 대표 사진 URL. `GET /trees`
+ * 목록 아이템 → 화면이 쓰는 기록.
  *
- * ⚠️ 타임라인 목록(`GET /timelines`)에는 사진이 아예 없다 — 서버
- * `toResponseDto` 가 `tree { id, name, mood, defaultImage }` 만 매핑한다.
- * `tree.defaultImage` 는 `"DEFAULT_1"` 같은 **식별자**(VarChar(20))라
- * `<img src>` 에 넣으면 깨진다.
- *
- * 그래서 사진 URL 이 있는 유일한 목록인 나무 목록을 받아 `treeId` 로 잇는다.
- * 기록별 사진이 아니라 **장소 대표 사진**이라는 한계가 있다. 기록마다 다른
- * 사진을 목록에 띄우려면 `GET /timelines` 응답에 `imageUrl` 이 필요하다
- * (기록별 사진 자체는 `TreeImage.timelineRecordId` 로 이미 저장돼 있고
- * `GET /trees/{treeId}/images` 로 꺼낼 수 있다 — 목록에서 쓰기엔 기록 수만큼
- * 호출해야 해서 안 쓴다).
+ * `createdAt`·`description` 은 2026-08-04 에 목록에 추가받은 필드다. 그 전에는 목록에
+ * 날짜가 없어 날짜 그룹이 통째로 무너졌고, 상세를 항목마다 부르는 우회(N+1)를 검토했다.
+ * **필드가 오면서 그 우회는 필요 없어졌다** — 목록 한 번으로 카드가 다 채워진다.
  */
-export const getTreeThumbnails = async (): Promise<Map<number, string>> => {
-  const { data } = await httpClient.get<ApiResponse<TreeListPage>>("/trees", {
-    params: { size: TREE_PAGE_SIZE },
+const toRecordFromListItem = (tree: TreeListItem): TimelineRecord => ({
+  // 기록 id 가 곧 나무 id 다. 화면이 문자열로 다루므로 여기서 맞춘다.
+  id: String(tree.treeId),
+  placeName: tree.name,
+  comment: tree.description ?? '',
+  // 등록 시각이 곧 방문 시각이다(#123).
+  recordedAt: tree.createdAt,
+  createdAt: tree.createdAt,
+  thumbnailUrl: tree.imageUrl,
+  lat: tree.latitude,
+  lng: tree.longitude,
+  treeId: tree.treeId,
+  defaultImage: tree.defaultImage,
+  isFavorite: tree.isFavorite,
+});
+
+/**
+ * 타임라인 목록 조회. `GET /trees?page=&size=`
+ *
+ * 지도(`home/api/treesApi`)와 같은 엔드포인트지만 쓰는 모양이 달라 매핑을 따로 둔다 —
+ * 지도는 마커(좌표 중심), 여기는 기록(날짜·사진 중심)이다.
+ */
+export const getTimelines = async ({
+  page = 1,
+  size = TIMELINE_PAGE_SIZE,
+}: { page?: number; size?: number } = {}): Promise<TimelinePage> => {
+  const { data } = await httpClient.get<ApiEnvelope<TreeListData>>('/trees', {
+    params: { page, size },
   });
 
-  if (data.resultType === "FAIL") {
-    throw new Error(data.error.message);
-  }
+  const body = data.data;
+  const items = body?.items ?? [];
 
-  const thumbnails = new Map<number, string>();
-  for (const tree of data.data?.items ?? []) {
-    // 사진이 없는 나무는 imageUrl 이 null 이다. 넣어 두면 깨진 이미지가 된다.
-    if (tree.imageUrl) {
-      thumbnails.set(tree.treeId, tree.imageUrl);
-    }
-  }
-
-  return thumbnails;
+  return {
+    records: items.map(toRecordFromListItem),
+    page: body?.page ?? page,
+    size: body?.size ?? size,
+    totalCount: body?.total ?? items.length,
+  };
 };
 
 /**
- * 한 기록에 붙은 사진. `GET /trees/{treeId}/images?timelineRecordId=`
+ * 타임라인 상세 조회. `GET /trees/{treeId}`
  *
- * 상세 시트에서만 쓴다 — 한 번에 한 기록만 열리므로 호출도 한 번이다.
+ * 목록과 달리 상세에는 `description`·`createdAt`·`address`·`images` 가 다 있다.
+ * 그래서 **날짜가 실제로 보이는 유일한 자리**이기도 하다(목록 주석 참고).
+ *
+ * 방문일 자리에는 `createdAt` 을 넣는다 — 촬영이 곧 등록이라 둘을 같은 것으로 본다(#123).
+ */
+export const getTimelineDetail = async (treeId: string): Promise<TimelineDetail> => {
+  const { data } = await httpClient.get<ApiEnvelope<TreeDetail>>(`/trees/${treeId}`);
+  const tree = data.data;
+
+  return {
+    id: String(tree.treeId),
+    placeName: tree.name,
+    comment: tree.description ?? '',
+    // 등록 시각이 곧 방문 시각이다(#123).
+    recordedAt: tree.createdAt,
+    createdAt: tree.createdAt,
+    thumbnailUrl: tree.images?.[0]?.imageUrl ?? null,
+    lat: tree.latitude,
+    lng: tree.longitude,
+    treeId: tree.treeId,
+    defaultImage: tree.defaultImage,
+    isFavorite: tree.isFavorite,
+    // 나무와 기록이 같은 것이 됐으므로 장소명과 같은 값이다. 화면 호환을 위해 남긴다.
+    treeName: tree.name,
+  };
+};
+
+/**
+ * 기록에 붙은 사진. `GET /trees/{treeId}/images`
+ *
+ * 통합 전에는 `?timelineRecordId=` 로 기록별 사진을 걸러 받았다. 기록이 곧 나무가 된
+ * 지금은 그 나무의 사진 전부가 곧 그 기록의 사진이라 필터가 필요 없다.
+ *
  * `imageUrl` 은 24시간짜리 presigned URL 이라 오래 캐시하면 안 된다.
  */
-export const getTimelineImages = async (
-  treeId: number,
-  timelineRecordId: string,
-): Promise<TimelineImage[]> => {
-  const { data } = await httpClient.get<ApiResponse<TreeImageListData>>(
+export const getTimelineImages = async (treeId: number): Promise<TimelineImage[]> => {
+  const { data } = await httpClient.get<ApiEnvelope<TreeImageListData>>(
     `/trees/${treeId}/images`,
-    { params: { timelineRecordId } },
   );
-
-  if (data.resultType === "FAIL") {
-    throw new Error(data.error.message);
-  }
 
   return (data.data?.images ?? []).map((image, index) => ({
     imageId: image.imageId,
@@ -81,171 +130,36 @@ export const getTimelineImages = async (
 };
 
 /**
- * API 레코드를 화면이 쓰는 형태로 변환한다.
+ * 기록 수정. `PATCH /trees/{treeId}`
  *
- * 코드 용어(placeName·comment·recordedAt)는 유지하고 여기서만 매핑한다
- * — journeyApi 가 `/routes` ↔ `Journey` 를 처리하는 방식과 동일하다.
+ * 서버가 받는 필드는 `name·description·address·mood·defaultImage` 다.
+ * 화면 용어를 여기서 서버 용어로 옮긴다 — `placeName → name`, `comment → description`.
  *
- * 명세서(평면)와 서버(중첩) 양쪽 필드를 모두 읽는다. 서버에 없는 값
- * (thumbnailUrl·isFavorite)은 각각 null·false 로 떨어져 화면이 깨지지 않는다.
- */
-const toTimelineRecord = (record: TimelineApiRecord): TimelineRecord => ({
-  id: String(record.id ?? record.timelineId ?? ""),
-  // title 이 곧 장소명이다 (명세서 예시에서 treeName 과 같은 값)
-  placeName: record.title ?? record.treeName ?? record.tree?.name ?? "",
-  comment: record.content ?? "",
-  recordedAt: record.visitedAt ?? "",
-  // 등록순 정렬용. 서버가 안 주면 방문 시각으로 대체해 정렬이 무너지지 않게 한다.
-  createdAt: record.createdAt ?? record.visitedAt ?? "",
-  thumbnailUrl: record.thumbnailUrl ?? null,
-  treeId: record.treeId ?? record.tree?.id ?? null,
-  category: record.category,
-  defaultImage: record.defaultImage ?? record.tree?.defaultImage ?? null,
-  isFavorite: record.isFavorite ?? false,
-});
-
-/**
- * 타임라인 목록 조회. `GET /timelines?page=&size=`
+ * 분류(`category`)는 보내지 않는다 — 서버에서 개념이 없어졌고 되살리지 않기로 했다.
  *
- * 백엔드 컨트롤러에 `AccessTokenGuard` 가 붙어 있어 유효한 토큰이 필요하다.
- * `httpClient` 에 토큰 인터셉터가 없어 호출부가 헤더를 직접 넘긴다.
- */
-export const getTimelines = async (
-  accessToken: string,
-  { page = 1, size = TIMELINE_PAGE_SIZE }: { page?: number; size?: number } = {},
-): Promise<TimelinePage> => {
-  const { data } = await httpClient.get<ApiResponse<TimelineApiPage>>("/timelines", {
-    params: { page, size },
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-  if (data.resultType === "FAIL") {
-    throw new Error(data.error.message);
-  }
-
-  const body = data.data;
-  const records = body?.items ?? body?.content ?? [];
-
-  return {
-    records: records.map(toTimelineRecord),
-    page: body?.page ?? page,
-    size: body?.size ?? size,
-    totalCount: body?.totalElements ?? body?.totalCount ?? records.length,
-  };
-};
-
-/**
- * 타임라인 상세 조회. `GET /timelines/{timelineId}`
- *
- * 목록과 같은 레코드에 `images` 가 더 붙는다.
- * 존재하지 않는 기록이면 404 `TIMELINE_NOT_FOUND` 가 온다 (목록과 달리 진짜 에러).
- */
-export const getTimelineDetail = async (
-  accessToken: string,
-  timelineId: string,
-): Promise<TimelineDetail> => {
-  const { data } = await httpClient.get<ApiResponse<TimelineDetailApiRecord>>(
-    `/timelines/${timelineId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
-
-  if (data.resultType === "FAIL") {
-    throw new Error(data.error.message);
-  }
-
-  const record = data.data;
-
-  return {
-    ...toTimelineRecord(record),
-    treeName: record.treeName ?? record.tree?.name ?? null,
-  };
-};
-
-/**
- * 타임라인 기록 생성. `POST /timelines`
- *
- * 생성된 기록의 id 를 돌려준다. 응답 형태가 갈리므로 여기서 흡수한다:
- * 명세서는 200 `{ timelineId }`, 서버는 201 에 기록 전체(`{ id, ... }`)를 담아 준다.
- * axios 는 2xx 를 모두 성공으로 보므로 상태코드 차이는 문제되지 않는다.
- */
-export const createTimeline = async (
-  accessToken: string,
-  payload: CreateTimelineRequest,
-): Promise<string> => {
-  const { data } = await httpClient.post<ApiResponse<TimelineDetailApiRecord>>(
-    "/timelines",
-    payload,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
-
-  if (data.resultType === "FAIL") {
-    throw new Error(data.error.message);
-  }
-
-  return String(data.data?.timelineId ?? data.data?.id ?? "");
-};
-
-/**
- * 타임라인 기록 수정. `PATCH /timelines/{timelineId}`
- *
- * 생성과 마찬가지로 응답 형태가 갈린다 — 명세서는 `{ timelineId }`,
- * 서버는 기록 전체를 준다. 수정된 기록의 id 만 돌려준다.
+ * 반환값은 수정한 나무의 id — 통합 전 `updateTimeline` 이 기록 id 를 돌려주던 자리다.
+ * 서버는 `data: null` 을 주므로 인자를 그대로 되돌린다.
  */
 export const updateTimeline = async (
-  accessToken: string,
-  timelineId: string,
+  treeId: string,
   payload: UpdateTimelineRequest,
 ): Promise<string> => {
-  const { data } = await httpClient.patch<ApiResponse<TimelineDetailApiRecord>>(
-    `/timelines/${timelineId}`,
-    payload,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
+  await httpClient.patch<ApiEnvelope<null>>(`/trees/${treeId}`, {
+    ...(payload.title !== undefined ? { name: payload.title } : {}),
+    ...(payload.content !== undefined ? { description: payload.content } : {}),
+    ...(payload.mood !== undefined ? { mood: payload.mood } : {}),
+  });
 
-  if (data.resultType === "FAIL") {
-    throw new Error(data.error.message);
-  }
-
-  return String(data.data?.timelineId ?? data.data?.id ?? timelineId);
+  return treeId;
 };
 
 /**
- * 타임라인 기록 삭제. `DELETE /timelines/{timelineId}`
+ * 기록 삭제. `DELETE /trees/{treeId}`
  *
- * 성공 시 `data` 는 null 이라 돌려줄 값이 없다.
- *
- * ⚠️ 기존 코드는 `/timeline/{id}`(단수) 로 보내고 토큰도 안 붙여 항상 실패했다.
- * 실제 경로는 `/timelines/{id}` 이고 `AccessTokenGuard` 가 걸려 있다.
+ * ⚠️ **이제 기록을 지우면 장소(나무)도 같이 사라진다.** 통합 전에는 기록만 지우고
+ * 나무는 지도에 남았다. 삭제 확인 문구가 그 사실을 말하고 있는지 화면에서 확인할 것
+ * (`DeleteRecordModal`).
  */
-export const deleteTimeline = async (
-  accessToken: string,
-  timelineId: string,
-): Promise<void> => {
-  const { data } = await httpClient.delete<ApiResponse<null>>(
-    `/timelines/${timelineId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
-
-  if (data.resultType === "FAIL") {
-    throw new Error(data.error.message);
-  }
+export const deleteTimeline = async (treeId: string): Promise<void> => {
+  await httpClient.delete<ApiEnvelope<null>>(`/trees/${treeId}`);
 };

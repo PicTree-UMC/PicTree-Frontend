@@ -1,29 +1,34 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { treeKeys } from "@/features/home/hooks/useTrees";
 import { useToast } from "@/shared/components";
 import { deleteTimeline } from "../api/timelineApi";
 import { getTimelineErrorMessage } from "../lib/timelineError";
 import { timelineKeys } from "./useTimeline";
 
 /**
- * 타임라인 기록 삭제 mutation 훅. `DELETE /timelines/{timelineId}`
+ * 타임라인 기록 삭제 mutation 훅. `DELETE /trees/{treeId}`
  *
- * 성공하면 `timelineKeys.all` 을 무효화해 목록과 상세를 함께 갱신한다.
+ * ⚠️ **이제 기록을 지우면 장소(나무)도 사라진다.** 통합 전에는 기록만 지워지고 나무는
+ * 지도에 남았다(그래서 고아 데이터 얘기가 있었다). 지금은 지도 마커까지 함께 없어지므로
+ * 나무 캐시도 무효화한다 — 안 하면 지도에 유령 마커가 남는다.
+ * **삭제 확인 문구가 이 사실을 말하는지 확인할 것**(`DeleteRecordModal`).
+ *
  * 삭제는 되돌릴 수 없으므로 낙관적 제거는 하지 않는다 — 서버가 확인해 준 뒤에
  * 목록에서 사라지는 편이 안전하다.
  */
 export const useDeleteRecord = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const accessToken = useAuthStore((state) => state.accessToken);
 
   return useMutation({
-    mutationFn: (recordId: string) => deleteTimeline(accessToken ?? "", recordId),
+    mutationFn: (recordId: string) => deleteTimeline(recordId),
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: timelineKeys.all });
-      showToast("기록이 삭제되었습니다.", "success");
+      queryClient.invalidateQueries({ queryKey: treeKeys.all });
+      // 확인 문구와 같은 말을 쓴다 — '기록' 이라고 하면 지도의 장소는 남은 줄 안다.
+      showToast("장소가 삭제되었습니다.", "success");
     },
 
     onError: (error) => {
