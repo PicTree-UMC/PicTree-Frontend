@@ -135,17 +135,17 @@ export function HomePage() {
   return (
     <div className="relative h-full w-full overflow-hidden">
       {/*
-        카카오맵 — 노치(safe-area)까지 덮는 fixed 풀블리드.
-        앱 컬럼(h-dvh)은 상단 safe-area 아래에서 시작하므로, absolute inset-0 으로는
-        지도가 컬럼 안에만 그려져 노치 영역이 크림 base 로 비어 '잘려 보인다'.
-        MarkerStoryViewer 와 같은 fixed 풀블리드 방식으로 visual viewport 를 덮어 해결한다.
+        카카오맵 — 노치(safe-area)까지 덮는 풀블리드.
+        `fixed inset-0` 으로는 노치가 안 채워진다. iOS 홈화면 PWA 는 레이아웃 뷰포트가
+        상태바 아래에서 시작해서 fixed top:0 도 노치 밑에 놓이기 때문이다(#97).
+        음수 top 으로 뷰포트 밖까지 끌어올리는 `.fullbleed` 를 쓴다 — 이유는 styles.css 주석.
         (mx-auto sm:max-w-[390px]: 데스크톱에서 앱 컬럼 폭에 맞춘다.)
       */}
-      <div ref={containerRef} className="fixed inset-0 z-0 mx-auto sm:max-w-[390px]" />
+      <div ref={containerRef} className="fullbleed z-0 mx-auto sm:max-w-[390px]" />
 
       {/* 현재 위치 확인/지도 준비 중 로딩 — 지도와 같은 영역(노치 포함)을 덮는다 */}
       {!map && (
-        <div className="fixed inset-0 z-10 mx-auto flex items-center justify-center bg-neutral-50 sm:max-w-[390px]">
+        <div className="fullbleed z-10 mx-auto flex items-center justify-center bg-neutral-50 sm:max-w-[390px]">
           <p className="text-sm text-neutral-400">현재 위치를 불러오는 중…</p>
         </div>
       )}

@@ -89,8 +89,9 @@ export function MarkerStoryViewer({
 
   return createPortal(
     <>
+      {/* 노치까지 덮는 검은 배경. `fixed inset-0` 은 노치를 못 채워 위에 크림 띠가 남는다(#97) */}
       <div
-        className="animate-fade-in fixed inset-0 z-50 mx-auto overflow-hidden bg-neutral-950 sm:max-w-[390px]"
+        className="fullbleed animate-fade-in z-50 mx-auto overflow-hidden bg-neutral-950 sm:max-w-[390px]"
         role="dialog"
         aria-modal="true"
       >
