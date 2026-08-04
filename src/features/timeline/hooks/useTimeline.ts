@@ -2,11 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 
 import { useAuthStore } from "@/features/auth/store/authStore";
-import {
-  getTimelines,
-  getTreeThumbnails,
-  TIMELINE_PAGE_SIZE,
-} from "../api/timelineApi";
+import { getTimelines, TIMELINE_PAGE_SIZE } from "../api/timelineApi";
 import type {
   TimelineGroup,
   TimelineRecord,
@@ -23,7 +19,7 @@ export const timelineKeys = {
   all: ["timeline"] as const,
   list: (page: number, size: number) => ["timeline", "list", page, size] as const,
   detail: (timelineId: string) => ["timeline", "detail", timelineId] as const,
-  thumbnails: () => ["timeline", "thumbnails"] as const,
+  // thumbnails 키는 지웠다 — 목록이 사진 URL 을 직접 준다(#123).
   images: (timelineId: string) => ["timeline", "images", timelineId] as const,
 };
 
@@ -94,13 +90,17 @@ interface UseTimelineOptions {
 }
 
 /**
- * 타임라인 목록 조회 훅. `GET /timelines`
+ * 타임라인 목록 조회 훅. `GET /trees` (통합 전에는 `GET /timelines` — #123)
  *
  * 화면은 날짜별 그룹을 요구하므로 여기서 묶는다.
  *
- * ⚠️ 검색·정렬은 서버가 아니라 여기서 한다. `GET /timelines` 의 쿼리 파라미터가
- * `page`·`size` 뿐이라 서버에 넘길 수단이 없다. 따라서 받아온 페이지 안에서만
- * 동작하며, 기록이 한 페이지를 넘어가면 뒤쪽은 검색에 걸리지 않는다.
+ * 🔴 **날짜가 오지 않으면 그룹이 무너진다.** `GET /trees` 아이템에는 날짜 필드가 없어
+ * `recordedAt` 이 빈 문자열로 떨어질 수 있다(`timelineApi` 상단 주석). 그러면 모든 기록이
+ * 한 덩어리로 묶인다. 백엔드에 `visitedAt`(최소 `createdAt`) 을 요청해 둘 것.
+ *
+ * ⚠️ 검색·정렬은 서버가 아니라 여기서 한다. 쿼리 파라미터가 `page`·`size` 뿐이라
+ * 서버에 넘길 수단이 없다. 따라서 받아온 페이지 안에서만 동작하며, 기록이 한 페이지를
+ * 넘어가면 뒤쪽은 검색에 걸리지 않는다.
  * 백엔드에 `keyword`·`sort` 가 생기면 `timelineApi` 로 옮겨야 한다.
  */
 export const useTimeline = ({
@@ -111,15 +111,15 @@ export const useTimeline = ({
 }: UseTimelineOptions = {}): UseTimelineResult => {
   const accessToken = useAuthStore((state) => state.accessToken);
   /**
-   * 토큰이 없으면 부르지 않는다. `GET /timelines` 에 `AccessTokenGuard` 가 걸려
-   * 있어 빈 토큰으로 보내면 반드시 401 이 떨어진다 — 실패가 뻔한 요청이다.
+   * 토큰이 없으면 부르지 않는다. `GET /trees` 에 인증이 걸려 있어 빈 토큰으로
+   * 보내면 반드시 401 이 떨어진다 — 실패가 뻔한 요청이다.
    * (`ProtectedRoute` 가 토큰을 보장하니 실제로는 닿기 어려운 경로다)
    */
   const isEnabled = Boolean(accessToken);
 
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: timelineKeys.list(page, size),
-    queryFn: () => getTimelines(accessToken ?? "", { page, size }),
+    queryFn: () => getTimelines({ page, size }),
     enabled: isEnabled,
     /**
      * 4xx 는 재시도하지 않는다. 401(토큰 무효)·400(잘못된 요청)은 같은 요청을
@@ -136,29 +136,11 @@ export const useTimeline = ({
     },
   });
 
-  /**
-   * 목록 썸네일. 타임라인 응답에 사진이 없어 나무 목록에서 가져와 잇는다
-   * (자세한 사정은 `getTreeThumbnails` 주석).
-   *
-   * 사진이 없어도 목록 자체는 읽을 수 있어야 하므로 실패해도 에러로 올리지
-   * 않는다 — 썸네일만 기본 이미지로 떨어진다. presigned URL 이 24시간짜리라
-   * `staleTime` 은 그보다 훨씬 짧게 둔다.
+  /*
+   * 썸네일 조인이 사라졌다 — 목록(`GET /trees`)이 `imageUrl` 을 직접 준다(#123).
+   * 예전에는 타임라인 응답에 사진이 아예 없어 나무 목록을 따로 받아 `treeId` 로 이었다.
    */
-  const { data: thumbnails } = useQuery({
-    queryKey: timelineKeys.thumbnails(),
-    queryFn: getTreeThumbnails,
-    enabled: isEnabled,
-    staleTime: 1000 * 60 * 10,
-    retry: false,
-  });
-
-  const withThumbnails = (data?.records ?? []).map((record) => {
-    const joined = record.treeId != null ? thumbnails?.get(record.treeId) : undefined;
-
-    return joined ? { ...record, thumbnailUrl: joined } : record;
-  });
-
-  const visible = sortRecords(searchRecords(withThumbnails, keyword), sort);
+  const visible = sortRecords(searchRecords(data?.records ?? [], keyword), sort);
 
   return {
     groups: groupByDate(visible, sort),

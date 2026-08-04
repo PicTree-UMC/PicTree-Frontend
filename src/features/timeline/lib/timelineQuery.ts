@@ -28,6 +28,10 @@ export type TimelineSort = (typeof TIMELINE_SORTS)[number]["key"];
  *   고칠 때마다 순서가 튄다.
  *
  * 그룹 머리글도 같은 값을 써야 머리글 순서가 어긋나지 않는다.
+ *
+ * 🔴 **2026-08-04 — `visitedAt` 자체가 사라졌다.** timeline 이 tree 로 합쳐졌는데(#123)
+ * `Tree` 에는 방문일이 없다. 지금 `recordedAt` 에는 등록 시각이 들어오거나(상세) 아예
+ * 비어 있다(목록). 위 구분은 백엔드가 `visitedAt` 을 다시 줄 때 그대로 살아난다.
  */
 export const getSortDate = (record: TimelineRecord): string =>
   record.recordedAt;
@@ -35,7 +39,7 @@ export const getSortDate = (record: TimelineRecord): string =>
 /**
  * 장소명·한줄평으로 거른다.
  *
- * ⚠️ 서버가 검색을 지원하지 않아(`GET /timelines` 의 쿼리는 `page`·`size` 뿐)
+ * ⚠️ 서버가 검색을 지원하지 않아(`GET /trees` 의 쿼리는 `page`·`size` 뿐)
  * 받아온 페이지 안에서만 찾는다. 기록이 한 페이지를 넘어가면 뒤쪽은 걸리지 않으므로,
  * 백엔드에 검색 파라미터가 생기면 이 함수는 서버 호출로 대체해야 한다.
  */

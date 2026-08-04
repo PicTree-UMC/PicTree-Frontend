@@ -27,10 +27,12 @@ interface Props {
 /**
  * 기록 수정 모달. 시안(`기록 수정`) 기준.
  *
- * ⚠️ 기분 이모지는 화면에만 있고 저장되지 않는다. `PATCH /timelines/{id}` 의
- * 요청 필드는 treeId·title·content·category·visitedAt 뿐이라 담아 보낼 자리가 없다
- * (서버의 `mood` 는 나무에 붙어 있고 타임라인 수정으로는 못 건드린다).
- * 백엔드에 필드가 생기면 `onSave` 에 얹어 보내면 된다.
+ * 기분 이모지는 아직 화면에만 있고 저장되지 않는다.
+ *
+ * ⚠️ **다만 이유가 바뀌었다.** 예전에는 `PATCH /timelines/{id}` 에 담을 자리가 아예
+ * 없어서였는데, 통합(#123) 뒤 수정이 `PATCH /trees/{treeId}` 로 바뀌면서 **`mood` 를
+ * 보낼 수 있게 됐다** (`UpdateTimelineRequest.mood`). 이제는 화면에 이모지 선택 UI 를
+ * 붙이고 `onSave` 에 얹기만 하면 된다 — 막는 것은 서버가 아니라 시안이다.
  */
 export function TimelineEditModal({ record, isSaving = false, onClose, onSave }: Props) {
   const [title, setTitle] = useState(record.placeName);
