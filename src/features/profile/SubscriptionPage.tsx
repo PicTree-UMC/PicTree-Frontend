@@ -37,13 +37,6 @@ const BENEFIT_ORDER = [
   FEATURE_CODE.adFree,
 ];
 
-/** 요금제를 아직 못 받았을 때 자리를 지키는 시안 값. 받아오면 즉시 대체된다. */
-const FALLBACK_BENEFITS = [
-  { icon: gisRouteIcon, title: "20GB 대용량 업그레이드" },
-  { icon: menuBookIcon, title: "AI 블로그 50회 자동 생성" },
-  { icon: adsOffIcon, title: "광고 제거" },
-];
-
 /** 혜택 한 줄 문구. 코드마다 어미가 달라 서버 name 을 그대로 쓸 수 없다. */
 const benefitTitle = (feature: PlanFeatureDto): string => {
   if (feature.code === FEATURE_CODE.photoStorage && feature.limitValue != null) {
@@ -75,7 +68,15 @@ export function SubscriptionPage() {
    * 한 화면에 뜨므로 여기서는 구독 응답만 쓴다.
    */
   const { data: subscription, isPending, isError, refetch } = useMySubscription();
-  const { data: plans } = useSubscriptionPlans();
+  /*
+   * 혜택 문구는 이 응답이 유일한 출처다. 실패를 시안 값으로 덮으면 실제와 다른
+   * 용량·횟수를 보여주게 되므로, 상태를 받아 화면에서 갈라 그린다.
+   */
+  const {
+    data: plans,
+    isPending: isPlansPending,
+    refetch: refetchPlans,
+  } = useSubscriptionPlans();
   // 카드 표시는 구독과 별개 소스(GET /billing-keys)라 함께 조회한다.
   const { data: billingKeys } = useBillingKeys();
   const cancelMutation = useCancelSubscription();
@@ -116,7 +117,7 @@ export function SubscriptionPage() {
           icon: BENEFIT_ICON[feature.code],
           title: benefitTitle(feature),
         }))
-    : FALLBACK_BENEFITS;
+    : [];
 
   const activeCard =
     billingKeys?.find((key) => key.status === "ACTIVE") ?? billingKeys?.[0];
@@ -220,10 +221,30 @@ export function SubscriptionPage() {
 
         <StorageCard usedBytes={null} totalBytes={storageLimit} />
 
+        {/*
+          혜택 문구는 서버 요금제가 유일한 출처다. 못 받았으면 사유를 알리고
+          다시 시도를 준다 — 시안 값으로 채우면 실제와 다른 용량·횟수를
+          보여주게 되고, 사용자는 그게 틀렸다는 걸 알 방법이 없다.
+        */}
         <section className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-1">
-          {benefits.map((benefit) => (
-            <BenefitRow key={benefit.title} {...benefit} />
-          ))}
+          {isPlansPending ? (
+            <p className="py-6 text-center text-sm text-[#60655C]">
+              요금제를 불러오는 중...
+            </p>
+          ) : benefits.length === 0 ? (
+            <div className="py-6 text-center">
+              <p className="text-sm text-[#FF5858]">요금제를 불러오지 못했어요.</p>
+              <button
+                type="button"
+                onClick={() => refetchPlans()}
+                className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-xs font-bold text-white"
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : (
+            benefits.map((benefit) => <BenefitRow key={benefit.title} {...benefit} />)
+          )}
         </section>
 
         {!subscription || isFree ? (
