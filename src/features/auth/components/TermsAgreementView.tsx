@@ -47,15 +47,22 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
    * 동의 저장 후 다음 단계로 넘어간다. 저장이 실패하면 넘어가지 않는다 —
    * 기록이 서버에 남지 않은 채 가입이 끝나면 무엇에 동의했는지 확인할 수 없다.
    *
-   * 서버 약관 목록이 비어 로컬 문구로 폴백한 경우에는 보낼 id 가 없다. 그때는
-   * 저장을 건너뛰고 진행한다 — 없는 id 를 지어내 보내면 404 만 받고, 가입 자체를
-   * 막는 편이 더 나쁘다. (약관이 적재되면 이 분기는 사라진다)
+   * ⚠️ **약관을 못 불러왔으면 진행하지 않는다.** 그 상태로 통과시키면 동의
+   * 기록 없이 가입이 끝난다. (버튼도 `canStart` 로 막혀 있지만, 여기서 한 번
+   * 더 본다 — 통과하면 되돌릴 수 없는 일이라서다.)
+   *
+   * 반대로 목록은 받았는데 보낼 id 가 없는 경우 — 선택 약관뿐이고 아무것도
+   * 체크하지 않은 상황 — 는 정상이므로 저장만 건너뛰고 넘어간다. 서버가
+   * `@ArrayNotEmpty` 로 빈 배열을 거부하기 때문에 부를 수도 없다.
    */
   const handleStart = () => {
+    if (terms.length === 0) {
+      return;
+    }
+
     const agreedIds = terms
       .filter((term) => checkedTerms.has(term.key))
-      .map((term) => term.termId)
-      .filter((id): id is number => id !== null);
+      .map((term) => term.termId);
 
     if (agreedIds.length === 0) {
       onAgree();
@@ -144,9 +151,9 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
                   </button>
                   {expanded ? (
                     /*
-                      서버 응답에는 설명이 없다. 유형별 로컬 문구가 있으면 그걸 쓰고,
-                      없으면 약관 전문 링크로 대신한다 — 펼쳤는데 아무것도 없으면
-                      무엇에 동의하는지 알 수 없다.
+                      서버가 주는 `summary` 를 그대로 보여준다. 없으면 약관 전문
+                      링크로 대신한다 — 펼쳤는데 아무것도 없으면 무엇에 동의하는지
+                      알 수 없다. (현재 실서버는 5개 모두 summary 를 채워 준다)
                     */
                     term.description ? (
                       <p className="mt-1 whitespace-pre-line font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-[#111]">

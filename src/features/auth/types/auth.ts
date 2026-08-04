@@ -15,13 +15,6 @@ export type TermId =
   | 'push'
   | 'marketing';
 
-export type AgreementTerm = {
-  id: TermId;
-  title: string;
-  description: string;
-  required: boolean;
-};
-
 export type CurrentPlan = 'FREE' | 'PREMIUM';
 
 export type AuthUser = {
