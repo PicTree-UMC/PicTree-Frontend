@@ -18,7 +18,7 @@ export function PlanCard({ plan, selected, badge, onClick }: Props) {
     <button className={`relative flex h-[75px] w-full items-center rounded-xl border-2 bg-white px-[10px] text-left ${selected ? 'border-[#788f4a]' : 'border-[#c5d89d]'}`} onClick={onClick} aria-pressed={selected}>
       {badge && <em className={`absolute right-2 top-1 rounded-full px-2 py-0.5 text-[9px] not-italic text-white ${badge === '최대' ? 'bg-[#788f4a]' : 'bg-[#e7bd5b]'}`}>{badge}</em>}
       <span className={`mr-3 grid h-[22px] w-[22px] place-items-center rounded-full border-2 ${selected ? 'border-[#5b6b38]' : 'border-[#788f4a]'}`}>{selected && <i className="h-3 w-3 rounded-full bg-[#5b6b38]" />}</span>
-      <span className="min-w-0"><strong className="whitespace-nowrap text-[15px]">{details.shortName} · {details.storage} · AI 블로그 {details.generations}</strong><small className="block truncate text-[9px] text-[#999]">{details.description}</small></span>
+      <span className="min-w-0 flex-1"><strong className="block truncate text-[15px]">{details.shortName} · {details.storage} · AI 블로그 {details.generations}</strong><small className="block truncate text-[9px] text-[#999]">{details.description}</small></span>
       <strong className="ml-auto shrink-0 whitespace-nowrap text-[14px]">{details.price} / 월</strong>
     </button>
   );
