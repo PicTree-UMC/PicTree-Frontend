@@ -215,6 +215,16 @@ export function ProfilePage() {
           </button>
         </div>
 
+        {/* 알림 기록 — 알림 카드 바로 아래에 둔다. 같은 주제라 붙여 읽힌다. */}
+        <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-6 py-2">
+          <MenuRow
+            icon=""
+            title="알림 기록"
+            subtitle="받은 알림을 다시 확인해요"
+            onClick={() => navigate(ROUTES.alertLogs)}
+          />
+        </div>
+
         {/* 계정 섹션 */}
         <section>
           <h2 className="mb-2 pl-1 text-[15px] font-semibold text-[#9CAB84]">
