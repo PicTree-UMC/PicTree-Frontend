@@ -21,7 +21,7 @@ const MAX_PLACES = 20;
  *
  * | | ① 새 동선 만들기 `/journey/view` | ② 저장된 동선 보기 `/journey/view/:routeId` |
  * |---|---|---|
- * | 출처 | `/trees` ⋈ `/timelines` 중 고른 날짜 | `GET /routes/{id}` 한 번 |
+ * | 출처 | `GET /trees` 중 고른 날짜 | `GET /routes/{id}` 한 번 |
  * | 날짜 관리·캘린더 | 있음 | 없음 (동선이 날짜를 이미 들고 있다) |
  * | 동선저장 | 있음 (`POST /routes`) | 없음 |
  *

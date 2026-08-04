@@ -6,19 +6,23 @@ import { toDateKey } from '../lib/calendar';
 /**
  * 새 동선을 만들 때 고를 수 있는 장소 목록.
  *
- * **한 API 로는 안 나온다.** 필요한 건 `좌표 + 이름 + 방문 날짜` 인데,
- * - `GET /trees` 는 좌표·이름은 주지만 **날짜가 없고**,
- * - `GET /timelines` 는 방문일(`visitedAt`)·`treeId` 는 주지만 **좌표가 없다**.
+ * **2026-08-04 — `/trees` ⋈ `/timelines` 조인이 사라졌다.** 백엔드가 timeline 을 tree 로
+ * 합치면서(#123) `/timelines` 라우트 자체가 없어졌다. 예전에는 좌표(`/trees`)와
+ * 방문일(`/timelines`)이 서로 다른 API 에 나뉘어 있어 `treeId` 로 이어 붙여야 했다.
+ * 이제 나무 하나가 곧 방문 하나라 **한 번만 부르면 된다.**
  *
- * 그래서 `treeId` 로 조인한다. `GET /calendar` 로 대신할 수 없는 이유는 그쪽 `level` 이
- * 개수가 아니라 0~4 잔디 농도라 3곳인지 4곳인지 구분이 안 되기 때문이다 — 캘린더가
- * `n곳` 을 찍고 하단바가 `n/20개` 한도를 세는 이상 정확한 개수가 필요하다.
+ * 화면설계서 1번의 '나무를 심은 날짜만 선택 가능' 도 이제 말 그대로가 됐다 —
+ * 예전에는 '방문 기록이 있는 날짜' 로 한 겹 번역해야 했다.
  *
- * 백엔드가 `/calendar` 에 `count` 를 얹어주면 이 조인은 통째로 사라질 수 있다(요청해둘 것).
+ * 🔴 **다만 `GET /trees` 가 날짜를 주지 않으면 후보가 통째로 비어 버린다.**
+ * 이 화면은 "날짜를 고르면 그날의 장소를 그린다" 가 전부라 날짜 없는 장소는 쓸 데가 없다.
+ * 2026-08-04 스웨거 기준 목록 아이템에 날짜 필드가 없다 — 백엔드에 `visitedAt` 을
+ * 요청해 둔 상태다(HANDOFF 1-1절 1번). 아래는 `visitedAt` 이든 `createdAt` 이든
+ * **오는 대로 받아 쓰도록** 해 뒀다. 필드가 붙는 순간 이 파일을 안 고쳐도 살아난다.
  *
- * ⚠️ **`home/treesApi` 와 `timeline/timelineApi` 를 재사용하지 않는다.** 그쪽은 DEV 에서
- * 호출이 실패하면 목데이터로 폴백하는데, 여기서 나온 장소는 그대로 `POST /routes` 의
- * `treeId` 가 된다 — 가짜 id 가 섞이면 저장이 400 으로 떨어지고 원인도 안 보인다.
+ * ⚠️ **`home/treesApi` 를 재사용하지 않는다.** 그쪽은 DEV 에서 호출이 실패하면 목데이터로
+ * 폴백하는데, 여기서 나온 장소는 그대로 `POST /routes` 의 `treeId` 가 된다 —
+ * 가짜 id 가 섞이면 저장이 400 으로 떨어지고 원인도 안 보인다.
  */
 
 /** 서버가 한 번에 주는 최대치. 지도(`treesApi`)가 이미 100 으로 부르고 있다. */
@@ -37,25 +41,17 @@ interface TreeItem {
   latitude: number;
   longitude: number;
   mood: string | null;
+  /**
+   * 방문 일시. **아직 서버가 안 준다**(위 🔴 주석). 붙는 날 그대로 쓰인다.
+   * `createdAt` 은 차선책 — 등록 시각이지만 촬영과 등록이 같은 순간이라 실용상 같다.
+   */
+  visitedAt?: string | null;
+  createdAt?: string | null;
 }
 
 interface TreeListData {
   items: TreeItem[] | null;
   total: number;
-}
-
-interface TimelineItem {
-  id: number;
-  treeId: number | null;
-  title: string;
-  /** ISO 8601 방문 일시. 날짜만 쓰지만 서버는 시각까지 준다. */
-  visitedAt: string | null;
-}
-
-interface TimelineListData {
-  items: TimelineItem[] | null;
-  totalElements: number;
-  hasNext: boolean;
 }
 
 /** ISO 일시 → 'YYYY-MM-DD'. **로컬 기준**이다 — 캘린더도 로컬 Date 로 칸을 만든다. */
@@ -89,57 +85,29 @@ const fetchAllTrees = async (): Promise<TreeItem[]> => {
   return trees;
 };
 
-const fetchAllTimelines = async (): Promise<TimelineItem[]> => {
-  const records: TimelineItem[] = [];
-  const seen = new Set<number>();
-
-  for (let page = 1; page <= MAX_PAGES; page += 1) {
-    const { data } = await httpClient.get<ApiResponse<TimelineListData>>('/timelines', {
-      params: { page, size: PAGE_SIZE },
-    });
-
-    const items = data.data?.items ?? [];
-    const fresh = items.filter((item) => !seen.has(item.id));
-    fresh.forEach((item) => {
-      seen.add(item.id);
-      records.push(item);
-    });
-
-    if (fresh.length === 0 || !data.data?.hasNext) break;
-  }
-
-  return records;
-};
-
 /**
- * 방문 기록이 있는 장소들을 방문 순서대로. 배열 순서가 곧 동선의 기본 순서다.
+ * 방문한 장소들을 방문 순서대로. 배열 순서가 곧 동선의 기본 순서다.
  *
- * **기준은 나무가 아니라 방문 기록이다** — 같은 장소를 다른 날 또 갔으면 두 번 나와야
- * 하고(날짜가 다르니 다른 점이다), 방문 기록이 없는 나무는 찍을 날짜가 없어 빠진다.
- * 화면설계서 1번의 '나무를 심은 날짜만 선택 가능'이 여기서 '방문 기록이 있는 날짜'가 된다
- * — 카메라 저장이 나무와 타임라인을 함께 만들면 둘은 같은 뜻이 된다(카메라는 아직 미연동).
+ * 날짜가 없는 장소는 뺀다 — 날짜별로 그리는 화면이라 찍을 칸이 없다.
+ * (통합 전에는 '나무에 연결되지 않은 기록' 을 같은 이유로 뺐다. 그런 기록은 이제 없다.)
  */
 export const getRoutePlaceCandidates = async (): Promise<RoutePlace[]> => {
-  const [trees, timelines] = await Promise.all([fetchAllTrees(), fetchAllTimelines()]);
-  const treeById = new Map(trees.map((tree) => [tree.treeId, tree]));
+  const trees = await fetchAllTrees();
 
-  return timelines
-    .flatMap((record) => {
-      const tree = record.treeId === null ? undefined : treeById.get(record.treeId);
-      const date = record.visitedAt ? visitDateKey(record.visitedAt) : '';
-      // 나무에 연결되지 않은 기록은 좌표가 없어 지도에 못 찍는다(타임라인은 나무 없이도 쓴다).
-      if (!tree || !date) return [];
+  return trees
+    .flatMap((tree) => {
+      const visitedAt = tree.visitedAt ?? tree.createdAt ?? '';
+      const date = visitedAt ? visitDateKey(visitedAt) : '';
+      if (!date) return [];
 
-      return [{ tree, date, visitedAt: record.visitedAt as string, name: record.title }];
+      return [{ tree, date, visitedAt }];
     })
     .sort((a, b) => a.visitedAt.localeCompare(b.visitedAt))
     .map(
       ({ tree, date }, index): RoutePlace => ({
-        // 같은 나무를 두 번 방문하면 treeId 가 겹친다 → 화면용 키는 순서로 만든다.
+        // 화면용 키. treeId 를 그대로 쓰지 않는 건 정렬 순서가 곧 동선 순번이기 때문이다.
         id: index,
         treeId: tree.treeId,
-        // 이름은 나무 쪽을 쓴다. 타임라인 title 은 사용자가 따로 고칠 수 있어 지도의
-        // 다른 화면(홈)과 어긋날 수 있다.
         name: tree.name,
         lat: tree.latitude,
         lng: tree.longitude,
