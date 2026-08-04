@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useKakaoMap } from '../home/hooks/useKakaoMap';
 import { useRoutePath } from './hooks/useRoutePath';
@@ -30,6 +30,12 @@ import { ROUTES } from '@/shared/constants/routes';
  * **화면 위에는 뒤로가기(② 는 제목까지)만 띄우고, 조작은 전부 하단 시트에 모았다** —
  * 날짜 칩·장소 칩·동선저장이 한 덩어리로 있고 시트째 접어 지도를 넓게 볼 수 있다.
  */
+/**
+ * 겹친 장소를 시트에서 짚어주는 시간. 펼쳐지고 스크롤이 멎기까지가 0.5초 남짓이라
+ * 그보다 넉넉해야 하고, 다음 조작을 방해할 만큼 오래 남아 있어도 안 된다.
+ */
+const HIGHLIGHT_MS = 3000;
+
 export function RouteViewPage() {
   const navigate = useNavigate();
   const { containerRef, map } = useKakaoMap();
@@ -116,7 +122,25 @@ export function RouteViewPage() {
     [dates, places, disabledIds],
   );
 
-  useRoutePath(map, places, disabledIds);
+  /*
+    지도에서 겹쳐서 못 쪼개지는 묶음을 탭했을 때 시트가 짚어줄 장소들.
+
+    지도가 "여기선 더 확대해도 안 갈라진다"고 답하는 자리라, 그냥 두면 눌러도 아무 일이
+    없어 고장처럼 보인다. 겹친 장소들은 시트 목록에 번호대로 이미 다 있으니 거기로 데려간다.
+
+    잠깐 보였다 사라진다 — 계속 남으면 사용자가 지우는 방법을 찾아야 하는 상태가 하나 는다.
+    같은 묶음을 다시 탭하면 배열이 새로 와서(내용이 같아도) 다시 짚어준다.
+  */
+  const [highlightedPlaceIds, setHighlightedPlaceIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (highlightedPlaceIds.length === 0) return;
+
+    const timer = setTimeout(() => setHighlightedPlaceIds([]), HIGHLIGHT_MS);
+    return () => clearTimeout(timer);
+  }, [highlightedPlaceIds]);
+
+  useRoutePath(map, places, disabledIds, setHighlightedPlaceIds);
 
   /**
    * 장소 칩 탭(설계서 7번). 그 장소를 껐다 켜고, 켜진 것만 세어 번호를 다시 매긴다.
@@ -286,6 +310,7 @@ export function RouteViewPage() {
           // 들고 있어서, 지도 반대편 끝에 떨어져 있는 것보다 맥락이 이어진다.
           onSave={isSavedView ? undefined : handleSave}
           onTogglePlace={togglePlace}
+          highlightedPlaceIds={highlightedPlaceIds}
         />
       </div>
 

@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { RoutePlace } from '../types/route';
 import { formatDateLabel } from '../lib/formatDate';
 import { RouteDateChips } from './RouteDateChips';
@@ -23,6 +23,12 @@ interface RoutePlaceStripProps {
    */
   onSave?: () => void;
   onTogglePlace: (placeId: number) => void;
+  /**
+   * 지금 짚어줄 장소들. 지도에서 **겹쳐서 못 쪼개지는 묶음**을 탭했을 때 채워진다 —
+   * 그 자리에선 더 확대해도 안 갈라지므로, 대신 목록에서 어느 장소들인지 보여준다.
+   * 새 배열이 오면(같은 장소를 다시 탭해도) 시트가 펼쳐지고 첫 줄로 스크롤한다.
+   */
+  highlightedPlaceIds?: readonly number[];
 }
 
 /** 사진을 안 올린 장소. 홈 마커·`RoutePlacePreview` 와 같은 기본 아이콘을 쓴다. */
@@ -36,6 +42,9 @@ const FALLBACK_ICON = '/markers/tree.svg';
  * 손을 떼면 사라진다).
  */
 const LIST_VIEWPORT_PX = 180;
+
+/** 짚어준 줄 위에 남기는 여백. 위에 이전 줄이 살짝 걸쳐 보여야 목록 중간이라는 게 읽힌다. */
+const HIGHLIGHT_SCROLL_MARGIN_PX = 12;
 
 /** 손가락이 이만큼 세로로 움직이면 탭이 아니라 끌기로 본다. */
 const DRAG_THRESHOLD_PX = 8;
@@ -122,10 +131,37 @@ export function RoutePlaceStrip({
   maxPlaces,
   onSave,
   onTogglePlace,
+  highlightedPlaceIds,
 }: RoutePlaceStripProps) {
   const activeCount = places.filter((place) => !disabledPlaceIds.has(place.id)).length;
   const [collapsed, setCollapsed] = useState(false);
   const drag = useCollapseDrag(setCollapsed);
+  const listRef = useRef<HTMLUListElement>(null);
+  const highlighted = new Set(highlightedPlaceIds ?? []);
+
+  /*
+    짚어줄 장소가 생기면 시트를 펼치고 그 줄까지 굴려서 보여준다.
+
+    접혀 있으면 목록 자체가 안 보이므로 펴는 게 먼저다 — 접기는 사용자가 지도를 넓게
+    보려고 한 선택이지만, 지도가 "여기선 더 못 보여준다"고 답한 참이라 시트가 이어받는다.
+
+    ⚠️ `scrollIntoView` 를 쓰지 않는다 — 조상 스크롤 컨테이너까지 함께 움직일 수 있다.
+    이 목록의 `scrollTop` 만 건드린다(`JourneyChips` 와 같은 이유).
+    위치는 `offsetTop` 이 아니라 rect 차이로 잰다 — 줄(`li`)이 `relative` 라 `offsetParent`
+    가 목록이 아니어서 `offsetTop` 이 엉뚱한 기준을 가리킨다.
+  */
+  useEffect(() => {
+    if (!highlightedPlaceIds || highlightedPlaceIds.length === 0) return;
+
+    setCollapsed(false);
+
+    const list = listRef.current;
+    const row = list?.querySelector<HTMLElement>(`[data-place-id="${highlightedPlaceIds[0]}"]`);
+    if (!list || !row) return;
+
+    const top = row.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+    list.scrollTo({ top: Math.max(top - HIGHLIGHT_SCROLL_MARGIN_PX, 0), behavior: 'smooth' });
+  }, [highlightedPlaceIds]);
 
   // 번호는 켜진 장소에만 붙는다. map 안에서 증가시키므로 렌더 순서대로 1,2,3… 이 된다.
   let sequence = 0;
@@ -220,6 +256,7 @@ export function RoutePlaceStrip({
             초록 시트 오른쪽에 상시로 붙어 있으면 그것만 튄다.
           */
           <ul
+            ref={listRef}
             className="-mx-5 mt-3 overflow-y-auto overscroll-contain px-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{ maxHeight: LIST_VIEWPORT_PX }}
           >
@@ -241,7 +278,16 @@ export function RoutePlaceStrip({
                 next.date === place.date;
 
               return (
-                <li key={place.id} className="relative">
+                // 짚어준 줄은 GREEN-300 띠를 깐다. 흰 바닥과 확실히 갈리면서, INK 글자가
+                // 그 위에서 7.9:1 이라 읽는 데 지장이 없다. 사라질 때 부드럽게 빠지도록
+                // `transition-colors` 를 걸어둔다 — 띠가 툭 없어지면 뭔가 고장 난 것처럼 보인다.
+                <li
+                  key={place.id}
+                  data-place-id={place.id}
+                  className={`relative transition-colors duration-500 ${
+                    highlighted.has(place.id) ? 'rounded-[14px] bg-pictree-300' : ''
+                  }`}
+                >
                   {linked && (
                     <span
                       aria-hidden

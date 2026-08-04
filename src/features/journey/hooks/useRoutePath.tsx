@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { clusterByPixelDistance, findSplitLevel } from '@/shared/lib/markerCluster';
 import { ClusterMarker } from '@/shared/components';
@@ -51,7 +51,22 @@ export function useRoutePath(
   map: kakao.maps.Map | null,
   points: RoutePlace[],
   disabledIds: ReadonlySet<number>,
+  /**
+   * 최대 줌인까지 확대해도 안 쪼개지는 묶음을 탭했을 때. 겹쳐 있는 장소 id 들을 넘긴다.
+   * 지도에서는 더 보여줄 게 없으니 화면 쪽(하단 시트)이 대신 짚어주라는 신호다.
+   */
+  onOverlappingTap?: (placeIds: number[]) => void,
 ) {
+  /*
+    콜백을 ref 에 담아 쓴다. 아래 effect 의 의존성에 넣으면 부모가 매 렌더 새 함수를
+    넘길 때마다 마커를 전부 지웠다 다시 그리게 된다(등장 애니메이션까지 다시 탄다).
+    탭 시점에 최신 콜백만 있으면 되므로 ref 로 충분하다.
+  */
+  const onOverlappingTapRef = useRef(onOverlappingTap);
+  useEffect(() => {
+    onOverlappingTapRef.current = onOverlappingTap;
+  }, [onOverlappingTap]);
+
   useEffect(() => {
     if (!map) return;
 
@@ -108,13 +123,17 @@ export function useRoutePath(
      * 알 수 없다. 지도를 실제로 움직이지 않고 배율만 곱해 미리 판정한 뒤 그 레벨로 간다.
      * `anchor` 로 묶음 중심을 고정해 그 지점을 향해 확대된다.
      *
-     * ⚠️ 최대 줌인까지 가도 안 쪼개지면(좌표가 사실상 겹친 경우) **아무것도 하지 않는다** —
-     * 확대해봐야 겹친 그대로다. 홈 지도는 이때 상세 뷰어를 열지만 이 화면엔 뷰어가 없고,
-     * 겹친 장소들은 어차피 하단 시트 목록에 번호대로 다 있다.
+     * ⚠️ 최대 줌인까지 가도 안 쪼개지면(좌표가 사실상 겹친 경우) **줌을 건드리지 않는다** —
+     * 확대해봐야 겹친 그대로다. 대신 `onOverlappingTap` 으로 넘겨 하단 시트가 그 장소들을
+     * 짚게 한다. 홈 지도는 이 자리에서 상세 뷰어를 열지만 이 화면엔 뷰어가 없고, 겹친
+     * 장소들은 시트 목록에 번호대로 이미 다 있어서 거기로 데려다주는 게 맞다.
      */
     const zoomIntoCluster = (cluster: { lat: number; lng: number; items: RoutePlace[] }) => {
       const splitLevel = findSplitLevel(map, cluster.items, readClusterDistance(), MIN_ZOOM_LEVEL);
-      if (splitLevel === null) return;
+      if (splitLevel === null) {
+        onOverlappingTapRef.current?.(cluster.items.map((place) => place.id));
+        return;
+      }
 
       map.setLevel(splitLevel, {
         anchor: new window.kakao.maps.LatLng(cluster.lat, cluster.lng),
