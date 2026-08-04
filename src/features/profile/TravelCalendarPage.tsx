@@ -8,8 +8,16 @@ import treeIcon from "./assets/icons/tree.svg";
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 
 export function TravelCalendarPage() {
-  const [year, setYear] = useState(2026);
-  const [month, setMonth] = useState(4); // 1~12
+  /*
+   * 들어오면 이번 달이 보인다.
+   *
+   * 초기값을 렌더마다 새로 만들지 않도록 함수형 초기화를 쓴다. `new Date()` 를
+   * 그냥 넘기면 매 렌더 호출되는데, 어차피 첫 렌더에만 쓰이므로 낭비다.
+   *
+   * ⚠️ 예전에는 2026·4 로 박혀 있었다. 그래서 8월에 들어가도 4월이 열렸다.
+   */
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  const [month, setMonth] = useState(() => new Date().getMonth() + 1); // 1~12
 
   // 달을 넘길 때마다 그 달치를 받는다 (queryKey 에 연·월이 들어 있어 캐시가 산다)
   const { levelByDate, isPending, isError, refetch } = useTravelCalendar(year, month);
