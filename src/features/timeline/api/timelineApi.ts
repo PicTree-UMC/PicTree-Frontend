@@ -149,8 +149,7 @@ export const getTimelineImages = async (treeId: number): Promise<TimelineImage[]
  * 서버가 받는 필드는 `name·description·address·mood·defaultImage` 다.
  * 화면 용어를 여기서 서버 용어로 옮긴다 — `placeName → name`, `comment → description`.
  *
- * ⚠️ **`category` 를 보낼 자리가 없어졌다.** `Tree` 에 그 필드가 없다(2026-08-04 스웨거).
- * 분류를 계속 쓸 것인지 백엔드에 확인이 필요하다(HANDOFF 1-0절).
+ * 분류(`category`)는 보내지 않는다 — 서버에서 개념이 없어졌고 되살리지 않기로 했다.
  *
  * 반환값은 수정한 나무의 id — 통합 전 `updateTimeline` 이 기록 id 를 돌려주던 자리다.
  * 서버는 `data: null` 을 주므로 인자를 그대로 되돌린다.

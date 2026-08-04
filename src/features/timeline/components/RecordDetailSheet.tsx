@@ -19,14 +19,6 @@ const formatFull = (iso?: string | null): string | null => {
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${time}`;
 };
 
-const CATEGORY_LABEL: Record<string, string> = {
-  VISIT: '방문',
-  FOOD: '음식',
-  SHOPPING: '쇼핑',
-  ACTIVITY: '활동',
-  ETC: '기타',
-};
-
 interface Props {
   record: TimelineRecord;
   onClose: () => void;
@@ -65,7 +57,6 @@ export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) 
 
   const visitedAt = formatFull(record.recordedAt);
   const createdAt = formatFull(record.createdAt);
-  const category = record.category ? (CATEGORY_LABEL[record.category] ?? record.category) : null;
   const treeName = detail?.treeName ?? null;
 
   return (
@@ -88,7 +79,6 @@ export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) 
       <div className="mt-4 border-t border-[#E6E1CC] pt-3">
         {visitedAt && <InfoRow label="방문" value={visitedAt} />}
         {createdAt && <InfoRow label="등록" value={createdAt} />}
-        {category && <InfoRow label="분류" value={category} />}
         {treeName && <InfoRow label="나무" value={treeName} />}
       </div>
 

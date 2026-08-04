@@ -1,17 +1,11 @@
 export type PlanType = "free" | "premium";
 
-/**
- * 기록 분류.
- *
- * ⚠️ **2026-08-04 — 서버에 이 개념이 없어졌다.** `/timelines` 가 지워지면서
- * `TimelineCategory` enum 도 함께 사라졌고 `Tree` 에는 대응 필드가 없다(#123).
- * 지금은 어떤 응답에서도 분류가 오지 않는다 — 상세 시트의 '분류' 줄은 그래서 안 뜬다.
- *
- * 되살릴지 정해지면(HANDOFF 1-0절) 이 목록을 그대로 쓰고, 안 쓸 거면 이 파일에서 지운다.
+/*
+ * 기록 분류(`TimelineCategory`: VISIT·FOOD·SHOPPING·ACTIVITY·ETC)는 2026-08-04 에 지웠다.
+ * `/timelines` 가 tree 로 합쳐지면서 서버에서 개념 자체가 없어졌고(#123),
+ * 되살리지 않기로 했다. 카메라에도 분류를 고르는 UI 는 없었다 — VISIT 로 고정해 보내고
+ * 상세에서 다시 보여줄 뿐이라, 사용자가 정한 값이 아니었다.
  */
-export const TIMELINE_CATEGORIES = ['VISIT', 'FOOD', 'SHOPPING', 'ACTIVITY', 'ETC'] as const;
-
-export type TimelineCategory = (typeof TIMELINE_CATEGORIES)[number];
 
 export interface TimelineRecord {
   id: string;
@@ -31,8 +25,6 @@ export interface TimelineRecord {
   lng?: number;
   /** 나무 id. 기록이 곧 나무가 된 뒤로 `id` 와 같은 값이다(문자열이냐 숫자냐만 다르다). */
   treeId?: number | null;
-  /** 기록 분류. ⚠️ 서버에 없어져 지금은 항상 비어 있다 — `TIMELINE_CATEGORIES` 주석 참고. */
-  category?: string;
   /**
    * 기본 이미지 **식별자** (`"DEFAULT_1"` 같은 값, 서버 `VarChar(20)`).
    *
@@ -97,8 +89,8 @@ export interface TimelineDetail extends TimelineRecord {
  * 보낸 필드만 반영되는 부분 수정이다.
  *
  * ⚠️ 통합(#123)으로 **`category`·`visitedAt`·`treeId` 가 사라졌다.**
- * `Tree` 에 분류·방문일 필드가 없고, 기록이 곧 나무라 연결할 대상도 없다.
- * 분류를 되살릴지는 백엔드 확인 대기(HANDOFF 1-0절).
+ * 분류는 되살리지 않기로 했고, 방문일은 백엔드 요청 대기다(HANDOFF 1-1절 1번).
+ * 기록이 곧 나무라 `treeId` 로 연결할 대상도 없다.
  */
 export interface UpdateTimelineRequest {
   title?: string;
