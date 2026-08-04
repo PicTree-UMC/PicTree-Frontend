@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router-dom';
 
 import { router } from './router';
 import { queryClient } from './shared/lib/queryClient';
+import { hideSplash } from './shared/lib/splash';
 import { AppShell, Toaster } from './shared/components';
 import './styles.css';
 
@@ -19,3 +20,5 @@ createRoot(document.getElementById('root')!).render(
     </QueryClientProvider>
   </StrictMode>,
 );
+
+hideSplash();
