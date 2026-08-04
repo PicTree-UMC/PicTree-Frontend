@@ -7,11 +7,20 @@ interface RoutePlaceStripProps {
   places: RoutePlace[];
   /** 사용자가 꺼둔 장소. 목록에는 남되 번호·개수·지도에서 빠진다(화면설계서 7번). */
   disabledPlaceIds: ReadonlySet<number>;
-  /** 이 동선이 걸친 날짜. 칩 줄로 그려진다(화면설계서 6번). */
+  /** 이 동선이 걸친 날짜. 필터 칩 줄로 그려진다(화면설계서 6번). */
   dates: string[];
-  /** 그날 장소가 전부 꺼져 있는 날짜. 칩은 남고 반투명해진다. */
-  disabledDates: ReadonlySet<string>;
-  onToggleDate: (dateKey: string) => void;
+  /**
+   * 목록에 보일 날짜. `null` 이면 전부.
+   *
+   * **보기만 거른다 — 동선에서 빼는 게 아니다.** 지도에는 걸러진 날짜의 장소도 그대로
+   * 그려지고 번호도 유지된다. 빼고 넣는 건 `onToggleAllVisible` 과 줄 탭이 맡는다.
+   */
+  dateFilter: string | null;
+  onChangeDateFilter: (date: string | null) => void;
+  /** 지금 보이는 장소가 전부 켜져 있는가. 버튼 문구를 정한다. */
+  allVisibleSelected: boolean;
+  /** 지금 보이는 장소를 통째로 켜거나 끈다. */
+  onToggleAllVisible: () => void;
   /**
    * 저장 한도. **저장된 동선을 볼 때는 넘기지 않는다** — 이미 저장된 것이라 한도가 의미 없고,
    * `3/20개` 처럼 보이면 더 담을 수 있다는 오해를 준다. 없으면 `장소 n개` 로만 쓴다.
@@ -99,7 +108,13 @@ function useCollapseDrag(setCollapsed: (collapsed: boolean) => void) {
  * 장소 켜고 끄기, 동선 저장. 지도 위에 남는 건 뒤로가기(와 저장된 동선의 제목)뿐이다.
  *
  * 세 층으로 읽힌다(카카오맵 하단 패널과 같은 순서): **요약 줄**(무엇을 보고 있는지 + 저장)
- * → **날짜 칩**(큰 단위로 걸러내기) → **장소 목록**(하나씩 다루기).
+ * → **날짜 필터**(볼 범위 좁히기) → **장소 목록**(하나씩 다루기).
+ *
+ * **접으면 `전체 동선` 과 `동선저장` 만 남는다.** 접기는 지도를 넓게 보려는 것이지 작업을
+ * 멈추는 게 아니라서 저장은 손에 닿아야 하고, 그 밖의 것은 지도에 자리를 내준다.
+ *
+ * 날짜 칩은 **거르기지 고르기가 아니다.** 누르면 그 날짜의 장소만 목록에 남고, 지도와
+ * 번호는 그대로다. 동선에서 빼고 넣는 건 옆의 `전체 선택`/`전체 해제` 와 각 줄의 탭이 맡는다.
  *
  * **장소는 세로 목록이고 시트 안에서 스크롤한다.** 가로로 늘어놓던 시절엔 20곳이면 오른쪽
  * 끝까지 밀어야 했고, 화면 폭이 정한 칸에 이름을 욱여넣느라 사진과 날짜를 같이 못 보여줬다.
@@ -126,8 +141,10 @@ export function RoutePlaceStrip({
   places,
   disabledPlaceIds,
   dates,
-  disabledDates,
-  onToggleDate,
+  dateFilter,
+  onChangeDateFilter,
+  allVisibleSelected,
+  onToggleAllVisible,
   maxPlaces,
   onSave,
   onTogglePlace,
@@ -191,17 +208,22 @@ export function RoutePlaceStrip({
           <span className="h-1 w-10 rounded-full bg-[#d9d9d9]" />
         </button>
 
-        {/* 요약 줄은 **접어도 남는다** — 접기는 작업을 멈추는 게 아니라 지도를 넓게 보는 것이라,
-            지금 몇 곳을 담았는지와 저장 버튼은 항상 손에 닿아야 한다. */}
+        {/* 접어도 남는 줄. 접힌 시트는 **이름과 저장**, 딱 둘이다 — 접기는 지도를 넓게
+            보려는 것이지 작업을 멈추는 게 아니라서 저장은 손에 닿아야 하고, 그 외에는
+            지도를 한 줄이라도 더 내주는 게 맞다. */}
         <div className="flex items-center gap-3 pb-1 pt-2">
           <div className="min-w-0 flex-1">
             <h2 className="text-[15px] font-medium tracking-tight text-[#2c3930]">전체 동선</h2>
-            {/* GREEN-500(#788f4a)이었다 — 연초록 바닥 위에서 **2.35:1** 로, 가이드라인이
-                '연초록 패널 위 GREEN-500 텍스트는 결함'이라고 집어서 적어둔 바로 그 조합이다.
-                보조 텍스트 자리이므로 INK-muted 로 간다(흰 위 5.98:1). */}
-            <p className="mt-1 text-[13px] text-[#60655c]">
-              장소 {maxPlaces === undefined ? activeCount : `${activeCount}/${maxPlaces}`}개
-            </p>
+            {/* 개수는 펼쳤을 때만. 접힌 상태에서 `3/20개` 는 지금 할 일이 없는 정보다 —
+                한도가 문제가 되는 건 목록을 보며 고르는 중이거나 저장할 때뿐이고, 저장은
+                넘치면 눌린 뒤에 이유를 알려준다.
+                (색은 GREEN-500 이었다 — 연초록 바닥 위 2.35:1 로 가이드라인이 결함이라고
+                집어둔 조합이라 INK-muted 로 왔다. 흰 위 5.98:1.) */}
+            {!collapsed && (
+              <p className="mt-1 text-[13px] text-[#60655c]">
+                장소 {maxPlaces === undefined ? activeCount : `${activeCount}/${maxPlaces}`}개
+              </p>
+            )}
           </div>
 
           {/* 저장에 성공하면 동선 탭으로 넘어가므로 '저장됨' 같은 완료 상태가 필요 없다 —
@@ -229,15 +251,18 @@ export function RoutePlaceStrip({
         // (`overflow:hidden` 은 시각만 자르지 초점은 그대로 들어간다.)
         inert={collapsed}
       >
-        {/* 날짜 → 장소 순. 큰 단위로 먼저 걸러내고 남은 걸 하나씩 다루는 순서다.
+        {/* 펼친 시트의 머리 — 날짜 필터. 목록보다 위에 있고 목록과 함께 굴러가지 않는다:
+            무엇을 보고 있는지 정하는 줄이라 보는 내내 제자리에 있어야 한다.
             음수 마진: 칩 그림자가 좌우 스크롤 끝에서 잘리지 않게 패딩만큼 밖으로 뺐다가
             같은 값으로 되돌린다. 날짜가 없으면 `pt-4` 만 남아 빈 틈이 되므로 감싼 채로 뺀다. */}
         {dates.length > 0 && (
           <div className="-mx-5 px-5 pt-4">
             <RouteDateChips
-              selectedDates={dates}
-              disabledDates={disabledDates}
-              onToggleDate={onToggleDate}
+              dates={dates}
+              filter={dateFilter}
+              onChangeFilter={onChangeDateFilter}
+              allSelected={allVisibleSelected}
+              onToggleAll={onToggleAllVisible}
             />
           </div>
         )}
@@ -262,7 +287,12 @@ export function RoutePlaceStrip({
           >
             {places.map((place, index) => {
               const disabled = disabledPlaceIds.has(place.id);
+              // 번호는 **거르기 전에** 매긴다. 걸러진 목록 안에서 다시 세면 3월 31일만
+              // 봤을 때 4월 1일 첫 장소가 1번이 되어, 지도의 마커 번호와 어긋난다.
               if (!disabled) sequence += 1;
+
+              // 필터에 안 걸리는 줄은 그리지 않는다(번호는 위에서 이미 넘겼다).
+              if (dateFilter !== null && place.date !== dateFilter) return null;
 
               /*
                 다음 줄로 이어지는 점선. **지도의 동선과 같은 규칙으로 끊는다**(설계서 5번):
