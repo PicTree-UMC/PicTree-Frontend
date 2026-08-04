@@ -43,15 +43,19 @@ export const withinAlertRadius = (trees: NearbyTreeItem[] | undefined): NearbyTr
   (trees ?? []).filter((tree) => tree.distanceM <= ALERT_RADIUS_M);
 
 /**
- * 알림 문구에 쓸 장소 이름.
+ * 알림 문구에 쓸 이름. **지도 마커와 같은 규칙이다.**
  *
- * 여러 곳이 한꺼번에 들어와도 **알림은 하나**다. 가장 가까운 곳을 대표로 쓰고
- * 나머지는 개수로 줄인다 — 이름을 다 나열하면 카드가 넘치고, 알림을 여러 개
- * 띄우면 산책 한 번에 알림이 쏟아진다.
+ * 지도에서 나무가 겹치면 클러스터 마커 하나로 뭉쳐 개수를 보여 주는데, 알림도
+ * 같게 읽히도록 맞췄다.
+ *
+ * - 반경에 한 곳뿐이면 → 그 장소 이름 (`"오아시스 만난 곳"`)
+ * - 여러 곳이면 → 개수로 (`"저장된 기록 3개"`)
+ *
+ * 여러 곳이어도 **알림은 하나**다. 이름을 다 나열하면 카드가 넘치고, 알림을
+ * 여러 개 띄우면 산책 한 번에 알림이 쏟아진다.
  */
 export const buildAlertLabel = (trees: NearbyTreeItem[]): string => {
-  const [nearest, ...rest] = trees;
-  if (!nearest) return '';
+  if (trees.length === 0) return '';
 
-  return rest.length > 0 ? `${nearest.name} 외 ${rest.length}곳` : nearest.name;
+  return trees.length === 1 ? trees[0].name : `저장된 기록 ${trees.length}개`;
 };
