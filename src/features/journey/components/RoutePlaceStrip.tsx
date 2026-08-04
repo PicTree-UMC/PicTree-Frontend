@@ -131,7 +131,13 @@ export function RoutePlaceStrip({
   let sequence = 0;
 
   return (
-    <div className="rounded-t-[20px] bg-[#c5d89d] px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
+    /*
+      바닥은 흰색이다 — 가이드라인이 '배경 · 카드/시트/탭바' 에 지정한 역할색(#FFFFFF).
+      GREEN-300 연초록이었는데, 그것도 팔레트 안의 값(보조 면)이긴 하나 **패널의 색이지
+      시트의 색이 아니다.** 바꾸면서 안쪽 요소도 같이 뒤집혔다: 크림으로 띄우던 것들
+      (날짜 칩·손잡이·`제외됨`)은 흰 바닥에선 안 보이므로 각각 제 역할색을 찾아갔다.
+    */
+    <div className="rounded-t-[20px] bg-white px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
       {/* touch-none: 세로 끌기를 브라우저 기본 제스처에 뺏기지 않게. 손잡이 줄에만 건다. */}
       <div className="touch-none" {...drag.handlers}>
         <button
@@ -144,7 +150,9 @@ export function RoutePlaceStrip({
           aria-label={collapsed ? '동선 목록 펼치기' : '동선 목록 접기'}
           className="flex w-full justify-center py-2"
         >
-          <span className="h-1 w-10 rounded-full bg-[#fffcef]/80" />
+          {/* 손잡이는 흰 바닥에서 유일하게 '선'인 요소라 LINE 회색을 쓴다. 크림이었을 땐
+              초록 바닥 위에서 밝게 떠 보였지만 흰 바닥에선 아예 사라진다. */}
+          <span className="h-1 w-10 rounded-full bg-[#d9d9d9]" />
         </button>
 
         {/* 요약 줄은 **접어도 남는다** — 접기는 작업을 멈추는 게 아니라 지도를 넓게 보는 것이라,
@@ -152,7 +160,10 @@ export function RoutePlaceStrip({
         <div className="flex items-center gap-3 pb-1 pt-2">
           <div className="min-w-0 flex-1">
             <h2 className="text-[15px] font-medium tracking-tight text-[#2c3930]">전체 동선</h2>
-            <p className="mt-1 text-[13px] text-[#788f4a]">
+            {/* GREEN-500(#788f4a)이었다 — 연초록 바닥 위에서 **2.35:1** 로, 가이드라인이
+                '연초록 패널 위 GREEN-500 텍스트는 결함'이라고 집어서 적어둔 바로 그 조합이다.
+                보조 텍스트 자리이므로 INK-muted 로 간다(흰 위 5.98:1). */}
+            <p className="mt-1 text-[13px] text-[#60655c]">
               장소 {maxPlaces === undefined ? activeCount : `${activeCount}/${maxPlaces}`}개
             </p>
           </div>
@@ -196,7 +207,7 @@ export function RoutePlaceStrip({
         )}
 
         {places.length === 0 ? (
-          <p className="mt-4 text-[13px] text-[#788f4a]">표시할 동선이 없어요</p>
+          <p className="mt-4 text-[13px] text-[#60655c]">표시할 동선이 없어요</p>
         ) : (
           /*
             시트 안에서 굴러가는 목록.
@@ -248,10 +259,13 @@ export function RoutePlaceStrip({
                     className="flex w-full items-center gap-3 py-2 text-left"
                   >
                     <div
+                      // 사진이 없을 때 드러나는 타일 바탕. 흰 바닥에선 흰 타일이 사라지므로
+                      // 켜진 건 GREEN-100 로 채우고, 꺼진 건 **지도의 꺼진 마커와 같은 말**을
+                      // 쓴다 — 흰 속에 회색 테두리만 남은 빈 틀.
                       className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-[14px] transition-colors ${
                         disabled
-                          ? 'bg-[#fffcef]/45'
-                          : 'bg-[#fffdf7] shadow-[0_2px_6px_rgba(0,0,0,0.12)]'
+                          ? 'border border-[#d9d9d9] bg-white'
+                          : 'bg-pictree-100 shadow-[0_2px_6px_rgba(0,0,0,0.12)]'
                       }`}
                     >
                       {/* 꺼진 장소는 사진을 흑백으로 죽인다. 이름은 그대로 읽히게 두고(여전히
@@ -276,7 +290,9 @@ export function RoutePlaceStrip({
                       {/* 꺼진 줄은 번호가 없다 — 남은 번호를 당겨 쓰기 때문에 붙일 번호가 없다.
                           빈 원을 남기지 않고 통째로 뺀다(사진을 덜 가린다). */}
                       {!disabled && (
-                        <span className="absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#788f4a] text-[13px] font-medium text-white shadow-[0_1px_4px_rgba(0,0,0,0.35)]">
+                        // 채움이 GREEN-500 이었다 — 흰 숫자가 3.6:1 이라 §1.2 의 '데코 전용'
+                        // 규칙에 걸린다. 흰 글자를 얹는 초록은 GREEN-700 하나뿐(5.83:1).
+                        <span className="absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-pictree-700 text-[13px] font-medium text-white shadow-[0_1px_4px_rgba(0,0,0,0.35)]">
                           {sequence}
                         </span>
                       )}
@@ -294,7 +310,7 @@ export function RoutePlaceStrip({
                     {/* 흑백 사진만으로는 '꺼짐'이 안 읽힐 수 있어 글자로 한 번 더 말한다.
                         켜진 줄에는 아무것도 안 붙인다 — 기본 상태에 라벨을 붙이면 목록이 시끄럽다. */}
                     {disabled && (
-                      <span className="shrink-0 rounded-[8px] bg-[#fffcef]/60 px-2 py-1 text-[13px] font-medium text-[#5b6b38]">
+                      <span className="shrink-0 rounded-[8px] bg-pictree-100 px-2 py-1 text-[13px] font-medium text-[#5b6b38]">
                         제외됨
                       </span>
                     )}

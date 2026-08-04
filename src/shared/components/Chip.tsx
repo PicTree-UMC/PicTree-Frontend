@@ -1,13 +1,16 @@
 import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 
 /**
- * 칩이 놓인 **바닥에 따라** 고른다. 셋 다 같은 기하(높이·모서리·글자)를 쓰고 색만 다르다.
+ * 칩이 놓인 **바닥에 따라** 고른다. 둘 다 같은 기하(높이·모서리·글자)를 쓰고 색만 다르다.
  *
- * - `outline` — 크림·흰 배경 위의 주 선택기. 안 고른 것도 흰 알약으로 남아 줄이 눈에 띈다.
+ * - `outline` — 크림·흰·시트 배경 위의 주 선택기. 안 고른 것도 알약으로 남아 줄이 눈에 띈다.
  * - `ghost` — 배경 없는 맨 글자. 화면의 주인공이 아닌 보조 전환(정렬 같은)용.
- * - `cream` — 지도·초록 패널 위. 반대로 크림이 칩 쪽에 오고 바닥이 짙다.
+ *
+ * 짙은 바닥(지도·초록 패널) 위에 크림 칩을 얹는 `cream` 톤이 잠깐 있었는데, 하나뿐이던
+ * 사용처(동선 시트의 날짜 칩)가 시트 바닥이 흰색이 되면서 `outline` 로 왔다. 지도 위에
+ * 직접 칩을 띄우는 화면이 다시 생기면 그때 되살릴 것.
  */
-export type ChipTone = 'outline' | 'ghost' | 'cream';
+export type ChipTone = 'outline' | 'ghost';
 
 /** `md`(40px)가 기본이고 권장 터치 영역이다. `sm`은 화면의 주역이 아닌 보조 전환에만. */
 export type ChipSize = 'sm' | 'md';
@@ -40,17 +43,15 @@ interface ChipProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'child
 
   | 톤 | 고름 | 대비 | 안 고름 | 대비 |
   |---|---|---|---|---|
-  | outline | GREEN-700 채움 + 흰 글자 | 5.8:1 | 흰 채움 + INK | 13:1 |
-  | ghost   | GREEN-300 채움 + INK    | 7.9:1 | 맨 글자 #60655C | 5.9:1 |
-  | cream   | 크림/90 + INK           | 높음  | 크림/45 + GREEN-700 | 4.6:1 |
+  | outline | GREEN-700 채움 + 흰 글자 | 5.83:1 | 흰 채움 + GREEN-300 테두리 + INK | 12.10:1 |
+  | ghost   | GREEN-300 채움 + INK    | 7.89:1 | 맨 글자 #60655C | 5.81:1 |
 
   ⚠️ **고른 칩에 GREEN-500(#788F4A)을 쓰지 않는다** — 흰 글자가 3.6:1 이라 본문 기준
   4.5:1 에 못 미친다. 가이드라인에 '데코 전용 · 텍스트 금지'로 적혀 있는 색이다.
   (`JourneyChips` 가 이 조합을 쓰고 있었고 이 컴포넌트로 옮기면서 풀렸다.)
 
   ⚠️ **안 고른 칩의 글자를 흐리게 하지 않는다.** 안 골랐어도 여전히 눌러서 고를 수 있는
-  버튼이라 읽혀야 한다 — 상태 차이는 채움과 그림자로 낸다. `cream` 의 안 고른 쪽만
-  INK 대신 GREEN-700 을 쓰는데, 흐리게 만든 게 아니라 **색을 바꾼 것**이다(4.6:1 유지).
+  버튼이라 읽혀야 한다 — 상태 차이는 채움과 테두리로 낸다.
 */
 const TONE_CLASS: Record<ChipTone, { on: string; off: string }> = {
   outline: {
@@ -60,10 +61,6 @@ const TONE_CLASS: Record<ChipTone, { on: string; off: string }> = {
   ghost: {
     on: 'bg-pictree-300 text-[#2c3930]',
     off: 'text-[#60655c]',
-  },
-  cream: {
-    on: 'bg-[#fffcef]/90 text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]',
-    off: 'bg-[#fffcef]/45 text-[#5b6b38]',
   },
 };
 

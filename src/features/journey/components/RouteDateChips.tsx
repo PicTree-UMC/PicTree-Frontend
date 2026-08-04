@@ -34,11 +34,10 @@ export function RouteDateChips({
         const disabled = disabledDates.has(date);
 
         return (
-          // 초록 시트 위에 놓이므로 `cream`. 꺼진 칩의 글자는 흐려지는 게 아니라
-          // GREEN-700 으로 **바뀐다** — 다시 눌러 켤 수 있는 버튼이라 읽혀야 한다(4.6:1).
+          // 시트 바닥이 흰색이 되면서 기본 톤(`outline`)으로 왔다 — 크림 칩은 흰 위에서
+          // 안 보인다. 꺼진 칩도 흰 알약 + 연초록 테두리로 남아 다시 누를 수 있게 보인다.
           <Chip
             key={date}
-            tone="cream"
             selected={!disabled}
             onClick={() => onToggleDate(date)}
             aria-label={`${formatDateLabel(date)} 동선 ${disabled ? '켜기' : '끄기'}`}
