@@ -89,7 +89,10 @@ type GridBodyProps = Pick<Props, "group" | "onOpenDetail">;
 function GridBody({ group, onOpenDetail }: GridBodyProps) {
   return (
     <section>
-      <h2 className="mb-2 px-5 text-[18px] text-[#60655C]">{group.label}</h2>
+      {/* 날짜를 못 받은 그룹은 머리글이 비어 있다 — 빈 h2 를 두면 여백만 남는다(#123). */}
+      {group.label && (
+        <h2 className="mb-2 px-5 text-[18px] text-[#60655C]">{group.label}</h2>
+      )}
       <ul className="grid grid-cols-3 gap-0.5">
         {group.records.map((record) => (
           <li key={record.id}>

@@ -46,13 +46,25 @@ const buildLabel = (date: Date): string =>
  * 그룹의 앞뒤 순서도 정렬 방향을 따른다. 오래된 순인데 날짜 머리글이 최신부터면
  * 안쪽만 뒤집힌 꼴이 된다. 그룹 안쪽은 `sortRecords` 가 잡아 둔 순서를 그대로 쓴다.
  */
+/**
+ * 날짜를 못 받은 기록들이 모이는 그룹의 키.
+ *
+ * ⚠️ **없으면 화면에 `NaN월 NaN일` 이 찍힌다.** `new Date('')` 는 Invalid Date 이고
+ * 그걸로 만든 키가 `"NaN-NaN-NaN"`, 머리글이 `"NaN월 NaN일"` 이 된다.
+ * 지금 `GET /trees` 목록이 날짜를 안 줘서 실제로 그렇게 떴다(#123).
+ * 날짜가 없다고 기록을 숨기지는 않는다 — 사진과 장소명은 멀쩡히 보여줄 수 있다.
+ */
+const NO_DATE_KEY = "";
+
 const groupByDate = (
   records: TimelineRecord[],
   sort: TimelineSort
 ): TimelineGroup[] => {
   const map = new Map<string, TimelineRecord[]>();
   for (const r of records) {
-    const key = toDateKey(new Date(getSortDate(r)));
+    const raw = getSortDate(r);
+    const date = new Date(raw);
+    const key = raw && !Number.isNaN(date.getTime()) ? toDateKey(date) : NO_DATE_KEY;
     const b = map.get(key);
     if (b) b.push(r);
     else map.set(key, [r]);
@@ -64,7 +76,8 @@ const groupByDate = (
     .sort(([a], [b]) => (a < b ? -direction : direction))
     .map(([dateKey, items]) => ({
       dateKey,
-      label: buildLabel(new Date(dateKey)),
+      // 날짜 없는 그룹은 머리글을 비운다. 화면은 빈 문자열이면 아무것도 안 그린다.
+      label: dateKey === NO_DATE_KEY ? "" : buildLabel(new Date(dateKey)),
       records: items,
     }));
 };
