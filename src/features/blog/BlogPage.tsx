@@ -2,9 +2,15 @@ import { useBlogDraftStore } from './store/blogDraftStore';
 import { BlogCreateFab } from './components/BlogCreateFab';
 import { BlogEmptyState } from './components/BlogEmptyState';
 import { SavedBlogCard } from './components/SavedBlogCard';
+import { useEffect } from 'react';
 
 export function BlogPage() {
   const savedBlogs = useBlogDraftStore((state) => state.savedBlogs);
+  const fetchSavedBlogs = useBlogDraftStore((state) => state.fetchSavedBlogs);
+
+  useEffect(() => {
+    fetchSavedBlogs();
+  }, [fetchSavedBlogs]);
 
   return (
     // pb: 탭바가 콘텐츠 위에 얹히므로 마지막 카드가 가려지지 않을 만큼 띄운다

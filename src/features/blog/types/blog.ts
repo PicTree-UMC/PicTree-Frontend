@@ -1,3 +1,40 @@
+export interface AIBlogDraft {
+  draftId: number;
+  title: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  createdAt: string; // ISO
+}
+
+export interface AIBlogDraftListData {
+  drafts: AIBlogDraft[];
+}
+
+export interface CreateAIBlogDraftRequest {
+  startDate: string;
+  endDate: string;
+  treeIds: number[];
+  tone: 'RECORD' | 'SIMPLE' | 'WITTY' | 'CALM';
+}
+
+export interface CreateAIBlogDraftResponseData {
+  title: string;
+  items: { placeName: string; content: string }[];
+  startDate: string;
+  endDate: string;
+}
+
+export interface SaveAIBlogDraftRequest {
+  title: string;
+  content: string;
+  startDate: string;
+  endDate: string;
+  treeIds: number[];
+}
+
+export interface SaveAIBlogDraftResponseData {
+  draftId: number;
+}
 /** AI 초안 생성 단계 상태 (작성 플로우 3번째 스텝 내부에서만 사용). */
 export type BlogStatus = 'idle' | 'generating' | 'ready';
 
