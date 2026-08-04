@@ -14,11 +14,9 @@ import { toDateKey } from '../lib/calendar';
  * 화면설계서 1번의 '나무를 심은 날짜만 선택 가능' 도 이제 말 그대로가 됐다 —
  * 예전에는 '방문 기록이 있는 날짜' 로 한 겹 번역해야 했다.
  *
- * 🔴 **다만 지금 `GET /trees` 목록이 날짜를 안 줘서 후보가 0개다** (2026-08-04 실서버 확인).
- * 이 화면은 "날짜를 고르면 그날의 장소를 그린다" 가 전부라 날짜 없는 장소는 쓸 데가 없고,
- * 그래서 **새 동선을 만들 수 없는 상태다.** 백엔드에 목록 아이템의 `createdAt` 을 요청해 둔
- * 상태다(HANDOFF 1-1절 1번) — 등록 시각을 방문 시각으로 보기로 했으므로 그거면 충분하다.
- * 아래는 오는 대로 받아 쓰므로 필드가 붙는 순간 이 파일을 안 고쳐도 살아난다.
+ * 날짜는 목록의 `createdAt` 을 쓴다 — 등록 시각을 방문 시각으로 본다(#123).
+ * 이 필드는 2026-08-04 에 목록에 추가받은 것이다. 그 전에는 목록에 날짜가 아예 없어
+ * **후보가 0개라 새 동선을 만들 수 없었다.**
  *
  * ⚠️ **`home/treesApi` 를 재사용하지 않는다.** 그쪽은 DEV 에서 호출이 실패하면 목데이터로
  * 폴백하는데, 여기서 나온 장소는 그대로 `POST /routes` 의 `treeId` 가 된다 —
@@ -41,13 +39,8 @@ interface TreeItem {
   latitude: number;
   longitude: number;
   mood: string | null;
-  /**
-   * 방문 일시. **목록에는 아직 둘 다 안 온다**(위 🔴 주석).
-   * 등록 시각(`createdAt`)이 곧 방문 시각이다 — 촬영이 곧 등록이라 같은 순간이다.
-   * `visitedAt` 은 나중에 그런 필드가 생길 때를 대비한 자리다.
-   */
-  visitedAt?: string | null;
-  createdAt?: string | null;
+  /** 등록 시각 = 방문 시각. 촬영이 곧 등록이라 같은 순간이다(#123). */
+  createdAt: string;
 }
 
 interface TreeListData {
@@ -89,7 +82,8 @@ const fetchAllTrees = async (): Promise<TreeItem[]> => {
 /**
  * 방문한 장소들을 방문 순서대로. 배열 순서가 곧 동선의 기본 순서다.
  *
- * 날짜가 없는 장소는 뺀다 — 날짜별로 그리는 화면이라 찍을 칸이 없다.
+ * 날짜를 못 읽는 장소는 뺀다 — 날짜별로 그리는 화면이라 찍을 칸이 없다. 서버가 필드를
+ * 빼먹거나 파싱이 실패할 때의 방어이고, 정상 응답에서는 아무것도 빠지지 않는다.
  * (통합 전에는 '나무에 연결되지 않은 기록' 을 같은 이유로 뺐다. 그런 기록은 이제 없다.)
  */
 export const getRoutePlaceCandidates = async (): Promise<RoutePlace[]> => {
@@ -97,11 +91,10 @@ export const getRoutePlaceCandidates = async (): Promise<RoutePlace[]> => {
 
   return trees
     .flatMap((tree) => {
-      const visitedAt = tree.visitedAt ?? tree.createdAt ?? '';
-      const date = visitedAt ? visitDateKey(visitedAt) : '';
+      const date = tree.createdAt ? visitDateKey(tree.createdAt) : '';
       if (!date) return [];
 
-      return [{ tree, date, visitedAt }];
+      return [{ tree, date, visitedAt: tree.createdAt }];
     })
     .sort((a, b) => a.visitedAt.localeCompare(b.visitedAt))
     .map(

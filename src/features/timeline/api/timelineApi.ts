@@ -32,32 +32,20 @@ export const TIMELINE_PAGE_SIZE = 20;
  */
 
 /**
- * 🔴 **목록에 날짜와 코멘트가 없다 — 실서버로 확인함(2026-08-04).**
+ * 목록 아이템 → 화면이 쓰는 기록.
  *
- * `GET /trees` 아이템은 정확히
- * `treeId·name·latitude·longitude·mood·defaultImage·imageUrl·isFavorite` 뿐이다.
- * 타임라인 목록은 **날짜로 묶고 정렬하고 검색**하므로 그대로면 그룹이 무너진다.
- * 상세(`GET /trees/{id}`)에는 `createdAt`·`description` 이 다 있다 — 목록에만 없다.
- *
- * **백엔드 요청은 `createdAt` 과 `description` 을 목록 아이템에 얹어 달라는 것 하나다.**
- * 방문일과 등록일은 같은 것으로 보기로 했으므로(#123, `timelineQuery` 주석) `visitedAt`
- * 이라는 새 필드는 필요 없다. 아래 매핑은 그래도 `visitedAt` 을 먼저 본다 — 나중에 그
- * 필드가 생겨도 코드를 안 고치게 하려는 것뿐이다.
+ * `createdAt`·`description` 은 2026-08-04 에 목록에 추가받은 필드다. 그 전에는 목록에
+ * 날짜가 없어 날짜 그룹이 통째로 무너졌고, 상세를 항목마다 부르는 우회(N+1)를 검토했다.
+ * **필드가 오면서 그 우회는 필요 없어졌다** — 목록 한 번으로 카드가 다 채워진다.
  */
-type TreeListItemMaybeDated = TreeListItem & {
-  visitedAt?: string;
-  createdAt?: string;
-  description?: string | null;
-};
-
-const toRecordFromListItem = (tree: TreeListItemMaybeDated): TimelineRecord => ({
+const toRecordFromListItem = (tree: TreeListItem): TimelineRecord => ({
   // 기록 id 가 곧 나무 id 다. 화면이 문자열로 다루므로 여기서 맞춘다.
   id: String(tree.treeId),
   placeName: tree.name,
   comment: tree.description ?? '',
-  // 등록 시각이 곧 방문 시각이다. 지금은 둘 다 안 와서 빈 문자열로 떨어진다(위 주석).
-  recordedAt: tree.visitedAt ?? tree.createdAt ?? '',
-  createdAt: tree.createdAt ?? '',
+  // 등록 시각이 곧 방문 시각이다(#123).
+  recordedAt: tree.createdAt,
+  createdAt: tree.createdAt,
   thumbnailUrl: tree.imageUrl,
   lat: tree.latitude,
   lng: tree.longitude,
@@ -81,7 +69,7 @@ export const getTimelines = async ({
   });
 
   const body = data.data;
-  const items = (body?.items ?? []) as TreeListItemMaybeDated[];
+  const items = body?.items ?? [];
 
   return {
     records: items.map(toRecordFromListItem),
