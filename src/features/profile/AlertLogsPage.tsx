@@ -64,7 +64,7 @@ function AlertLogRow({ log, onOpen }: RowProps) {
           )}
           <p className="min-w-0 truncate text-[15px] text-[#2C3930]">{log.treeName}</p>
           {badge && (
-            <span className={`flex-shrink-0 rounded-lg px-1.5 py-0.5 text-[11px] ${badge.className}`}>
+            <span className={`flex-shrink-0 rounded-lg px-1.5 py-0.5 text-[13px] ${badge.className}`}>
               {badge.label}
             </span>
           )}
@@ -111,7 +111,7 @@ export function AlertLogsPage() {
           >
             <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
           </button>
-          <h1 className="text-xl font-bold text-black">알림 기록</h1>
+          <h1 className="text-[20px] font-medium text-black">알림 기록</h1>
         </div>
         <p className="mt-2 text-[13px] text-[#2C3930]">
           근처 나무 알림으로 받은 기록이에요
@@ -120,14 +120,14 @@ export function AlertLogsPage() {
 
       <div className="px-5 pt-5">
         {isPending ? (
-          <p className="py-10 text-center text-sm text-[#60655C]">불러오는 중...</p>
+          <p className="py-10 text-center text-[14px] text-[#60655C]">불러오는 중...</p>
         ) : isError ? (
           <div className="py-10 text-center">
-            <p className="text-sm text-[#DC2626]">알림 기록을 불러오지 못했어요.</p>
+            <p className="text-[14px] text-[#DC2626]">알림 기록을 불러오지 못했어요.</p>
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-xs font-bold text-white"
+              className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
             >
               다시 시도
             </button>
@@ -138,7 +138,7 @@ export function AlertLogsPage() {
             "고장났나" 하지 않는다.
           */
           <div className="py-10 text-center">
-            <p className="text-sm text-[#60655C]">아직 받은 알림이 없어요.</p>
+            <p className="text-[14px] text-[#60655C]">아직 받은 알림이 없어요.</p>
             <p className="mt-1 text-[13px] text-[#60655C]">
               기록해 둔 장소 근처에 가면 알려드릴게요.
             </p>

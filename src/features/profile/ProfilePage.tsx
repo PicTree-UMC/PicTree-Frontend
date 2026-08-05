@@ -36,9 +36,9 @@ function MenuRow({ icon, title, subtitle, onClick }: MenuRowProps) {
     >
       {icon && <img src={icon} alt="" className="h-6 w-6 flex-shrink-0" />}
       <div className="min-w-0 flex-1">
-        <p className="text-lg font-semibold text-[#111]">{title}</p>
+        <p className="text-[17px] font-medium text-[#111]">{title}</p>
         {subtitle && (
-          <p className="text-xs font-medium text-[#90908F]">{subtitle}</p>
+          <p className="text-[13px] font-medium text-[#90908F]">{subtitle}</p>
         )}
       </div>
       {/* 오른쪽 화살표 (화살표_왼쪽.svg 는 오른쪽을 향하므로 회전 없이 사용) */}
@@ -132,19 +132,19 @@ export function ProfilePage() {
             </div>
           ) : errorKind === 'session-expired' ? (
             // useSessionExpiredRedirect 가 곧 로그인 화면으로 보낸다
-            <p className="text-base font-semibold text-[#2C3930]">
+            <p className="text-[15px] font-medium text-[#2C3930]">
               로그인 화면으로 이동합니다
             </p>
           ) : errorKind === 'account-unavailable' ? (
             // 정지·삭제된 계정. 재시도해도 결과가 바뀌지 않으니 사유만 알린다.
             <div>
-              <p className="text-base font-semibold text-[#2C3930]">
+              <p className="text-[15px] font-medium text-[#2C3930]">
                 {getApiErrorMessage(error, '계정 정보를 확인할 수 없어요')}
               </p>
               <button
                 type="button"
                 onClick={() => navigate(ROUTES.auth, { replace: true })}
-                className="mt-1.5 rounded-xl bg-[#89986D] px-3 py-1 text-xs font-bold text-white"
+                className="mt-1.5 rounded-xl bg-[#89986D] px-3 py-1 text-[13px] font-medium text-white"
               >
                 로그인 화면으로
               </button>
@@ -152,27 +152,27 @@ export function ProfilePage() {
           ) : isError ? (
             // 500·네트워크 오류 — 여기서만 재시도가 의미 있다
             <div>
-              <p className="text-base font-semibold text-[#2C3930]">
+              <p className="text-[15px] font-medium text-[#2C3930]">
                 {getApiErrorMessage(error, '정보를 불러오지 못했어요')}
               </p>
               <button
                 type="button"
                 onClick={() => refetch()}
-                className="mt-1.5 rounded-xl bg-[#89986D] px-3 py-1 text-xs font-bold text-white"
+                className="mt-1.5 rounded-xl bg-[#89986D] px-3 py-1 text-[13px] font-medium text-white"
               >
                 다시 시도
               </button>
             </div>
           ) : (
             <div>
-              <p className="text-xl font-bold text-black">{profile?.nickname}</p>
+              <p className="text-[20px] font-medium text-black">{profile?.nickname}</p>
               {/* 이메일은 소셜 계정에 따라 없을 수 있어 있을 때만 그린다 */}
               {profile?.email && (
-                <p className="mt-0.5 text-base font-medium text-black">
+                <p className="mt-0.5 text-[15px] font-medium text-black">
                   {profile.email}
                 </p>
               )}
-              <span className="mt-1.5 inline-block rounded-xl bg-[#DDBF68] px-3 py-0.5 text-[10px] font-medium text-[#2C3930]">
+              <span className="mt-1.5 inline-block rounded-xl bg-[#DDBF68] px-3 py-0.5 text-[13px] font-medium text-[#2C3930]">
                 {planLabel}
               </span>
             </div>
@@ -184,12 +184,12 @@ export function ProfilePage() {
         {/* 근처 나무 알림 카드 */}
         <div className="flex items-center justify-between rounded-xl border-2 border-[#C5D89D] bg-white px-6 py-4">
           <div>
-            <p className="text-lg font-semibold text-[#111]">근처 나무 알림</p>
+            <p className="text-[17px] font-medium text-[#111]">근처 나무 알림</p>
             {/*
               아이폰은 홈 화면에 추가해야만 푸시를 받을 수 있다(웹 표준 제약).
               그냥 "꺼짐" 이라고만 하면 켜지지 않는 이유를 알 수 없어 따로 안내한다.
             */}
-            <p className="mt-0.5 text-xs font-medium text-[#90908F]">
+            <p className="mt-0.5 text-[13px] font-medium text-[#90908F]">
               {pushUnavailable === "ios-needs-install"
                 ? "홈 화면에 추가하면 알림을 받을 수 있어요"
                 : `${alarmOn ? "켜짐" : "꺼짐"} · 50m 안에 내 나무가 있으면 알려드려요`}
@@ -228,7 +228,7 @@ export function ProfilePage() {
 
         {/* 계정 섹션 */}
         <section>
-          <h2 className="mb-2 pl-1 text-[15px] font-semibold text-[#9CAB84]">
+          <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#9CAB84]">
             계정
           </h2>
           <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-6 py-2">
@@ -255,7 +255,7 @@ export function ProfilePage() {
 
         {/* 정보 섹션 */}
         <section>
-          <h2 className="mb-2 pl-1 text-[15px] font-semibold text-[#9CAB84]">
+          <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#9CAB84]">
             정보
           </h2>
           <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-6 py-2">
@@ -264,7 +264,11 @@ export function ProfilePage() {
               title="개인정보 처리방침"
               onClick={() => navigate(ROUTES.privacy)}
             />
-            <MenuRow icon="" title="도움말 / FAQ" />
+            <MenuRow
+              icon=""
+              title="도움말 / FAQ"
+              onClick={() => navigate(ROUTES.helpFaq)}
+            />
           </div>
         </section>
 
@@ -276,7 +280,7 @@ export function ProfilePage() {
           className="mt-1 flex items-center justify-center gap-2 py-2 disabled:opacity-50"
         >
           <img src={logoutIcon} alt="" className="h-6 w-6" />
-          <span className="text-base text-[#FF4B4B]">
+          <span className="text-[15px] text-[#FF4B4B]">
             {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
           </span>
         </button>
