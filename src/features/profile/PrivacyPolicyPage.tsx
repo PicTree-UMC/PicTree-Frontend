@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { SUPPORT_EMAIL } from "./constants/contact";
 import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
 
 const iconBase = "h-[22px] w-[22px] flex-shrink-0";
@@ -177,7 +178,7 @@ const SECTIONS: Section[] = [
         icon: <IconShield />,
         title: "개인정보 보호책임자 및 문의",
         body:
-          "개인정보 또는 위치정보 처리와 관련한 문의는 PicTree 고객지원 채널로 접수합니다. 정식 출시 전에는 seangwon20@gmail.com으로 문의할 수 있으며, 실제 출시 시 사업자 정보와 개인정보 보호책임자 정보를 최신 내용으로 고지합니다.",
+          `개인정보 또는 위치정보 처리와 관련한 문의는 PicTree 고객지원 채널로 접수합니다. 정식 출시 전에는 ${SUPPORT_EMAIL}으로 문의할 수 있으며, 실제 출시 시 사업자 정보와 개인정보 보호책임자 정보를 최신 내용으로 고지합니다.`,
       },
       {
         icon: <IconInfo />,
