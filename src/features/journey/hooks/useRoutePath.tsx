@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { clusterByPixelDistance, findSplitLevel } from '@/shared/lib/markerCluster';
 import { ClusterMarker } from '@/shared/components';
 import { MIN_ZOOM_LEVEL } from '../../home/hooks/useKakaoMap';
 import { RoutePlace } from '../types/route';
+import { buildSequenceMap } from '../lib/sequence';
 import { NumberedMarker } from '../components/NumberedMarker';
 
 /**
@@ -31,6 +32,18 @@ import { NumberedMarker } from '../components/NumberedMarker';
  */
 const CLUSTER_DISTANCE_PX = 36;
 
+/** 화면을 맞출 때 위·좌·우에 남기는 여백. 마커(36px) 반지름보다 커야 잘리지 않는다. */
+const EDGE_PADDING_PX = 24;
+
+/**
+ * 한 곳으로 옮겨갈 때 보장하는 배율. 이보다 축소돼 있으면 확대하고, 이미 더 확대해 놨으면
+ * 건드리지 않는다 — 사용자가 골라 놓은 배율을 매번 되돌리면 따라가기가 아니라 리셋이 된다.
+ *
+ * 4 인 이유: 순서를 읽으려고 옮겨 다니는 것인데, 이보다 축소되면 이웃한 마커가 서로
+ * `CLUSTER_DISTANCE_PX` 안으로 들어와 묶여 버려서 번호 자체가 화면에서 사라진다.
+ */
+const NODE_FOCUS_LEVEL = 4;
+
 function readClusterDistance(): number {
   if (!import.meta.env.DEV) return CLUSTER_DISTANCE_PX;
 
@@ -46,16 +59,33 @@ function readClusterDistance(): number {
  * (설계서의 예: 1·2번 3월 31일, 3·4번 4월 1일, 5번 4월 3일).
  *
  * `disabledIds` 의 장소는 번호와 선에서 빠지고 빈 원으로만 남는다(설계서 7번).
+ *
+ * `dateFilter` 가 걸리면 **그 날짜만 그린다.** 시트 목록과 같은 범위를 보게 하려는 것이다 —
+ * 목록은 하루로 좁혔는데 지도는 사흘치가 그대로 깔려 있으면, 지금 보고 있는 게 어느 날의
+ * 동선인지 지도에서 되짚을 수가 없다.
  */
-export function useRoutePath(
-  map: kakao.maps.Map | null,
-  points: RoutePlace[],
-  disabledIds: ReadonlySet<number>,
+type RoutePathOptions = {
+  /** 그릴 날짜. `null` 이면 전부. **거르기지 빼기가 아니다** — 저장에는 영향이 없다. */
+  dateFilter: string | null;
+  /**
+   * 화면 아래쪽에서 지도를 덮고 있는 높이(하단 시트). 마커가 그 뒤로 들어가지 않게
+   * `setBounds` 에 여백으로 넘긴다.
+   */
+  bottomPaddingPx: number;
+  /** 지금 따라가고 있는 장소. 바뀌면 지도가 그리로 옮겨간다. */
+  focusedPlaceId?: number | null;
   /**
    * 최대 줌인까지 확대해도 안 쪼개지는 묶음을 탭했을 때. 겹쳐 있는 장소 id 들을 넘긴다.
    * 지도에서는 더 보여줄 게 없으니 화면 쪽(하단 시트)이 대신 짚어주라는 신호다.
    */
-  onOverlappingTap?: (placeIds: number[]) => void,
+  onOverlappingTap?: (placeIds: number[]) => void;
+};
+
+export function useRoutePath(
+  map: kakao.maps.Map | null,
+  points: RoutePlace[],
+  disabledIds: ReadonlySet<number>,
+  { dateFilter, bottomPaddingPx, focusedPlaceId, onOverlappingTap }: RoutePathOptions,
 ) {
   /*
     콜백을 ref 에 담아 쓴다. 아래 effect 의 의존성에 넣으면 부모가 매 렌더 새 함수를
@@ -70,16 +100,17 @@ export function useRoutePath(
   useEffect(() => {
     if (!map) return;
 
-    // 번호는 켜진 장소에만 매긴다. 2번을 끄면 3번이 2번이 되는 재순서화가 여기서 나온다.
-    let sequence = 0;
-    const numbered = points
-      .filter((point) => !disabledIds.has(point.id))
-      .map((point) => {
-        sequence += 1;
-        return { ...point, sequence };
-      });
-
-    const disabled = points.filter((point) => disabledIds.has(point.id));
+    /*
+      ⚠️ **번호를 매긴 뒤에 거른다**(`buildSequenceMap` 이 그 규칙을 들고 있다). 걸러진
+      장소만 모아 다시 세면 지도가 1부터 다시 시작해 시트 목록·따라가기와 어긋난다.
+      4월 1일만 보고 있어도 그날 첫 장소는 3번이면 3번 그대로여야 한다.
+    */
+    const sequenceById = buildSequenceMap(points, disabledIds);
+    const isShown = (point: RoutePlace) => dateFilter === null || point.date === dateFilter;
+    const shown = points
+      .filter((point) => sequenceById.has(point.id) && isShown(point))
+      .map((point) => ({ ...point, sequence: sequenceById.get(point.id) as number }));
+    const disabled = points.filter((point) => disabledIds.has(point.id) && isShown(point));
 
     let overlays: kakao.maps.CustomOverlay[] = [];
 
@@ -154,7 +185,7 @@ export function useRoutePath(
         addOverlay(point.lat, point.lng, renderToStaticMarkup(<NumberedMarker index={null} />), 0);
       });
 
-      clusterByPixelDistance(map, numbered, readClusterDistance()).forEach((cluster) => {
+      clusterByPixelDistance(map, shown, readClusterDistance()).forEach((cluster) => {
         const isCluster = cluster.items.length > 1;
         const markup = isCluster ? (
           <ClusterMarker count={cluster.items.length} />
@@ -178,7 +209,7 @@ export function useRoutePath(
     window.kakao.maps.event.addListener(map, 'idle', render);
 
     const byDate = new Map<string, RoutePlace[]>();
-    numbered.forEach((point) => {
+    shown.forEach((point) => {
       const group = byDate.get(point.date) ?? [];
       group.push(point);
       byDate.set(point.date, group);
@@ -212,16 +243,91 @@ export function useRoutePath(
       overlays.forEach((overlay) => overlay.setMap(null));
       polylines.forEach((polyline) => polyline.setMap(null));
     };
-  }, [map, points, disabledIds]);
+  }, [map, points, disabledIds, dateFilter]);
 
-  // 고른 날짜가 서로 멀리 떨어져 있으면 기본 중심에선 화면 밖으로 나간다 → 전부 담기게 맞춘다.
-  // **장소를 껐다 켤 때는 다시 맞추지 않는다** — 칩 하나 누를 때마다 지도가 튀면 어디를 봤는지
-  // 잃어버린다. 그래서 마커 효과와 분리해 날짜(points)에만 반응시킨다.
+  /**
+   * 지금 그리는 장소가 전부 담기게 화면을 맞춘다.
+   *
+   * 고른 날짜가 서로 멀리 떨어져 있으면 기본 중심에선 화면 밖으로 나가고, 날짜를 하나로
+   * 좁히면 그 하루가 화면 구석에 작게 남는다. **날짜 필터에도 반응해야 하는 이유가 이것** —
+   * 걸러 놓고 화면은 사흘치 범위 그대로면, 좁힌 보람이 지도에는 나타나지 않는다.
+   *
+   * **장소를 껐다 켤 때는 다시 맞추지 않는다** — 칩 하나 누를 때마다 지도가 튀면 어디를
+   * 봤는지 잃어버린다. 그래서 `disabledIds` 가 아니라 그릴 범위(`shownPlaces`)에만 건다.
+   */
+  const shownPlaces = useMemo(
+    () => (dateFilter === null ? points : points.filter((point) => point.date === dateFilter)),
+    [points, dateFilter],
+  );
+
   useEffect(() => {
-    if (!map || points.length === 0) return;
+    if (!map || shownPlaces.length === 0) return;
 
     const bounds = new window.kakao.maps.LatLngBounds();
-    points.forEach((point) => bounds.extend(new window.kakao.maps.LatLng(point.lat, point.lng)));
-    map.setBounds(bounds);
-  }, [map, points]);
+    shownPlaces.forEach((point) =>
+      bounds.extend(new window.kakao.maps.LatLng(point.lat, point.lng)),
+    );
+
+    /*
+      여백을 주지 않으면 마커가 화면 가장자리에 딱 붙고, 아래쪽 마커는 하단 시트 뒤로
+      들어가 아예 안 보인다(시트는 지도 위에 떠 있지 지도를 깎지 않는다).
+
+      위·좌·우 `EDGE_PADDING_PX` 는 마커가 잘리지 않을 만큼만이다 — 순번 마커가 36px
+      이고 가운데 정렬이라 절반인 18px 보다 커야 한다.
+    */
+    map.setBounds(bounds, EDGE_PADDING_PX, EDGE_PADDING_PX, bottomPaddingPx, EDGE_PADDING_PX);
+  }, [map, shownPlaces, bottomPaddingPx]);
+
+  /**
+   * 따라가기 — 고른 장소를 **보이는 자리 한가운데**로 옮긴다.
+   *
+   * 지도 중심에 그냥 놓으면 하단 시트의 위쪽 경계에 딱 걸린다(시트가 화면 절반이라 지도
+   * 중심이 곧 시트 윗변이다). 그래서 시트 높이의 절반만큼 아래 지점을 중심으로 삼아,
+   * 장소가 그만큼 위로 올라오게 한다.
+   *
+   * 화면 좌표 ↔ 좌표 변환은 지도의 projection 으로 한다 — 위경도로 직접 오프셋을 더하면
+   * 같은 픽셀이라도 위도와 배율에 따라 거리가 달라진다.
+   */
+  /*
+    옮겨갈 때 필요한 값들은 ref 로 읽는다. 의존성에 넣으면 **날짜를 바꿀 때 화면 맞추기와
+    싸운다** — 위 effect 가 그 날짜 전체를 담고 나면 이 effect 가 곧바로 한 곳으로 당겨서,
+    걸러 본 하루가 한 번도 안 보인다. 옮기는 건 오직 '따라가기를 눌렀을 때' 여야 한다.
+  */
+  const focusContextRef = useRef({ shownPlaces, bottomPaddingPx });
+  useEffect(() => {
+    focusContextRef.current = { shownPlaces, bottomPaddingPx };
+  });
+
+  useEffect(() => {
+    if (!map || focusedPlaceId == null) return;
+
+    const { shownPlaces: places, bottomPaddingPx: padding } = focusContextRef.current;
+    const place = places.find((point) => point.id === focusedPlaceId);
+    if (!place) return;
+
+    const target = new window.kakao.maps.LatLng(place.lat, place.lng);
+
+    // 번호가 안 읽히는 배율이면 먼저 당긴다. 옮겨간 자리에서 순서를 확인하는 게 목적이라
+    // 축소된 채 옮겨가면 헛걸음이 된다. 보통 첫 한 번만 걸린다.
+    const level = map.getLevel();
+    const nextLevel = Math.min(level, NODE_FOCUS_LEVEL);
+
+    /*
+      ⚠️ 오프셋은 **바뀔 배율 기준**으로 환산한다. projection 은 지금 배율의 것이고,
+      한 단계 확대할 때마다 축척이 2배라 같은 화면 거리라도 좌표 차이는 절반이 된다.
+      환산하지 않으면 확대할수록 목표보다 아래로 더 많이 내려가 앉는다.
+      (`findSplitLevel` 이 쓰는 것과 같은 배율 규칙이다.)
+    */
+    const scale = 2 ** (level - nextLevel);
+    const projection = map.getProjection();
+    const point = projection.containerPointFromCoords(target);
+    const center = projection.coordsFromContainerPoint(
+      new window.kakao.maps.Point(point.x, point.y + padding / 2 / scale),
+    );
+
+    // animate: 확대도 이동도 한 번에 튀지 않게. 둘 다 필요한 경우엔 확대가 먼저 걸리고
+    // 이어서 이동이 붙는다.
+    if (nextLevel !== level) map.setLevel(nextLevel, { anchor: target, animate: true });
+    map.panTo(center);
+  }, [map, focusedPlaceId]);
 }

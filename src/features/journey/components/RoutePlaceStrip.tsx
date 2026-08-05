@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { RoutePlace } from '../types/route';
 import { formatDateLabel } from '../lib/formatDate';
+import { buildSequenceMap } from '../lib/sequence';
 import { RouteDateChips } from './RouteDateChips';
 
 interface RoutePlaceStripProps {
@@ -10,10 +11,10 @@ interface RoutePlaceStripProps {
   /** 이 동선이 걸친 날짜. 필터 칩 줄로 그려진다(화면설계서 6번). */
   dates: string[];
   /**
-   * 목록에 보일 날짜. `null` 이면 전부.
+   * 들여다볼 날짜. `null` 이면 전부. **지도도 같은 범위로 좁혀진다.**
    *
-   * **보기만 거른다 — 동선에서 빼는 게 아니다.** 지도에는 걸러진 날짜의 장소도 그대로
-   * 그려지고 번호도 유지된다. 빼고 넣는 건 `onToggleAllVisible` 과 줄 탭이 맡는다.
+   * **보기만 거른다 — 동선에서 빼는 게 아니다.** 걸러진 날짜의 장소도 동선에 그대로 남고
+   * 번호도 유지된다. 빼고 넣는 건 `onToggleAllVisible` 과 줄 탭이 맡는다.
    */
   dateFilter: string | null;
   onChangeDateFilter: (date: string | null) => void;
@@ -33,24 +34,68 @@ interface RoutePlaceStripProps {
   onSave?: () => void;
   onTogglePlace: (placeId: number) => void;
   /**
+   * 접힘 상태는 **부모가 들고 있다.** 지도가 화면을 맞출 때 시트가 덮는 높이를 빼야 하는데,
+   * 그 값이 접힘에 따라 달라지기 때문이다(`SHEET_EXPANDED_RATIO` / `SHEET_COLLAPSED_PX`).
+   */
+  collapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
+  /**
    * 지금 짚어줄 장소들. 지도에서 **겹쳐서 못 쪼개지는 묶음**을 탭했을 때 채워진다 —
    * 그 자리에선 더 확대해도 안 갈라지므로, 대신 목록에서 어느 장소들인지 보여준다.
    * 새 배열이 오면(같은 장소를 다시 탭해도) 시트가 펼쳐지고 첫 줄로 스크롤한다.
    */
   highlightedPlaceIds?: readonly number[];
+  /**
+   * 지금 따라가고 있는 장소. 지도가 그리로 옮겨간 참이라 **목록도 같은 줄을 보여준다** —
+   * 이름과 사진은 여기에만 있어서, 목록이 딴 데를 보고 있으면 지도와 시트가 다른 말을 한다.
+   *
+   * 짚어주기(`highlightedPlaceIds`)와 달리 **사라지지 않는다.** 따라가는 동안 계속 유지되는
+   * 자리라서 띠를 옅게(GREEN-100) 깔아 목록을 훑는 데 방해되지 않게 한다.
+   */
+  focusedPlaceId?: number | null;
+  /**
+   * 동선 따라가기 줄(`RouteNodeStepper`). **손잡이 바로 아래, 접혀도 남는 자리**에 놓인다 —
+   * 접어 둔 채 지도만 보며 따라가는 게 이 기능의 주 사용법이라 접히는 영역에 두면 안 된다.
+   *
+   * 있으면 접혔을 때 뜨던 `전체 동선` 제목을 대신한다: 접힌 시트가 무엇인지는 이 줄이 이미
+   * 말하고 있어서, 둘을 같이 두면 같은 말을 두 줄로 하며 지도만 더 가린다.
+   *
+   * **훑을 게 없으면 부모가 아예 안 넘긴다**(그때는 제목이 그대로 뜬다).
+   */
+  stepper?: ReactNode;
 }
 
 /** 사진을 안 올린 장소. 홈 마커·`RoutePlacePreview` 와 같은 기본 아이콘을 쓴다. */
 const FALLBACK_ICON = '/markers/tree.svg';
 
 /**
- * 목록에 보이는 높이. 줄 하나가 72px(사진 56 + 위아래 8)이라 **2.5줄**이 걸치는 값이다.
+ * 펼친 시트가 차지하는 화면 높이(50dvh).
  *
- * 반 줄을 일부러 남긴다 — 딱 떨어지게 자르면 목록이 거기서 끝난 것처럼 보여 아무도 안
- * 굴린다. 잘린 줄이 보이는 게 스크롤바보다 확실한 신호다(모바일 오버레이 스크롤바는
- * 손을 떼면 사라진다).
+ * **장소 수와 무관하게 고정이다.** 예전엔 목록에 상한(180px)만 주고 나머지를 내용이
+ * 정하게 뒀는데, 그러면 카드 수에 따라 시트 높이가 100px 남짓 오르내려서 **지도가 시트에
+ * 얼마나 가리는지를 알 수 없었다.** 지도는 마커가 전부 담기게 화면을 맞추면서 시트 높이만큼
+ * 아래를 비워둬야 하는데, 그 값이 매번 달라지면 재는 수밖에 없다. 고정해 두면 계산으로 안다.
+ *
+ * 390×844 기준 422px — 손잡이·따라가기 줄·필터·개수줄·저장 버튼을 뺀 목록 자리가 160px
+ * 안팎으로, 줄 하나(72px)로 치면 **2.2줄**이다. 반 줄이 걸쳐 보여야 목록이 더 있다는 게
+ * 읽히므로(딱 떨어지게 잘리면 거기서 끝난 줄 알고 아무도 안 굴린다) 그 여유가 남게 잡았다.
+ *
+ * 45dvh 였는데 필터와 개수줄 사이 간격을 넓히면서 그만큼 목록에서 빠져 올렸다.
+ * 따라가기 줄이 지도 위 알약에서 시트 안으로 들어오면서 목록이 2.8 → 2.2줄이 됐지만
+ * **높이는 그대로 둔다** — 시트를 키우면 알약을 없애며 되찾은 지도를 도로 내주는 셈이다.
+ * 작은 기기(667px)에선 한 줄 남짓, 큰 기기에선 세 줄 가까이.
  */
-const LIST_VIEWPORT_PX = 180;
+export const SHEET_EXPANDED_RATIO = 0.5;
+
+/**
+ * 접었을 때 남는 높이. 손잡이 + 따라가기 줄(없으면 `전체 동선` 줄) + 저장 버튼 + 안전영역의
+ * 어림값이다.
+ *
+ * **지도 패딩에만 쓰는 값이라 어림으로 충분하다** — 레이아웃은 여전히 내용이 정한다.
+ * 접힌 시트는 화면을 조금만 먹으므로 몇 px 어긋나도 마커가 가려지지 않는다.
+ * (저장된 동선 보기에는 저장 버튼이 없어 실제로는 이보다 낮다 — 지도 아래가 조금 더 빌 뿐이다.)
+ */
+export const SHEET_COLLAPSED_PX = 155;
 
 /** 짚어준 줄 위에 남기는 여백. 위에 이전 줄이 살짝 걸쳐 보여야 목록 중간이라는 게 읽힌다. */
 const HIGHLIGHT_SCROLL_MARGIN_PX = 12;
@@ -107,15 +152,18 @@ function useCollapseDrag(setCollapsed: (collapsed: boolean) => void) {
  * 화면 하단의 동선 시트. **이 화면의 조작이 전부 여기 모여 있다** — 날짜 켜고 끄기,
  * 장소 켜고 끄기, 동선 저장. 지도 위에 남는 건 뒤로가기(와 저장된 동선의 제목)뿐이다.
  *
- * 위에서부터 **날짜 필터**(볼 범위 좁히기) → **개수·전체 선택 줄** → **장소 목록**
- * (하나씩 다루기) → **저장 버튼**. 가운데 셋만 여닫히고, 저장 버튼은 시트 맨 아래에
- * 붙박이다 — 접을 때 버튼이 위아래로 뛰어다니면 어디를 누르려던 건지 놓친다.
+ * 위에서부터 **따라가기 줄**(한 곳씩 짚어가기) → **날짜 필터**(볼 범위 좁히기) →
+ * **개수·전체 선택 줄** → **장소 목록**(하나씩 다루기) → **저장 버튼**. 가운데 셋만 여닫히고,
+ * 따라가기 줄과 저장 버튼은 위아래에 붙박이다 — 접을 때 버튼이 위아래로 뛰어다니면 어디를
+ * 누르려던 건지 놓친다.
  *
- * **접으면 `전체 동선` 과 `동선저장` 만 남는다.** 접기는 지도를 넓게 보려는 것이지 작업을
- * 멈추는 게 아니라서 저장은 손에 닿아야 하고, 그 밖의 것은 지도에 자리를 내준다.
+ * **접으면 따라가기 줄과 `동선저장` 만 남는다.** 접기는 지도를 넓게 보려는 것이지 작업을
+ * 멈추는 게 아니라서 저장은 손에 닿아야 하고, 따라가기는 접어 놓고 지도만 볼 때 오히려
+ * 더 쓰인다. 그 밖의 것은 지도에 자리를 내준다.
  *
- * 날짜 칩은 **거르기지 고르기가 아니다.** 누르면 그 날짜의 장소만 목록에 남고, 지도와
- * 번호는 그대로다. 동선에서 빼고 넣는 건 옆의 `전체 선택`/`전체 해제` 와 각 줄의 탭이 맡는다.
+ * 날짜 칩은 **거르기지 고르기가 아니다.** 누르면 그 날짜의 장소만 목록과 지도에 남는데,
+ * **번호는 그대로고 동선에서 빠지지도 않는다** — 저장되는 건 켜져 있는 장소 전부다.
+ * 동선에서 빼고 넣는 건 옆의 `전체 선택`/`전체 해제` 와 각 줄의 탭이 맡는다.
  *
  * **장소는 세로 목록이고 시트 안에서 스크롤한다.** 가로로 늘어놓던 시절엔 20곳이면 오른쪽
  * 끝까지 밀어야 했고, 화면 폭이 정한 칸에 이름을 욱여넣느라 사진과 날짜를 같이 못 보여줬다.
@@ -148,39 +196,59 @@ export function RoutePlaceStrip({
   onSave,
   onTogglePlace,
   highlightedPlaceIds,
+  focusedPlaceId,
+  collapsed,
+  onCollapsedChange,
+  stepper,
 }: RoutePlaceStripProps) {
   const activeCount = places.filter((place) => !disabledPlaceIds.has(place.id)).length;
-  const [collapsed, setCollapsed] = useState(false);
-  const drag = useCollapseDrag(setCollapsed);
+  const drag = useCollapseDrag(onCollapsedChange);
   const listRef = useRef<HTMLUListElement>(null);
   const highlighted = new Set(highlightedPlaceIds ?? []);
+
+  /**
+   * 목록을 그 줄까지 굴린다.
+   *
+   * ⚠️ `scrollIntoView` 를 쓰지 않는다 — 조상 스크롤 컨테이너까지 함께 움직일 수 있다.
+   * 이 목록의 `scrollTop` 만 건드린다(`JourneyChips` 와 같은 이유).
+   * 위치는 `offsetTop` 이 아니라 rect 차이로 잰다 — 줄(`li`)이 `relative` 라 `offsetParent`
+   * 가 목록이 아니어서 `offsetTop` 이 엉뚱한 기준을 가리킨다.
+   */
+  const scrollToPlace = (placeId: number) => {
+    const list = listRef.current;
+    const row = list?.querySelector<HTMLElement>(`[data-place-id="${placeId}"]`);
+    if (!list || !row) return;
+
+    const top = row.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+    list.scrollTo({ top: Math.max(top - HIGHLIGHT_SCROLL_MARGIN_PX, 0), behavior: 'smooth' });
+  };
 
   /*
     짚어줄 장소가 생기면 시트를 펼치고 그 줄까지 굴려서 보여준다.
 
     접혀 있으면 목록 자체가 안 보이므로 펴는 게 먼저다 — 접기는 사용자가 지도를 넓게
     보려고 한 선택이지만, 지도가 "여기선 더 못 보여준다"고 답한 참이라 시트가 이어받는다.
-
-    ⚠️ `scrollIntoView` 를 쓰지 않는다 — 조상 스크롤 컨테이너까지 함께 움직일 수 있다.
-    이 목록의 `scrollTop` 만 건드린다(`JourneyChips` 와 같은 이유).
-    위치는 `offsetTop` 이 아니라 rect 차이로 잰다 — 줄(`li`)이 `relative` 라 `offsetParent`
-    가 목록이 아니어서 `offsetTop` 이 엉뚱한 기준을 가리킨다.
   */
   useEffect(() => {
     if (!highlightedPlaceIds || highlightedPlaceIds.length === 0) return;
 
-    setCollapsed(false);
+    onCollapsedChange(false);
+    // scrollToPlace 는 ref 만 읽으므로 의존성에 넣지 않는다(매 렌더 새로 만들어진다).
+    scrollToPlace(highlightedPlaceIds[0]);
+  }, [highlightedPlaceIds, onCollapsedChange]);
 
-    const list = listRef.current;
-    const row = list?.querySelector<HTMLElement>(`[data-place-id="${highlightedPlaceIds[0]}"]`);
-    if (!list || !row) return;
+  /*
+    따라가는 자리가 바뀌면 목록도 그 줄로 옮겨간다. **시트를 펴지는 않는다** — 접어 둔 채
+    지도만 보며 따라가는 것도 멀쩡한 사용법이라, 접기를 되돌리는 건 사용자 선택을 뒤엎는다.
+  */
+  useEffect(() => {
+    if (focusedPlaceId == null || collapsed) return;
 
-    const top = row.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
-    list.scrollTo({ top: Math.max(top - HIGHLIGHT_SCROLL_MARGIN_PX, 0), behavior: 'smooth' });
-  }, [highlightedPlaceIds]);
+    scrollToPlace(focusedPlaceId);
+  }, [focusedPlaceId, collapsed]);
 
-  // 번호는 켜진 장소에만 붙는다. map 안에서 증가시키므로 렌더 순서대로 1,2,3… 이 된다.
-  let sequence = 0;
+  // 번호는 켜진 장소에만, 거르기 전에 붙는다 — 규칙은 `buildSequenceMap` 이 들고 있다.
+  const sequenceById = buildSequenceMap(places, disabledPlaceIds);
 
   return (
     /*
@@ -189,15 +257,25 @@ export function RoutePlaceStrip({
       시트의 색이 아니다.** 바꾸면서 안쪽 요소도 같이 뒤집혔다: 크림으로 띄우던 것들
       (날짜 칩·손잡이·`제외됨`)은 흰 바닥에선 안 보이므로 각각 제 역할색을 찾아갔다.
     */
-    <div className="rounded-t-[20px] bg-white px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
+    <div
+      /*
+        ⚠️ **가로 여백은 시트가 주지 않는다 — 안쪽 줄들이 각자 갖는다.** 시트가 `px-5` 를
+        가지면 접히는 영역(`overflow-hidden`)이 그 여백선에서 잘라내서, 목록이 `-mx-5` 로
+        밖으로 나가려 해도 소용이 없다. 그래서 줄에 깔린 배경색이 좌우 20px 를 못 덮고
+        흰 띠가 남았다. 시트를 끝까지 열어 두고 여백은 줄이 padding 으로 갖는다.
+      */
+      className={`flex flex-col rounded-t-[20px] bg-white pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] ${
+        collapsed ? '' : 'h-[50dvh]'
+      }`}
+    >
       {/* touch-none: 세로 끌기를 브라우저 기본 제스처에 뺏기지 않게.
           손잡이와 맨 아래 줄에만 건다 — 가운데(날짜 칩·목록)는 저희끼리 굴러가야 한다. */}
-      <div className="touch-none" {...drag.handlers}>
+      <div className="shrink-0 touch-none px-5" {...drag.handlers}>
         <button
           type="button"
           onClick={() => {
             if (drag.consumeDrag()) return;
-            setCollapsed((value) => !value);
+            onCollapsedChange(!collapsed);
           }}
           aria-expanded={!collapsed}
           aria-label={collapsed ? '동선 목록 펼치기' : '동선 목록 접기'}
@@ -209,20 +287,28 @@ export function RoutePlaceStrip({
         </button>
 
         {/* 접혔을 때만. 그때는 시트가 무엇인지 말해줄 게 이 한 줄뿐이다 — 펼치면 날짜
-            필터와 목록이 이미 그 말을 하고 있어서 자리만 먹는다. */}
-        {collapsed && (
+            필터와 목록이 이미 그 말을 하고 있어서 자리만 먹는다.
+            따라가기 줄이 있으면 그쪽이 이 말을 대신한다(`stepper` 참고). */}
+        {collapsed && !stepper && (
           <h2 className="truncate pb-1 pt-1 text-[15px] font-medium tracking-tight text-[#2c3930]">
             전체 동선
           </h2>
         )}
       </div>
 
-      {/* 접히는 영역. 안쪽 목록이 제 높이(`LIST_VIEWPORT_PX`)로 잘려 있으므로 이 영역의 높이도
-          날짜 칩 + 목록으로 고정이다 → 재지 않고 넉넉한 상한만 준다. max-height 는 상한일 뿐이라
-          넉넉히 잡아도 펼친 높이가 커지지 않는다. `max-h-0` 로 접히므로 접힌 높이는 정확히 0. */}
+      {/* 동선 따라가기. 접히는 영역 **밖**이라 접어도 남는다.
+          ⚠️ 끌기 영역(`drag.handlers`) 안에 넣지 않는다 — 화살표를 누르려다 손가락이 조금
+          밀리면 시트가 접히면서 장소까지 넘어간다. 시트를 잡는 자리는 손잡이와 저장 줄이다. */}
+      {stepper}
+
+      {/* 접히는 영역. 펼쳤을 때 시트에 남는 자리를 전부 차지하고(`flex-1`), 그 안에서 목록이
+          다시 남는 자리를 갖는다 — 시트 높이가 `SHEET_EXPANDED_RATIO` 로 고정이라 목록에 따로
+          상한을 줄 필요가 없어졌다. `max-h-*` 두 값은 여닫는 애니메이션의 끝점이다(높이가
+          `auto` 면 전환이 안 붙는다). 펼친 끝점은 시트 높이와 같은 50dvh — 항상 실제 높이보다
+          크므로 값을 제한하지 않는다. */}
       <div
-        className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
-          collapsed ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'
+        className={`flex min-h-0 flex-1 flex-col overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
+          collapsed ? 'max-h-0 opacity-0' : 'max-h-[50dvh] opacity-100'
         }`}
         // 접힌 동안 칩·목록이 보이지 않는데도 탭 순서·스크린리더에 남는 걸 막는다.
         // (`overflow:hidden` 은 시각만 자르지 초점은 그대로 들어간다.)
@@ -233,7 +319,7 @@ export function RoutePlaceStrip({
             음수 마진: 칩 그림자가 좌우 스크롤 끝에서 잘리지 않게 패딩만큼 밖으로 뺐다가
             같은 값으로 되돌린다. 날짜가 없으면 `pt-4` 만 남아 빈 틈이 되므로 감싼 채로 뺀다. */}
         {dates.length > 0 && (
-          <div className="-mx-5 px-5 pt-2">
+          <div className="shrink-0 px-5 pt-2">
             <RouteDateChips dates={dates} filter={dateFilter} onChangeFilter={onChangeDateFilter} />
           </div>
         )}
@@ -242,24 +328,29 @@ export function RoutePlaceStrip({
             칩 줄과 목록 사이에 두는 이유는 **둘 다에 걸쳐 있어서**다 — 개수는 목록이 만든
             결과이고, `전체 선택`/`전체 해제` 는 위에서 고른 필터 범위에 적용된다.
             문구는 지금 상태가 아니라 **누르면 무슨 일이 일어나는지**를 말한다. */}
-        <div className="flex items-center gap-3 pt-3">
+        {/* 칩 줄과 사이를 넉넉히 벌린다(pt-5). 붙여 두면 칩을 누르려던 손가락이 바로 아래
+            `전체 선택` 에 닿는다 — 둘은 하는 일이 다르다(보기 좁히기 vs 동선에서 빼기).
+            좁은 간격은 눈에도 한 덩어리로 읽혀서, 칩을 누르면 선택까지 바뀌는 줄 알게 된다. */}
+        <div className="flex shrink-0 items-center gap-3 px-5 pt-5">
           {/* 색이 GREEN-500 이었다 — 연초록 바닥 위 2.35:1 로, 가이드라인이 결함이라고
               집어둔 조합이다. 보조 텍스트 자리이므로 INK-muted(흰 위 5.98:1). */}
           <p className="min-w-0 flex-1 truncate text-[13px] text-[#60655c]">
             장소 {maxPlaces === undefined ? activeCount : `${activeCount}/${maxPlaces}`}개
           </p>
 
+          {/* 글자는 13px 한 줄이라 그대로 두면 누를 자리가 20px 도 안 된다. 음수 마진으로
+              **줄 간격은 그대로 두고 누를 자리만** 40px 가까이로 넓힌다(권장 터치 영역). */}
           <button
             type="button"
             onClick={onToggleAllVisible}
-            className="shrink-0 text-[13px] font-medium text-[#60655c] underline underline-offset-2"
+            className="-my-2.5 shrink-0 py-2.5 text-[13px] font-medium text-[#60655c] underline underline-offset-2"
           >
             {allVisibleSelected ? '전체 해제' : '전체 선택'}
           </button>
         </div>
 
         {places.length === 0 ? (
-          <p className="mt-4 text-[13px] text-[#60655c]">표시할 동선이 없어요</p>
+          <p className="mt-4 px-5 text-[13px] text-[#60655c]">표시할 동선이 없어요</p>
         ) : (
           /*
             시트 안에서 굴러가는 목록.
@@ -273,16 +364,14 @@ export function RoutePlaceStrip({
           */
           <ul
             ref={listRef}
-            className="-mx-5 mt-3 overflow-y-auto overscroll-contain px-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            style={{ maxHeight: LIST_VIEWPORT_PX }}
+            // 가로 여백을 **목록이 아니라 줄이** 갖는다 — 목록이 패딩으로 밀어 두면 줄에
+            // 깔린 배경색이 그 여백에 못 닿아 좌우가 흰 채로 남는다(띠가 잘려 보인다).
+            className="mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {places.map((place, index) => {
               const disabled = disabledPlaceIds.has(place.id);
-              // 번호는 **거르기 전에** 매긴다. 걸러진 목록 안에서 다시 세면 3월 31일만
-              // 봤을 때 4월 1일 첫 장소가 1번이 되어, 지도의 마커 번호와 어긋난다.
-              if (!disabled) sequence += 1;
 
-              // 필터에 안 걸리는 줄은 그리지 않는다(번호는 위에서 이미 넘겼다).
+              // 필터에 안 걸리는 줄은 그리지 않는다(번호는 전체 기준으로 이미 매겨져 있다).
               if (dateFilter !== null && place.date !== dateFilter) return null;
 
               /*
@@ -302,19 +391,27 @@ export function RoutePlaceStrip({
                 // 짚어준 줄은 GREEN-300 띠를 깐다. 흰 바닥과 확실히 갈리면서, INK 글자가
                 // 그 위에서 7.9:1 이라 읽는 데 지장이 없다. 사라질 때 부드럽게 빠지도록
                 // `transition-colors` 를 걸어둔다 — 띠가 툭 없어지면 뭔가 고장 난 것처럼 보인다.
+                //
+                // 띠는 **시트 폭을 가로지른다.** 가로 여백(px-5)을 줄이 직접 가지므로 색이
+                // 여백까지 덮는다. 그래서 모서리를 둥글리지 않는다 — 화면 끝에 닿는 띠라
+                // 둥근 모서리가 걸칠 자리가 없다.
                 <li
                   key={place.id}
                   data-place-id={place.id}
-                  className={`relative transition-colors duration-500 ${
-                    highlighted.has(place.id) ? 'rounded-[14px] bg-pictree-300' : ''
+                  className={`relative px-5 transition-colors duration-500 ${
+                    highlighted.has(place.id)
+                      ? 'bg-pictree-300'
+                      : place.id === focusedPlaceId
+                        ? 'bg-pictree-100'
+                        : ''
                   }`}
                 >
                   {linked && (
                     <span
                       aria-hidden
-                      // 사진(56px)의 세로 중심선 위에 놓는다: 왼쪽 28 - 선 굵기 절반.
-                      // 사진 아래(64)에서 다음 사진 위(80)까지 16px.
-                      className="absolute left-[27px] top-16 h-4 border-l-2 border-dashed border-[#7a5c3a]/50"
+                      // 사진(56px)의 세로 중심선 위에 놓는다: 줄 여백 20 + 사진 반폭 28 -
+                      // 선 굵기 절반. 사진 아래(64)에서 다음 사진 위(80)까지 16px.
+                      className="absolute left-[47px] top-16 h-4 border-l-2 border-dashed border-[#7a5c3a]/50"
                     />
                   )}
 
@@ -382,7 +479,7 @@ export function RoutePlaceStrip({
                       </span>
                     ) : (
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-pictree-700 text-[13px] font-medium text-white">
-                        {sequence}
+                        {sequenceById.get(place.id)}
                       </span>
                     )}
                   </button>
@@ -408,7 +505,7 @@ export function RoutePlaceStrip({
         이 화면에 남아 있다는 건 아직 저장 전이라는 뜻이다.
       */}
       {onSave && (
-        <div className="touch-none pt-3" {...drag.handlers}>
+        <div className="shrink-0 touch-none px-5 pt-3" {...drag.handlers}>
           <button
             type="button"
             onClick={() => {
