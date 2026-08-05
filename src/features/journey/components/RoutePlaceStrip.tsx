@@ -336,7 +336,9 @@ export function RoutePlaceStrip({
           */
           <ul
             ref={listRef}
-            className="-mx-5 mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            // 가로 여백을 **목록이 아니라 줄이** 갖는다 — 목록이 패딩으로 밀어 두면 줄에
+            // 깔린 배경색이 그 여백에 못 닿아 좌우가 흰 채로 남는다(띠가 잘려 보인다).
+            className="-mx-5 mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {places.map((place, index) => {
               const disabled = disabledPlaceIds.has(place.id);
@@ -361,23 +363,27 @@ export function RoutePlaceStrip({
                 // 짚어준 줄은 GREEN-300 띠를 깐다. 흰 바닥과 확실히 갈리면서, INK 글자가
                 // 그 위에서 7.9:1 이라 읽는 데 지장이 없다. 사라질 때 부드럽게 빠지도록
                 // `transition-colors` 를 걸어둔다 — 띠가 툭 없어지면 뭔가 고장 난 것처럼 보인다.
+                //
+                // 띠는 **시트 폭을 가로지른다.** 가로 여백(px-5)을 줄이 직접 가지므로 색이
+                // 여백까지 덮는다. 그래서 모서리를 둥글리지 않는다 — 화면 끝에 닿는 띠라
+                // 둥근 모서리가 걸칠 자리가 없다.
                 <li
                   key={place.id}
                   data-place-id={place.id}
-                  className={`relative transition-colors duration-500 ${
+                  className={`relative px-5 transition-colors duration-500 ${
                     highlighted.has(place.id)
-                      ? 'rounded-[14px] bg-pictree-300'
+                      ? 'bg-pictree-300'
                       : place.id === focusedPlaceId
-                        ? 'rounded-[14px] bg-pictree-100'
+                        ? 'bg-pictree-100'
                         : ''
                   }`}
                 >
                   {linked && (
                     <span
                       aria-hidden
-                      // 사진(56px)의 세로 중심선 위에 놓는다: 왼쪽 28 - 선 굵기 절반.
-                      // 사진 아래(64)에서 다음 사진 위(80)까지 16px.
-                      className="absolute left-[27px] top-16 h-4 border-l-2 border-dashed border-[#7a5c3a]/50"
+                      // 사진(56px)의 세로 중심선 위에 놓는다: 줄 여백 20 + 사진 반폭 28 -
+                      // 선 굵기 절반. 사진 아래(64)에서 다음 사진 위(80)까지 16px.
+                      className="absolute left-[47px] top-16 h-4 border-l-2 border-dashed border-[#7a5c3a]/50"
                     />
                   )}
 
