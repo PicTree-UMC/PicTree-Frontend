@@ -37,16 +37,45 @@
 }
 
 html,
-body,
 #root {
   height: 100%;
 }
 
+/*
+ * 앱 프레임 = 실제 화면. body 하나가 앱이 놓이는 상자를 확정한다.
+ *
+ * ⚠️ 되돌리기 전에 읽을 것 — iOS 홈화면 PWA(black-translucent)는 웹뷰를 화면 맨 위에서
+ * 시작시키면서 레이아웃 뷰포트 높이는 상태바를 뺀 값으로 준다. 그대로 두면 앱이 통째로
+ * 위로 치우쳐 상단은 상태바와 겹치고 하단엔 상태바 높이만큼 빈 띠가 남는다(#139).
+ * `--vp-shift` 만큼 프레임을 키워 물리 화면과 일치시킨다. 판정은 shared/lib/viewport.ts,
+ * 실측값과 근거도 거기 있다.
+ *
+ * 프레임이 화면과 같아지면 env(safe-area-inset-*) 이 다시 프레임 기준으로 맞는다 —
+ * 화면들이 쓰는 pt-safe / pb-safe / pb-nav 가 전부 제자리를 찾고, 지도의 `fixed inset-0`
+ * 풀블리드도 노치부터 홈 인디케이터까지 그대로 덮는다. 화면마다 보정할 게 없다.
+ *
+ * position: fixed — 흐름에 두면 body 가 뷰포트보다 커져 문서가 그 차이만큼 스크롤된다.
+ * transform      — ⚠️ 지우지 말 것. 값이 0 이어도 transform 이 있어야 body 가
+ *                  `position: fixed` 자손의 기준 상자가 된다. 바텀시트·모달은 전부
+ *                  createPortal 로 body 에 붙어 fixed 로 놓이므로, 이게 없으면 시트만
+ *                  짧은 레이아웃 뷰포트 바닥에 붙어 화면 아래에 떠 보인다.
+ */
 body {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(100% + var(--vp-shift, 0px));
   margin: 0;
   min-width: 320px;
+  transform: translateY(0);
   /* 더블탭 확대 등 브라우저 기본 줌 제스처 차단. 지도 자체 줌(카카오맵)과 충돌 방지 */
   touch-action: manipulation;
+}
+
+/* 위 증상이 실제로 관측된 기기에서만 켠다(viewport.ts). 어긋난 양 = 상태바 높이. */
+.vp-gap {
+  --vp-shift: env(safe-area-inset-top);
 }
 
 /*
