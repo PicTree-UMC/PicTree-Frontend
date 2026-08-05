@@ -14,6 +14,8 @@ export const ROUTES = {
   privacy: '/profile/privacy',
   /** 근처 나무 알림으로 받은 기록 목록. */
   alertLogs: '/profile/alerts',
+  /** 도움말 / FAQ. */
+  helpFaq: '/profile/help',
   blog: '/blog',
   blogCreate: '/blog/create',
   premium: '/premium',
