@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { clusterByPixelDistance } from '@/shared/lib/markerCluster';
+import { clusterByPixelDistance, findSplitLevel } from '@/shared/lib/markerCluster';
 import { ClusterMarker } from '@/shared/components';
+import { MIN_ZOOM_LEVEL } from '../../home/hooks/useKakaoMap';
 import { RoutePlace } from '../types/route';
 import { NumberedMarker } from '../components/NumberedMarker';
 
@@ -50,7 +51,22 @@ export function useRoutePath(
   map: kakao.maps.Map | null,
   points: RoutePlace[],
   disabledIds: ReadonlySet<number>,
+  /**
+   * 최대 줌인까지 확대해도 안 쪼개지는 묶음을 탭했을 때. 겹쳐 있는 장소 id 들을 넘긴다.
+   * 지도에서는 더 보여줄 게 없으니 화면 쪽(하단 시트)이 대신 짚어주라는 신호다.
+   */
+  onOverlappingTap?: (placeIds: number[]) => void,
 ) {
+  /*
+    콜백을 ref 에 담아 쓴다. 아래 effect 의 의존성에 넣으면 부모가 매 렌더 새 함수를
+    넘길 때마다 마커를 전부 지웠다 다시 그리게 된다(등장 애니메이션까지 다시 탄다).
+    탭 시점에 최신 콜백만 있으면 되므로 ref 로 충분하다.
+  */
+  const onOverlappingTapRef = useRef(onOverlappingTap);
+  useEffect(() => {
+    onOverlappingTapRef.current = onOverlappingTap;
+  }, [onOverlappingTap]);
+
   useEffect(() => {
     if (!map) return;
 
@@ -67,15 +83,62 @@ export function useRoutePath(
 
     let overlays: kakao.maps.CustomOverlay[] = [];
 
-    const addOverlay = (lat: number, lng: number, markup: string, zIndex: number) => {
+    /**
+     * `onClick` 이 있으면 content 를 **문자열이 아니라 HTMLElement 로** 만든다 —
+     * `renderToStaticMarkup` 결과는 정적 HTML 이라 React 이벤트가 안 붙어서, 직접 만든
+     * element 에 리스너를 건다(홈 지도 `useMapMarkers` 와 같은 방식).
+     * 리스너는 element 와 함께 사라지므로 따로 떼지 않는다 — 다시 그릴 때 오버레이째 버린다.
+     */
+    const addOverlay = (
+      lat: number,
+      lng: number,
+      markup: string,
+      zIndex: number,
+      onClick?: () => void,
+    ) => {
+      let content: string | HTMLElement = markup;
+
+      if (onClick) {
+        const container = document.createElement('div');
+        container.innerHTML = markup;
+        container.style.cursor = 'pointer';
+        container.addEventListener('click', onClick);
+        content = container;
+      }
+
       const overlay = new window.kakao.maps.CustomOverlay({
         position: new window.kakao.maps.LatLng(lat, lng),
-        content: markup,
+        content,
         yAnchor: 0.5,
         zIndex,
       });
       overlay.setMap(map);
       overlays.push(overlay);
+    };
+
+    /**
+     * 묶음 뱃지 탭 → **쪼개지는 레벨까지 한 번에 확대**(홈 지도와 같은 규칙).
+     *
+     * 한 단계씩 찔러보지 않는 이유: 한 번 눌러도 그대로 뭉쳐 있으면 몇 번을 눌러야 풀리는지
+     * 알 수 없다. 지도를 실제로 움직이지 않고 배율만 곱해 미리 판정한 뒤 그 레벨로 간다.
+     * `anchor` 로 묶음 중심을 고정해 그 지점을 향해 확대된다.
+     *
+     * ⚠️ 최대 줌인까지 가도 안 쪼개지면(좌표가 사실상 겹친 경우) **줌을 건드리지 않는다** —
+     * 확대해봐야 겹친 그대로다. 대신 `onOverlappingTap` 으로 넘겨 하단 시트가 그 장소들을
+     * 짚게 한다. 홈 지도는 이 자리에서 상세 뷰어를 열지만 이 화면엔 뷰어가 없고, 겹친
+     * 장소들은 시트 목록에 번호대로 이미 다 있어서 거기로 데려다주는 게 맞다.
+     */
+    const zoomIntoCluster = (cluster: { lat: number; lng: number; items: RoutePlace[] }) => {
+      const splitLevel = findSplitLevel(map, cluster.items, readClusterDistance(), MIN_ZOOM_LEVEL);
+      if (splitLevel === null) {
+        onOverlappingTapRef.current?.(cluster.items.map((place) => place.id));
+        return;
+      }
+
+      map.setLevel(splitLevel, {
+        anchor: new window.kakao.maps.LatLng(cluster.lat, cluster.lng),
+        animate: true, // 즉시 점프 대신 부드럽게 확대
+      });
     };
 
     /**
@@ -92,19 +155,21 @@ export function useRoutePath(
       });
 
       clusterByPixelDistance(map, numbered, readClusterDistance()).forEach((cluster) => {
-        const markup =
-          cluster.items.length === 1 ? (
-            <NumberedMarker index={cluster.items[0].sequence} />
-          ) : (
-            <ClusterMarker count={cluster.items.length} />
-          );
+        const isCluster = cluster.items.length > 1;
+        const markup = isCluster ? (
+          <ClusterMarker count={cluster.items.length} />
+        ) : (
+          <NumberedMarker index={cluster.items[0].sequence} />
+        );
 
         // 묶음 뱃지는 개별 마커보다 위에 둔다 — 겹칠 만큼 가까우니 아래 깔리면 안 보인다.
+        // 클릭은 묶음에만 붙는다: 순번 마커는 눌러서 할 일이 없다(끄고 켜는 건 시트 몫).
         addOverlay(
           cluster.lat,
           cluster.lng,
           renderToStaticMarkup(markup),
-          cluster.items.length === 1 ? 1 : 2,
+          isCluster ? 2 : 1,
+          isCluster ? () => zoomIntoCluster(cluster) : undefined,
         );
       });
     };
