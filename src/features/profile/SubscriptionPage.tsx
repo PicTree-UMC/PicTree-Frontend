@@ -89,8 +89,19 @@ export function SubscriptionPage() {
    */
   const currentPlan = subscription?.plan.code ?? "FREE";
   const isFree = isFreePlan(currentPlan);
-  // 해지해도 status 는 ACTIVE 로 남고 autoRenew 만 꺼진다 — '해지됨'은 이걸로 판별한다.
-  const isCanceled = Boolean(subscription && !subscription.autoRenew);
+  /**
+   * 해지해도 status 는 ACTIVE 로 남고 autoRenew 만 꺼진다 — '해지됨'은 이걸로 판별한다.
+   *
+   * ⚠️ `autoRenew` 만 보면 안 된다. 구독한 적 없는 무료 사용자에게도 서버가
+   * `{ subscriptionId: null, status: 'FREE', autoRenew: false, expiresAt: null }`
+   * 를 주기 때문에, 그들도 '해지됨'으로 잡혀 만료일 자리에 **1970년 1월 1일**이
+   * 떴다(`new Date(null)` = Unix epoch).
+   *
+   * `subscriptionId` 가 있어야 실제로 구독했던 것이다.
+   */
+  const isCanceled = Boolean(
+    subscription?.subscriptionId != null && !subscription.autoRenew,
+  );
 
   const currentPlanDto = plans?.find((plan) => plan.code === currentPlan);
   const storageMb = currentPlanDto
@@ -126,17 +137,19 @@ export function SubscriptionPage() {
     ? "-"
     : isCanceled
       ? "자동갱신 해지됨"
-      : subscription.nextBillingAt
-        ? formatKoreanDate(subscription.nextBillingAt)
-        : "-";
+      : (formatKoreanDate(subscription.nextBillingAt) ?? "-");
 
   const handleCancel = () => {
     if (!subscription) return;
     cancelMutation.mutate(subscription.subscriptionId, {
       onSuccess: () => {
         setIsCancelOpen(false);
+        // 만료일을 모르면 날짜를 지어내지 않고 문장만 바꾼다(1970년이 뜨던 자리).
+        const until = formatKoreanDate(subscription.expiresAt);
         showToast(
-          `구독을 취소했어요. ${formatKoreanDate(subscription.expiresAt)}까지 그대로 이용할 수 있어요.`,
+          until
+            ? `구독을 취소했어요. ${until}까지 그대로 이용할 수 있어요.`
+            : "구독을 취소했어요. 남은 기간 동안은 그대로 이용할 수 있어요.",
           "info",
         );
       },
@@ -211,8 +224,11 @@ export function SubscriptionPage() {
               !subscription
                 ? null
                 : isCanceled
-                  ? `${formatKoreanDate(subscription.expiresAt)} 만료 · 자동갱신 꺼짐`
-                  : subscription.nextBillingAt
+                  ? // 만료일이 없으면 날짜를 빼고 상태만 알린다(1970년이 뜨던 자리).
+                    [formatKoreanDate(subscription.expiresAt), "만료 · 자동갱신 꺼짐"]
+                      .filter(Boolean)
+                      .join(" ")
+                  : formatKoreanDate(subscription.nextBillingAt)
                     ? `다음 결제: ${formatKoreanDate(subscription.nextBillingAt)}`
                     : null
             }
