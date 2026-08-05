@@ -170,21 +170,24 @@ export function TravelCalendarPage() {
           {/*
             items-start 로 두고 적음·많음 에만 mt 를 준다. 라벨이 붙은 만큼
             열이 길어져도 두 글자는 점 높이(20px) 가운데에 계속 걸리게 하려는 것.
+
+            열 너비는 점(20px)이 아니라 **가장 긴 라벨**('3~4곳')에 맞춘다. 점 너비로
+            잡아 두면 라벨이 칸 밖으로 삐져나와 옆 라벨과 맞붙어 읽힌다.
           */}
-          <div className="mt-3 flex items-start justify-center gap-2.5">
-            <span className="mt-[5px] text-[13px] text-black">적음</span>
+          <div className="mt-4 flex items-start justify-center gap-1">
+            <span className="mt-[5px] px-1 text-[13px] text-black">적음</span>
             {CALENDAR_LEVELS.map(({ shade, label }) => (
-              <span key={label} className="flex w-5 flex-col items-center gap-1">
+              <span key={label} className="flex w-12 flex-col items-center gap-1.5">
                 <span
                   className="h-5 w-5 rounded-full"
                   style={{ backgroundColor: shade }}
                 />
-                <span className="whitespace-nowrap text-[13px] leading-[10px] text-black">
+                <span className="whitespace-nowrap text-[13px] leading-none text-black">
                   {label}
                 </span>
               </span>
             ))}
-            <span className="mt-[5px] text-[13px] text-black">많음</span>
+            <span className="mt-[5px] px-1 text-[13px] text-black">많음</span>
           </div>
         </div>
       </div>

@@ -27,13 +27,16 @@ export function FavoritesPage() {
   const count = data?.count ?? 0;
 
   /**
-   * 최신순 = 방문일 내림차순, 등록순 = 방문일 오름차순(먼저 다녀온 순).
+   * 최신순 = 기록일 내림차순, 등록순 = 기록일 오름차순(먼저 기록한 순).
    *
-   * ⚠️ 즐겨찾기에 담은 시각은 응답에 없다. `visitedAt`(방문일)이 유일한 날짜라
-   * 그걸로 정렬한다. 같은 날이면 treeId 로 갈라 순서가 흔들리지 않게 한다.
+   * ⚠️ 즐겨찾기에 담은 시각은 응답에 없다. 장소를 기록한 날(`createdAt`)이
+   * 유일한 날짜라 그걸로 정렬한다. 같은 날이면 treeId 로 갈라 순서가 흔들리지
+   * 않게 한다. 날짜가 비어 오더라도 정렬이 터지지 않게 빈 문자열로 받는다 —
+   * 목록 하나가 이상하다고 화면 전체가 죽으면 안 된다.
    */
   const sortedFavorites = [...favorites].sort((a, b) => {
-    const cmp = a.visitedAt.localeCompare(b.visitedAt) || a.treeId - b.treeId;
+    const cmp =
+      (a.createdAt ?? "").localeCompare(b.createdAt ?? "") || a.treeId - b.treeId;
     return sortOrder === "latest" ? -cmp : cmp;
   });
 
@@ -172,7 +175,7 @@ export function FavoritesPage() {
                     {place.description}
                   </p>
                 )}
-                <p className="mt-1 text-[13px] text-[#90908F]">{place.visitedAt}</p>
+                <p className="mt-1 text-[13px] text-[#90908F]">{place.createdAt}</p>
               </div>
 
               <button

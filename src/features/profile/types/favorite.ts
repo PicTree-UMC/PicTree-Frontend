@@ -9,8 +9,11 @@ export type FavoritePlace = {
   name: string;
   /** 한 줄 코멘트. 없을 수 있다. */
   description: string | null;
-  /** 방문일 (`2026-03-30` 형태의 날짜 문자열) */
-  visitedAt: string;
+  /**
+   * 장소를 기록한 날 (`2026-03-30` 형태). 서버 필드명이 `createdAt` 이다 —
+   * 다른 화면의 `visitedAt` 과 이름이 다르니 맞춰 쓰지 말 것.
+   */
+  createdAt: string;
   imageUrl: string | null;
 };
 
