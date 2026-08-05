@@ -54,9 +54,11 @@ export const useToggleTimelineFavorite = () => {
     },
     onSettled: () => {
       if (!isAuthenticated) return;
-      // ⚠️ 타임라인 목록 응답에는 isFavorite 가 없다(정규화 시 항상 false). 그래서 이 목록을
-      //    무효화하면 방금 켠 하트가 재조회로 false 로 덮여 되돌아간다 — 낙관적 캐시를 그대로 둔다.
-      //    즐겨찾기를 실제로 들고 있는 지도(trees)·즐겨찾기(favorites) 화면만 다시 받게 한다.
+      // 타임라인 목록도 다시 받는다. 목록이 `GET /trees` 로 합쳐지면서 isFavorite 가
+      // 응답에 실려 오게 됐다(#129). 서버의 favorite 은 값을 지정하는 게 아니라 순수
+      // 토글이라, 우리가 들고 있던 값이 어긋나 있으면 낙관적 반전도 함께 어긋난다 —
+      // 재조회로 서버 상태를 그대로 덮어써야 하트가 실제와 어긋난 채 남지 않는다.
+      queryClient.invalidateQueries({ queryKey: timelineKeys.all });
       queryClient.invalidateQueries({ queryKey: ["trees"] });
       queryClient.invalidateQueries({ queryKey: ["favorites"] });
     },
