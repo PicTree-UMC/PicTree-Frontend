@@ -101,7 +101,8 @@ export function ProfilePage() {
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 밴드 — 눌러서 내 정보 화면으로 */}
-      <header className="bg-[#C5D89D] px-[31px] pb-8 pt-6">
+      {/* pt 에 safe-area 를 더해 헤더 초록이 노치 뒤까지 이어지게 한다(#139) */}
+      <header className="bg-[#C5D89D] px-[31px] pb-8 pt-[calc(env(safe-area-inset-top)+1.5rem)]">
         <button
           type="button"
           onClick={() => navigate(ROUTES.profileEdit)}
