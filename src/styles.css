@@ -30,10 +30,23 @@
   font-family:
     KOROAD, Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #1f2a1b;
-  /* 앱 base 배경 = 브랜드 크림(PicTree/100, theme-color 와 동일).
-     iOS PWA(black-translucent)에선 노치/safe-area 뒤로 이 base 가 비치므로 흰색이면
-     노치만 흰띠로 뜬다. 크림으로 맞춰 페이지가 못 덮는 틈도 크림으로 채워지게 한다. */
-  background: #fffcef;
+  /*
+   * 캔버스 배경. 여기 색이 실제로 보이는 곳은 화면 바닥의 띠 하나뿐이다.
+   *
+   * :root 의 배경은 뷰포트가 아니라 **캔버스**를 칠하고, 캔버스는 레이아웃 뷰포트 밖까지
+   * 이어진다. iOS PWA(black-translucent)에선 뷰포트가 873 에서 끝나고 화면은 932 라,
+   * 그 사이 59px 을 이 색이 칠한다 — 873 아래엔 요소를 못 놓는데(#141) 루트 배경은
+   * 칠해진다. 둘은 모순이 아니다.
+   *
+   * 뷰포트 안쪽(0~873)은 AppShell 이 h-full + bg-[#fffcef] 로 전부 칠하므로 이 색이
+   * 비칠 틈이 없다. 예전 주석의 "노치 뒤로 base 가 비친다"는 컬럼이 화면 맨 위부터
+   * 칠하게 된 뒤로 사실이 아니다.
+   *
+   * 그래서 크림이 아니라 흰색이다 — 띠가 탭바(흰색) 옆에서 다른 색으로 끊기면 탭바가
+   * 잘린 것처럼 읽힌다. manifest 의 background_color 도 같은 흰색이라, 그 띠를 칠하는
+   * 주체가 웹 캔버스든 PWA 창 배경이든 결과는 흰색이다.
+   */
+  background: #ffffff;
 }
 
 /*
