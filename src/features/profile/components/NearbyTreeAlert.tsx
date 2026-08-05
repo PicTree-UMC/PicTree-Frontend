@@ -17,18 +17,18 @@ export function NearbyTreeAlert({
         <img src={treeIcon} alt="" className="h-9 w-9" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-base font-bold text-[#292929]">
+        <p className="text-[15px] font-medium text-[#292929]">
           근처에 심어둔 나무가 있어요
         </p>
         <p className="mt-1 text-[13px] font-medium text-[#787878]">
           {placeName} · 약 {distanceM}m
         </p>
-        <p className="mt-1 text-xs text-[#2C3930]">지난 기록을 열어볼까요?</p>
+        <p className="mt-1 text-[13px] text-[#2C3930]">지난 기록을 열어볼까요?</p>
       </div>
       <button
         type="button"
         onClick={onView}
-        className="h-8 w-[61px] flex-shrink-0 rounded-xl bg-[#C5D89D] text-sm font-bold text-[#2C3930]"
+        className="h-8 w-[61px] flex-shrink-0 rounded-xl bg-[#C5D89D] text-[14px] font-medium text-[#2C3930]"
       >
         보기
       </button>
