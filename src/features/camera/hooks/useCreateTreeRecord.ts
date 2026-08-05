@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createTree, uploadTreeImage } from '@/features/home/api/treesApi';
 import { treeKeys } from '@/features/home/hooks/useTrees';
 import { routePlaceCandidateKey } from '@/features/journey/hooks/useRoutePlaceCandidates';
+import { storageKeys } from '@/features/profile/hooks/useStorageUsage';
 import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
 import { timelineKeys } from '@/features/timeline/hooks/useTimeline';
 import type { GeoCoords } from '@/shared/hooks/useGeolocation';
@@ -74,6 +75,8 @@ export function useCreateTreeRecord() {
       // 여행 캘린더도 마찬가지로 독립 키(`['calendar', 연, 월]`)다. 이게 빠져 있어서
       // 사진을 찍어도 동선·타임라인에만 뜨고 잔디는 그대로였다.
       queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+      // 사진이 늘었다. 용량은 캐시를 무기한 들고 있어 여기서 안 깨면 그대로 남는다.
+      queryClient.invalidateQueries({ queryKey: storageKeys.usage });
     },
   });
 }

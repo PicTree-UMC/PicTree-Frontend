@@ -14,8 +14,9 @@ interface Props {
  * 끼어드는 게 어색해 구독 관리로 옮겼다. 시안(WF-017)에 맞춰 제목·수치·막대·안내
  * 네 줄 구조로 키웠다.
  *
- * ⚠️ 사용량을 주는 API 가 아직 없다. 값을 지어내면 "기록이 하나도 없는데 절반이
- * 찼다" 같은 화면이 나오므로, 모를 때는 `-` 와 빈 막대로 둔다.
+ * 사용량은 서버에 합계 API 가 없어 프론트가 나무별 사진 크기를 더해 구한다
+ * (`api/storageApi`). 그 계산이 실패하면 값을 지어내지 않는다 — "기록이 하나도
+ * 없는데 절반이 찼다" 같은 화면이 나오므로, 모를 때는 `-` 와 빈 막대로 둔다.
  */
 export function StorageCard({ usedBytes, totalBytes }: Props) {
   const isKnown = usedBytes !== null;

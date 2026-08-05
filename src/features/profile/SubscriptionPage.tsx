@@ -16,6 +16,7 @@ import { getShortPlanName, getStorageLimitBytes, isFreePlan } from "./lib/plan";
 import { formatBytes } from "./lib/formatBytes";
 import { PlanBadge } from "./components/PlanBadge";
 import { StorageCard } from "./components/StorageCard";
+import { useStorageUsage } from "./hooks/useStorageUsage";
 import { CancelSubscriptionModal } from "./components/CancelSubscriptionModal";
 import cardIcon from "./assets/icons/card.svg";
 import checkIcon from "./assets/icons/check.svg";
@@ -102,6 +103,13 @@ export function SubscriptionPage() {
   const isCanceled = Boolean(
     subscription?.subscriptionId != null && !subscription.autoRenew,
   );
+
+  /*
+    사용량은 서버에 합계 API 가 없어 프론트가 나무별 사진 크기를 더해 낸다.
+    비싼 계산이라 캐시를 무기한 들고, 사진이 늘거나 줄 때만 다시 센다
+    (`useStorageUsage` 주석 참고). 못 구했으면 지어내지 않고 `-` 로 둔다.
+  */
+  const { data: storageUsed } = useStorageUsage();
 
   const currentPlanDto = plans?.find((plan) => plan.code === currentPlan);
   const storageMb = currentPlanDto
@@ -235,7 +243,7 @@ export function SubscriptionPage() {
           />
         )}
 
-        <StorageCard usedBytes={null} totalBytes={storageLimit} />
+        <StorageCard usedBytes={storageUsed ?? null} totalBytes={storageLimit} />
 
         {/*
           혜택 문구는 서버 요금제가 유일한 출처다. 못 받았으면 사유를 알리고

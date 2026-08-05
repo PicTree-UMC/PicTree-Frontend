@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { storageKeys } from '@/features/profile/hooks/useStorageUsage';
 import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
 import {
   deleteTree,
@@ -143,6 +144,8 @@ export const useDeleteTree = () => {
       queryClient.invalidateQueries({ queryKey: treeKeys.list() });
       // 잔디는 나무 개수로 그려지므로 장소가 사라지면 같이 옅어져야 한다.
       queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+      // 나무를 지우면 사진도 함께 지워진다 — 용량도 다시 센다.
+      queryClient.invalidateQueries({ queryKey: storageKeys.usage });
     },
   });
 };
