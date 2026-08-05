@@ -18,6 +18,11 @@ export interface RoutePlace {
   date: string; // '2024-03-31' 형식
   /** 기분 이모지('😍'). 저장된 동선 상세에만 온다. */
   mood?: string;
+  /**
+   * 대표 사진(presigned URL). 사진을 안 올린 장소는 `null` 이라 기본 나무 아이콘으로 그린다.
+   * 새 동선을 만들 때만 온다 — 저장된 동선 상세(`GET /routes/{id}`)에는 사진이 없다.
+   */
+  imageUrl?: string | null;
   /** 장소 설명. 저장된 동선 상세에만 온다. */
   description?: string;
 }
