@@ -50,17 +50,21 @@ interface RoutePlaceStripProps {
 const FALLBACK_ICON = '/markers/tree.svg';
 
 /**
- * 펼친 시트가 차지하는 화면 높이(45dvh).
+ * 펼친 시트가 차지하는 화면 높이(50dvh).
  *
  * **장소 수와 무관하게 고정이다.** 예전엔 목록에 상한(180px)만 주고 나머지를 내용이
  * 정하게 뒀는데, 그러면 카드 수에 따라 시트 높이가 100px 남짓 오르내려서 **지도가 시트에
  * 얼마나 가리는지를 알 수 없었다.** 지도는 마커가 전부 담기게 화면을 맞추면서 시트 높이만큼
  * 아래를 비워둬야 하는데, 그 값이 매번 달라지면 재는 수밖에 없다. 고정해 두면 계산으로 안다.
  *
- * 390×844 기준 380px — 손잡이·필터·개수줄·저장 버튼을 뺀 목록 자리가 예전 상한(180px,
- * 줄 하나 72px 기준 2.5줄)과 비슷하게 남는다. 작은 기기에선 한 줄 반, 큰 기기에선 세 줄쯤.
+ * 390×844 기준 422px — 손잡이·필터·개수줄·저장 버튼을 뺀 목록 자리가 200px 안팎으로,
+ * 줄 하나(72px)로 치면 **2.8줄**이다. 반 줄이 걸쳐 보여야 목록이 더 있다는 게 읽히므로
+ * (딱 떨어지게 잘리면 거기서 끝난 줄 알고 아무도 안 굴린다) 그 여유를 두고 잡은 값이다.
+ *
+ * 45dvh 였는데 필터와 개수줄 사이 간격을 넓히면서 그만큼 목록에서 빠져 올렸다.
+ * 작은 기기(667px)에선 한 줄 반, 큰 기기에선 세 줄 남짓.
  */
-export const SHEET_EXPANDED_RATIO = 0.45;
+export const SHEET_EXPANDED_RATIO = 0.5;
 
 /**
  * 접었을 때 남는 높이. 손잡이 + `전체 동선` 줄 + 저장 버튼 + 안전영역의 어림값이다.
@@ -212,7 +216,7 @@ export function RoutePlaceStrip({
     */
     <div
       className={`flex flex-col rounded-t-[20px] bg-white px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] ${
-        collapsed ? '' : 'h-[45dvh]'
+        collapsed ? '' : 'h-[50dvh]'
       }`}
     >
       {/* touch-none: 세로 끌기를 브라우저 기본 제스처에 뺏기지 않게.
@@ -243,13 +247,13 @@ export function RoutePlaceStrip({
       </div>
 
       {/* 접히는 영역. 펼쳤을 때 시트에 남는 자리를 전부 차지하고(`flex-1`), 그 안에서 목록이
-          다시 남는 자리를 갖는다 — 시트 높이가 45dvh 로 고정이라 목록에 따로 상한을 줄 필요가
-          없어졌다. `max-h-0`/`max-h-96` 은 여닫는 애니메이션의 두 끝점이다(높이가 `auto` 면
-          전환이 안 붙는다). 펼친 끝점은 시트 높이와 같은 45dvh — 항상 실제 높이보다 크므로
-          값을 제한하지 않는다. */}
+          다시 남는 자리를 갖는다 — 시트 높이가 `SHEET_EXPANDED_RATIO` 로 고정이라 목록에 따로
+          상한을 줄 필요가 없어졌다. `max-h-*` 두 값은 여닫는 애니메이션의 끝점이다(높이가
+          `auto` 면 전환이 안 붙는다). 펼친 끝점은 시트 높이와 같은 50dvh — 항상 실제 높이보다
+          크므로 값을 제한하지 않는다. */}
       <div
         className={`flex min-h-0 flex-1 flex-col overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
-          collapsed ? 'max-h-0 opacity-0' : 'max-h-[45dvh] opacity-100'
+          collapsed ? 'max-h-0 opacity-0' : 'max-h-[50dvh] opacity-100'
         }`}
         // 접힌 동안 칩·목록이 보이지 않는데도 탭 순서·스크린리더에 남는 걸 막는다.
         // (`overflow:hidden` 은 시각만 자르지 초점은 그대로 들어간다.)
@@ -269,17 +273,22 @@ export function RoutePlaceStrip({
             칩 줄과 목록 사이에 두는 이유는 **둘 다에 걸쳐 있어서**다 — 개수는 목록이 만든
             결과이고, `전체 선택`/`전체 해제` 는 위에서 고른 필터 범위에 적용된다.
             문구는 지금 상태가 아니라 **누르면 무슨 일이 일어나는지**를 말한다. */}
-        <div className="flex shrink-0 items-center gap-3 pt-3">
+        {/* 칩 줄과 사이를 넉넉히 벌린다(pt-5). 붙여 두면 칩을 누르려던 손가락이 바로 아래
+            `전체 선택` 에 닿는다 — 둘은 하는 일이 다르다(보기 좁히기 vs 동선에서 빼기).
+            좁은 간격은 눈에도 한 덩어리로 읽혀서, 칩을 누르면 선택까지 바뀌는 줄 알게 된다. */}
+        <div className="flex shrink-0 items-center gap-3 pt-5">
           {/* 색이 GREEN-500 이었다 — 연초록 바닥 위 2.35:1 로, 가이드라인이 결함이라고
               집어둔 조합이다. 보조 텍스트 자리이므로 INK-muted(흰 위 5.98:1). */}
           <p className="min-w-0 flex-1 truncate text-[13px] text-[#60655c]">
             장소 {maxPlaces === undefined ? activeCount : `${activeCount}/${maxPlaces}`}개
           </p>
 
+          {/* 글자는 13px 한 줄이라 그대로 두면 누를 자리가 20px 도 안 된다. 음수 마진으로
+              **줄 간격은 그대로 두고 누를 자리만** 40px 가까이로 넓힌다(권장 터치 영역). */}
           <button
             type="button"
             onClick={onToggleAllVisible}
-            className="shrink-0 text-[13px] font-medium text-[#60655c] underline underline-offset-2"
+            className="-my-2.5 shrink-0 py-2.5 text-[13px] font-medium text-[#60655c] underline underline-offset-2"
           >
             {allVisibleSelected ? '전체 해제' : '전체 선택'}
           </button>
