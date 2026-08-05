@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useKakaoMap } from '../home/hooks/useKakaoMap';
 import { useRoutePath } from './hooks/useRoutePath';
@@ -30,6 +30,12 @@ import { ROUTES } from '@/shared/constants/routes';
  * **화면 위에는 뒤로가기(② 는 제목까지)만 띄우고, 조작은 전부 하단 시트에 모았다** —
  * 날짜 칩·장소 칩·동선저장이 한 덩어리로 있고 시트째 접어 지도를 넓게 볼 수 있다.
  */
+/**
+ * 겹친 장소를 시트에서 짚어주는 시간. 펼쳐지고 스크롤이 멎기까지가 0.5초 남짓이라
+ * 그보다 넉넉해야 하고, 다음 조작을 방해할 만큼 오래 남아 있어도 안 된다.
+ */
+const HIGHLIGHT_MS = 3000;
+
 export function RouteViewPage() {
   const navigate = useNavigate();
   const { containerRef, map } = useKakaoMap();
@@ -101,22 +107,57 @@ export function RouteViewPage() {
     [places, disabledIds],
   );
 
-  /**
-   * 장소가 하나도 안 켜진 날짜 = 비활성 날짜(설계서 7번). 별도 상태로 들고 있지 않고 여기서
-   * 도출한다 — 날짜와 장소를 각각 저장하면 "날짜는 켜졌는데 장소는 다 꺼진" 모순이 생긴다.
-   */
-  const disabledDates = useMemo(
-    () =>
-      new Set(
-        dates.filter((date) => {
-          const ofDate = places.filter((place) => place.date === date);
-          return ofDate.length > 0 && ofDate.every((place) => disabledIds.has(place.id));
-        }),
-      ),
-    [dates, places, disabledIds],
+  /*
+    하단 시트 목록에 보일 날짜. `null` 이면 전부.
+
+    **보기만 거른다** — 걸러진 날짜의 장소도 지도에는 그대로 그려지고 번호도 유지된다.
+    예전엔 날짜 칩이 그날 장소를 통째로 껐다 켰는데, 한 손짓에 '보기'와 '넣기/빼기'가
+    겹쳐 있어서 그날만 들여다보려고 눌렀다가 동선에서 빠지는 일이 났다.
+
+    고른 날짜가 목록에서 사라질 수 있어(② 에서 동선을 다시 받아오면 날짜 집합이 바뀐다)
+    상태를 그대로 믿지 않고 매번 걸러 쓴다 — effect 로 되돌리면 한 프레임 동안 빈 목록이 뜬다.
+  */
+  const [pickedDateFilter, setPickedDateFilter] = useState<string | null>(null);
+  const dateFilter =
+    pickedDateFilter !== null && dates.includes(pickedDateFilter) ? pickedDateFilter : null;
+
+  /** 지금 목록에 보이는 장소들. `전체 선택`/`전체 해제` 가 대상으로 삼는 범위이기도 하다. */
+  const visiblePlaces = useMemo(
+    () => (dateFilter === null ? places : places.filter((place) => place.date === dateFilter)),
+    [places, dateFilter],
   );
 
-  useRoutePath(map, places, disabledIds);
+  const allVisibleSelected =
+    visiblePlaces.length > 0 && visiblePlaces.every((place) => !disabledIds.has(place.id));
+
+  /*
+    지도에서 겹쳐서 못 쪼개지는 묶음을 탭했을 때 시트가 짚어줄 장소들.
+
+    지도가 "여기선 더 확대해도 안 갈라진다"고 답하는 자리라, 그냥 두면 눌러도 아무 일이
+    없어 고장처럼 보인다. 겹친 장소들은 시트 목록에 번호대로 이미 다 있으니 거기로 데려간다.
+
+    잠깐 보였다 사라진다 — 계속 남으면 사용자가 지우는 방법을 찾아야 하는 상태가 하나 는다.
+    같은 묶음을 다시 탭하면 배열이 새로 와서(내용이 같아도) 다시 짚어준다.
+  */
+  const [highlightedPlaceIds, setHighlightedPlaceIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (highlightedPlaceIds.length === 0) return;
+
+    const timer = setTimeout(() => setHighlightedPlaceIds([]), HIGHLIGHT_MS);
+    return () => clearTimeout(timer);
+  }, [highlightedPlaceIds]);
+
+  /**
+   * 겹쳐서 못 쪼개지는 묶음 탭. **날짜 필터를 먼저 푼다** — 겹친 장소들이 서로 다른 날짜일
+   * 수 있어서, 필터가 걸린 채로 짚으면 목록에 없는 줄을 가리키게 된다.
+   */
+  const handleOverlappingTap = (placeIds: number[]) => {
+    setPickedDateFilter(null);
+    setHighlightedPlaceIds(placeIds);
+  };
+
+  useRoutePath(map, places, disabledIds, handleOverlappingTap);
 
   /**
    * 장소 칩 탭(설계서 7번). 그 장소를 껐다 켜고, 켜진 것만 세어 번호를 다시 매긴다.
@@ -128,17 +169,20 @@ export function RouteViewPage() {
     );
 
   /**
-   * 날짜 칩 탭(설계서 6번). 날짜를 목록에서 빼지 않고 **그날 장소를 통째로 껐다 켠다** —
-   * 칩이 사라지면 되돌릴 길이 캘린더뿐이라, 흐려진 채로 남겨 다시 누를 수 있게 한다.
+   * `전체 선택`/`전체 해제`(설계서 6번). **지금 보이는 범위**에만 적용된다 — 날짜를 걸러
+   * 놓았으면 그 날짜만, 전체를 보고 있으면 동선 전체.
+   *
+   * 하나라도 꺼져 있으면 전부 켜고, 전부 켜져 있을 때만 끈다. '거의 다 켜진' 상태에서
+   * 눌렀을 때 남은 몇 개를 마저 켜주는 쪽이, 애써 켠 걸 통째로 지우는 것보다 되돌리기 쉽다.
    */
-  const toggleDateActive = (dateKey: string) => {
-    const idsOfDate = places.filter((place) => place.date === dateKey).map((place) => place.id);
-    if (idsOfDate.length === 0) return;
+  const toggleAllVisible = () => {
+    const idsOfVisible = visiblePlaces.map((place) => place.id);
+    if (idsOfVisible.length === 0) return;
 
     setDisabledPlaceIds((ids) =>
-      disabledDates.has(dateKey)
-        ? ids.filter((id) => !idsOfDate.includes(id))
-        : [...new Set([...ids, ...idsOfDate])],
+      allVisibleSelected
+        ? [...new Set([...ids, ...idsOfVisible])]
+        : ids.filter((id) => !idsOfVisible.includes(id)),
     );
   };
 
@@ -278,14 +322,17 @@ export function RouteViewPage() {
           // 날짜 칩이 헤더에서 여기로 내려왔다 — 날짜 켜고 끄기와 장소 켜고 끄기는 같은 성격의
           // 조작인데 화면 위아래 끝으로 갈라져 있었다. 이제 조작은 전부 이 시트 안에 있다.
           dates={dates}
-          disabledDates={disabledDates}
-          onToggleDate={toggleDateActive}
+          dateFilter={dateFilter}
+          onChangeDateFilter={setPickedDateFilter}
+          allVisibleSelected={allVisibleSelected}
+          onToggleAllVisible={toggleAllVisible}
           // ② 는 저장 한도가 의미 없다 — `3/20개` 는 더 담을 수 있다는 오해를 준다.
           maxPlaces={isSavedView ? undefined : MAX_PLACES}
           // 저장 버튼이 헤더에서 여기로 내려왔다. 저장되는 건 이 목록이고 한도(n/20)도 이 줄이
           // 들고 있어서, 지도 반대편 끝에 떨어져 있는 것보다 맥락이 이어진다.
           onSave={isSavedView ? undefined : handleSave}
           onTogglePlace={togglePlace}
+          highlightedPlaceIds={highlightedPlaceIds}
         />
       </div>
 

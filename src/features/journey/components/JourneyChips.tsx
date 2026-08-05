@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Chip } from '@/shared/components';
 import { Journey } from '../types/journey';
 
 /** 새 동선 만들기 칩의 + 아이콘. */
@@ -70,14 +71,13 @@ export function JourneyChips({ journeys, selectedId, onSelect, onCreate }: Journ
   return (
     <div className="flex items-start gap-2">
       {/* 점선 테두리 — 옆의 동선 칩들과 달리 '고르는 것'이 아니라 '만드는 것'이라
-          한눈에 갈리게 한다. 그래서 `aria-pressed` 도 붙이지 않는다(토글이 아니다).
-          색은 선택된 칩과 같은 #788f4a 를 쓴다. 팔레트 정리(#58) 대상 파일이라
-          여기만 피그마 값을 쓰면 한 줄에 초록이 셋이 되고 정리가 더 어려워진다. */}
+          한눈에 갈리게 한다. 그래서 `Chip` 이 아니고 `aria-pressed` 도 없다(토글이 아니다).
+          높이만 칩(h-10)에 맞춰 한 줄로 떨어지게 한다. */}
       <button
         type="button"
         onClick={onCreate}
         aria-label="새 동선 만들기"
-        className="flex shrink-0 items-center rounded-full border border-dashed border-[#788f4a] px-3 py-2 text-[#788f4a]"
+        className="flex h-10 shrink-0 items-center rounded-full border border-dashed border-pictree-500 px-3 text-pictree-500"
       >
         <PlusIcon className="size-5" />
       </button>
@@ -89,19 +89,14 @@ export function JourneyChips({ journeys, selectedId, onSelect, onCreate }: Journ
         {journeys.map((journey) => {
           const isSelected = journey.id === selectedId;
           return (
-            <button
+            <Chip
               key={journey.id}
               ref={isSelected ? selectedRef : undefined}
               onClick={() => onSelect(journey)}
-              aria-pressed={isSelected}
-              className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                isSelected
-                  ? 'bg-[#788f4a] text-white'
-                  : 'border border-[#c5d89d] bg-white text-[#2c3930]'
-              }`}
+              selected={isSelected}
             >
               {journey.title}
-            </button>
+            </Chip>
           );
         })}
       </div>
