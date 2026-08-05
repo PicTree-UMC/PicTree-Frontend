@@ -4,11 +4,11 @@ import type { TimelineRecord } from "../types/timeline.types";
  * 정렬 기준. 둘 다 방문 시각(`visitedAt`)을 보고 방향만 반대다.
  *
  * - `recent` 최신순 — 최근에 다녀온 기록이 위로
- * - `oldest` 오래된 순 — 예전에 다녀온 기록이 위로
+ * - `oldest` 등록순 — 먼저 기록한 것이 위로
  */
 export const TIMELINE_SORTS = [
   { key: "recent", label: "최신순" },
-  { key: "oldest", label: "오래된 순" },
+  { key: "oldest", label: "등록순" },
 ] as const;
 
 export type TimelineSort = (typeof TIMELINE_SORTS)[number]["key"];
@@ -51,7 +51,7 @@ export const searchRecords = (
   );
 };
 
-/** 방문 시각 기준 정렬. 최신순은 내림차순, 오래된 순은 오름차순이다. */
+/** 기록 시각 기준 정렬. 최신순은 내림차순, 등록순은 오름차순이다. */
 export const sortRecords = (
   records: TimelineRecord[],
   sort: TimelineSort,
