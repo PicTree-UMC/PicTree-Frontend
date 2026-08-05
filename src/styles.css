@@ -254,23 +254,56 @@ select {
 }
 
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: var(--safe-bottom);
 }
 
 /*
  * 하단 탭바가 콘텐츠 위에 얹혀 있어(Layout), 스크롤 끝 콘텐츠가 탭바에 가리지
  * 않도록 띄우는 여백.
  *
- * ⚠️ pb-28 같은 고정값을 쓰면 안 된다. 탭바는 `pb-safe` 로 하단 안전영역만큼
- * 더 높아지므로(노치 기기 ≈ 86 + 34 = 120px) 112px 짜리 pb-28 로는 실기기에서
- * 마지막 요소가 가려진다. 시뮬레이터·데스크톱은 안전영역이 0이라 안 드러난다.
+ * ⚠️ pb-28 같은 고정값을 쓰면 안 된다. 탭바 높이는 기기·모드마다 다르다 —
+ * `--nav-height` 에 `--safe-bottom` 이 붙는데, 그 안전영역은 브라우저 탭에서만
+ * 실제로 붙는다(아래 display-mode 블록 참조). 고정값은 어느 한쪽에서 반드시 어긋난다.
  *
  * --safe-bottom 을 한 번 거치는 이유: env() 는 값을 덮어쓸 수 없어 테스트에서
  * 노치 기기를 흉내 낼 방법이 없다. 변수를 두면 검증 시 주입할 수 있다.
+ * standalone 보정도 이 변수 하나만 갈아끼워 pb-safe·pb-nav·bottom-nav 에 한번에 먹인다.
  */
 :root {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --nav-height: 86px;
+  /*
+   * 탭바 본체 높이. BottomTabBar 가 `h-[var(--nav-height)]` 로 이 값을 그대로 쓴다.
+   * 두 곳에 같은 숫자를 두면 한쪽만 고쳐져 촬영 버튼(.bottom-nav)이 탭바에서 뜬다.
+   *
+   * 값의 근거: 아이콘 36 + gap-1 4 + 라벨 13px×line-height 1.5 = 19.5 → 59.5,
+   * 여기에 ul 의 pb-1(4)를 더해 64. 예전 86 은 그 위에 22px 이 빈 채로 있었다.
+   */
+  --nav-height: 64px;
+}
+
+/*
+ * iOS PWA(standalone)에서는 하단 안전영역을 따로 비우지 않는다.
+ *
+ * black-translucent 인 동안 레이아웃 뷰포트는 화면보다 상태바 높이만큼 짧고(873 vs 932)
+ * 화면 맨 위에 앵커된다 → 뷰포트 바닥(873) 아래로 59px 이 남는다(#141, #145 에서 실측).
+ * 그런데 env(safe-area-inset-bottom)=34 는 **화면 기준**이라 홈 인디케이터는 898~932 에
+ * 있다. 즉 탭바 바닥과 인디케이터 사이는 이미 59px 이 벌어져 있고, pb-safe 가 만드는
+ * 34px 은 839~873 이라는 **엉뚱한 자리**를 비우고 있었다.
+ *
+ * 그래서 남는 인디케이터 여백 = env(bottom) − (뷰포트가 짧아진 만큼)이고, 짧아진 양은
+ * 상태바 높이 = env(top) 이다. 아이폰은 env(top) 47~62 > env(bottom) 34 라 결과는 항상
+ * 0 으로 clamp 된다. 계산식으로 두는 이유는 기기가 반대인 경우에도 알아서 맞기 때문이다.
+ *
+ * ⚠️ 브라우저 탭에는 적용하지 않는다. 거기선 뷰포트 바닥이 곧 인디케이터 위라
+ * env(bottom) 이 제 일을 한다. 조건을 display-mode 로 건 이유가 이것이다.
+ *
+ * ⚠️ 실기기에서 이 규칙이 안 먹으면 iOS 가 display-mode 를 안 맞춘 것이다 —
+ * 그때는 navigator.standalone 으로 클래스를 걸어 같은 값을 준다(아직 필요 없어 안 넣었다).
+ */
+@media (display-mode: standalone) {
+  :root {
+    --safe-bottom: max(env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px), 0px);
+  }
 }
 
 /*
