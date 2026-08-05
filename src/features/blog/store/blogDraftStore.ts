@@ -11,27 +11,8 @@ type BlogDraftState = {
   deleteBlogAsync: (id: number) => Promise<void>;
 };
 
-/** 데모용 시드 1건 — 빈 상태/목록 렌더를 둘 다 확인할 수 있게 둔다. */
-const SEED_BLOG: SavedBlog = {
-  id: 'seed-1',
-  title: '[여행기록] 3월 31일 ~ 4월 1일',
-  startDate: '2026-03-31',
-  endDate: '2026-04-01',
-  toneId: 'emotional',
-  savedAt: '2026-04-02',
-  sections: [
-    {
-      treeId: 1,
-      heading: '포그레인 공원',
-      body: '설레는 마음으로 찾은 포그레인 공원. 오아시스 형제가 축구하던 그곳! 근처 맛집에서 햄버거를 사 와 피크닉을 즐겼다. 그 순간의 공기와 감정이 오래 마음에 남았어요.',
-      image: 'https://picsum.photos/seed/fog-lane-park/480/480',
-      mood: '😍',
-    },
-  ],
-};
-
 export const useBlogDraftStore = create<BlogDraftState>((set) => ({
-  savedBlogs: [SEED_BLOG],
+  savedBlogs: [],
   addBlog: (blog) => set((state) => ({ savedBlogs: [blog, ...state.savedBlogs] })),
   deleteBlog: (id) => set((state) => ({ savedBlogs: state.savedBlogs.filter((blog) => blog.id !== id) })),
   fetchSavedBlogs: async () => {
@@ -48,10 +29,11 @@ export const useBlogDraftStore = create<BlogDraftState>((set) => ({
       } as SavedBlog));
       set({ savedBlogs: saved });
     } catch (err) {
-      // 실패 시 기존 시드 유지
+      // 실패 시 빈 목록으로 둔다(서버에 아직 없는 엔드포인트일 수 있음).
       // TODO: 사용자 토스트/에러 핸들링
       // eslint-disable-next-line no-console
       console.error('fetchSavedBlogs failed', err);
+      set({ savedBlogs: [] });
     }
   },
   saveDraft: async (payload: SaveAIBlogDraftRequest) => {

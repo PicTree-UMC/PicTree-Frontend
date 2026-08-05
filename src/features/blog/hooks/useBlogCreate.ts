@@ -4,62 +4,59 @@ import { getLocalDateString } from '../../../shared/lib/date';
 import { DEFAULT_TONE_ID } from '../constants/blogTones';
 import { suggestToneFromMoods } from '../lib/moodTone';
 import { createAIBlogDraft } from '../api/blogApi';
-import { getTimelines } from '../../timeline/api/timelineApi';
+import { getMyBlogPlaces } from '../api/blogPlacesApi';
 import { useAuthStore } from '../../auth/store/authStore';
 
 export type CreateStep = 1 | 2 | 3;
 
+export interface UseBlogCreateOptions {
+  /** 동선 페이지 등에서 넘어올 때 미리 채울 기간(YYYY-MM-DD). 없으면 기본값을 쓴다. */
+  initialStartDate?: string;
+  initialEndDate?: string;
+}
+
 /** 작성 플로우(3스텝)의 상태 기계. 날짜·어체 선택과 목 초안 생성을 관리한다. */
-export function useBlogCreate() {
+export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreateOptions = {}) {
   const [step, setStep] = useState<CreateStep>(1);
-  const [startDate, setStartDate] = useState('2026-03-31');
-  const [endDate, setEndDate] = useState('2026-04-01');
+  const [startDate, setStartDate] = useState(initialStartDate ?? '2026-03-31');
+  const [endDate, setEndDate] = useState(initialEndDate ?? '2026-04-01');
   const [toneId, setToneId] = useState<ToneId>(DEFAULT_TONE_ID);
   const [status, setStatus] = useState<BlogStatus>('idle');
   const [draft, setDraft] = useState<{ title: string; sections: BlogSection[] } | null>(null);
 
   const accessToken = useAuthStore((s) => s.accessToken);
 
-  const [trees, setTrees] = useState<BlogTreeRecord[]>([]);
+  const [allPlaces, setAllPlaces] = useState<BlogTreeRecord[]>([]);
 
-  // 서버의 타임라인(기록)에서 기간 필터에 해당하는 장소 목록을 가져온다.
+  // 내 나무(=기록) 전체를 한 번만 불러온다. 기간 필터는 이 목록을 클라이언트에서
+  // 걸러 쓴다(캘린더 활동 표시에도 재사용).
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         if (!accessToken) {
-          setTrees([]);
+          setAllPlaces([]);
           return;
         }
-        const pageSize = 100;
-        const res = await getTimelines(accessToken, { page: 1, size: pageSize });
-        if (cancelled) return;
-        // toTimelineRecord 변환을 거친 결과(화면용 레코드)라 필드명이 다르다.
-        const filtered = (res.records ?? []).filter((r) => {
-          const date = r.createdAt ? getLocalDateString(new Date(r.createdAt)) : '';
-          return date >= startDate && date <= endDate;
-        }).map((r) => ({
-          treeId: Number(r.treeId ?? 0),
-          name: r.placeName,
-          description: r.comment ?? '',
-          latitude: 0,
-          longitude: 0,
-          address: '',
-          mood: '😌',
-          defaultImage: r.thumbnailUrl ?? r.defaultImage ?? '',
-          createdAt: r.createdAt ?? '',
-        } as BlogTreeRecord));
-
-        setTrees(filtered);
+        const places = await getMyBlogPlaces();
+        if (!cancelled) setAllPlaces(places);
       } catch (err) {
-        // 실패 시 빈 목록으로 두고 UI 상에서 처리한다.
         // eslint-disable-next-line no-console
-        console.error('fetch trees failed', err);
-        setTrees([]);
+        console.error('[useBlogCreate] fetch my blog places failed', err);
+        if (!cancelled) setAllPlaces([]);
       }
     })();
     return () => { cancelled = true; };
-  }, [accessToken, startDate, endDate]);
+  }, [accessToken]);
+
+  const trees = useMemo(
+    () => allPlaces.filter((tree) => {
+      const date = getLocalDateString(new Date(tree.createdAt));
+      return date >= startDate && date <= endDate;
+    }),
+    [allPlaces, startDate, endDate],
+  );
+
 
   // 초안에 포함할 기록 선택. 기본은 전체 선택이며, 기간(=trees)이 바뀌면 다시 전체로 맞춘다.
   const [selectedTreeIds, setSelectedTreeIds] = useState<number[]>([]);
@@ -73,12 +70,12 @@ export function useBlogCreate() {
   );
 
   const activityByDate = useMemo(
-    () => trees.reduce<Record<string, number>>((activity, tree) => {
+    () => allPlaces.reduce<Record<string, number>>((activity, tree) => {
       const date = getLocalDateString(new Date(tree.createdAt));
       activity[date] = (activity[date] ?? 0) + 1;
       return activity;
     }, {}),
-    [trees],
+    [allPlaces],
   );
 
   // 초안 생성: 결과 스텝 진입 시 목 딜레이 후 완성. 선택된 기록만 사용한다.
