@@ -5,7 +5,11 @@ import { useRoutePath } from './hooks/useRoutePath';
 import { useRouteDetail } from './hooks/useRouteDetail';
 import { useRoutePlaceCandidates } from './hooks/useRoutePlaceCandidates';
 import { useCreateRoute } from './hooks/useCreateRoute';
-import { RoutePlaceStrip } from './components/RoutePlaceStrip';
+import {
+  RoutePlaceStrip,
+  SHEET_COLLAPSED_PX,
+  SHEET_EXPANDED_RATIO,
+} from './components/RoutePlaceStrip';
 import { SaveRouteSheet } from './components/SaveRouteSheet';
 import { DATES_PARAM, MAX_PLACES, parseDatesParam, toDatesParam } from './lib/routeParams';
 import { useGoBack } from '@/shared/hooks/useGoBack';
@@ -166,7 +170,29 @@ export function RouteViewPage() {
     setHighlightedPlaceIds(placeIds);
   };
 
-  useRoutePath(map, places, disabledIds, dateFilter, handleOverlappingTap);
+  /*
+    지도가 화면을 맞출 때 아래에 비워둘 높이.
+
+    시트는 지도 **위에 떠 있어서** 지도 영역을 깎지 않는다 — 알려주지 않으면 카카오는
+    시트 뒤쪽까지 지도로 치고 그 안에 마커를 배치한다. 그러면 좁혀 본 하루의 마커가
+    시트에 가려 안 보인다.
+
+    ⚠️ **펼친 시트 높이가 45dvh 로 고정이라 잴 필요 없이 계산으로 안다.** 예전처럼 카드
+    수에 따라 높이가 변했다면 여기서 실제 높이를 측정해 넘겨야 했다.
+
+    `innerHeight` 는 렌더 시점 값이라 회전 직후 한 박자 어긋날 수 있는데, 다음에 날짜를
+    바꾸거나 장소가 갱신될 때 제 값으로 다시 맞춰진다.
+  */
+  const [sheetCollapsed, setSheetCollapsed] = useState(false);
+  const sheetHeightPx = sheetCollapsed
+    ? SHEET_COLLAPSED_PX
+    : Math.round(window.innerHeight * SHEET_EXPANDED_RATIO);
+
+  useRoutePath(map, places, disabledIds, {
+    dateFilter,
+    bottomPaddingPx: sheetHeightPx,
+    onOverlappingTap: handleOverlappingTap,
+  });
 
   /**
    * 장소 칩 탭(설계서 7번). 그 장소를 껐다 켜고, 켜진 것만 세어 번호를 다시 매긴다.
@@ -342,6 +368,9 @@ export function RouteViewPage() {
           onSave={isSavedView ? undefined : handleSave}
           onTogglePlace={togglePlace}
           highlightedPlaceIds={highlightedPlaceIds}
+          // 접힘을 페이지가 들고 있는 이유는 지도다 — 시트가 덮는 높이만큼 화면을 비워야 한다.
+          collapsed={sheetCollapsed}
+          onCollapsedChange={setSheetCollapsed}
         />
       </div>
 

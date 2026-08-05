@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { RoutePlace } from '../types/route';
 import { formatDateLabel } from '../lib/formatDate';
 import { RouteDateChips } from './RouteDateChips';
@@ -33,6 +33,12 @@ interface RoutePlaceStripProps {
   onSave?: () => void;
   onTogglePlace: (placeId: number) => void;
   /**
+   * 접힘 상태는 **부모가 들고 있다.** 지도가 화면을 맞출 때 시트가 덮는 높이를 빼야 하는데,
+   * 그 값이 접힘에 따라 달라지기 때문이다(`SHEET_EXPANDED_RATIO` / `SHEET_COLLAPSED_PX`).
+   */
+  collapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
+  /**
    * 지금 짚어줄 장소들. 지도에서 **겹쳐서 못 쪼개지는 묶음**을 탭했을 때 채워진다 —
    * 그 자리에선 더 확대해도 안 갈라지므로, 대신 목록에서 어느 장소들인지 보여준다.
    * 새 배열이 오면(같은 장소를 다시 탭해도) 시트가 펼쳐지고 첫 줄로 스크롤한다.
@@ -44,13 +50,26 @@ interface RoutePlaceStripProps {
 const FALLBACK_ICON = '/markers/tree.svg';
 
 /**
- * 목록에 보이는 높이. 줄 하나가 72px(사진 56 + 위아래 8)이라 **2.5줄**이 걸치는 값이다.
+ * 펼친 시트가 차지하는 화면 높이(45dvh).
  *
- * 반 줄을 일부러 남긴다 — 딱 떨어지게 자르면 목록이 거기서 끝난 것처럼 보여 아무도 안
- * 굴린다. 잘린 줄이 보이는 게 스크롤바보다 확실한 신호다(모바일 오버레이 스크롤바는
- * 손을 떼면 사라진다).
+ * **장소 수와 무관하게 고정이다.** 예전엔 목록에 상한(180px)만 주고 나머지를 내용이
+ * 정하게 뒀는데, 그러면 카드 수에 따라 시트 높이가 100px 남짓 오르내려서 **지도가 시트에
+ * 얼마나 가리는지를 알 수 없었다.** 지도는 마커가 전부 담기게 화면을 맞추면서 시트 높이만큼
+ * 아래를 비워둬야 하는데, 그 값이 매번 달라지면 재는 수밖에 없다. 고정해 두면 계산으로 안다.
+ *
+ * 390×844 기준 380px — 손잡이·필터·개수줄·저장 버튼을 뺀 목록 자리가 예전 상한(180px,
+ * 줄 하나 72px 기준 2.5줄)과 비슷하게 남는다. 작은 기기에선 한 줄 반, 큰 기기에선 세 줄쯤.
  */
-const LIST_VIEWPORT_PX = 180;
+export const SHEET_EXPANDED_RATIO = 0.45;
+
+/**
+ * 접었을 때 남는 높이. 손잡이 + `전체 동선` 줄 + 저장 버튼 + 안전영역의 어림값이다.
+ *
+ * **지도 패딩에만 쓰는 값이라 어림으로 충분하다** — 레이아웃은 여전히 내용이 정한다.
+ * 접힌 시트는 화면을 조금만 먹으므로 몇 px 어긋나도 마커가 가려지지 않는다.
+ * (저장된 동선 보기에는 저장 버튼이 없어 실제로는 이보다 낮다 — 지도 아래가 조금 더 빌 뿐이다.)
+ */
+export const SHEET_COLLAPSED_PX = 140;
 
 /** 짚어준 줄 위에 남기는 여백. 위에 이전 줄이 살짝 걸쳐 보여야 목록 중간이라는 게 읽힌다. */
 const HIGHLIGHT_SCROLL_MARGIN_PX = 12;
@@ -149,10 +168,11 @@ export function RoutePlaceStrip({
   onSave,
   onTogglePlace,
   highlightedPlaceIds,
+  collapsed,
+  onCollapsedChange,
 }: RoutePlaceStripProps) {
   const activeCount = places.filter((place) => !disabledPlaceIds.has(place.id)).length;
-  const [collapsed, setCollapsed] = useState(false);
-  const drag = useCollapseDrag(setCollapsed);
+  const drag = useCollapseDrag(onCollapsedChange);
   const listRef = useRef<HTMLUListElement>(null);
   const highlighted = new Set(highlightedPlaceIds ?? []);
 
@@ -170,7 +190,7 @@ export function RoutePlaceStrip({
   useEffect(() => {
     if (!highlightedPlaceIds || highlightedPlaceIds.length === 0) return;
 
-    setCollapsed(false);
+    onCollapsedChange(false);
 
     const list = listRef.current;
     const row = list?.querySelector<HTMLElement>(`[data-place-id="${highlightedPlaceIds[0]}"]`);
@@ -178,7 +198,7 @@ export function RoutePlaceStrip({
 
     const top = row.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
     list.scrollTo({ top: Math.max(top - HIGHLIGHT_SCROLL_MARGIN_PX, 0), behavior: 'smooth' });
-  }, [highlightedPlaceIds]);
+  }, [highlightedPlaceIds, onCollapsedChange]);
 
   // 번호는 켜진 장소에만 붙는다. map 안에서 증가시키므로 렌더 순서대로 1,2,3… 이 된다.
   let sequence = 0;
@@ -190,15 +210,19 @@ export function RoutePlaceStrip({
       시트의 색이 아니다.** 바꾸면서 안쪽 요소도 같이 뒤집혔다: 크림으로 띄우던 것들
       (날짜 칩·손잡이·`제외됨`)은 흰 바닥에선 안 보이므로 각각 제 역할색을 찾아갔다.
     */
-    <div className="rounded-t-[20px] bg-white px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
+    <div
+      className={`flex flex-col rounded-t-[20px] bg-white px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] ${
+        collapsed ? '' : 'h-[45dvh]'
+      }`}
+    >
       {/* touch-none: 세로 끌기를 브라우저 기본 제스처에 뺏기지 않게.
           손잡이와 맨 아래 줄에만 건다 — 가운데(날짜 칩·목록)는 저희끼리 굴러가야 한다. */}
-      <div className="touch-none" {...drag.handlers}>
+      <div className="shrink-0 touch-none" {...drag.handlers}>
         <button
           type="button"
           onClick={() => {
             if (drag.consumeDrag()) return;
-            setCollapsed((value) => !value);
+            onCollapsedChange(!collapsed);
           }}
           aria-expanded={!collapsed}
           aria-label={collapsed ? '동선 목록 펼치기' : '동선 목록 접기'}
@@ -218,12 +242,14 @@ export function RoutePlaceStrip({
         )}
       </div>
 
-      {/* 접히는 영역. 안쪽 목록이 제 높이(`LIST_VIEWPORT_PX`)로 잘려 있으므로 이 영역의 높이도
-          날짜 칩 + 목록으로 고정이다 → 재지 않고 넉넉한 상한만 준다. max-height 는 상한일 뿐이라
-          넉넉히 잡아도 펼친 높이가 커지지 않는다. `max-h-0` 로 접히므로 접힌 높이는 정확히 0. */}
+      {/* 접히는 영역. 펼쳤을 때 시트에 남는 자리를 전부 차지하고(`flex-1`), 그 안에서 목록이
+          다시 남는 자리를 갖는다 — 시트 높이가 45dvh 로 고정이라 목록에 따로 상한을 줄 필요가
+          없어졌다. `max-h-0`/`max-h-96` 은 여닫는 애니메이션의 두 끝점이다(높이가 `auto` 면
+          전환이 안 붙는다). 펼친 끝점은 시트 높이와 같은 45dvh — 항상 실제 높이보다 크므로
+          값을 제한하지 않는다. */}
       <div
-        className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
-          collapsed ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'
+        className={`flex min-h-0 flex-1 flex-col overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
+          collapsed ? 'max-h-0 opacity-0' : 'max-h-[45dvh] opacity-100'
         }`}
         // 접힌 동안 칩·목록이 보이지 않는데도 탭 순서·스크린리더에 남는 걸 막는다.
         // (`overflow:hidden` 은 시각만 자르지 초점은 그대로 들어간다.)
@@ -234,7 +260,7 @@ export function RoutePlaceStrip({
             음수 마진: 칩 그림자가 좌우 스크롤 끝에서 잘리지 않게 패딩만큼 밖으로 뺐다가
             같은 값으로 되돌린다. 날짜가 없으면 `pt-4` 만 남아 빈 틈이 되므로 감싼 채로 뺀다. */}
         {dates.length > 0 && (
-          <div className="-mx-5 px-5 pt-2">
+          <div className="-mx-5 shrink-0 px-5 pt-2">
             <RouteDateChips dates={dates} filter={dateFilter} onChangeFilter={onChangeDateFilter} />
           </div>
         )}
@@ -243,7 +269,7 @@ export function RoutePlaceStrip({
             칩 줄과 목록 사이에 두는 이유는 **둘 다에 걸쳐 있어서**다 — 개수는 목록이 만든
             결과이고, `전체 선택`/`전체 해제` 는 위에서 고른 필터 범위에 적용된다.
             문구는 지금 상태가 아니라 **누르면 무슨 일이 일어나는지**를 말한다. */}
-        <div className="flex items-center gap-3 pt-3">
+        <div className="flex shrink-0 items-center gap-3 pt-3">
           {/* 색이 GREEN-500 이었다 — 연초록 바닥 위 2.35:1 로, 가이드라인이 결함이라고
               집어둔 조합이다. 보조 텍스트 자리이므로 INK-muted(흰 위 5.98:1). */}
           <p className="min-w-0 flex-1 truncate text-[13px] text-[#60655c]">
@@ -274,8 +300,7 @@ export function RoutePlaceStrip({
           */
           <ul
             ref={listRef}
-            className="-mx-5 mt-3 overflow-y-auto overscroll-contain px-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            style={{ maxHeight: LIST_VIEWPORT_PX }}
+            className="-mx-5 mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {places.map((place, index) => {
               const disabled = disabledPlaceIds.has(place.id);
@@ -409,7 +434,7 @@ export function RoutePlaceStrip({
         이 화면에 남아 있다는 건 아직 저장 전이라는 뜻이다.
       */}
       {onSave && (
-        <div className="touch-none pt-3" {...drag.handlers}>
+        <div className="shrink-0 touch-none pt-3" {...drag.handlers}>
           <button
             type="button"
             onClick={() => {

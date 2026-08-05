@@ -31,6 +31,9 @@ import { NumberedMarker } from '../components/NumberedMarker';
  */
 const CLUSTER_DISTANCE_PX = 36;
 
+/** 화면을 맞출 때 위·좌·우에 남기는 여백. 마커(36px) 반지름보다 커야 잘리지 않는다. */
+const EDGE_PADDING_PX = 24;
+
 function readClusterDistance(): number {
   if (!import.meta.env.DEV) return CLUSTER_DISTANCE_PX;
 
@@ -51,17 +54,26 @@ function readClusterDistance(): number {
  * 목록은 하루로 좁혔는데 지도는 사흘치가 그대로 깔려 있으면, 지금 보고 있는 게 어느 날의
  * 동선인지 지도에서 되짚을 수가 없다.
  */
-export function useRoutePath(
-  map: kakao.maps.Map | null,
-  points: RoutePlace[],
-  disabledIds: ReadonlySet<number>,
+type RoutePathOptions = {
   /** 그릴 날짜. `null` 이면 전부. **거르기지 빼기가 아니다** — 저장에는 영향이 없다. */
-  dateFilter: string | null,
+  dateFilter: string | null;
+  /**
+   * 화면 아래쪽에서 지도를 덮고 있는 높이(하단 시트). 마커가 그 뒤로 들어가지 않게
+   * `setBounds` 에 여백으로 넘긴다.
+   */
+  bottomPaddingPx: number;
   /**
    * 최대 줌인까지 확대해도 안 쪼개지는 묶음을 탭했을 때. 겹쳐 있는 장소 id 들을 넘긴다.
    * 지도에서는 더 보여줄 게 없으니 화면 쪽(하단 시트)이 대신 짚어주라는 신호다.
    */
-  onOverlappingTap?: (placeIds: number[]) => void,
+  onOverlappingTap?: (placeIds: number[]) => void;
+};
+
+export function useRoutePath(
+  map: kakao.maps.Map | null,
+  points: RoutePlace[],
+  disabledIds: ReadonlySet<number>,
+  { dateFilter, bottomPaddingPx, onOverlappingTap }: RoutePathOptions,
 ) {
   /*
     콜백을 ref 에 담아 쓴다. 아래 effect 의 의존성에 넣으면 부모가 매 렌더 새 함수를
@@ -249,6 +261,14 @@ export function useRoutePath(
     shownPlaces.forEach((point) =>
       bounds.extend(new window.kakao.maps.LatLng(point.lat, point.lng)),
     );
-    map.setBounds(bounds);
-  }, [map, shownPlaces]);
+
+    /*
+      여백을 주지 않으면 마커가 화면 가장자리에 딱 붙고, 아래쪽 마커는 하단 시트 뒤로
+      들어가 아예 안 보인다(시트는 지도 위에 떠 있지 지도를 깎지 않는다).
+
+      위·좌·우 `EDGE_PADDING_PX` 는 마커가 잘리지 않을 만큼만이다 — 순번 마커가 36px
+      이고 가운데 정렬이라 절반인 18px 보다 커야 한다.
+    */
+    map.setBounds(bounds, EDGE_PADDING_PX, EDGE_PADDING_PX, bottomPaddingPx, EDGE_PADDING_PX);
+  }, [map, shownPlaces, bottomPaddingPx]);
 }
