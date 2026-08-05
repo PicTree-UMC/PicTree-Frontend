@@ -242,13 +242,19 @@ export function RoutePlaceStrip({
       (날짜 칩·손잡이·`제외됨`)은 흰 바닥에선 안 보이므로 각각 제 역할색을 찾아갔다.
     */
     <div
-      className={`flex flex-col rounded-t-[20px] bg-white px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] ${
+      /*
+        ⚠️ **가로 여백은 시트가 주지 않는다 — 안쪽 줄들이 각자 갖는다.** 시트가 `px-5` 를
+        가지면 접히는 영역(`overflow-hidden`)이 그 여백선에서 잘라내서, 목록이 `-mx-5` 로
+        밖으로 나가려 해도 소용이 없다. 그래서 줄에 깔린 배경색이 좌우 20px 를 못 덮고
+        흰 띠가 남았다. 시트를 끝까지 열어 두고 여백은 줄이 padding 으로 갖는다.
+      */
+      className={`flex flex-col rounded-t-[20px] bg-white pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] ${
         collapsed ? '' : 'h-[50dvh]'
       }`}
     >
       {/* touch-none: 세로 끌기를 브라우저 기본 제스처에 뺏기지 않게.
           손잡이와 맨 아래 줄에만 건다 — 가운데(날짜 칩·목록)는 저희끼리 굴러가야 한다. */}
-      <div className="shrink-0 touch-none" {...drag.handlers}>
+      <div className="shrink-0 touch-none px-5" {...drag.handlers}>
         <button
           type="button"
           onClick={() => {
@@ -291,7 +297,7 @@ export function RoutePlaceStrip({
             음수 마진: 칩 그림자가 좌우 스크롤 끝에서 잘리지 않게 패딩만큼 밖으로 뺐다가
             같은 값으로 되돌린다. 날짜가 없으면 `pt-4` 만 남아 빈 틈이 되므로 감싼 채로 뺀다. */}
         {dates.length > 0 && (
-          <div className="-mx-5 shrink-0 px-5 pt-2">
+          <div className="shrink-0 px-5 pt-2">
             <RouteDateChips dates={dates} filter={dateFilter} onChangeFilter={onChangeDateFilter} />
           </div>
         )}
@@ -303,7 +309,7 @@ export function RoutePlaceStrip({
         {/* 칩 줄과 사이를 넉넉히 벌린다(pt-5). 붙여 두면 칩을 누르려던 손가락이 바로 아래
             `전체 선택` 에 닿는다 — 둘은 하는 일이 다르다(보기 좁히기 vs 동선에서 빼기).
             좁은 간격은 눈에도 한 덩어리로 읽혀서, 칩을 누르면 선택까지 바뀌는 줄 알게 된다. */}
-        <div className="flex shrink-0 items-center gap-3 pt-5">
+        <div className="flex shrink-0 items-center gap-3 px-5 pt-5">
           {/* 색이 GREEN-500 이었다 — 연초록 바닥 위 2.35:1 로, 가이드라인이 결함이라고
               집어둔 조합이다. 보조 텍스트 자리이므로 INK-muted(흰 위 5.98:1). */}
           <p className="min-w-0 flex-1 truncate text-[13px] text-[#60655c]">
@@ -322,7 +328,7 @@ export function RoutePlaceStrip({
         </div>
 
         {places.length === 0 ? (
-          <p className="mt-4 text-[13px] text-[#60655c]">표시할 동선이 없어요</p>
+          <p className="mt-4 px-5 text-[13px] text-[#60655c]">표시할 동선이 없어요</p>
         ) : (
           /*
             시트 안에서 굴러가는 목록.
@@ -338,7 +344,7 @@ export function RoutePlaceStrip({
             ref={listRef}
             // 가로 여백을 **목록이 아니라 줄이** 갖는다 — 목록이 패딩으로 밀어 두면 줄에
             // 깔린 배경색이 그 여백에 못 닿아 좌우가 흰 채로 남는다(띠가 잘려 보인다).
-            className="-mx-5 mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {places.map((place, index) => {
               const disabled = disabledPlaceIds.has(place.id);
@@ -477,7 +483,7 @@ export function RoutePlaceStrip({
         이 화면에 남아 있다는 건 아직 저장 전이라는 뜻이다.
       */}
       {onSave && (
-        <div className="shrink-0 touch-none pt-3" {...drag.handlers}>
+        <div className="shrink-0 touch-none px-5 pt-3" {...drag.handlers}>
           <button
             type="button"
             onClick={() => {
