@@ -38,6 +38,13 @@ interface RouteNodeStepperProps {
  *
  * 아직 아무 곳도 안 골랐으면 `1 / n` 대신 **`동선 따라가기`** 라고 쓴다. 0 번째라는 상태를
  * 숫자로 꾸며내지 않으려는 것이고, 그 상태에서는 어느 쪽 화살표를 눌러도 첫 곳으로 간다.
+ *
+ * **시트 안에 들어가는 한 줄이다**(`RoutePlaceStrip` 의 붙박이 머리). 한동안 지도 위에 뜨는
+ * 크림 알약이었는데, 시트 높이에 맞춰 띄워둔 것이라 결국 시트에 매여 있으면서 지도만 가렸다.
+ * 시트 폭을 그대로 쓰는 줄이 되면서 자기 배경이 필요 없어졌고(시트가 흰 바닥을 준다),
+ * 화살표는 양 끝으로 벌어져 누를 자리가 넓어졌다.
+ *
+ * 자기 가로 여백(`px-5`)을 갖는다 — 시트가 여백을 주지 않고 안쪽 줄들이 각자 갖는 규칙이다.
  */
 export function RouteNodeStepper({
   places,
@@ -63,38 +70,31 @@ export function RouteNodeStepper({
   };
 
   return (
-    /*
-      지도 위에 뜨는 알약. 헤더의 뒤로가기·제목과 같은 말(반투명 크림 + 그림자)을 쓴다 —
-      지도 위에 얹히는 것들은 저마다 자기 배경을 갖는 게 이 화면의 규칙이다.
-      `pointer-events-none` 을 감싼 쪽에 두고 알약만 되살린다: 알약 양옆의 빈 자리는
-      지도를 끌 수 있어야 한다.
-    */
-    <div className="pointer-events-none flex justify-center px-5">
-      <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-[#fffcef]/95 p-1 shadow-[0_2px_8px_rgba(0,0,0,0.18)]">
-        <button
-          type="button"
-          onClick={() => step(-1)}
-          aria-label="이전 장소로"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full text-[#2c3930]"
-        >
-          <ChevronIcon className="h-5 w-5" />
-        </button>
+    <div className="flex shrink-0 items-center gap-2 px-5 pb-0.5">
+      {/* 화살표는 줄의 양 끝이다 — 가운데 이름이 길든 짧든 자리가 안 움직여서, 연달아 누를 때
+          손가락을 다시 겨누지 않아도 된다. 흰 바닥에서 눌리는 자리로 읽히도록 GREEN-100 을 깐다. */}
+      <button
+        type="button"
+        onClick={() => step(-1)}
+        aria-label="이전 장소로"
+        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-pictree-100 text-[#2c3930]"
+      >
+        <ChevronIcon className="h-5 w-5" />
+      </button>
 
-        {/* 이름이 길어도 알약이 화면을 가로지르지 않게 자른다. 번호는 안 자른다 —
-            어디쯤인지를 말하는 건 이름이 아니라 번호다. */}
-        <p className="min-w-0 max-w-[9.5rem] truncate px-1 text-center text-[15px] font-medium text-[#2c3930]">
-          {focused ? `${sequenceById.get(focused.id)}. ${focused.name}` : '동선 따라가기'}
-        </p>
+      {/* 이름이 길면 자른다. 번호는 안 자른다 — 어디쯤인지를 말하는 건 이름이 아니라 번호다. */}
+      <p className="min-w-0 flex-1 truncate text-center text-[15px] font-medium text-[#2c3930]">
+        {focused ? `${sequenceById.get(focused.id)}. ${focused.name}` : '동선 따라가기'}
+      </p>
 
-        <button
-          type="button"
-          onClick={() => step(1)}
-          aria-label="다음 장소로"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full text-[#2c3930]"
-        >
-          <ChevronIcon className="h-5 w-5 rotate-180" />
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => step(1)}
+        aria-label="다음 장소로"
+        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-pictree-100 text-[#2c3930]"
+      >
+        <ChevronIcon className="h-5 w-5 rotate-180" />
+      </button>
     </div>
   );
 }

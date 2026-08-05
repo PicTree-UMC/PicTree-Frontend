@@ -375,19 +375,6 @@ export function RouteViewPage() {
         </div>
       )}
 
-      {/* 따라가기 알약은 시트 **바로 위**에 앉힌다. 조작은 시트에 모은다는 원칙에서 이것만
-          지도 위로 나온 이유는, 누르는 동안 결과(지도가 옮겨가는 것)를 봐야 하기 때문이다 —
-          시트 안에 있으면 손가락과 눈이 화면 아래에 묶인다. 시트 높이를 알고 있으므로
-          붙여 놓을 수 있다. */}
-      <div className="absolute inset-x-0 z-10" style={{ bottom: sheetHeightPx + 12 }}>
-        <RouteNodeStepper
-          places={steppablePlaces}
-          sequenceById={sequenceById}
-          focusedPlaceId={focusedPlaceId}
-          onFocus={setFocusedPlaceId}
-        />
-      </div>
-
       {/* 하단 동선 strip — 지도가 fixed 배경이 되면서 흐름에서 빠졌으므로,
           바텀 패널로 지도 위에 띄운다(내부에서 pb-safe 로 홈 인디케이터를 피한다). */}
       <div className="absolute inset-x-0 bottom-0 z-10">
@@ -412,6 +399,21 @@ export function RouteViewPage() {
           // 접힘을 페이지가 들고 있는 이유는 지도다 — 시트가 덮는 높이만큼 화면을 비워야 한다.
           collapsed={sheetCollapsed}
           onCollapsedChange={setSheetCollapsed}
+          // 따라가기는 시트의 붙박이 머리 줄이다. 한동안 시트 위에 뜨는 알약이었는데,
+          // 어차피 시트 높이에 맞춰 띄워둔 것이라 시트에 매인 채 지도만 가리고 있었다.
+          // 시트 안으로 들어오면서 '조작은 전부 시트' 원칙에 예외가 없어졌고, 알약이 비운
+          // 자리는 지도가 가져간다. 접혀도 남는 자리라 접어 놓고 지도만 보며 따라갈 수 있다.
+          // 훑을 게 없으면 안 넘긴다 — 그때는 시트가 `전체 동선` 제목을 대신 세운다.
+          stepper={
+            steppablePlaces.length > 0 ? (
+              <RouteNodeStepper
+                places={steppablePlaces}
+                sequenceById={sequenceById}
+                focusedPlaceId={focusedPlaceId}
+                onFocus={setFocusedPlaceId}
+              />
+            ) : undefined
+          }
         />
       </div>
 
