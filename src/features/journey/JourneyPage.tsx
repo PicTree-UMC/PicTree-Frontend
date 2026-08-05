@@ -249,8 +249,19 @@ export function JourneyPage() {
             setShowBottomSheet(false);
             setShowPhotoAlbum(true);
           }}
-          // TODO: 블로그 화면(현재 스텁) 구현 후 연결
-          onAIBlog={() => {}}
+          // AI 블로그 작성 플로우로 이동. 이 동선의 방문 기간을 미리 채워 넘긴다
+          // (기록이 없으면 recordDates 가 빈 배열 — 그때는 작성 화면 기본값을 쓴다).
+          onAIBlog={() => {
+            setShowBottomSheet(false);
+            const dates = [...selectedJourney.recordDates].sort();
+            const initialStartDate = dates[0];
+            const initialEndDate = dates[dates.length - 1];
+            navigate(ROUTES.blogCreate, {
+              state: initialStartDate && initialEndDate
+                ? { startDate: initialStartDate, endDate: initialEndDate }
+                : undefined,
+            });
+          }}
           onRename={() => {
             setShowBottomSheet(false);
             setShowRenameModal(true);
