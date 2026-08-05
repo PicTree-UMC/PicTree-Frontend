@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { SUPPORT_EMAIL } from "./constants/contact";
 import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
 
 const iconBase = "h-[22px] w-[22px] flex-shrink-0";
@@ -177,7 +178,7 @@ const SECTIONS: Section[] = [
         icon: <IconShield />,
         title: "개인정보 보호책임자 및 문의",
         body:
-          "개인정보 또는 위치정보 처리와 관련한 문의는 PicTree 고객지원 채널로 접수합니다. 정식 출시 전에는 seangwon20@gmail.com으로 문의할 수 있으며, 실제 출시 시 사업자 정보와 개인정보 보호책임자 정보를 최신 내용으로 고지합니다.",
+          `개인정보 또는 위치정보 처리와 관련한 문의는 PicTree 고객지원 채널로 접수합니다. 정식 출시 전에는 ${SUPPORT_EMAIL}으로 문의할 수 있으며, 실제 출시 시 사업자 정보와 개인정보 보호책임자 정보를 최신 내용으로 고지합니다.`,
       },
       {
         icon: <IconInfo />,
@@ -193,17 +194,17 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
     <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-4">
       <div className="flex items-center gap-2.5">
         {card.icon}
-        <h3 className="text-base font-bold text-[#2C3930]">{card.title}</h3>
+        <h3 className="text-[15px] font-medium text-[#2C3930]">{card.title}</h3>
       </div>
 
       {card.fields && (
         <dl className="mt-3 flex flex-col gap-2">
           {card.fields.map((field) => (
             <div key={field.label} className="flex gap-3">
-              <dt className="w-9 flex-shrink-0 text-xs font-medium text-[#9CAB84]">
+              <dt className="w-9 flex-shrink-0 text-[13px] font-medium text-[#9CAB84]">
                 {field.label}
               </dt>
-              <dd className="flex-1 text-xs leading-relaxed text-[#2C3930]">
+              <dd className="flex-1 text-[13px] leading-relaxed text-[#2C3930]">
                 {field.value}
               </dd>
             </div>
@@ -212,7 +213,7 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
       )}
 
       {card.body && (
-        <p className="mt-2.5 text-xs leading-relaxed text-[#6E6E6E]">{card.body}</p>
+        <p className="mt-2.5 text-[13px] leading-relaxed text-[#6E6E6E]">{card.body}</p>
       )}
     </div>
   );
@@ -220,9 +221,10 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
 
 export function PrivacyPolicyPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-[#FFFCEF] pb-nav">
+    // min-h-full: 100vh 는 셸 컬럼을 넘긴다. pt 의 safe-area 는 상태바 겹침 방지(#139).
+    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 */}
-      <header className="bg-[#C5D89D] px-5 pb-5 pt-4">
+      <header className="bg-[#C5D89D] px-5 pb-5 pt-[calc(env(safe-area-inset-top)+1rem)]">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -232,14 +234,14 @@ export function PrivacyPolicyPage() {
           >
             <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
           </button>
-          <h1 className="text-xl font-bold text-black">개인정보 처리방침</h1>
+          <h1 className="text-[20px] font-medium text-black">개인정보 처리방침</h1>
         </div>
       </header>
 
       <div className="flex flex-col gap-6 px-5 pt-5">
         {SECTIONS.map((section) => (
           <section key={section.label}>
-            <h2 className="mb-2 pl-1 text-[15px] font-semibold text-[#9CAB84]">
+            <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#9CAB84]">
               {section.label}
             </h2>
             <div className="flex flex-col gap-3">

@@ -24,9 +24,9 @@ export function StorageCard({ usedBytes, totalBytes }: Props) {
 
   return (
     <section className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-4">
-      <h2 className="text-lg font-semibold text-[#111]">사진 저장 용량</h2>
+      <h2 className="text-[17px] font-medium text-[#111]">사진 저장 용량</h2>
 
-      <p className="mt-1 text-xs font-medium text-[#90908F]">
+      <p className="mt-1 text-[13px] font-medium text-[#90908F]">
         {usedLabel} / {formatBytes(totalBytes)} 사용 중
       </p>
 
@@ -44,7 +44,7 @@ export function StorageCard({ usedBytes, totalBytes }: Props) {
         />
       </div>
 
-      <p className="text-xs font-medium text-[#90908F]">
+      <p className="text-[13px] font-medium text-[#90908F]">
         사진 없는 기록은 용량 제한 없이 무제한으로 저장돼요.
       </p>
     </section>

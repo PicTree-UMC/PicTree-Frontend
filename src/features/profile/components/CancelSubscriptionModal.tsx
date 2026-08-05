@@ -25,14 +25,14 @@ export function CancelSubscriptionModal({ onKeep, onCancel, isPending }: Props) 
       >
         <img src={alertIcon} alt="" className="mx-auto h-[50px] w-[50px]" />
 
-        <p className="mt-3 text-center text-xl font-bold text-black">
+        <p className="mt-3 text-center text-[20px] font-medium text-black">
           정말 구독을 취소할까요?
         </p>
-        <p className="mt-1 text-center text-xs text-[#2C3930]">
+        <p className="mt-1 text-center text-[13px] text-[#2C3930]">
           구독을 취소하면 다음 혜택을 잃게 됩니다
         </p>
 
-        <div className="mt-4 flex flex-col items-center gap-1 rounded-xl border-2 border-[#C5D89D] bg-white py-4 text-center text-sm font-semibold text-[#111]">
+        <div className="mt-4 flex flex-col items-center gap-1 rounded-xl border-2 border-[#C5D89D] bg-white py-4 text-center text-[14px] font-medium text-[#111]">
           {LOSING_BENEFITS.map((benefit) => (
             <p key={benefit}>{benefit}</p>
           ))}
@@ -43,7 +43,7 @@ export function CancelSubscriptionModal({ onKeep, onCancel, isPending }: Props) 
             type="button"
             onClick={onKeep}
             disabled={isPending}
-            className="h-[38px] w-[120px] rounded-xl bg-[#ECECEC] text-base font-semibold text-[#2C3930] disabled:opacity-60"
+            className="h-[38px] w-[120px] rounded-xl bg-[#ECECEC] text-[15px] font-medium text-[#2C3930] disabled:opacity-60"
           >
             구독 유지
           </button>
@@ -51,7 +51,7 @@ export function CancelSubscriptionModal({ onKeep, onCancel, isPending }: Props) 
             type="button"
             onClick={onCancel}
             disabled={isPending}
-            className="h-[38px] w-[120px] rounded-xl bg-[#FF5858] text-base font-semibold text-white disabled:opacity-60"
+            className="h-[38px] w-[120px] rounded-xl bg-[#FF5858] text-[15px] font-medium text-white disabled:opacity-60"
           >
             {isPending ? "처리 중..." : "구독 취소"}
           </button>

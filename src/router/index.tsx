@@ -18,6 +18,8 @@ import { ProfileEditPage } from '../features/profile/ProfileEditPage';
 import { SubscriptionPage } from '../features/profile/SubscriptionPage';
 import { TravelCalendarPage } from '../features/profile/TravelCalendarPage';
 import { FavoritesPage } from '../features/profile/FavoritesPage';
+import { HelpFaqPage } from '@/features/profile/HelpFaqPage';
+import { AlertLogsPage } from '@/features/profile/AlertLogsPage';
 import { PrivacyPolicyPage } from '../features/profile/PrivacyPolicyPage';
 import { TimelinePage } from '../features/timeline/TimelinePage';
 import { Layout } from '../shared/components';
@@ -103,6 +105,14 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.favorites,
             element: <FavoritesPage />,
+          },
+          {
+            path: ROUTES.alertLogs,
+            element: <AlertLogsPage />,
+          },
+          {
+            path: ROUTES.helpFaq,
+            element: <HelpFaqPage />,
           },
           {
             path: ROUTES.privacy,

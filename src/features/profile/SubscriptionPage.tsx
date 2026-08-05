@@ -37,13 +37,6 @@ const BENEFIT_ORDER = [
   FEATURE_CODE.adFree,
 ];
 
-/** 요금제를 아직 못 받았을 때 자리를 지키는 시안 값. 받아오면 즉시 대체된다. */
-const FALLBACK_BENEFITS = [
-  { icon: gisRouteIcon, title: "20GB 대용량 업그레이드" },
-  { icon: menuBookIcon, title: "AI 블로그 50회 자동 생성" },
-  { icon: adsOffIcon, title: "광고 제거" },
-];
-
 /** 혜택 한 줄 문구. 코드마다 어미가 달라 서버 name 을 그대로 쓸 수 없다. */
 const benefitTitle = (feature: PlanFeatureDto): string => {
   if (feature.code === FEATURE_CODE.photoStorage && feature.limitValue != null) {
@@ -59,7 +52,7 @@ function BenefitRow({ icon, title }: { icon: string; title: string }) {
   return (
     <div className="flex items-center gap-3 py-2.5">
       <img src={icon} alt="" className="h-6 w-6 shrink-0" />
-      <p className="min-w-0 flex-1 text-lg font-semibold text-[#111]">{title}</p>
+      <p className="min-w-0 flex-1 text-[17px] font-medium text-[#111]">{title}</p>
       <img src={checkIcon} alt="포함됨" className="h-6 w-6 shrink-0" />
     </div>
   );
@@ -75,7 +68,15 @@ export function SubscriptionPage() {
    * 한 화면에 뜨므로 여기서는 구독 응답만 쓴다.
    */
   const { data: subscription, isPending, isError, refetch } = useMySubscription();
-  const { data: plans } = useSubscriptionPlans();
+  /*
+   * 혜택 문구는 이 응답이 유일한 출처다. 실패를 시안 값으로 덮으면 실제와 다른
+   * 용량·횟수를 보여주게 되므로, 상태를 받아 화면에서 갈라 그린다.
+   */
+  const {
+    data: plans,
+    isPending: isPlansPending,
+    refetch: refetchPlans,
+  } = useSubscriptionPlans();
   // 카드 표시는 구독과 별개 소스(GET /billing-keys)라 함께 조회한다.
   const { data: billingKeys } = useBillingKeys();
   const cancelMutation = useCancelSubscription();
@@ -88,8 +89,19 @@ export function SubscriptionPage() {
    */
   const currentPlan = subscription?.plan.code ?? "FREE";
   const isFree = isFreePlan(currentPlan);
-  // 해지해도 status 는 ACTIVE 로 남고 autoRenew 만 꺼진다 — '해지됨'은 이걸로 판별한다.
-  const isCanceled = Boolean(subscription && !subscription.autoRenew);
+  /**
+   * 해지해도 status 는 ACTIVE 로 남고 autoRenew 만 꺼진다 — '해지됨'은 이걸로 판별한다.
+   *
+   * ⚠️ `autoRenew` 만 보면 안 된다. 구독한 적 없는 무료 사용자에게도 서버가
+   * `{ subscriptionId: null, status: 'FREE', autoRenew: false, expiresAt: null }`
+   * 를 주기 때문에, 그들도 '해지됨'으로 잡혀 만료일 자리에 **1970년 1월 1일**이
+   * 떴다(`new Date(null)` = Unix epoch).
+   *
+   * `subscriptionId` 가 있어야 실제로 구독했던 것이다.
+   */
+  const isCanceled = Boolean(
+    subscription?.subscriptionId != null && !subscription.autoRenew,
+  );
 
   const currentPlanDto = plans?.find((plan) => plan.code === currentPlan);
   const storageMb = currentPlanDto
@@ -116,7 +128,7 @@ export function SubscriptionPage() {
           icon: BENEFIT_ICON[feature.code],
           title: benefitTitle(feature),
         }))
-    : FALLBACK_BENEFITS;
+    : [];
 
   const activeCard =
     billingKeys?.find((key) => key.status === "ACTIVE") ?? billingKeys?.[0];
@@ -125,17 +137,19 @@ export function SubscriptionPage() {
     ? "-"
     : isCanceled
       ? "자동갱신 해지됨"
-      : subscription.nextBillingAt
-        ? formatKoreanDate(subscription.nextBillingAt)
-        : "-";
+      : (formatKoreanDate(subscription.nextBillingAt) ?? "-");
 
   const handleCancel = () => {
     if (!subscription) return;
     cancelMutation.mutate(subscription.subscriptionId, {
       onSuccess: () => {
         setIsCancelOpen(false);
+        // 만료일을 모르면 날짜를 지어내지 않고 문장만 바꾼다(1970년이 뜨던 자리).
+        const until = formatKoreanDate(subscription.expiresAt);
         showToast(
-          `구독을 취소했어요. ${formatKoreanDate(subscription.expiresAt)}까지 그대로 이용할 수 있어요.`,
+          until
+            ? `구독을 취소했어요. ${until}까지 그대로 이용할 수 있어요.`
+            : "구독을 취소했어요. 남은 기간 동안은 그대로 이용할 수 있어요.",
           "info",
         );
       },
@@ -166,7 +180,7 @@ export function SubscriptionPage() {
         >
           <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
         </button>
-        <h1 className="text-xl font-bold text-black">구독 관리</h1>
+        <h1 className="text-[20px] font-medium text-black">구독 관리</h1>
       </header>
 
       <div className="flex flex-col gap-4 px-5 pt-6">
@@ -176,13 +190,13 @@ export function SubscriptionPage() {
         */}
         {isError && (
           <div className="rounded-xl border-2 border-[#FF8A8A] bg-white px-5 py-4 text-center">
-            <p className="text-sm text-[#FF5858]">
+            <p className="text-[14px] text-[#FF5858]">
               구독 정보를 불러오지 못했어요. 아래는 실제 플랜과 다를 수 있어요.
             </p>
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-xs font-bold text-white"
+              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-[13px] font-medium text-white"
             >
               다시 시도
             </button>
@@ -210,8 +224,11 @@ export function SubscriptionPage() {
               !subscription
                 ? null
                 : isCanceled
-                  ? `${formatKoreanDate(subscription.expiresAt)} 만료 · 자동갱신 꺼짐`
-                  : subscription.nextBillingAt
+                  ? // 만료일이 없으면 날짜를 빼고 상태만 알린다(1970년이 뜨던 자리).
+                    [formatKoreanDate(subscription.expiresAt), "만료 · 자동갱신 꺼짐"]
+                      .filter(Boolean)
+                      .join(" ")
+                  : formatKoreanDate(subscription.nextBillingAt)
                     ? `다음 결제: ${formatKoreanDate(subscription.nextBillingAt)}`
                     : null
             }
@@ -220,17 +237,37 @@ export function SubscriptionPage() {
 
         <StorageCard usedBytes={null} totalBytes={storageLimit} />
 
+        {/*
+          혜택 문구는 서버 요금제가 유일한 출처다. 못 받았으면 사유를 알리고
+          다시 시도를 준다 — 시안 값으로 채우면 실제와 다른 용량·횟수를
+          보여주게 되고, 사용자는 그게 틀렸다는 걸 알 방법이 없다.
+        */}
         <section className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-1">
-          {benefits.map((benefit) => (
-            <BenefitRow key={benefit.title} {...benefit} />
-          ))}
+          {isPlansPending ? (
+            <p className="py-6 text-center text-[14px] text-[#60655C]">
+              요금제를 불러오는 중...
+            </p>
+          ) : benefits.length === 0 ? (
+            <div className="py-6 text-center">
+              <p className="text-[14px] text-[#FF5858]">요금제를 불러오지 못했어요.</p>
+              <button
+                type="button"
+                onClick={() => refetchPlans()}
+                className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-[13px] font-medium text-white"
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : (
+            benefits.map((benefit) => <BenefitRow key={benefit.title} {...benefit} />)
+          )}
         </section>
 
         {!subscription || isFree ? (
           <button
             type="button"
             onClick={() => navigate(ROUTES.premium)}
-            className="h-12 rounded-xl bg-[#DCEBC0] text-lg font-semibold text-[#2C3930]"
+            className="h-12 rounded-xl bg-[#DCEBC0] text-[17px] font-medium text-[#2C3930]"
           >
             프리미엄으로 업그레이드
           </button>
@@ -238,8 +275,8 @@ export function SubscriptionPage() {
           <>
             <section>
               <div className="mb-2 flex items-end justify-between pl-1">
-                <h2 className="text-[15px] font-semibold text-[#9CAB84]">결제 정보</h2>
-                <p className="text-[10px] text-[#2C3930]">
+                <h2 className="text-[15px] font-medium text-[#9CAB84]">결제 정보</h2>
+                <p className="text-[13px] text-[#2C3930]">
                   다음 결제일 : {nextBillingLabel}
                 </p>
               </div>
@@ -247,8 +284,8 @@ export function SubscriptionPage() {
                 <div className="flex items-center gap-3">
                   <img src={cardIcon} alt="" className="h-6 w-6 shrink-0" />
                   <div>
-                    <p className="text-lg font-semibold text-[#111]">신용카드</p>
-                    <p className="text-xs font-medium text-[#90908F]">
+                    <p className="text-[17px] font-medium text-[#111]">신용카드</p>
+                    <p className="text-[13px] font-medium text-[#90908F]">
                       {activeCard ? activeCard.cardNumberMasked : "등록된 카드 없음"}
                     </p>
                   </div>
@@ -265,7 +302,7 @@ export function SubscriptionPage() {
                 type="button"
                 onClick={handleResume}
                 disabled={resumeMutation.isPending}
-                className="h-12 rounded-xl bg-[#DCEBC0] text-lg font-semibold text-[#2C3930] disabled:opacity-60"
+                className="h-12 rounded-xl bg-[#DCEBC0] text-[17px] font-medium text-[#2C3930] disabled:opacity-60"
               >
                 {resumeMutation.isPending ? "처리 중..." : "자동갱신 다시 켜기"}
               </button>
@@ -273,7 +310,7 @@ export function SubscriptionPage() {
               <button
                 type="button"
                 onClick={() => setIsCancelOpen(true)}
-                className="h-12 rounded-xl bg-[#FFD5D5] text-lg font-semibold text-[#FF4B4B]"
+                className="h-12 rounded-xl bg-[#FFD5D5] text-[17px] font-medium text-[#FF4B4B]"
               >
                 구독 취소
               </button>
