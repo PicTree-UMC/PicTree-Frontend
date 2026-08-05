@@ -11,7 +11,9 @@ import {
   SHEET_EXPANDED_RATIO,
 } from './components/RoutePlaceStrip';
 import { SaveRouteSheet } from './components/SaveRouteSheet';
+import { RouteNodeStepper } from './components/RouteNodeStepper';
 import { DATES_PARAM, MAX_PLACES, parseDatesParam, toDatesParam } from './lib/routeParams';
+import { buildSequenceMap } from './lib/sequence';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
@@ -136,6 +138,30 @@ export function RouteViewPage() {
     visiblePlaces.length > 0 && visiblePlaces.every((place) => !disabledIds.has(place.id));
 
   /*
+    동선 따라가기.
+
+    축소하면 번호가 뭉쳐 순서를 못 읽고, 읽히는 배율까지 확대하면 다음 장소가 화면 밖으로
+    나간다 — 그래서 지도를 손으로 밀어 다음 곳을 찾아야 했다. 순서대로 옮겨 주는 버튼 하나로
+    그 왕복을 없앤다.
+
+    훑는 범위는 **지금 보고 있는 것과 같다** — 날짜를 걸렀으면 그 하루만, 꺼둔 장소는 건너뛴다.
+    번호는 전체 기준을 그대로 쓰므로(`sequenceById`) 4월 1일만 볼 때도 `3. 도담도담` 이다.
+  */
+  const sequenceById = useMemo(() => buildSequenceMap(places, disabledIds), [places, disabledIds]);
+  const steppablePlaces = useMemo(
+    () => visiblePlaces.filter((place) => !disabledIds.has(place.id)),
+    [visiblePlaces, disabledIds],
+  );
+
+  const [focusedPlaceId, setFocusedPlaceId] = useState<number | null>(null);
+  /*
+    날짜를 바꾸면 따라가던 자리를 놓는다. 그 하루가 통째로 화면에 담기는 게 먼저고, 이전
+    날짜의 장소를 계속 가리키고 있으면 지도가 그리로 되돌아가 버린다.
+    끄기·켜기는 그대로 둔다 — 보던 자리는 그대로이고 번호만 당겨진다.
+  */
+  useEffect(() => setFocusedPlaceId(null), [dateFilter]);
+
+  /*
     지도에서 겹쳐서 못 쪼개지는 묶음을 탭했을 때 시트가 짚어줄 장소들.
 
     지도가 "여기선 더 확대해도 안 갈라진다"고 답하는 자리라, 그냥 두면 눌러도 아무 일이
@@ -191,6 +217,7 @@ export function RouteViewPage() {
   useRoutePath(map, places, disabledIds, {
     dateFilter,
     bottomPaddingPx: sheetHeightPx,
+    focusedPlaceId,
     onOverlappingTap: handleOverlappingTap,
   });
 
@@ -348,6 +375,19 @@ export function RouteViewPage() {
         </div>
       )}
 
+      {/* 따라가기 알약은 시트 **바로 위**에 앉힌다. 조작은 시트에 모은다는 원칙에서 이것만
+          지도 위로 나온 이유는, 누르는 동안 결과(지도가 옮겨가는 것)를 봐야 하기 때문이다 —
+          시트 안에 있으면 손가락과 눈이 화면 아래에 묶인다. 시트 높이를 알고 있으므로
+          붙여 놓을 수 있다. */}
+      <div className="absolute inset-x-0 z-10" style={{ bottom: sheetHeightPx + 12 }}>
+        <RouteNodeStepper
+          places={steppablePlaces}
+          sequenceById={sequenceById}
+          focusedPlaceId={focusedPlaceId}
+          onFocus={setFocusedPlaceId}
+        />
+      </div>
+
       {/* 하단 동선 strip — 지도가 fixed 배경이 되면서 흐름에서 빠졌으므로,
           바텀 패널로 지도 위에 띄운다(내부에서 pb-safe 로 홈 인디케이터를 피한다). */}
       <div className="absolute inset-x-0 bottom-0 z-10">
@@ -368,6 +408,7 @@ export function RouteViewPage() {
           onSave={isSavedView ? undefined : handleSave}
           onTogglePlace={togglePlace}
           highlightedPlaceIds={highlightedPlaceIds}
+          focusedPlaceId={focusedPlaceId}
           // 접힘을 페이지가 들고 있는 이유는 지도다 — 시트가 덮는 높이만큼 화면을 비워야 한다.
           collapsed={sheetCollapsed}
           onCollapsedChange={setSheetCollapsed}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { RoutePlace } from '../types/route';
 import { formatDateLabel } from '../lib/formatDate';
+import { buildSequenceMap } from '../lib/sequence';
 import { RouteDateChips } from './RouteDateChips';
 
 interface RoutePlaceStripProps {
@@ -44,6 +45,14 @@ interface RoutePlaceStripProps {
    * 새 배열이 오면(같은 장소를 다시 탭해도) 시트가 펼쳐지고 첫 줄로 스크롤한다.
    */
   highlightedPlaceIds?: readonly number[];
+  /**
+   * 지금 따라가고 있는 장소. 지도가 그리로 옮겨간 참이라 **목록도 같은 줄을 보여준다** —
+   * 이름과 사진은 여기에만 있어서, 목록이 딴 데를 보고 있으면 지도와 시트가 다른 말을 한다.
+   *
+   * 짚어주기(`highlightedPlaceIds`)와 달리 **사라지지 않는다.** 따라가는 동안 계속 유지되는
+   * 자리라서 띠를 옅게(GREEN-100) 깔아 목록을 훑는 데 방해되지 않게 한다.
+   */
+  focusedPlaceId?: number | null;
 }
 
 /** 사진을 안 올린 장소. 홈 마커·`RoutePlacePreview` 와 같은 기본 아이콘을 쓴다. */
@@ -172,6 +181,7 @@ export function RoutePlaceStrip({
   onSave,
   onTogglePlace,
   highlightedPlaceIds,
+  focusedPlaceId,
   collapsed,
   onCollapsedChange,
 }: RoutePlaceStripProps) {
@@ -180,32 +190,49 @@ export function RoutePlaceStrip({
   const listRef = useRef<HTMLUListElement>(null);
   const highlighted = new Set(highlightedPlaceIds ?? []);
 
+  /**
+   * 목록을 그 줄까지 굴린다.
+   *
+   * ⚠️ `scrollIntoView` 를 쓰지 않는다 — 조상 스크롤 컨테이너까지 함께 움직일 수 있다.
+   * 이 목록의 `scrollTop` 만 건드린다(`JourneyChips` 와 같은 이유).
+   * 위치는 `offsetTop` 이 아니라 rect 차이로 잰다 — 줄(`li`)이 `relative` 라 `offsetParent`
+   * 가 목록이 아니어서 `offsetTop` 이 엉뚱한 기준을 가리킨다.
+   */
+  const scrollToPlace = (placeId: number) => {
+    const list = listRef.current;
+    const row = list?.querySelector<HTMLElement>(`[data-place-id="${placeId}"]`);
+    if (!list || !row) return;
+
+    const top = row.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+    list.scrollTo({ top: Math.max(top - HIGHLIGHT_SCROLL_MARGIN_PX, 0), behavior: 'smooth' });
+  };
+
   /*
     짚어줄 장소가 생기면 시트를 펼치고 그 줄까지 굴려서 보여준다.
 
     접혀 있으면 목록 자체가 안 보이므로 펴는 게 먼저다 — 접기는 사용자가 지도를 넓게
     보려고 한 선택이지만, 지도가 "여기선 더 못 보여준다"고 답한 참이라 시트가 이어받는다.
-
-    ⚠️ `scrollIntoView` 를 쓰지 않는다 — 조상 스크롤 컨테이너까지 함께 움직일 수 있다.
-    이 목록의 `scrollTop` 만 건드린다(`JourneyChips` 와 같은 이유).
-    위치는 `offsetTop` 이 아니라 rect 차이로 잰다 — 줄(`li`)이 `relative` 라 `offsetParent`
-    가 목록이 아니어서 `offsetTop` 이 엉뚱한 기준을 가리킨다.
   */
   useEffect(() => {
     if (!highlightedPlaceIds || highlightedPlaceIds.length === 0) return;
 
     onCollapsedChange(false);
-
-    const list = listRef.current;
-    const row = list?.querySelector<HTMLElement>(`[data-place-id="${highlightedPlaceIds[0]}"]`);
-    if (!list || !row) return;
-
-    const top = row.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
-    list.scrollTo({ top: Math.max(top - HIGHLIGHT_SCROLL_MARGIN_PX, 0), behavior: 'smooth' });
+    // scrollToPlace 는 ref 만 읽으므로 의존성에 넣지 않는다(매 렌더 새로 만들어진다).
+    scrollToPlace(highlightedPlaceIds[0]);
   }, [highlightedPlaceIds, onCollapsedChange]);
 
-  // 번호는 켜진 장소에만 붙는다. map 안에서 증가시키므로 렌더 순서대로 1,2,3… 이 된다.
-  let sequence = 0;
+  /*
+    따라가는 자리가 바뀌면 목록도 그 줄로 옮겨간다. **시트를 펴지는 않는다** — 접어 둔 채
+    지도만 보며 따라가는 것도 멀쩡한 사용법이라, 접기를 되돌리는 건 사용자 선택을 뒤엎는다.
+  */
+  useEffect(() => {
+    if (focusedPlaceId == null || collapsed) return;
+
+    scrollToPlace(focusedPlaceId);
+  }, [focusedPlaceId, collapsed]);
+
+  // 번호는 켜진 장소에만, 거르기 전에 붙는다 — 규칙은 `buildSequenceMap` 이 들고 있다.
+  const sequenceById = buildSequenceMap(places, disabledPlaceIds);
 
   return (
     /*
@@ -313,11 +340,8 @@ export function RoutePlaceStrip({
           >
             {places.map((place, index) => {
               const disabled = disabledPlaceIds.has(place.id);
-              // 번호는 **거르기 전에** 매긴다. 걸러진 목록 안에서 다시 세면 3월 31일만
-              // 봤을 때 4월 1일 첫 장소가 1번이 되어, 지도의 마커 번호와 어긋난다.
-              if (!disabled) sequence += 1;
 
-              // 필터에 안 걸리는 줄은 그리지 않는다(번호는 위에서 이미 넘겼다).
+              // 필터에 안 걸리는 줄은 그리지 않는다(번호는 전체 기준으로 이미 매겨져 있다).
               if (dateFilter !== null && place.date !== dateFilter) return null;
 
               /*
@@ -341,7 +365,11 @@ export function RoutePlaceStrip({
                   key={place.id}
                   data-place-id={place.id}
                   className={`relative transition-colors duration-500 ${
-                    highlighted.has(place.id) ? 'rounded-[14px] bg-pictree-300' : ''
+                    highlighted.has(place.id)
+                      ? 'rounded-[14px] bg-pictree-300'
+                      : place.id === focusedPlaceId
+                        ? 'rounded-[14px] bg-pictree-100'
+                        : ''
                   }`}
                 >
                   {linked && (
@@ -417,7 +445,7 @@ export function RoutePlaceStrip({
                       </span>
                     ) : (
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-pictree-700 text-[13px] font-medium text-white">
-                        {sequence}
+                        {sequenceById.get(place.id)}
                       </span>
                     )}
                   </button>
