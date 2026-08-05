@@ -22,9 +22,9 @@ function Field({
 }) {
   return (
     <section>
-      <h2 className="mb-2 pl-1 text-[15px] font-semibold text-[#9CAB84]">{label}</h2>
+      <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#9CAB84]">{label}</h2>
       {children}
-      {hint && <p className="mt-1.5 pl-1 text-xs text-[#8D8D8D]">{hint}</p>}
+      {hint && <p className="mt-1.5 pl-1 text-[13px] text-[#8D8D8D]">{hint}</p>}
     </section>
   );
 }
@@ -92,7 +92,7 @@ export function ProfileEditPage() {
           >
             <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
           </button>
-          <h1 className="text-xl font-bold text-black">내 정보</h1>
+          <h1 className="text-[20px] font-medium text-black">내 정보</h1>
         </div>
       </header>
 
@@ -122,7 +122,7 @@ export function ProfileEditPage() {
               type="button"
               onClick={() => setIsSheetOpen(true)}
               aria-label="프로필 사진 제거"
-              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#FFFCEF] bg-[#89986D] text-sm text-white"
+              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#FFFCEF] bg-[#89986D] text-[14px] text-white"
             >
               ✎
             </button>
@@ -130,7 +130,7 @@ export function ProfileEditPage() {
         </div>
 
         {profile && (
-          <span className="mt-2 inline-block rounded-xl bg-[#DDBF68] px-3 py-0.5 text-[10px] font-medium text-[#2C3930]">
+          <span className="mt-2 inline-block rounded-xl bg-[#DDBF68] px-3 py-0.5 text-[13px] font-medium text-[#2C3930]">
             {getPlanLabel(profile.currentPlan)}
           </span>
         )}
@@ -144,11 +144,11 @@ export function ProfileEditPage() {
         */}
         {isError && (
           <div className="rounded-xl border-2 border-[#FF8A8A] bg-white px-5 py-4 text-center">
-            <p className="text-sm text-[#FF5858]">내 정보를 불러오지 못했어요.</p>
+            <p className="text-[14px] text-[#FF5858]">내 정보를 불러오지 못했어요.</p>
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-xs font-bold text-white"
+              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-[13px] font-medium text-white"
             >
               다시 시도
             </button>
@@ -176,9 +176,9 @@ export function ProfileEditPage() {
               disabled={isPending}
               aria-label="닉네임"
               placeholder="닉네임을 입력해주세요"
-              className="min-w-0 flex-1 text-lg font-semibold text-[#111] outline-none placeholder:font-normal placeholder:text-[#B5B5B5]"
+              className="min-w-0 flex-1 text-[17px] font-medium text-[#111] outline-none placeholder:font-normal placeholder:text-[#B5B5B5]"
             />
-            <span className="shrink-0 text-xs text-[#8D8D8D]">
+            <span className="shrink-0 text-[13px] text-[#8D8D8D]">
               {trimmed.length}/{NICKNAME_MAX}
             </span>
           </div>
@@ -189,7 +189,7 @@ export function ProfileEditPage() {
           hint="소셜 계정에서 가져온 값이라 앱에서는 바꿀 수 없어요."
         >
           <div className="rounded-xl border-2 border-[#E6E1CC] bg-[#F7F5EC] px-5 py-3">
-            <p className="text-lg font-semibold text-[#8D8D8D]">
+            <p className="text-[17px] font-medium text-[#8D8D8D]">
               {/* 카카오는 이메일 동의를 안 하면 null 로 온다 */}
               {profile?.email ?? "등록된 이메일이 없어요"}
             </p>
@@ -200,7 +200,7 @@ export function ProfileEditPage() {
           type="button"
           onClick={handleSave}
           disabled={!canSave}
-          className="mt-1 h-12 rounded-xl bg-[#89986D] text-lg font-semibold text-white disabled:bg-[#D5D5D5] disabled:text-[#8D8D8D]"
+          className="mt-1 h-12 rounded-xl bg-[#89986D] text-[17px] font-medium text-white disabled:bg-[#D5D5D5] disabled:text-[#8D8D8D]"
         >
           {isSaving ? "저장 중..." : "저장하기"}
         </button>
