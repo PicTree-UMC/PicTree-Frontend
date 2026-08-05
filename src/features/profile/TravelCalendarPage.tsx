@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CalendarGrid } from "../../shared/components";
+import { useMonthCursor } from "../../shared/hooks/useMonthCursor";
 import { useTravelCalendar } from "./hooks/useTravelCalendar";
 import { CALENDAR_LEVELS, CALENDAR_LEVEL_COLORS } from "./lib/calendarLevel";
 import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
@@ -9,36 +10,17 @@ const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 
 export function TravelCalendarPage() {
   /*
-   * 들어오면 이번 달이 보인다.
-   *
-   * 초기값을 렌더마다 새로 만들지 않도록 함수형 초기화를 쓴다. `new Date()` 를
-   * 그냥 넘기면 매 렌더 호출되는데, 어차피 첫 렌더에만 쓰이므로 낭비다.
+   * 들어오면 이번 달이 보인다(`useMonthCursor` 의 기본값).
    *
    * ⚠️ 예전에는 2026·4 로 박혀 있었다. 그래서 8월에 들어가도 4월이 열렸다.
+   *
+   * 12월↔1월 넘김은 공용 훅이 맡는다 — 연·월을 따로 들고 손으로 넘기던 코드였다(#104).
    */
-  const [year, setYear] = useState(() => new Date().getFullYear());
-  const [month, setMonth] = useState(() => new Date().getMonth() + 1); // 1~12
+  const { year, month, goPrev, goNext, moveTo } = useMonthCursor();
 
   // 달을 넘길 때마다 그 달치를 받는다 (queryKey 에 연·월이 들어 있어 캐시가 산다)
   const { levelByDate, isPending, isError, refetch } = useTravelCalendar(year, month);
   const [pickerOpen, setPickerOpen] = useState(false);
-
-  const goPrevMonth = () => {
-    if (month === 1) {
-      setYear(year - 1);
-      setMonth(12);
-    } else {
-      setMonth(month - 1);
-    }
-  };
-  const goNextMonth = () => {
-    if (month === 12) {
-      setYear(year + 1);
-      setMonth(1);
-    } else {
-      setMonth(month + 1);
-    }
-  };
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
@@ -95,7 +77,7 @@ export function TravelCalendarPage() {
                 <div className="mb-3 flex items-center justify-between px-2">
                   <button
                     type="button"
-                    onClick={() => setYear(year - 1)}
+                    onClick={() => moveTo({ year: year - 1, month })}
                     aria-label="이전 해"
                     className="p-2"
                   >
@@ -106,7 +88,7 @@ export function TravelCalendarPage() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => setYear(year + 1)}
+                    onClick={() => moveTo({ year: year + 1, month })}
                     aria-label="다음 해"
                     className="p-2"
                   >
@@ -120,7 +102,7 @@ export function TravelCalendarPage() {
                       key={m}
                       type="button"
                       onClick={() => {
-                        setMonth(m);
+                        moveTo({ year, month: m });
                         setPickerOpen(false);
                       }}
                       className={`rounded-lg py-2 text-[14px] ${
@@ -142,11 +124,11 @@ export function TravelCalendarPage() {
       <div className="px-5">
         <div className="-mt-6 rounded-[20px] bg-white p-5 shadow-[4px_4px_8px_0px_rgba(0,0,0,0.12)]">
           <div className="mb-4 flex items-center justify-center gap-8">
-            <button type="button" onClick={goPrevMonth} aria-label="이전 달" className="p-1">
+            <button type="button" onClick={goPrev} aria-label="이전 달" className="p-1">
               <img src={chevronLeftIcon} alt="" className="h-[18px] w-[10px]" />
             </button>
             <p className="text-[20px] font-medium text-black">{month}월</p>
-            <button type="button" onClick={goNextMonth} aria-label="다음 달" className="p-1">
+            <button type="button" onClick={goNext} aria-label="다음 달" className="p-1">
               <img src={chevronLeftIcon} alt="" className="h-[18px] w-[10px] rotate-180" />
             </button>
           </div>
