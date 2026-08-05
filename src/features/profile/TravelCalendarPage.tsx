@@ -53,7 +53,7 @@ export function TravelCalendarPage() {
           >
             <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
           </button>
-          <h1 className="text-xl font-bold text-black">여행 캘린더</h1>
+          <h1 className="text-[20px] font-medium text-black">여행 캘린더</h1>
         </div>
 
         {/* 연도 + 피커 트리거 */}
@@ -63,7 +63,7 @@ export function TravelCalendarPage() {
             onClick={() => setPickerOpen((prev) => !prev)}
             aria-expanded={pickerOpen}
             aria-label="연·월 선택"
-            className="flex items-center gap-1.5 text-2xl font-bold text-black"
+            className="flex items-center gap-1.5 text-2xl font-medium text-black"
           >
             {year}년
             {/* 역삼각형(▼) */}
@@ -101,7 +101,7 @@ export function TravelCalendarPage() {
                   >
                     <img src={chevronLeftIcon} alt="" className="h-4 w-[9px]" />
                   </button>
-                  <span className="text-base font-bold text-[#2C3930]">
+                  <span className="text-[15px] font-medium text-[#2C3930]">
                     {year}년
                   </span>
                   <button
@@ -123,9 +123,9 @@ export function TravelCalendarPage() {
                         setMonth(m);
                         setPickerOpen(false);
                       }}
-                      className={`rounded-lg py-2 text-sm ${
+                      className={`rounded-lg py-2 text-[14px] ${
                         m === month
-                          ? "bg-[#C5D89D] font-bold text-[#2C3930]"
+                          ? "bg-[#C5D89D] font-medium text-[#2C3930]"
                           : "text-[#2C3930]"
                       }`}
                     >
@@ -145,7 +145,7 @@ export function TravelCalendarPage() {
             <button type="button" onClick={goPrevMonth} aria-label="이전 달" className="p-1">
               <img src={chevronLeftIcon} alt="" className="h-[18px] w-[10px]" />
             </button>
-            <p className="text-xl font-bold text-black">{month}월</p>
+            <p className="text-[20px] font-medium text-black">{month}월</p>
             <button type="button" onClick={goNextMonth} aria-label="다음 달" className="p-1">
               <img src={chevronLeftIcon} alt="" className="h-[18px] w-[10px] rotate-180" />
             </button>
@@ -153,11 +153,11 @@ export function TravelCalendarPage() {
 
           {isError ? (
             <div className="py-8 text-center">
-              <p className="text-sm text-[#FF5858]">캘린더를 불러오지 못했어요.</p>
+              <p className="text-[14px] text-[#FF5858]">캘린더를 불러오지 못했어요.</p>
               <button
                 type="button"
                 onClick={() => refetch()}
-                className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-xs font-bold text-white"
+                className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-[13px] font-medium text-white"
               >
                 다시 시도
               </button>
@@ -181,7 +181,7 @@ export function TravelCalendarPage() {
         <div className="mt-4 rounded-xl bg-[#ECF6D8] px-5 py-4">
           <div className="flex items-center gap-2">
             <img src={treeIcon} alt="" className="h-5 w-5" />
-            <p className="text-xs font-medium text-[#2C3930]">
+            <p className="text-[13px] font-medium text-[#2C3930]">
               하루에 방문하는 수만큼 잔디가 진해져요
             </p>
           </div>
@@ -190,19 +190,19 @@ export function TravelCalendarPage() {
             열이 길어져도 두 글자는 점 높이(20px) 가운데에 계속 걸리게 하려는 것.
           */}
           <div className="mt-3 flex items-start justify-center gap-2.5">
-            <span className="mt-[5px] text-[10px] text-black">적음</span>
+            <span className="mt-[5px] text-[13px] text-black">적음</span>
             {CALENDAR_LEVELS.map(({ shade, label }) => (
               <span key={label} className="flex w-5 flex-col items-center gap-1">
                 <span
                   className="h-5 w-5 rounded-full"
                   style={{ backgroundColor: shade }}
                 />
-                <span className="whitespace-nowrap text-[10px] leading-[10px] text-black">
+                <span className="whitespace-nowrap text-[13px] leading-[10px] text-black">
                   {label}
                 </span>
               </span>
             ))}
-            <span className="mt-[5px] text-[10px] text-black">많음</span>
+            <span className="mt-[5px] text-[13px] text-black">많음</span>
           </div>
         </div>
       </div>
