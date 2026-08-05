@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
 import {
   deleteTree,
   getNearbyTrees,
@@ -138,7 +139,10 @@ export const useDeleteTree = () => {
       if (context?.prev) queryClient.setQueryData(treeKeys.list(), context.prev);
     },
     onSettled: () => {
-      if (isAuthenticated) queryClient.invalidateQueries({ queryKey: treeKeys.list() });
+      if (!isAuthenticated) return;
+      queryClient.invalidateQueries({ queryKey: treeKeys.list() });
+      // 잔디는 나무 개수로 그려지므로 장소가 사라지면 같이 옅어져야 한다.
+      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
     },
   });
 };
