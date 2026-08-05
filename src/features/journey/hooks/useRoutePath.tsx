@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { clusterByPixelDistance, findSplitLevel } from '@/shared/lib/markerCluster';
 import { ClusterMarker } from '@/shared/components';
@@ -46,11 +46,17 @@ function readClusterDistance(): number {
  * (설계서의 예: 1·2번 3월 31일, 3·4번 4월 1일, 5번 4월 3일).
  *
  * `disabledIds` 의 장소는 번호와 선에서 빠지고 빈 원으로만 남는다(설계서 7번).
+ *
+ * `dateFilter` 가 걸리면 **그 날짜만 그린다.** 시트 목록과 같은 범위를 보게 하려는 것이다 —
+ * 목록은 하루로 좁혔는데 지도는 사흘치가 그대로 깔려 있으면, 지금 보고 있는 게 어느 날의
+ * 동선인지 지도에서 되짚을 수가 없다.
  */
 export function useRoutePath(
   map: kakao.maps.Map | null,
   points: RoutePlace[],
   disabledIds: ReadonlySet<number>,
+  /** 그릴 날짜. `null` 이면 전부. **거르기지 빼기가 아니다** — 저장에는 영향이 없다. */
+  dateFilter: string | null,
   /**
    * 최대 줌인까지 확대해도 안 쪼개지는 묶음을 탭했을 때. 겹쳐 있는 장소 id 들을 넘긴다.
    * 지도에서는 더 보여줄 게 없으니 화면 쪽(하단 시트)이 대신 짚어주라는 신호다.
@@ -79,7 +85,14 @@ export function useRoutePath(
         return { ...point, sequence };
       });
 
-    const disabled = points.filter((point) => disabledIds.has(point.id));
+    /*
+      ⚠️ **번호를 매긴 뒤에 거른다.** 걸러진 장소만 모아 다시 세면 지도가 1부터 다시 시작해
+      시트 목록의 번호와 어긋난다 — 시트도 같은 순서로 센 다음 안 보일 줄만 빼고 그린다.
+      4월 1일만 보고 있어도 그날 첫 장소는 3번이면 3번 그대로여야 한다.
+    */
+    const isShown = (point: RoutePlace) => dateFilter === null || point.date === dateFilter;
+    const shown = numbered.filter(isShown);
+    const disabled = points.filter((point) => disabledIds.has(point.id) && isShown(point));
 
     let overlays: kakao.maps.CustomOverlay[] = [];
 
@@ -154,7 +167,7 @@ export function useRoutePath(
         addOverlay(point.lat, point.lng, renderToStaticMarkup(<NumberedMarker index={null} />), 0);
       });
 
-      clusterByPixelDistance(map, numbered, readClusterDistance()).forEach((cluster) => {
+      clusterByPixelDistance(map, shown, readClusterDistance()).forEach((cluster) => {
         const isCluster = cluster.items.length > 1;
         const markup = isCluster ? (
           <ClusterMarker count={cluster.items.length} />
@@ -178,7 +191,7 @@ export function useRoutePath(
     window.kakao.maps.event.addListener(map, 'idle', render);
 
     const byDate = new Map<string, RoutePlace[]>();
-    numbered.forEach((point) => {
+    shown.forEach((point) => {
       const group = byDate.get(point.date) ?? [];
       group.push(point);
       byDate.set(point.date, group);
@@ -212,16 +225,30 @@ export function useRoutePath(
       overlays.forEach((overlay) => overlay.setMap(null));
       polylines.forEach((polyline) => polyline.setMap(null));
     };
-  }, [map, points, disabledIds]);
+  }, [map, points, disabledIds, dateFilter]);
 
-  // 고른 날짜가 서로 멀리 떨어져 있으면 기본 중심에선 화면 밖으로 나간다 → 전부 담기게 맞춘다.
-  // **장소를 껐다 켤 때는 다시 맞추지 않는다** — 칩 하나 누를 때마다 지도가 튀면 어디를 봤는지
-  // 잃어버린다. 그래서 마커 효과와 분리해 날짜(points)에만 반응시킨다.
+  /**
+   * 지금 그리는 장소가 전부 담기게 화면을 맞춘다.
+   *
+   * 고른 날짜가 서로 멀리 떨어져 있으면 기본 중심에선 화면 밖으로 나가고, 날짜를 하나로
+   * 좁히면 그 하루가 화면 구석에 작게 남는다. **날짜 필터에도 반응해야 하는 이유가 이것** —
+   * 걸러 놓고 화면은 사흘치 범위 그대로면, 좁힌 보람이 지도에는 나타나지 않는다.
+   *
+   * **장소를 껐다 켤 때는 다시 맞추지 않는다** — 칩 하나 누를 때마다 지도가 튀면 어디를
+   * 봤는지 잃어버린다. 그래서 `disabledIds` 가 아니라 그릴 범위(`shownPlaces`)에만 건다.
+   */
+  const shownPlaces = useMemo(
+    () => (dateFilter === null ? points : points.filter((point) => point.date === dateFilter)),
+    [points, dateFilter],
+  );
+
   useEffect(() => {
-    if (!map || points.length === 0) return;
+    if (!map || shownPlaces.length === 0) return;
 
     const bounds = new window.kakao.maps.LatLngBounds();
-    points.forEach((point) => bounds.extend(new window.kakao.maps.LatLng(point.lat, point.lng)));
+    shownPlaces.forEach((point) =>
+      bounds.extend(new window.kakao.maps.LatLng(point.lat, point.lng)),
+    );
     map.setBounds(bounds);
-  }, [map, points]);
+  }, [map, shownPlaces]);
 }

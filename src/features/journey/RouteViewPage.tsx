@@ -108,11 +108,12 @@ export function RouteViewPage() {
   );
 
   /*
-    하단 시트 목록에 보일 날짜. `null` 이면 전부.
+    지금 들여다보는 날짜. `null` 이면 전부. **시트 목록과 지도가 같이 좁혀진다.**
 
-    **보기만 거른다** — 걸러진 날짜의 장소도 지도에는 그대로 그려지고 번호도 유지된다.
-    예전엔 날짜 칩이 그날 장소를 통째로 껐다 켰는데, 한 손짓에 '보기'와 '넣기/빼기'가
-    겹쳐 있어서 그날만 들여다보려고 눌렀다가 동선에서 빠지는 일이 났다.
+    **보기만 거른다** — 걸러진 날짜의 장소도 동선에는 그대로 남고 번호도 유지된다(저장되는
+    범위는 `activePlaces` 이고 이 필터와 무관하다). 예전엔 날짜 칩이 그날 장소를 통째로 껐다
+    켰는데, 한 손짓에 '보기'와 '넣기/빼기'가 겹쳐 있어서 그날만 들여다보려고 눌렀다가
+    동선에서 빠지는 일이 났다. 넣고 빼기는 `전체 선택`/`전체 해제` 와 줄 탭이 맡는다.
 
     고른 날짜가 목록에서 사라질 수 있어(② 에서 동선을 다시 받아오면 날짜 집합이 바뀐다)
     상태를 그대로 믿지 않고 매번 걸러 쓴다 — effect 로 되돌리면 한 프레임 동안 빈 목록이 뜬다.
@@ -149,15 +150,23 @@ export function RouteViewPage() {
   }, [highlightedPlaceIds]);
 
   /**
-   * 겹쳐서 못 쪼개지는 묶음 탭. **날짜 필터를 먼저 푼다** — 겹친 장소들이 서로 다른 날짜일
-   * 수 있어서, 필터가 걸린 채로 짚으면 목록에 없는 줄을 가리키게 된다.
+   * 겹쳐서 못 쪼개지는 묶음 탭.
+   *
+   * **다른 날짜가 섞여 있을 때만 필터를 푼다** — 필터가 걸린 채로 짚으면 목록에 없는 줄을
+   * 가리키게 되기 때문이다. 지도도 같이 걸러지면서 묶음이 필터 밖 장소를 물고 있는 일은
+   * 사실상 없어졌지만, 그렇다고 늘 풀어버리면 방금 좁혀 본 하루가 통째로 되돌아간다.
    */
   const handleOverlappingTap = (placeIds: number[]) => {
-    setPickedDateFilter(null);
+    const tapped = new Set(placeIds);
+    const spansOtherDates =
+      dateFilter !== null &&
+      places.some((place) => tapped.has(place.id) && place.date !== dateFilter);
+
+    if (spansOtherDates) setPickedDateFilter(null);
     setHighlightedPlaceIds(placeIds);
   };
 
-  useRoutePath(map, places, disabledIds, handleOverlappingTap);
+  useRoutePath(map, places, disabledIds, dateFilter, handleOverlappingTap);
 
   /**
    * 장소 칩 탭(설계서 7번). 그 장소를 껐다 켜고, 켜진 것만 세어 번호를 다시 매긴다.
