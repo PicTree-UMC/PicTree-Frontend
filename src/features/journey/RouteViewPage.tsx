@@ -235,9 +235,9 @@ export function RouteViewPage() {
   return (
     <div className="relative h-full w-full bg-white">
       {/* 지도 — 노치(safe-area)까지 덮는 fixed 풀블리드 배경.
-          앱 컬럼(h-dvh)은 상단 safe-area 아래에서 시작하므로, flex-1 로는 지도가 컬럼 안에만
-          그려져 노치 영역이 크림 base 로 비어 '잘려 보인다'. MarkerStoryViewer 와 같은 fixed
-          풀블리드로 visual viewport 를 덮는다(mx-auto sm:max-w-[390px]: 데스크톱 컬럼 폭).
+          기준 상자는 레이아웃 뷰포트이고, iOS PWA 에서 그 위쪽 끝은 화면 맨 위다. flex-1 로
+          두면 지도가 컬럼 안에만 그려져 노치 영역이 크림 base 로 비어 '잘려 보인다'.
+          `inset-0` 하나로 덮고 오프셋은 더하지 않는다(mx-auto sm:max-w-[390px]: 데스크톱 컬럼 폭).
           isolate: 카카오맵이 내부 요소에 큰 z-index 를 부여해도 stacking context 를 가둬서
           헤더·하단 strip 등 위로 뜬 UI 를 덮지 않게 한다. */}
       <div ref={containerRef} className="isolate fixed inset-0 z-0 mx-auto sm:max-w-[390px]" />

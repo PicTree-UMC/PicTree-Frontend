@@ -29,22 +29,58 @@ self.addEventListener('push', (event) => {
     payload = { body: event.data ? event.data.text() : '' };
   }
 
-  const title = payload.title || '근처에 심어둔 나무가 있어요';
-  const options = {
-    body: payload.body || '지난 기록을 열어볼까요?',
-    icon: '/apple-touch-icon.jpg',
-    badge: '/apple-touch-icon.jpg',
-    // 같은 나무 알림이 여러 개 쌓이지 않게 묶는다
-    tag: payload.alertLogId ? `nearby-${payload.alertLogId}` : 'nearby',
-    data: {
-      alertLogId: payload.alertLogId ?? null,
-      treeId: payload.treeId ?? null,
-      url: payload.url || '/home',
-    },
-  };
-
-  event.waitUntil(self.registration.showNotification(title, options));
+  /*
+   * ⚠️ 서버는 **나무 한 그루당 푸시 하나**를 보낸다(`check` 의 `for (const tree of trees)`).
+   * 반경 안에 3그루면 푸시가 3번 온다. 그대로 두면 알림이 3개 쌓이는데,
+   * 화면(지도 카드)은 클러스터 마커처럼 하나로 묶어 보여주므로 서로 어긋난다.
+   *
+   * 그래서 여기서 합친다. 브라우저는 **같은 `tag`** 를 가진 알림이 오면 새로 쌓지
+   * 않고 기존 것을 교체하므로, 태그를 고정하고 이미 떠 있는 알림을 세어 개수로
+   * 바꿔 준다 — 지도 카드와 같은 문구가 된다.
+   */
+  event.waitUntil(showMergedNotification(payload));
 });
+
+/** 근처 나무 알림은 이 태그 하나로 묶는다. 같은 태그면 브라우저가 교체한다. */
+const NEARBY_TAG = 'nearby';
+
+async function showMergedNotification(payload) {
+  const existing = await self.registration.getNotifications({ tag: NEARBY_TAG });
+
+  // 이미 떠 있는 알림이 묶고 있던 개수. 없으면 이번이 첫 알림이다.
+  const merged = (existing[0]?.data?.mergedCount ?? 0) + 1;
+
+  // 묶인 나무 id 들 — 알림을 눌렀을 때 함께 열기 위해 모아 둔다.
+  const treeIds = [...(existing[0]?.data?.treeIds ?? [])];
+  if (payload.treeId != null && !treeIds.includes(payload.treeId)) {
+    treeIds.push(payload.treeId);
+  }
+
+  const body =
+    merged > 1
+      ? `저장된 기록 ${merged}개 · 지난 기록을 열어볼까요?`
+      : payload.body || '지난 기록을 열어볼까요?';
+
+  return self.registration.showNotification(
+    payload.title || '근처에 심어둔 나무가 있어요',
+    {
+      body,
+      icon: '/apple-touch-icon.jpg',
+      badge: '/apple-touch-icon.jpg',
+      tag: NEARBY_TAG,
+      // 교체될 때 다시 울리지 않게 한다 — 3그루면 진동이 3번 오면 안 된다.
+      renotify: false,
+      data: {
+        mergedCount: merged,
+        treeIds,
+        // 확인 처리는 가장 최근 것 하나만 건다(여러 건이면 목록에서 확인한다).
+        alertLogId: payload.alertLogId ?? existing[0]?.data?.alertLogId ?? null,
+        treeId: payload.treeId ?? null,
+        url: payload.url || '/home',
+      },
+    },
+  );
+}
 
 /**
  * 알림 클릭.
@@ -59,7 +95,7 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const { alertLogId, url } = event.notification.data || {};
+  const { alertLogId, treeIds, url } = event.notification.data || {};
   const target = url || '/home';
 
   event.waitUntil(
@@ -68,7 +104,8 @@ self.addEventListener('notificationclick', (event) => {
       .then((clientList) => {
         for (const client of clientList) {
           if ('focus' in client) {
-            client.postMessage({ type: 'nearby-alert-opened', alertLogId });
+            // 여러 그루가 묶인 알림이면 id 를 함께 넘겨 지도가 다 열게 한다.
+            client.postMessage({ type: 'nearby-alert-opened', alertLogId, treeIds });
             return client.focus();
           }
         }

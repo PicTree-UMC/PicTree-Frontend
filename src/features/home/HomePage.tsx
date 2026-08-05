@@ -7,6 +7,8 @@ import { useCurrentLocation } from './hooks/useCurrentLocation';
 import { useMapMarkers, type MapMarkerData } from './hooks/useMapMarkers';
 import { useDeleteTree, useToggleFavorite, useTreeDetail, useTrees } from './hooks/useTrees';
 import { JourneyBanner } from './components/JourneyBanner';
+import { NearbyTreeAlert } from '@/features/profile/components';
+import { useNearbyAlertWatcher } from '@/features/profile/hooks/useNearbyAlertWatcher';
 import { MarkerStoryViewer } from './components/MarkerStoryViewer';
 
 /** 위치 권한 거부·미지원 시 지도가 열릴 기본 위치(서울시청). */
@@ -17,6 +19,15 @@ export function HomePage() {
   // 지도는 이동을 따라가야 하므로 추적 모드로 받는다. request(refreshLocation)는
   // 추적 중에도 수동 재조회로 쓸 수 있어 우하단 새로고침 버튼에서 사용한다.
   const { coords, loading: locating, request: refreshLocation } = useGeolocation({ watch: true });
+
+  /*
+   * 근처 나무 알림. 위치가 의미 있게 바뀌면 서버에 확인을 요청하고(푸시는 서버가 쏜다),
+   * 반경 50m 안에 내 나무가 있으면 지도 위에도 카드로 알린다.
+   *
+   * ⚠️ 앱이 켜져 있을 때만 동작한다 — 웹은 앱이 꺼진 상태에서 위치를 추적할 수 없다.
+   * 지도가 위치를 계속 받는 유일한 화면이라 여기에 둔다.
+   */
+  const nearbyAlert = useNearbyAlertWatcher(coords);
 
   /*
    * 현재 위치가 확인될 때까지 지도 생성을 미루고, 확인되면 그 위치에서 연다.
@@ -125,9 +136,9 @@ export function HomePage() {
     <div className="relative h-full w-full overflow-hidden">
       {/*
         카카오맵 — 노치(safe-area)까지 덮는 fixed 풀블리드.
-        앱 컬럼(h-dvh)은 상단 safe-area 아래에서 시작하므로, absolute inset-0 으로는
-        지도가 컬럼 안에만 그려져 노치 영역이 크림 base 로 비어 '잘려 보인다'.
-        MarkerStoryViewer 와 같은 fixed 풀블리드 방식으로 visual viewport 를 덮어 해결한다.
+        기준 상자는 레이아웃 뷰포트이고, iOS PWA 에서 그 위쪽 끝은 화면 맨 위(상태바 뒤)다.
+        그래서 `inset-0` 하나로 노치 뒤까지 덮는다. 오프셋을 더하지 말 것 — 지도가 아래로
+        밀려 중심(현재 위치 마커)이 어긋난다. #137 이 그렇게 한 번 틀렸다.
         (mx-auto sm:max-w-[390px]: 데스크톱에서 앱 컬럼 폭에 맞춘다.)
       */}
       <div ref={containerRef} className="fixed inset-0 z-0 mx-auto sm:max-w-[390px]" />
@@ -141,6 +152,23 @@ export function HomePage() {
 
       {/* 상단 안내 카드 — 기록한 장소 수만 보여준다 */}
       <JourneyBanner placeCount={markers.length} />
+
+      {/*
+        근처 나무 알림 — 시안대로 발자국 배너 바로 아래에 얹는다.
+        여러 곳이 반경 안에 들어와도 카드는 하나다(가장 가까운 곳 + "외 N곳").
+        지도를 가리지 않도록 카드 밖은 터치가 통과하게 둔다.
+      */}
+      {nearbyAlert && (
+        <div className="below-banner pointer-events-none absolute inset-x-4 z-30 flex justify-center [&_button]:pointer-events-auto">
+          <NearbyTreeAlert
+            placeName={nearbyAlert.label}
+            distanceM={Math.round(nearbyAlert.distanceM)}
+            onView={() =>
+              setSelection({ ids: nearbyAlert.trees.map((t) => String(t.treeId)), index: 0 })
+            }
+          />
+        </div>
+      )}
 
       {/*
         장소 기록(카메라) — 하단 중앙 플로팅 버튼. 탭바가 지도 위에 얹히므로
@@ -177,9 +205,11 @@ export function HomePage() {
       </button>
 
       {/*
-        현재 위치 새로고침 — 우측 상단 플로팅 버튼. 상단 안내 카드(top-4, 높이 약 60px)
-        바로 아래(top-20)에 두어 배너와 겹치지 않게 한다. 지도가 준비됐을 때만 노출하고,
-        탭하면 GPS 를 새로 읽어 그 위치로 이동한다. 읽는 동안엔 아이콘을 회전시키고 중복 탭을 막는다.
+        현재 위치 새로고침 — 우측 상단 플로팅 버튼. 상단 안내 카드 바로 아래에 둔다.
+        `.below-banner`(styles.css)로 카드와 같은 변수를 본다 — 예전엔 여기만 top-24 고정값
+        이어서, 카드가 safe-area 만큼(59px) 내려간 순간 버튼이 카드 밑에 깔렸다(#141).
+        지도가 준비됐을 때만 노출하고, 탭하면 GPS 를 새로 읽어 그 위치로 이동한다.
+        읽는 동안엔 아이콘을 회전시키고 중복 탭을 막는다.
       */}
       {map && (
         <button
@@ -187,7 +217,7 @@ export function HomePage() {
           disabled={locating}
           aria-label="현재 위치 새로고침"
           /* 흰 배경 + GREEN-500(#788F4A) 아이콘 — 흰 위 3.6:1 로 그래픽 요소(3:1) 충족. */
-          className="absolute right-4 top-24 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#788F4A] shadow-lg ring-1 ring-black/5 transition active:scale-95 disabled:opacity-70"
+          className="below-banner absolute right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#788F4A] shadow-lg ring-1 ring-black/5 transition active:scale-95 disabled:opacity-70"
         >
           <MyLocationIcon spinning={locating} />
         </button>
