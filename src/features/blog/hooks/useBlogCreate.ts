@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { BlogSection, BlogStatus, ToneId, BlogTreeRecord } from '../types/blog';
+import type { BlogSection, BlogStatus, ToneId, BlogTreeRecord, CreateAIBlogDraftRequest } from '../types/blog';
 import { getLocalDateString } from '../../../shared/lib/date';
 import { DEFAULT_TONE_ID } from '../constants/blogTones';
 import { suggestToneFromMoods } from '../lib/moodTone';
@@ -41,7 +41,6 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
         const places = await getMyBlogPlaces();
         if (!cancelled) setAllPlaces(places);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error('[useBlogCreate] fetch my blog places failed', err);
         if (!cancelled) setAllPlaces([]);
       }
@@ -86,14 +85,14 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
     (async () => {
       try {
         // 서버에 초안 생성을 요청한다.
-        const payload = {
+        const payload: CreateAIBlogDraftRequest = {
           startDate,
           endDate,
           treeIds: selectedTreeIds,
           tone: toneId === 'emotional' ? 'RECORD' : 'SIMPLE',
-        } as const;
+        };
 
-        const resp = await createAIBlogDraft(accessToken ?? undefined, payload as any);
+        const resp = await createAIBlogDraft(accessToken ?? undefined, payload);
 
         if (cancelled) return;
 
@@ -110,7 +109,6 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
       } catch (err) {
         // 실패하면 상태를 idle로 돌리고 로그를 남긴다.
         // TODO: 사용자-facing 에러 처리(toast 등)
-        // eslint-disable-next-line no-console
         console.error('create draft failed', err);
         setStatus('idle');
       }

@@ -1,6 +1,7 @@
 import { httpClient } from '../../../shared/lib/httpClient';
 import type { ApiResponse } from '../../../shared/types/api';
 import type {
+  AIBlogDraftDetail,
   AIBlogDraftListData,
   CreateAIBlogDraftRequest,
   CreateAIBlogDraftResponseData,
@@ -73,8 +74,8 @@ export const saveAIBlogDraft = async (
 export const getAIBlogDraftDetail = async (
   accessToken: string | undefined,
   draftId: number,
-) => {
-  const { data } = await httpClient.get<ApiResponse<any>>(`/blogs/drafts/${draftId}`, {
+): Promise<AIBlogDraftDetail> => {
+  const { data } = await httpClient.get<ApiResponse<AIBlogDraftDetail>>(`/blogs/drafts/${draftId}`, {
     headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
   });
 

@@ -31,7 +31,6 @@ export const useBlogDraftStore = create<BlogDraftState>((set) => ({
     } catch (err) {
       // 실패 시 빈 목록으로 둔다(서버에 아직 없는 엔드포인트일 수 있음).
       // TODO: 사용자 토스트/에러 핸들링
-      // eslint-disable-next-line no-console
       console.error('fetchSavedBlogs failed', err);
       set({ savedBlogs: [] });
     }
@@ -52,7 +51,6 @@ export const useBlogDraftStore = create<BlogDraftState>((set) => ({
       } as SavedBlog));
       set({ savedBlogs: saved });
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error('saveDraft failed', err);
     }
   },
@@ -61,7 +59,6 @@ export const useBlogDraftStore = create<BlogDraftState>((set) => ({
       await deleteAIBlogDraft(undefined, id);
       set((state) => ({ savedBlogs: state.savedBlogs.filter((b) => b.id !== String(id)) }));
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error('deleteBlogAsync failed', err);
     }
   },
