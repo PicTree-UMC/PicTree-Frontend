@@ -11,8 +11,9 @@ import { useSubscriptionPlans } from './hooks/useSubscriptionPlans';
 import { FEATURE_CODE, findFeature, planSummary } from './lib/planDisplay';
 import type { PaymentStep } from './types/premium';
 
+// pt 에 safe-area 를 더한다 — 안 더하면 시안의 72px 중 상태바가 59px 을 먹어 제목이 붙는다(#139).
 const PAGE_CLASS =
-  'min-h-full w-full bg-[linear-gradient(#c5d89d_0%,#eef4dc_62%,#fffdf4_100%)] px-[15px] pb-nav pt-[72px] text-[#2c3930]';
+  'min-h-full w-full bg-[linear-gradient(#c5d89d_0%,#eef4dc_62%,#fffdf4_100%)] px-[15px] pb-nav pt-[calc(env(safe-area-inset-top)+72px)] text-[#2c3930]';
 
 export function PremiumPage() {
   const navigate = useNavigate();

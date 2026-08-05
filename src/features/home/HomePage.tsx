@@ -136,9 +136,9 @@ export function HomePage() {
     <div className="relative h-full w-full overflow-hidden">
       {/*
         카카오맵 — 노치(safe-area)까지 덮는 fixed 풀블리드.
-        앱 컬럼(h-dvh)은 상단 safe-area 아래에서 시작하므로, absolute inset-0 으로는
-        지도가 컬럼 안에만 그려져 노치 영역이 크림 base 로 비어 '잘려 보인다'.
-        MarkerStoryViewer 와 같은 fixed 풀블리드 방식으로 visual viewport 를 덮어 해결한다.
+        기준 상자는 body 프레임 = 실제 화면이다(styles.css). 그래서 `inset-0` 하나로
+        노치부터 홈 인디케이터까지 덮는다. 오프셋을 더하지 말 것 — 지도가 화면 밖으로
+        밀려 중심(현재 위치 마커)이 어긋난다. #137 이 그렇게 한 번 틀렸다.
         (mx-auto sm:max-w-[390px]: 데스크톱에서 앱 컬럼 폭에 맞춘다.)
       */}
       <div ref={containerRef} className="fixed inset-0 z-0 mx-auto sm:max-w-[390px]" />
@@ -159,7 +159,7 @@ export function HomePage() {
         지도를 가리지 않도록 카드 밖은 터치가 통과하게 둔다.
       */}
       {nearbyAlert && (
-        <div className="pointer-events-none absolute inset-x-4 top-[92px] z-30 flex justify-center [&_button]:pointer-events-auto">
+        <div className="pointer-events-none absolute inset-x-4 top-[calc(env(safe-area-inset-top)+92px)] z-30 flex justify-center [&_button]:pointer-events-auto">
           <NearbyTreeAlert
             placeName={nearbyAlert.label}
             distanceM={Math.round(nearbyAlert.distanceM)}

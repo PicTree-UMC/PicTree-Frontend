@@ -45,8 +45,8 @@ export function FavoritesPage() {
 
   return (
     <div className="relative flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      {/* 헤더 밴드 */}
-      <header className="bg-[#C5D89D] px-5 pb-8 pt-4">
+      {/* 헤더 밴드 — pt 의 safe-area 는 상태바 겹침 방지(#139) */}
+      <header className="bg-[#C5D89D] px-5 pb-8 pt-[calc(env(safe-area-inset-top)+1rem)]">
         <div className="flex items-center gap-3">
           <button
             type="button"

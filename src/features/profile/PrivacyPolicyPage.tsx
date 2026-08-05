@@ -220,9 +220,10 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
 
 export function PrivacyPolicyPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-[#FFFCEF] pb-nav">
+    // min-h-full: 100vh 는 셸 컬럼을 넘긴다. pt 의 safe-area 는 상태바 겹침 방지(#139).
+    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 */}
-      <header className="bg-[#C5D89D] px-5 pb-5 pt-4">
+      <header className="bg-[#C5D89D] px-5 pb-5 pt-[calc(env(safe-area-inset-top)+1rem)]">
         <div className="flex items-center gap-3">
           <button
             type="button"

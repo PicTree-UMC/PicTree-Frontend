@@ -104,8 +104,9 @@ export function TimelinePage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#FFFCEF] pb-nav">
-      <div className="flex flex-col gap-4 px-5 pb-5 pt-6">
+    // min-h-full: 100vh 는 셸 컬럼을 넘긴다. pt 는 상태바를 피한다(#139).
+    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
+      <div className="flex flex-col gap-4 px-5 pb-5 pt-[calc(env(safe-area-inset-top)+1.5rem)]">
         {/*
           평소엔 좌측 타이틀 + 우측 버튼 그룹(검색·레이아웃)을 둔다. 돋보기를 누르면
           이 헤더 자리를 통째로 검색바가 차지하고, 우측 취소로 다시 헤더로 돌아온다.
