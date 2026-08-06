@@ -1,9 +1,11 @@
 import { create } from 'zustand';
-import type { SavedBlog, SaveAIBlogDraftRequest } from '../types/blog';
+import type { AIBlogDraft, SavedBlog, SaveAIBlogDraftRequest } from '../types/blog';
 import { getAIBlogDrafts, saveAIBlogDraft, deleteAIBlogDraft } from '../api/blogApi';
 
 type BlogDraftState = {
   savedBlogs: SavedBlog[];
+  isLoading: boolean;
+  fetchError: boolean;
   addBlog: (blog: SavedBlog) => void;
   deleteBlog: (id: string) => void;
   fetchSavedBlogs: () => Promise<void>;
@@ -11,48 +13,36 @@ type BlogDraftState = {
   deleteBlogAsync: (id: number) => Promise<void>;
 };
 
+const toSavedBlog = (draft: AIBlogDraft): SavedBlog => ({
+  id: String(draft.draftId),
+  title: draft.title,
+  startDate: draft.startDate,
+  endDate: draft.endDate,
+  toneId: 'plain',
+  sections: [],
+  savedAt: draft.createdAt,
+});
+
 export const useBlogDraftStore = create<BlogDraftState>((set) => ({
   savedBlogs: [],
+  isLoading: false,
+  fetchError: false,
   addBlog: (blog) => set((state) => ({ savedBlogs: [blog, ...state.savedBlogs] })),
   deleteBlog: (id) => set((state) => ({ savedBlogs: state.savedBlogs.filter((blog) => blog.id !== id) })),
   fetchSavedBlogs: async () => {
+    set({ isLoading: true, fetchError: false });
     try {
       const data = await getAIBlogDrafts();
-      const saved = data.drafts.map((d) => ({
-        id: String(d.draftId),
-        title: d.title,
-        startDate: d.startDate,
-        endDate: d.endDate,
-        toneId: 'plain' as const,
-        sections: [],
-        savedAt: d.createdAt,
-      } as SavedBlog));
-      set({ savedBlogs: saved });
+      set({ savedBlogs: data.drafts.map(toSavedBlog), isLoading: false });
     } catch (err) {
-      // 실패 시 빈 목록으로 둔다(서버에 아직 없는 엔드포인트일 수 있음).
-      // TODO: 사용자 토스트/에러 핸들링
       console.error('fetchSavedBlogs failed', err);
-      set({ savedBlogs: [] });
+      set({ savedBlogs: [], isLoading: false, fetchError: true });
     }
   },
   saveDraft: async (payload: SaveAIBlogDraftRequest) => {
-    try {
-      await saveAIBlogDraft(undefined, payload);
-      // 간단히 목록을 다시 당겨온다
-      const data = await getAIBlogDrafts();
-      const saved = data.drafts.map((d) => ({
-        id: String(d.draftId),
-        title: d.title,
-        startDate: d.startDate,
-        endDate: d.endDate,
-        toneId: 'plain' as const,
-        sections: [],
-        savedAt: d.createdAt,
-      } as SavedBlog));
-      set({ savedBlogs: saved });
-    } catch (err) {
-      console.error('saveDraft failed', err);
-    }
+    await saveAIBlogDraft(undefined, payload);
+    const data = await getAIBlogDrafts();
+    set({ savedBlogs: data.drafts.map(toSavedBlog), fetchError: false });
   },
   deleteBlogAsync: async (id: number) => {
     try {

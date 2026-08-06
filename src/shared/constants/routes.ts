@@ -18,6 +18,7 @@ export const ROUTES = {
   helpFaq: '/profile/help',
   blog: '/blog',
   blogCreate: '/blog/create',
+  blogDetail: '/blog/:draftId',
   premium: '/premium',
   // 토스 빌링 인증 후 리다이렉트되는 착지 라우트 (successUrl/failUrl 오리진 뒤 경로)
   premiumBillingSuccess: '/premium/billing/success',
@@ -39,3 +40,6 @@ export const ROUTES = {
  * URL 만 보고 어느 화면인지 알 수 없어서 하위 경로로 갈랐다.
  */
 export const journeyViewPath = (routeId: number) => `/journey/view/${routeId}`;
+
+/** 저장된 AI 블로그 초안의 상세 경로. */
+export const blogDetailPath = (draftId: number | string) => `/blog/${draftId}`;

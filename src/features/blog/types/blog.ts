@@ -43,10 +43,12 @@ export interface SaveAIBlogDraftResponseData {
 export interface AIBlogDraftDetail {
   draftId: number;
   title: string;
-  content: string;
+  items: {
+    placeName: string;
+    content: string;
+  }[];
   startDate: string;
   endDate: string;
-  treeIds: number[];
   createdAt: string;
 }
 /** AI 초안 생성 단계 상태 (작성 플로우 3번째 스텝 내부에서만 사용). */
