@@ -181,6 +181,16 @@ select {
   }
 }
 
+/*
+ * 카카오맵 오버레이 레이어. 줌 애니메이션이 도는 약 0.3초 동안 SDK 가 이 레이어에
+ * `display:none` 을 걸어 마커가 통째로 사라지는 것을 되돌린다(이슈 #114).
+ * SDK 가 인라인 스타일로 걸기 때문에 `!important` 가 아니면 못 덮는다.
+ * 클래스를 붙이는 쪽과 경위는 useKakaoMap 의 findOverlayLayer·pinOverlaysDuringZoom 주석에 있다.
+ */
+.map-overlay-layer {
+  display: block !important;
+}
+
 /* 스크롤바를 숨기는 유틸(가로 스크롤 캐러셀 등). 스크롤 기능은 유지, 막대만 감춘다. */
 .no-scrollbar {
   -ms-overflow-style: none; /* 구형 Edge/IE */
