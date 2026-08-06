@@ -25,7 +25,7 @@ export function SavedBlogCard({ blog }: SavedBlogCardProps) {
         )}
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <h2 className="truncate text-[15px] font-bold leading-tight text-[#2c3930]">{blog.title}</h2>
+          <h2 className="truncate text-[15px] font-medium leading-tight text-[#2c3930]">{blog.title}</h2>
           <p className="mt-1.5 overflow-hidden text-[13px] leading-[1.55] text-[#8b9086] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
             {preview}
           </p>

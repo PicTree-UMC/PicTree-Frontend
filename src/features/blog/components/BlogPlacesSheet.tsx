@@ -19,7 +19,7 @@ export function BlogPlacesSheet({ sections, onClose }: BlogPlacesSheetProps) {
       contentClassName="px-5"
       bottomPadding="1.5rem"
     >
-      <h2 className="text-[17px] font-bold text-[#2c3930]">
+      <h2 className="text-[17px] font-medium text-[#2c3930]">
         방문한 장소 <span className="text-pictree-700">{sections.length}곳</span>
       </h2>
 
@@ -34,7 +34,7 @@ export function BlogPlacesSheet({ sections, onClose }: BlogPlacesSheetProps) {
               alt=""
               className="h-[56px] w-[56px] shrink-0 rounded-lg object-cover"
             />
-            <p className="min-w-0 flex-1 truncate text-[15px] font-bold text-[#2c3930]">
+            <p className="min-w-0 flex-1 truncate text-[15px] font-medium text-[#2c3930]">
               {section.heading}
             </p>
           </li>
