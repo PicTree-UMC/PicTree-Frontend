@@ -83,6 +83,58 @@
         }
       }
 
+      /*
+       * 떨어지는 잎. 글자 뒤(z-index 0)에서만 움직여 워드마크를 방해하지 않는다.
+       *
+       * 지연을 **음수**로 주는 게 핵심이다. 스플래시는 2초 남짓 떠 있는데 0 부터
+       * 시작하면 첫 화면에선 잎이 죄다 위쪽에 몰려 있다. 음수로 두면 문서가 열리는
+       * 순간 이미 중간쯤 떨어지는 중이라 화면이 처음부터 차 있다.
+       */
+      #splash-leaves {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      #splash-leaves .leaf {
+        position: absolute;
+        top: 0;
+        left: var(--x);
+        width: var(--w);
+        height: auto;
+        color: var(--c);
+        opacity: 0;
+        will-change: transform;
+        animation: splash-leaf-fall var(--dur) linear infinite;
+        animation-delay: var(--delay);
+      }
+
+      #splash-road {
+        z-index: 1;
+      }
+
+      @keyframes splash-leaf-fall {
+        0% {
+          opacity: 0;
+          transform: translate3d(0, -14vh, 0) rotate(0deg);
+        }
+        10% {
+          opacity: 1;
+        }
+        50% {
+          transform: translate3d(11vw, 45vh, 0) rotate(130deg);
+        }
+        88% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: translate3d(-6vw, 106vh, 0) rotate(250deg);
+        }
+      }
+
       /* 외부 리다이렉트로 돌아온 착지 경로 — 아래 스크립트 참고 */
       .no-splash #splash {
         display: none;
@@ -95,6 +147,11 @@
 
         #splash-road img {
           animation: none;
+        }
+
+        /* 떨어지는 잎은 아예 감춘다 — 멈춰 세우면 허공에 잎이 박혀 있게 된다. */
+        #splash-leaves {
+          display: none;
         }
       }
     </style>
@@ -119,6 +176,25 @@
   <body>
     <div id="root"></div>
     <div id="splash" aria-hidden="true">
+      <!-- 잎 하나를 심볼로 두고 재사용한다 — 패스를 여덟 번 적지 않으려는 것. -->
+      <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+        <symbol id="splash-leaf" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M12 2.4c6.6 4.1 8.1 9.7 0 19.2-8.1-9.5-6.6-15.1 0-19.2Z" />
+          <path stroke="rgba(44, 57, 48, 0.16)" stroke-width="1.1" stroke-linecap="round" d="M12 5.6v12.4" />
+        </symbol>
+      </svg>
+
+      <div id="splash-leaves">
+        <svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"
+          style="--x: 22%; --w: 46px; --dur: 4.6s; --delay: -1.4s; --c: #A8BF7C">
+          <use href="#splash-leaf" />
+        </svg>
+        <svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"
+          style="--x: 68%; --w: 34px; --dur: 5.4s; --delay: -3.6s; --c: #C5D89D">
+          <use href="#splash-leaf" />
+        </svg>
+      </div>
+
       <div id="splash-road">
         <img alt="" src="/assets/wordmark/P.png" style="--l: 64.13%; --t: 10.10%; --w: 5.14%; --r: 12.3deg; --i: 0" />
         <img alt="" src="/assets/wordmark/I.png" style="--l: 70.94%; --t: 14.72%; --w: 3.03%; --r: 5.6deg; --i: 1" />
