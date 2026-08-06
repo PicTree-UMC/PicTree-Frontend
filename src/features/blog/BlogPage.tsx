@@ -3,12 +3,15 @@ import { BlogCreateFab } from './components/BlogCreateFab';
 import { BlogEmptyState } from './components/BlogEmptyState';
 import { SavedBlogCard } from './components/SavedBlogCard';
 import { useEffect } from 'react';
+import { useBlogTrees } from './hooks/useBlogTrees';
+import { getLocalDateString } from '@/shared/lib/date';
 
 export function BlogPage() {
   const savedBlogs = useBlogDraftStore((state) => state.savedBlogs);
   const isLoading = useBlogDraftStore((state) => state.isLoading);
   const fetchError = useBlogDraftStore((state) => state.fetchError);
   const fetchSavedBlogs = useBlogDraftStore((state) => state.fetchSavedBlogs);
+  const { data: trees } = useBlogTrees();
 
   useEffect(() => {
     fetchSavedBlogs();
@@ -40,7 +43,14 @@ export function BlogPage() {
       ) : savedBlogs.length > 0 ? (
         <section className="flex flex-col px-5">
           {savedBlogs.map((blog) => (
-            <SavedBlogCard key={blog.id} blog={blog} />
+            <SavedBlogCard
+              key={blog.id}
+              blog={blog}
+              treeCount={trees?.filter((tree) => {
+                const recordedDate = getLocalDateString(new Date(tree.createdAt));
+                return recordedDate >= blog.startDate && recordedDate <= blog.endDate;
+              }).length}
+            />
           ))}
         </section>
       ) : (

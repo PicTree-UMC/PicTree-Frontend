@@ -5,9 +5,10 @@ import { blogDetailPath } from '@/shared/constants/routes';
 
 type SavedBlogCardProps = {
   blog: SavedBlog;
+  treeCount?: number;
 };
 
-export function SavedBlogCard({ blog }: SavedBlogCardProps) {
+export function SavedBlogCard({ blog, treeCount }: SavedBlogCardProps) {
   const navigate = useNavigate();
 
   return (
@@ -45,7 +46,7 @@ export function SavedBlogCard({ blog }: SavedBlogCardProps) {
               <path d="M12 21s-6-5.686-6-10a6 6 0 1 1 12 0c0 4.314-6 10-6 10Z" />
               <circle cx="12" cy="11" r="2" />
             </svg>
-            {blog.placeCount != null ? `${blog.placeCount}개 장소` : '장소 정보 없음'}
+            {treeCount != null ? `나무 ${treeCount}개` : '나무 확인 중'}
           </span>
         </span>
 

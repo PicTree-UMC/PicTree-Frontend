@@ -7,6 +7,8 @@ import { DeleteDraftModal } from './components/DeleteDraftModal';
 import { useBlogDraftStore } from './store/blogDraftStore';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
+import { useBlogTrees } from './hooks/useBlogTrees';
+import { formatKoreanDate } from '@/shared/lib/date';
 
 export function BlogDetailPage() {
   const navigate = useNavigate();
@@ -16,6 +18,7 @@ export function BlogDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const deleteBlog = useBlogDraftStore((state) => state.deleteBlogAsync);
   const { showToast } = useToast();
+  const { data: trees } = useBlogTrees();
 
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ['blog-drafts', 'detail', numericDraftId],
@@ -105,8 +108,21 @@ export function BlogDetailPage() {
                   {index + 1}. {item.placeName}
                 </h2>
                 {item.imageUrl && (
-                  <figure className="mt-5 overflow-hidden bg-[#f1f3eb]">
-                    <img src={item.imageUrl} alt={`${item.placeName}에서 촬영한 사진`} className="max-h-[560px] w-full object-cover" />
+                  <figure className="mt-5">
+                    <img src={item.imageUrl} alt={`${item.placeName}에서 촬영한 사진`} className="max-h-[560px] w-full bg-[#f1f3eb] object-cover" />
+                    {(() => {
+                      const recordedAt = trees?.find((tree) => tree.treeId === item.treeId)?.createdAt;
+                      const label = formatKoreanDate(recordedAt);
+                      return label ? (
+                        <figcaption className="mt-2 flex items-center justify-end gap-1 text-[12px] text-[#9a9f97]">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                            <rect x="3" y="5" width="18" height="16" rx="2" />
+                            <path d="M16 3v4M8 3v4M3 11h18" />
+                          </svg>
+                          {label} 촬영
+                        </figcaption>
+                      ) : null;
+                    })()}
                   </figure>
                 )}
                 <p className="mt-5 whitespace-pre-line text-[16px] leading-[2] tracking-[-0.01em] text-[#3f453e]">

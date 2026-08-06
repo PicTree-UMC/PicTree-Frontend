@@ -17,7 +17,6 @@ const toSavedBlog = (draft: AIBlogDraft): SavedBlog => ({
   id: String(draft.draftId),
   title: draft.title,
   thumbnailUrl: draft.thumbnailUrl,
-  placeCount: draft.placeCount,
   startDate: draft.startDate,
   endDate: draft.endDate,
   toneId: 'plain',
