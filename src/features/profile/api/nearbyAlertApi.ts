@@ -106,3 +106,56 @@ export async function openNearbyAlertLog(
 
   return data.data;
 }
+
+/**
+ * 알림 기록 삭제. `DELETE /nearby-alerts/logs/{alertLogId}`
+ *
+ * 서버가 `deletedAt` 으로 소프트 삭제한다. 지운 기록은 목록 조회·확인 처리
+ * 대상에서 빠지므로 **다른 기기에서도 다시 보이지 않는다** — 예전에 브라우저에
+ * 숨겨 두던 방식(`lib/hiddenAlertLogs`)을 대체한다.
+ *
+ * ⚠️ **여러 건을 한 번에 지우는 엔드포인트는 없다.** 선택 삭제·모두 삭제는
+ * 이 함수를 건수만큼 부른다(`deleteNearbyAlertLogs`).
+ *
+ * 지워도 "사용자·나무별 하루 1회" 중복 알림 방지에는 계속 쓰이므로, 지운 장소에
+ * 다시 가도 그날 안에는 알림이 오지 않는다.
+ *
+ * 실패 코드: 404 `NEARBY_ALERT404`(없거나 내 것이 아닌 기록 — 서버가 둘을
+ * 구분하지 않는다).
+ */
+export async function deleteNearbyAlertLog(alertLogId: number): Promise<void> {
+  const { data } = await httpClient.delete<ApiResponse<null>>(
+    `/nearby-alerts/logs/${alertLogId}`,
+  );
+
+  if (data.resultType === 'FAIL') {
+    throw new Error(data.error.message);
+  }
+}
+
+/** 여러 건 삭제 결과 — 몇 건이 지워졌고 몇 건이 실패했는지. */
+export interface BulkDeleteResult {
+  deletedIds: number[];
+  failedCount: number;
+}
+
+/**
+ * 알림 기록 여러 건 삭제.
+ *
+ * 서버에 일괄 삭제가 없어 건별로 부른다. **한 건이 실패해도 나머지는 계속
+ * 진행한다** — 이미 지워진 기록(404) 하나 때문에 나머지 삭제를 통째로 되돌리면
+ * 사용자가 다시 골라야 한다. 성공한 id 만 돌려주고 실패 건수는 따로 알린다.
+ */
+export async function deleteNearbyAlertLogs(
+  alertLogIds: number[],
+): Promise<BulkDeleteResult> {
+  const results = await Promise.allSettled(
+    alertLogIds.map((id) => deleteNearbyAlertLog(id)),
+  );
+
+  const deletedIds = alertLogIds.filter(
+    (_id, index) => results[index].status === 'fulfilled',
+  );
+
+  return { deletedIds, failedCount: alertLogIds.length - deletedIds.length };
+}

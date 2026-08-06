@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/shared/constants/routes";
@@ -6,12 +6,11 @@ import { useToast } from "@/shared/components";
 import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
 import treeIcon from "./assets/icons/tree.svg";
 import trashIcon from "./assets/icons/trash.svg";
-import { useNearbyAlertLogs, useOpenNearbyAlertLog } from "./hooks/useNearbyAlerts";
 import {
-  clearHiddenAlertLogs,
-  hideAlertLogs,
-  readHiddenAlertLogs,
-} from "./lib/hiddenAlertLogs";
+  useDeleteNearbyAlertLogs,
+  useNearbyAlertLogs,
+  useOpenNearbyAlertLog,
+} from "./hooks/useNearbyAlerts";
 import type { NearbyAlertLog, NearbyAlertStatus } from "./types/nearbyAlert";
 
 /** ISO → "7월 25일 14:30". 값이 없으면 표시하지 않는다. */
@@ -111,26 +110,25 @@ function AlertLogRow({ log, selecting, checked, onOpen, onToggle }: RowProps) {
  * 푸시를 놓쳤거나 지웠을 때 여기서 다시 확인한다. 항목을 누르면 확인 처리
  * (`PATCH /nearby-alerts/logs/{id}/open`)가 나가고 지도로 이동해 그 나무를 연다.
  *
- * ⚠️ **삭제는 이 기기에서만 감추는 것이다.** 서버에 삭제 API 가 없어서
- * (`lib/hiddenAlertLogs` 참고) 지운 id 를 브라우저에 적어 두고 목록에서 거를 뿐이다.
- * 사용자가 오해하지 않도록 화면 아래에 그 사실을 적어 둔다.
+ * 삭제(`DELETE /nearby-alerts/logs/{id}`)는 서버가 소프트 삭제한다. 예전에는 이 API 가
+ * 없어서 지운 id 를 브라우저에 적어 두고 감췄는데(기기마다 결과가 달랐다), 이제는
+ * 어느 기기에서 봐도 지워진 상태다.
+ *
+ * ⚠️ 일괄 삭제 엔드포인트는 없다 — 선택 삭제·모두 삭제는 건수만큼 요청이 나간다.
  */
 export function AlertLogsPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { data, isPending, isError, refetch } = useNearbyAlertLogs();
   const { mutate: markOpened } = useOpenNearbyAlertLog();
+  const { mutate: deleteLogs, isPending: isDeleting } = useDeleteNearbyAlertLogs();
 
-  const [hidden, setHidden] = useState<Set<number>>(() => readHiddenAlertLogs());
   const [selecting, setSelecting] = useState(false);
   const [checked, setChecked] = useState<Set<number>>(new Set());
   /** 'all' 은 모두 삭제, 숫자는 선택 삭제 개수. null 이면 확인창이 닫혀 있다. */
   const [confirming, setConfirming] = useState<"all" | "selected" | null>(null);
 
-  const logs = useMemo(
-    () => (data?.items ?? []).filter((log) => !hidden.has(log.alertLogId)),
-    [data, hidden],
-  );
+  const logs = data?.items ?? [];
 
   const handleOpen = (log: NearbyAlertLog) => {
     // 이미 확인한 기록은 다시 부르지 않는다 — 서버 값이 바뀌지 않는다.
@@ -155,25 +153,33 @@ export function AlertLogsPage() {
     setChecked(new Set());
   };
 
-  const removeSelected = () => {
-    const ids = [...checked];
-    setHidden(hideAlertLogs(ids));
-    exitSelecting();
-    setConfirming(null);
-    showToast(`알림 ${ids.length}개를 지웠어요.`, "success");
-  };
+  /**
+   * 실제로 지워진 건수로 문구를 만든다. 일부만 성공할 수 있어서다 — 이미 지워진
+   * 기록(404)이 섞이면 서버는 그 건만 거절하고 나머지는 지운다.
+   */
+  const remove = (ids: number[]) => {
+    deleteLogs(ids, {
+      onSuccess: ({ deletedIds, failedCount }) => {
+        exitSelecting();
+        setConfirming(null);
 
-  const removeAll = () => {
-    // 지금 화면에 있는 것만 지운다 — 서버에 남은 다음 페이지까지는 알 수 없다.
-    setHidden(hideAlertLogs(logs.map((log) => log.alertLogId)));
-    exitSelecting();
-    setConfirming(null);
-    showToast("알림 기록을 모두 지웠어요.", "success");
-  };
+        if (deletedIds.length === 0) {
+          showToast("알림을 지우지 못했어요.", "error");
+          return;
+        }
 
-  const restore = () => {
-    setHidden(clearHiddenAlertLogs());
-    showToast("지운 알림을 다시 불러왔어요.", "success");
+        showToast(
+          failedCount > 0
+            ? `${deletedIds.length}개를 지웠어요. ${failedCount}개는 실패했어요.`
+            : `알림 ${deletedIds.length}개를 지웠어요.`,
+          failedCount > 0 ? "error" : "success",
+        );
+      },
+      onError: () => {
+        setConfirming(null);
+        showToast("알림을 지우지 못했어요.", "error");
+      },
+    });
   };
 
   const allChecked = logs.length > 0 && checked.size === logs.length;
@@ -241,28 +247,14 @@ export function AlertLogsPage() {
         ) : logs.length === 0 ? (
           /*
             알림을 아직 못 받은 상태다. 왜 비어 있는지 알려 줘야 사용자가
-            "고장났나" 하지 않는다. 지워서 빈 경우는 되돌릴 방법을 함께 준다.
+            "고장났나" 하지 않는다. 지워서 비었을 때도 같은 문구다 — 서버에서
+            지워진 것이라 되살릴 방법이 없다.
           */
           <div className="py-10 text-center">
-            {hidden.size > 0 ? (
-              <>
-                <p className="text-[14px] text-[#60655C]">지운 알림만 있어요.</p>
-                <button
-                  type="button"
-                  onClick={restore}
-                  className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
-                >
-                  지운 알림 다시 보기
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="text-[14px] text-[#60655C]">아직 받은 알림이 없어요.</p>
-                <p className="mt-1 text-[13px] text-[#60655C]">
-                  기록해 둔 장소 근처에 가면 알려드릴게요.
-                </p>
-              </>
-            )}
+            <p className="text-[14px] text-[#60655C]">아직 받은 알림이 없어요.</p>
+            <p className="mt-1 text-[13px] text-[#60655C]">
+              기록해 둔 장소 근처에 가면 알려드릴게요.
+            </p>
           </div>
         ) : (
           <>
@@ -290,22 +282,6 @@ export function AlertLogsPage() {
               </button>
             )}
 
-            {/*
-              진짜 삭제가 아니라는 걸 숨기지 않는다. 서버에 삭제 API 가 없어
-              이 기기에서만 감추는 것이라, 다른 기기에서 그대로 보이거나 데이터를
-              지우면 되살아난다. 모르면 "지웠는데 왜 남아 있지" 가 된다.
-            */}
-            <p className="mt-1 px-1 text-center text-[13px] leading-relaxed text-[#60655C]">
-              지운 알림은 이 기기에서만 사라져요.
-              {hidden.size > 0 && (
-                <>
-                  {" "}
-                  <button type="button" onClick={restore} className="underline underline-offset-2">
-                    다시 보기
-                  </button>
-                </>
-              )}
-            </p>
           </>
         )}
       </div>
@@ -340,22 +316,28 @@ export function AlertLogsPage() {
                 : `선택한 ${checked.size}개를 지울까요?`}
             </p>
             <p className="mt-1.5 text-[13px] leading-relaxed text-[#60655C]">
-              이 기기에서만 사라져요. 다른 기기에서는 그대로 보여요.
+              지운 알림은 되돌릴 수 없어요.
             </p>
             <div className="mt-5 flex gap-3">
               <button
                 type="button"
                 onClick={() => setConfirming(null)}
-                className="h-[44px] flex-1 rounded-xl bg-[#F1F1F1] text-[15px] text-[#2C3930]"
+                disabled={isDeleting}
+                className="h-[44px] flex-1 rounded-xl bg-[#F1F1F1] text-[15px] text-[#2C3930] disabled:opacity-50"
               >
                 취소
               </button>
               <button
                 type="button"
-                onClick={confirming === "all" ? removeAll : removeSelected}
-                className="h-[44px] flex-1 rounded-xl bg-[#DC2626] text-[15px] font-medium text-white"
+                onClick={() =>
+                  remove(
+                    confirming === "all" ? logs.map((log) => log.alertLogId) : [...checked],
+                  )
+                }
+                disabled={isDeleting}
+                className="h-[44px] flex-1 rounded-xl bg-[#DC2626] text-[15px] font-medium text-white disabled:opacity-50"
               >
-                지우기
+                {isDeleting ? "지우는 중" : "지우기"}
               </button>
             </div>
           </div>
