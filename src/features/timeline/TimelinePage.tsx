@@ -113,7 +113,7 @@ export function TimelinePage() {
   };
 
   return (
-    // min-h-full: 100vh 는 셸 컬럼을 넘긴다. pt 는 상태바를 피한다(#139).
+    // min-h-full: 100vh 는 셸 컬럼을 넘긴다. pt-safe 는 상단 안전영역 확보.
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       <div className="flex flex-col gap-4 px-5 pb-5 pt-[calc(env(safe-area-inset-top)+1.5rem)]">
         {/*

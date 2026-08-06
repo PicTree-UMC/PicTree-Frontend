@@ -30,22 +30,6 @@ export function Layout() {
   }, [pathname]);
 
   /*
-   * 화면 바닥 띠의 색을 탭바에 맞춘다.
-   *
-   * iOS PWA 는 뷰포트를 화면보다 상태바 높이만큼 짧게 주면서 그 아래(873~932)를 남긴다.
-   * 거긴 요소를 못 놓지만 :root 배경이 칠하는 캔버스라 색은 고를 수 있다(styles.css).
-   * 탭 화면은 바닥이 흰 탭바이므로 크림 띠가 붙으면 탭바가 잘린 것처럼 읽힌다(#141).
-   *
-   * Layout 이 탭 라우트의 부모라 여기가 자리다 — 탭끼리 이동할 땐 언마운트되지 않고,
-   * 탭 밖으로 나갈 때만 정리되므로 켜고 끄는 시점이 정확히 맞는다.
-   */
-  useLayoutEffect(() => {
-    const root = document.documentElement;
-    root.classList.add('canvas-tabbar');
-    return () => root.classList.remove('canvas-tabbar');
-  }, []);
-
-  /*
    * 탭바는 흐름에서 빼고 콘텐츠 위에 얹는다(absolute).
    *
    * 흐름상 배치(flex 형제)로 두면 콘텐츠가 탭바 위쪽에서 직각으로 끊기는데, 탭바
