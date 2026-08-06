@@ -14,7 +14,7 @@ import type {
  * GET /blogs/ai/drafts
  */
 export const getAIBlogDrafts = async (accessToken?: string): Promise<AIBlogDraftListData> => {
-  const { data } = await httpClient.get<ApiResponse<AIBlogDraftListData>>('/blogs/ai/drafts', {
+  const { data } = await httpClient.get<ApiResponse<AIBlogDraftListData>>('/blog-drafts', {
     headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
   });
 
@@ -34,7 +34,7 @@ export const createAIBlogDraft = async (
   payload: CreateAIBlogDraftRequest,
 ): Promise<CreateAIBlogDraftResponseData> => {
   const { data } = await httpClient.post<ApiResponse<CreateAIBlogDraftResponseData>>(
-    '/blogs/ai/drafts',
+    '/blog-drafts/generate',
     payload,
     { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined },
   );
@@ -55,7 +55,7 @@ export const saveAIBlogDraft = async (
   payload: SaveAIBlogDraftRequest,
 ): Promise<SaveAIBlogDraftResponseData> => {
   const { data } = await httpClient.post<ApiResponse<SaveAIBlogDraftResponseData>>(
-    '/blogs/drafts',
+    '/blogs-drafts',
     payload,
     { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined },
   );
@@ -75,7 +75,7 @@ export const getAIBlogDraftDetail = async (
   accessToken: string | undefined,
   draftId: number,
 ): Promise<AIBlogDraftDetail> => {
-  const { data } = await httpClient.get<ApiResponse<AIBlogDraftDetail>>(`/blogs/drafts/${draftId}`, {
+  const { data } = await httpClient.get<ApiResponse<AIBlogDraftDetail>>(`/blog-drafts/${draftId}`, {
     headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
   });
 
@@ -91,7 +91,7 @@ export const getAIBlogDraftDetail = async (
  * DELETE /blogs/drafts/{draftId}
  */
 export const deleteAIBlogDraft = async (accessToken: string | undefined, draftId: number) => {
-  const { data } = await httpClient.delete<ApiResponse<null>>(`/blogs/drafts/${draftId}`, {
+  const { data } = await httpClient.delete<ApiResponse<null>>(`/blog-drafts/${draftId}`, {
     headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
   });
 
