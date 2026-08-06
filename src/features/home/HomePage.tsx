@@ -11,6 +11,9 @@ import { NearbyTreeAlert } from '@/features/profile/components';
 import { SproutIllustration } from '@/shared/components';
 import { useNearbyAlertWatcher } from '@/features/profile/hooks/useNearbyAlertWatcher';
 import { MarkerStoryViewer } from './components/MarkerStoryViewer';
+import { TimelineEditModal } from '@/features/timeline/components/TimelineEditModal';
+import { useUpdateTimeline } from '@/features/timeline/hooks/useUpdateTimeline';
+import { useToast } from '@/shared/components';
 
 /** 위치 권한 거부·미지원 시 지도가 열릴 기본 위치(서울시청). */
 const FALLBACK_CENTER = { lat: 37.5665, lng: 126.978 };
@@ -103,8 +106,37 @@ export function HomePage() {
     toggleFavorite.mutate(activeId);
   };
 
+  const updateMutation = useUpdateTimeline();
+  const { showToast } = useToast();
+
+  /*
+    장소 수정 — 타임라인의 수정 모달을 그대로 쓴다. 기록이 곧 나무라 고치는 대상도
+    보내는 요청(`PATCH /trees/{treeId}`)도 같다. 여기에 폼을 하나 더 만들면 두 화면이
+    갈라진다.
+
+    `MapMarkerData` 와 `TimelineRecord` 는 필드 이름이 달라서(label/comment/date ↔
+    placeName/comment/recordedAt) 모달이 읽는 모양으로 맞춰 넘긴다.
+  */
+  const [editing, setEditing] = useState<MapMarkerData | null>(null);
+
   const handleEdit = () => {
-    // TODO: 장소 정보 수정 화면/폼 연동
+    const target = selectedMarkers?.[selection?.index ?? 0];
+    if (target) setEditing(target);
+  };
+
+  const handleSaveEdit = (values: { title: string; content: string }) => {
+    if (!editing) return;
+
+    updateMutation.mutate(
+      { timelineId: editing.id, payload: values },
+      {
+        // 실패는 훅이 토스트로 알린다. 성공했을 때만 닫아야 입력값이 안 날아간다.
+        onSuccess: () => {
+          setEditing(null);
+          showToast('기록을 수정했어요.', 'success');
+        },
+      },
+    );
   };
 
   // 우하단 버튼 — 누르면 GPS 를 새로 읽고(refreshLocation), 갱신된 좌표가 도착하면
@@ -237,6 +269,21 @@ export function HomePage() {
           onToggleFavorite={handleToggleFavorite}
           onEdit={handleEdit}
           onDelete={handleDelete}
+        />
+      )}
+
+      {/* 수정 모달 — 스토리 뷰어 위에 얹힌다(모달이 portal 로 body 에 붙는다). */}
+      {editing && (
+        <TimelineEditModal
+          record={{
+            id: editing.id,
+            placeName: editing.label,
+            comment: editing.comment,
+            recordedAt: editing.date,
+          }}
+          isSaving={updateMutation.isPending}
+          onClose={() => setEditing(null)}
+          onSave={handleSaveEdit}
         />
       )}
     </div>
