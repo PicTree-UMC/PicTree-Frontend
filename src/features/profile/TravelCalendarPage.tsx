@@ -3,6 +3,8 @@ import { CalendarGrid } from "../../shared/components";
 import { useMonthCursor } from "../../shared/hooks/useMonthCursor";
 import { useTravelCalendar } from "./hooks/useTravelCalendar";
 import { CALENDAR_LEVELS, CALENDAR_LEVEL_COLORS } from "./lib/calendarLevel";
+import { BackButton } from "@/shared/components";
+// 연·월 이동 화살표에는 계속 쓴다 — 뒤로가기 꺾쇠만 BackButton 으로 옮겼다.
 import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
 import treeIcon from "./assets/icons/tree.svg";
 
@@ -27,14 +29,7 @@ export function TravelCalendarPage() {
       {/* 헤더 밴드 — pt-safe 는 상단 안전영역 확보 */}
       <header className="bg-[#C5D89D] px-5 pb-12 pt-[calc(env(safe-area-inset-top)+1rem)]">
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => window.history.back()}
-            aria-label="뒤로 가기"
-            className="flex h-6 w-6 items-center justify-center"
-          >
-            <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
-          </button>
+          <BackButton onClick={() => window.history.back()} />
           <h1 className="text-[20px] font-medium text-black">여행 캘린더</h1>
         </div>
 

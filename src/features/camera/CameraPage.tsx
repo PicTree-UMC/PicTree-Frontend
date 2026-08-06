@@ -16,7 +16,7 @@ import { LocationAccuracyBar } from './components/LocationAccuracyBar';
 import { LocationPickerSheet } from './components/LocationPickerSheet';
 import { PlaceNameBar } from './components/PlaceNameBar';
 import { RecordForm } from './components/RecordForm';
-import { XIcon } from './components/icons';
+import { BackIcon } from './components/icons';
 
 // 배율 조정 옵션
 const ZOOM_STEPS = [1, 1.5, 2] as const;
@@ -130,12 +130,16 @@ export function CameraPage() {
           className="flex items-center gap-2 px-4 pb-2"
           style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
         >
+          {/* 지도 위 헤더(동선 보기)와 같은 원형 버튼이되, 색은 반전이다 — 사진 위에서는
+              INK 면 + 크림 글자(가이드라인 §1.1 '텍스트·반전'). 크림 원을 그대로 얹으면
+              화면에서 제일 밝은 덩어리가 돼 피사체보다 먼저 눈에 들어온다.
+              그림자는 뺐다 — 어두운 원 아래 검은 그림자는 보이지도 않는다. */}
           <button
             onClick={handleClose}
-            aria-label="닫기"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/40"
+            aria-label="뒤로가기"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#2c3930]/70 text-[#fffcef]"
           >
-            <XIcon />
+            <BackIcon />
           </button>
 
           {capturedPhoto ? (
@@ -149,7 +153,8 @@ export function CameraPage() {
                 <img src="/apple-touch-icon.jpg" alt="" className="h-6 w-6 rounded-md" />
                 <span className="text-lg font-medium">PicTree</span>
               </div>
-              <div className="w-9 shrink-0" />
+              {/* 왼쪽 버튼과 같은 폭의 빈 칸 — 가운데 로고가 정말 가운데 오게 한다. */}
+              <div className="w-10 shrink-0" />
             </>
           )}
         </header>

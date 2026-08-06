@@ -1,5 +1,6 @@
 // 공용 컴포넌트 배럴 export — import { Button, Modal } from '@/shared/components';
 export { Button } from './Button';
+export { BackButton } from './BackButton';
 export { Chip } from './Chip';
 export type { ChipTone, ChipSize } from './Chip';
 export { Input } from './Input';

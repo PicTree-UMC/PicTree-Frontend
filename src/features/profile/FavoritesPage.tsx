@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useFavorites, useRemoveFavorite } from "./hooks/useFavorites";
 import type { FavoritePlace } from "./types/favorite";
-import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
+import { BackButton } from "@/shared/components";
 import chevronIcon from "./assets/icons/chevron.svg";
 import starBadgeIcon from "./assets/icons/starBadge.svg";
 import treeIcon from "./assets/icons/tree.svg";
@@ -51,14 +51,7 @@ export function FavoritesPage() {
       {/* 헤더 밴드 — pt-safe 는 상단 안전영역 확보 */}
       <header className="bg-[#C5D89D] px-5 pb-8 pt-[calc(env(safe-area-inset-top)+1rem)]">
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => window.history.back()}
-            aria-label="뒤로 가기"
-            className="flex h-6 w-6 items-center justify-center"
-          >
-            <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
-          </button>
+          <BackButton onClick={() => window.history.back()} />
           <h1 className="text-[20px] font-medium text-black">즐겨찾기 장소</h1>
         </div>
         <p className="mt-4 text-[14px] text-[#2C3930]">
