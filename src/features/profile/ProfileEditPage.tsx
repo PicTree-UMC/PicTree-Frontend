@@ -21,9 +21,9 @@ function Field({
 }) {
   return (
     <section>
-      <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#9CAB84]">{label}</h2>
+      <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#5B6B38]">{label}</h2>
       {children}
-      {hint && <p className="mt-1.5 pl-1 text-[13px] text-[#8D8D8D]">{hint}</p>}
+      {hint && <p className="mt-1.5 pl-1 text-[13px] text-[#60655C]">{hint}</p>}
     </section>
   );
 }
@@ -81,14 +81,19 @@ export function ProfileEditPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      <header className="bg-[#C5D89D] px-5 pb-16 pt-4">
+      {/* pt-4 는 safe-area 가 없어 노치 기기에서 제목이 가려졌다(§3). */}
+      <header className="px-5 pb-2 pt-header">
         <NavBar onBack={() => navigate(-1)} title="내 정보" />
       </header>
 
-      {/* 아바타 — 헤더 밴드에 걸쳐 앉힌다 (마이페이지와 같은 계열의 구성) */}
-      <div className="-mt-12 flex flex-col items-center px-5">
+      {/*
+        아바타는 종전에 `-mt-12` 로 초록 밴드에 걸쳐 앉아 있었고, `border-4` 크림 테두리가
+        밴드에서 오려낸 것처럼 보이게 하는 장치였다. 밴드가 없어졌으니 둘 다 뺀다 —
+        크림 위 크림 테두리는 아무 일도 안 하면서 아바타만 8px 작아 보이게 한다.
+      */}
+      <div className="mt-4 flex flex-col items-center px-5">
         <div className="relative">
-          <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-[#FFFCEF] bg-[#F6F0D7]">
+          <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
             {profile?.profileImageUrl && !isAvatarBroken ? (
               <img
                 src={profile.profileImageUrl}
@@ -111,7 +116,7 @@ export function ProfileEditPage() {
               type="button"
               onClick={() => setIsSheetOpen(true)}
               aria-label="프로필 사진 제거"
-              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#FFFCEF] bg-[#89986D] text-[14px] text-white"
+              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#FFFCEF] bg-[#5B6B38] text-[14px] text-white"
             >
               ✎
             </button>
@@ -132,12 +137,12 @@ export function ProfileEditPage() {
           사유와 재시도 수단은 있어야 한다.
         */}
         {isError && (
-          <div className="rounded-xl border-2 border-[#FF8A8A] bg-white px-5 py-4 text-center">
-            <p className="text-[14px] text-[#FF5858]">내 정보를 불러오지 못했어요.</p>
+          <div className="rounded-xl border border-[#DC2626] bg-white px-5 py-4 text-center">
+            <p className="text-[14px] text-[#DC2626]">내 정보를 불러오지 못했어요.</p>
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-[13px] font-medium text-white"
+              className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
             >
               다시 시도
             </button>
@@ -155,8 +160,8 @@ export function ProfileEditPage() {
           }
         >
           <div
-            className={`flex items-center gap-2 rounded-xl border-2 bg-white px-5 py-3 ${
-              isEmpty || isTooLong ? "border-[#FF8A8A]" : "border-[#C5D89D]"
+            className={`flex items-center gap-2 rounded-xl border bg-white px-5 py-3 ${
+              isEmpty || isTooLong ? "border-[#DC2626]" : "border-[#ECECEC]"
             }`}
           >
             <input
@@ -165,9 +170,9 @@ export function ProfileEditPage() {
               disabled={isPending}
               aria-label="닉네임"
               placeholder="닉네임을 입력해주세요"
-              className="min-w-0 flex-1 text-[17px] font-medium text-[#111] outline-none placeholder:font-normal placeholder:text-[#B5B5B5]"
+              className="min-w-0 flex-1 text-[17px] font-medium text-[#2C3930] outline-none placeholder:font-normal placeholder:text-[#B4B4B4]"
             />
-            <span className="shrink-0 text-[13px] text-[#8D8D8D]">
+            <span className="shrink-0 text-[13px] text-[#60655C]">
               {trimmed.length}/{NICKNAME_MAX}
             </span>
           </div>
@@ -177,8 +182,8 @@ export function ProfileEditPage() {
           label="이메일"
           hint="소셜 계정에서 가져온 값이라 앱에서는 바꿀 수 없어요."
         >
-          <div className="rounded-xl border-2 border-[#E6E1CC] bg-[#F7F5EC] px-5 py-3">
-            <p className="text-[17px] font-medium text-[#8D8D8D]">
+          <div className="rounded-xl border border-[#ECECEC] bg-[#F6F0D7] px-5 py-3">
+            <p className="text-[17px] font-medium text-[#60655C]">
               {/* 카카오는 이메일 동의를 안 하면 null 로 온다 */}
               {profile?.email ?? "등록된 이메일이 없어요"}
             </p>
@@ -189,7 +194,7 @@ export function ProfileEditPage() {
           type="button"
           onClick={handleSave}
           disabled={!canSave}
-          className="mt-1 h-12 rounded-xl bg-[#89986D] text-[17px] font-medium text-white disabled:bg-[#D5D5D5] disabled:text-[#8D8D8D]"
+          className="mt-1 h-12 rounded-xl bg-[#5B6B38] text-[17px] font-medium text-white disabled:bg-[#D9D9D9] disabled:text-[#60655C]"
         >
           {isSaving ? "저장 중..." : "저장하기"}
         </button>

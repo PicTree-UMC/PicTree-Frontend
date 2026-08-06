@@ -35,7 +35,7 @@ const STATUS: Record<NearbyAlertStatus, { label: string; className: string } | n
   SENT: null,
   OPENED: null,
   PENDING: { label: "발송 대기", className: "bg-[#F6F0D7] text-[#60655C]" },
-  FAILED: { label: "발송 실패", className: "bg-[#FDE7E7] text-[#DC2626]" },
+  FAILED: { label: "발송 실패", className: "bg-[#FEF7F7] text-[#DC2626]" },
 };
 
 interface RowProps {
@@ -186,7 +186,7 @@ export function AlertLogsPage() {
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* pt-4 라 안전영역이 아예 없었다 — 노치 기기에서 제목이 노치 뒤로 들어갔다. */}
-      <header className="bg-[#C5D89D] px-5 pb-5 pt-header">
+      <header className="px-5 pb-5 pt-header">
         <NavBar
           /* 선택 모드의 × 는 뒤로가기와 같은 40px 흰 원을 쓴다 — 모드가 바뀔 때
              헤더 첫 칸이 흔들리지 않게. */
@@ -196,7 +196,7 @@ export function AlertLogsPage() {
                 type="button"
                 onClick={exitSelecting}
                 aria-label="선택 취소"
-                className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
+                className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-[#2C3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
               >
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                   <path d="M6 18L18 6M6 6l12 12" />
@@ -260,7 +260,7 @@ export function AlertLogsPage() {
           </div>
         ) : (
           <>
-            <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-1">
+            <div className="rounded-xl border border-[#ECECEC] bg-white px-5 py-1">
               {logs.map((log) => (
                 <AlertLogRow
                   key={log.alertLogId}
@@ -325,7 +325,7 @@ export function AlertLogsPage() {
                 type="button"
                 onClick={() => setConfirming(null)}
                 disabled={isDeleting}
-                className="h-[44px] flex-1 rounded-xl bg-[#F1F1F1] text-[15px] text-[#2C3930] disabled:opacity-50"
+                className="h-[44px] flex-1 rounded-xl bg-[#ECECEC] text-[15px] text-[#2C3930] disabled:opacity-50"
               >
                 취소
               </button>

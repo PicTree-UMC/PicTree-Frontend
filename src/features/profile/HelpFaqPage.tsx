@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { FAQ_CATEGORIES } from "./constants/faq";
 import { SUPPORT_EMAIL } from "./constants/contact";
-import { NavBar } from "@/shared/components";
+import { Chip, NavBar } from "@/shared/components";
 
 const ICON = {
   fill: "none",
@@ -61,7 +61,7 @@ export function HelpFaqPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      <header className="bg-[#C5D89D] px-5 pb-4 pt-header">
+      <header className="px-5 pb-4 pt-header">
         <NavBar onBack={() => navigate(-1)} title="도움말 / FAQ" />
 
         {/*
@@ -76,9 +76,11 @@ export function HelpFaqPage() {
           {FAQ_CATEGORIES.map((item, index) => {
             const isActive = index === activeTab;
             return (
-              <button
+              <Chip
                 key={item.label}
-                type="button"
+                tone="ghost"
+                size="sm"
+                selected={isActive}
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => {
@@ -86,14 +88,9 @@ export function HelpFaqPage() {
                   // 탭을 바꾸면 펼쳐 둔 질문은 접는다 — 다른 주제의 잔상이 남지 않게.
                   setOpenQuestion(null);
                 }}
-                className={`flex-shrink-0 rounded-full px-3.5 py-1.5 text-[14px] transition-colors ${
-                  isActive
-                    ? "bg-white font-medium text-[#2C3930]"
-                    : "bg-white/40 text-[#5B6B38]"
-                }`}
               >
                 {item.label}
-              </button>
+              </Chip>
             );
           })}
         </div>
@@ -106,7 +103,7 @@ export function HelpFaqPage() {
           return (
             <div
               key={item.q}
-              className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-4"
+              className="rounded-xl border border-[#ECECEC] bg-white px-5 py-4"
             >
               <button
                 type="button"
@@ -128,7 +125,7 @@ export function HelpFaqPage() {
         })}
 
         {/* 문의처는 주제와 무관하게 늘 보인다 — 답을 못 찾았을 때 다음 행동이 필요하다. */}
-        <div className="mt-2 rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-4">
+        <div className="mt-2 rounded-xl border border-[#ECECEC] bg-white px-5 py-4">
           <div className="flex items-center gap-2.5">
             <IconMail />
             <h2 className="text-[15px] font-medium text-[#2C3930]">

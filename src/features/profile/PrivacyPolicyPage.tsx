@@ -191,7 +191,7 @@ const SECTIONS: Section[] = [
 
 function PolicyCardView({ card }: { card: PolicyCard }) {
   return (
-    <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-4">
+    <div className="rounded-xl border border-[#ECECEC] bg-white px-5 py-4">
       <div className="flex items-center gap-2.5">
         {card.icon}
         <h3 className="text-[15px] font-medium text-[#2C3930]">{card.title}</h3>
@@ -201,7 +201,7 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
         <dl className="mt-3 flex flex-col gap-2">
           {card.fields.map((field) => (
             <div key={field.label} className="flex gap-3">
-              <dt className="w-9 flex-shrink-0 text-[13px] font-medium text-[#9CAB84]">
+              <dt className="w-9 flex-shrink-0 text-[13px] font-medium text-[#5B6B38]">
                 {field.label}
               </dt>
               <dd className="flex-1 text-[13px] leading-relaxed text-[#2C3930]">
@@ -213,7 +213,7 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
       )}
 
       {card.body && (
-        <p className="mt-2.5 text-[13px] leading-relaxed text-[#6E6E6E]">{card.body}</p>
+        <p className="mt-2.5 text-[13px] leading-relaxed text-[#60655C]">{card.body}</p>
       )}
     </div>
   );
@@ -224,14 +224,14 @@ export function PrivacyPolicyPage() {
     // min-h-full: 100vh 는 셸 컬럼을 넘긴다. 상단 안전영역은 헤더의 pt-header 가 갖는다.
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 */}
-      <header className="bg-[#C5D89D] px-5 pb-5 pt-header">
+      <header className="px-5 pb-5 pt-header">
         <NavBar onBack={() => window.history.back()} title="개인정보 처리방침" />
       </header>
 
       <div className="flex flex-col gap-6 px-5 pt-5">
         {SECTIONS.map((section) => (
           <section key={section.label}>
-            <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#9CAB84]">
+            <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#5B6B38]">
               {section.label}
             </h2>
             <div className="flex flex-col gap-3">

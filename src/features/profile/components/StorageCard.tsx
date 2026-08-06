@@ -24,10 +24,10 @@ export function StorageCard({ usedBytes, totalBytes }: Props) {
   const ratio = isKnown && totalBytes > 0 ? usedBytes / totalBytes : 0;
 
   return (
-    <section className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-4">
-      <h2 className="text-[17px] font-medium text-[#111]">사진 저장 용량</h2>
+    <section className="rounded-xl border border-[#ECECEC] bg-white px-5 py-4">
+      <h2 className="text-[17px] font-medium text-[#2C3930]">사진 저장 용량</h2>
 
-      <p className="mt-1 text-[13px] font-medium text-[#90908F]">
+      <p className="mt-1 text-[13px] font-medium text-[#60655C]">
         {usedLabel} / {formatBytes(totalBytes)} 사용 중
       </p>
 
@@ -37,15 +37,15 @@ export function StorageCard({ usedBytes, totalBytes }: Props) {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(ratio * 100)}
-        className="my-2.5 h-2 w-full overflow-hidden rounded-full bg-[#E3E3E3]"
+        className="my-2.5 h-2 w-full overflow-hidden rounded-full bg-[#D9D9D9]"
       >
         <div
-          className="h-full rounded-full bg-[#89986D] transition-[width]"
+          className="h-full rounded-full bg-[#5B6B38] transition-[width]"
           style={{ width: `${Math.max(0, Math.min(100, ratio * 100))}%` }}
         />
       </div>
 
-      <p className="text-[13px] font-medium text-[#90908F]">
+      <p className="text-[13px] font-medium text-[#60655C]">
         사진 없는 기록은 용량 제한 없이 무제한으로 저장돼요.
       </p>
     </section>

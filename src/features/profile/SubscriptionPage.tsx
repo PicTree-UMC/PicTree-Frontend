@@ -52,7 +52,7 @@ function BenefitRow({ icon, title }: { icon: string; title: string }) {
   return (
     <div className="flex items-center gap-3 py-2.5">
       <img src={icon} alt="" className="h-6 w-6 shrink-0" />
-      <p className="min-w-0 flex-1 text-[17px] font-medium text-[#111]">{title}</p>
+      <p className="min-w-0 flex-1 text-[17px] font-medium text-[#2C3930]">{title}</p>
       <img src={checkIcon} alt="포함됨" className="h-6 w-6 shrink-0" />
     </div>
   );
@@ -189,14 +189,14 @@ export function SubscriptionPage() {
           장애 중 무료로 보이는 건 오해를 부르므로 사유를 먼저 알린다.
         */}
         {isError && (
-          <div className="rounded-xl border-2 border-[#FF8A8A] bg-white px-5 py-4 text-center">
-            <p className="text-[14px] text-[#FF5858]">
+          <div className="rounded-xl border border-[#DC2626] bg-white px-5 py-4 text-center">
+            <p className="text-[14px] text-[#DC2626]">
               구독 정보를 불러오지 못했어요. 아래는 실제 플랜과 다를 수 있어요.
             </p>
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-[13px] font-medium text-white"
+              className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
             >
               다시 시도
             </button>
@@ -205,7 +205,7 @@ export function SubscriptionPage() {
 
         {isPending ? (
           // 플랜 배지 자리를 잡아 둬 레이아웃이 튀지 않게 한다
-          <div className="mx-auto h-7 w-32 animate-pulse rounded bg-[#EAE6D2]" />
+          <div className="mx-auto h-7 w-32 animate-pulse rounded bg-[#F6F0D7]" />
         ) : (
           <PlanBadge
             planName={planName}
@@ -242,18 +242,18 @@ export function SubscriptionPage() {
           다시 시도를 준다 — 시안 값으로 채우면 실제와 다른 용량·횟수를
           보여주게 되고, 사용자는 그게 틀렸다는 걸 알 방법이 없다.
         */}
-        <section className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-1">
+        <section className="rounded-xl border border-[#ECECEC] bg-white px-5 py-1">
           {isPlansPending ? (
             <p className="py-6 text-center text-[14px] text-[#60655C]">
               요금제를 불러오는 중...
             </p>
           ) : benefits.length === 0 ? (
             <div className="py-6 text-center">
-              <p className="text-[14px] text-[#FF5858]">요금제를 불러오지 못했어요.</p>
+              <p className="text-[14px] text-[#DC2626]">요금제를 불러오지 못했어요.</p>
               <button
                 type="button"
                 onClick={() => refetchPlans()}
-                className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-[13px] font-medium text-white"
+                className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
               >
                 다시 시도
               </button>
@@ -267,7 +267,7 @@ export function SubscriptionPage() {
           <button
             type="button"
             onClick={() => navigate(ROUTES.premium)}
-            className="h-12 rounded-xl bg-[#DCEBC0] text-[17px] font-medium text-[#2C3930]"
+            className="h-12 rounded-xl bg-[#ECF6D8] text-[17px] font-medium text-[#2C3930]"
           >
             프리미엄으로 업그레이드
           </button>
@@ -275,17 +275,17 @@ export function SubscriptionPage() {
           <>
             <section>
               <div className="mb-2 flex items-end justify-between pl-1">
-                <h2 className="text-[15px] font-medium text-[#9CAB84]">결제 정보</h2>
+                <h2 className="text-[15px] font-medium text-[#5B6B38]">결제 정보</h2>
                 <p className="text-[13px] text-[#2C3930]">
                   다음 결제일 : {nextBillingLabel}
                 </p>
               </div>
-              <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-4">
+              <div className="rounded-xl border border-[#ECECEC] bg-white px-5 py-4">
                 <div className="flex items-center gap-3">
                   <img src={cardIcon} alt="" className="h-6 w-6 shrink-0" />
                   <div>
-                    <p className="text-[17px] font-medium text-[#111]">신용카드</p>
-                    <p className="text-[13px] font-medium text-[#90908F]">
+                    <p className="text-[17px] font-medium text-[#2C3930]">신용카드</p>
+                    <p className="text-[13px] font-medium text-[#60655C]">
                       {activeCard ? activeCard.cardNumberMasked : "등록된 카드 없음"}
                     </p>
                   </div>
@@ -302,7 +302,7 @@ export function SubscriptionPage() {
                 type="button"
                 onClick={handleResume}
                 disabled={resumeMutation.isPending}
-                className="h-12 rounded-xl bg-[#DCEBC0] text-[17px] font-medium text-[#2C3930] disabled:opacity-60"
+                className="h-12 rounded-xl bg-[#ECF6D8] text-[17px] font-medium text-[#2C3930] disabled:opacity-60"
               >
                 {resumeMutation.isPending ? "처리 중..." : "자동갱신 다시 켜기"}
               </button>
@@ -310,7 +310,7 @@ export function SubscriptionPage() {
               <button
                 type="button"
                 onClick={() => setIsCancelOpen(true)}
-                className="h-12 rounded-xl bg-[#FFD5D5] text-[17px] font-medium text-[#FF4B4B]"
+                className="h-12 rounded-xl bg-[#FEF7F7] text-[17px] font-medium text-[#DC2626]"
               >
                 구독 취소
               </button>

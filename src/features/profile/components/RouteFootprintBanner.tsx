@@ -21,7 +21,7 @@ export function RouteFootprintBanner({
       <button
         type="button"
         onClick={onViewRoute}
-        className="h-[39px] w-20 flex-shrink-0 rounded-xl bg-[#ABC582] text-[14px] font-medium text-[#2C3930]"
+        className="h-[39px] w-20 flex-shrink-0 rounded-xl bg-[#C5D89D] text-[14px] font-medium text-[#2C3930]"
       >
         동선보기
       </button>
