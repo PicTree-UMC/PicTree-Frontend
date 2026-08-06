@@ -26,7 +26,10 @@ export interface CreateAIBlogDraftResponseData {
 
 export interface SaveAIBlogDraftRequest {
   title: string;
-  content: string;
+  items: {
+    placeName: string;
+    content: string;
+  }[];
   startDate: string;
   endDate: string;
   treeIds: number[];
