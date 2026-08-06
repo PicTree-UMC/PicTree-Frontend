@@ -16,6 +16,8 @@ type BlogDraftState = {
 const toSavedBlog = (draft: AIBlogDraft): SavedBlog => ({
   id: String(draft.draftId),
   title: draft.title,
+  thumbnailUrl: draft.thumbnailUrl,
+  placeCount: draft.placeCount,
   startDate: draft.startDate,
   endDate: draft.endDate,
   toneId: 'plain',
@@ -45,11 +47,7 @@ export const useBlogDraftStore = create<BlogDraftState>((set) => ({
     set({ savedBlogs: data.drafts.map(toSavedBlog), fetchError: false });
   },
   deleteBlogAsync: async (id: number) => {
-    try {
-      await deleteAIBlogDraft(undefined, id);
-      set((state) => ({ savedBlogs: state.savedBlogs.filter((b) => b.id !== String(id)) }));
-    } catch (err) {
-      console.error('deleteBlogAsync failed', err);
-    }
+    await deleteAIBlogDraft(undefined, id);
+    set((state) => ({ savedBlogs: state.savedBlogs.filter((b) => b.id !== String(id)) }));
   },
 }));

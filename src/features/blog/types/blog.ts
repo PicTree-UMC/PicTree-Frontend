@@ -1,6 +1,8 @@
 export interface AIBlogDraft {
   draftId: number;
   title: string;
+  thumbnailUrl: string | null;
+  placeCount?: number;
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   createdAt: string; // ISO
@@ -44,6 +46,8 @@ export interface AIBlogDraftDetail {
   draftId: number;
   title: string;
   items: {
+    treeId: number;
+    imageUrl: string | null;
     placeName: string;
     content: string;
   }[];
@@ -98,6 +102,8 @@ export interface BlogSection {
 export interface SavedBlog {
   id: string;
   title: string;
+  thumbnailUrl: string | null;
+  placeCount?: number;
   startDate: string;
   endDate: string;
   toneId: ToneId;

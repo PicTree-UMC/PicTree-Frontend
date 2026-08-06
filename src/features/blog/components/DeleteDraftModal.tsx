@@ -5,9 +5,10 @@ type DeleteDraftModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  isDeleting?: boolean;
 };
 
-export function DeleteDraftModal({ isOpen, onClose, onConfirm }: DeleteDraftModalProps) {
+export function DeleteDraftModal({ isOpen, onClose, onConfirm, isDeleting = false }: DeleteDraftModalProps) {
   if (!isOpen) return null;
 
   return createPortal(
@@ -27,8 +28,8 @@ export function DeleteDraftModal({ isOpen, onClose, onConfirm }: DeleteDraftModa
         <h2 id="delete-draft-title" className="mt-2 text-[21px] font-bold">이 초안을 삭제할까요?</h2>
         <p className="mt-1 text-[12px] text-[#60655c]">삭제한 초안은 다시 되돌릴 수 없어요</p>
         <div className="mt-2 flex justify-center gap-[18px]">
-          <button type="button" className="h-[39px] w-[92px] rounded-xl bg-[#e4e5e6] text-[14px] font-bold text-[#60655c]" onClick={onClose}>취소</button>
-          <button type="button" className="h-[39px] w-[92px] rounded-xl bg-[#dc2626] text-[14px] font-bold text-white" onClick={onConfirm}>제거</button>
+          <button type="button" className="h-[39px] w-[92px] rounded-xl bg-[#e4e5e6] text-[14px] font-bold text-[#60655c] disabled:opacity-50" onClick={onClose} disabled={isDeleting}>취소</button>
+          <button type="button" className="h-[39px] w-[92px] rounded-xl bg-[#dc2626] text-[14px] font-bold text-white disabled:opacity-50" onClick={onConfirm} disabled={isDeleting}>{isDeleting ? '삭제 중' : '제거'}</button>
         </div>
       </section>
     </div>,
