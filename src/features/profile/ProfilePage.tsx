@@ -11,13 +11,13 @@ import { useMyPushSubscriptions } from "./hooks/usePushSubscription";
 import { getPushUnavailableReason } from "./lib/webPush";
 import { getPlanLabel } from "./lib/plan";
 import { getApiErrorMessage, getProfileErrorKind } from "./lib/profileError";
-import personIcon from "@/shared/assets/icons/nav-profile.svg";
 import treeIcon from "./assets/icons/tree.svg";
-import cardIcon from "./assets/icons/card.svg";
-import statsIcon from "./assets/icons/stats.svg";
-import starIcon from "./assets/icons/star.svg";
-import alertIcon from "./assets/icons/alert.svg";
-import menuBookIcon from "./assets/icons/menuBook.svg";
+import accountImage from "./assets/icons/account3d.jpg";
+import cardImage from "./assets/icons/card3d.jpg";
+import calendarImage from "./assets/icons/calendar3d.jpg";
+import favoriteImage from "./assets/icons/favorite3d.jpg";
+import alertImage from "./assets/icons/alert3d.jpg";
+import alertLogImage from "./assets/icons/alertLog3d.jpg";
 import { useWithdraw } from "./hooks/useWithdraw";
 import { WithdrawModal } from "./components/WithdrawModal";
 
@@ -152,12 +152,12 @@ export function ProfilePage() {
         */}
         <SettingsList>
           <SettingsRow
-            icon={personIcon}
+            image={accountImage}
             title="개인정보"
             onClick={() => navigate(ROUTES.profileEdit)}
           />
           <SettingsRow
-            icon={cardIcon}
+            image={cardImage}
             title="구독 및 결제"
             // 플랜은 종전에 헤더의 골드 배지였다. 값이 하나뿐인 상태 표시라
             // 배지보다 줄 오른쪽 값이 제자리다(`iCloud 50GB` 와 같은 꼴).
@@ -165,12 +165,12 @@ export function ProfilePage() {
             onClick={() => navigate(ROUTES.subscription)}
           />
           <SettingsRow
-            icon={statsIcon}
+            image={calendarImage}
             title="여행 캘린더"
             onClick={() => navigate(ROUTES.calendar)}
           />
           <SettingsRow
-            icon={starIcon}
+            image={favoriteImage}
             title="즐겨찾기 장소"
             onClick={() => navigate(ROUTES.favorites)}
           />
@@ -180,7 +180,7 @@ export function ProfilePage() {
         <div>
           <SettingsList>
             <SettingsRow
-              icon={alertIcon}
+              image={alertImage}
               title="근처 나무 알림"
               trailing={
                 <button
@@ -203,8 +203,12 @@ export function ProfilePage() {
                 </button>
               }
             />
+            {/*
+              같은 카드의 위 줄(나무+종)과 종 모양을 공유한다 — 알림을 받는 설정과 받은
+              알림을 보는 곳이라 한 가족으로 읽히는 게 맞다.
+            */}
             <SettingsRow
-              icon={menuBookIcon}
+              image={alertLogImage}
               title="알림 기록"
               onClick={() => navigate(ROUTES.alertLogs)}
             />

@@ -1,18 +1,24 @@
-import { Children, Fragment, isValidElement, type CSSProperties, type ReactNode } from 'react';
+import { Children, Fragment, isValidElement, type ReactNode } from 'react';
 
 /**
- * 카드 안쪽 가로 패딩(px-4) + 아이콘 타일(30) + 사이 간격(gap-3).
+ * 카드 안쪽 가로 패딩(px-4) + 아이콘 상자(34) + 사이 간격(gap-3).
  * 구분선을 글자 시작점에 맞추는 데 쓴다.
  */
-const TEXT_INSET_PX = 16 + 30 + 12;
+const ICON_BOX_PX = 34;
+const TEXT_INSET_PX = 16 + ICON_BOX_PX + 12;
 
 interface SettingsRowProps {
   /**
-   * 아이콘 SVG 의 URL. 색을 GREEN-500 타일 위 흰 글리프로 통일해야 해서 `<img>` 가 아니라
-   * **CSS 마스크**로 그린다 — 에셋들이 `fill="black"`·`fill="#FF4B4B"` 처럼 색을 박아 두고
-   * 있어서 `<img>` 로는 다시 칠할 수 없다.
+   * 줄 앞 아이콘의 URL. **그림 그대로 그린다** — 타일도 색칠도 씌우지 않는다.
+   *
+   * 흰 바탕이 구워진 이미지(3D 렌더 등)를 그대로 쓸 수 있는 건 카드가 흰색이기 때문이다.
+   * 카드 바탕이 바뀌면 네모난 흰 자국이 드러나므로 그때는 배경이 비는 포맷으로 다시 받아야 한다.
+   *
+   * 한때 단색 SVG 를 GREEN-500 타일 위 흰 글리프로 칠하는 모드(CSS 마스크)가 같이 있었는데,
+   * 줄 여섯 개가 전부 3D 아이콘을 받으면서 쓰는 곳이 없어져 지웠다. 브랜드색 타일이 다시
+   * 필요해지면 되살릴 것(`Chip` 의 `cream` 톤을 지웠던 것과 같은 이유).
    */
-  icon?: string;
+  image?: string;
   title: string;
   /** 오른쪽 끝 회색 값 (`iCloud 50GB` 꼴). 화살표 앞에 붙는다. */
   value?: ReactNode;
@@ -31,29 +37,15 @@ interface SettingsRowProps {
   action?: 'danger' | 'quiet';
 }
 
-/** 마스크로 그리는 아이콘 글리프. 타일 안에서 흰색으로 칠해진다. */
-function maskStyle(icon: string): CSSProperties {
-  return {
-    maskImage: `url(${icon})`,
-    WebkitMaskImage: `url(${icon})`,
-    maskSize: 'contain',
-    WebkitMaskSize: 'contain',
-    maskRepeat: 'no-repeat',
-    WebkitMaskRepeat: 'no-repeat',
-    maskPosition: 'center',
-    WebkitMaskPosition: 'center',
-  };
-}
-
 /**
  * 그룹 리스트의 한 줄. `SettingsList` 의 **직속 자식**으로만 쓴다.
  *
- * 높이를 52px 로 잡는 이유: 권장 터치 영역 44px 에 아이콘 타일(30px)이 답답하지 않을 만큼만
+ * 높이를 52px 로 잡는 이유: 권장 터치 영역 44px 에 아이콘(34px)이 답답하지 않을 만큼만
  * 얹었다. 부제를 달지 않는 대신 오른쪽 `value` 로 상태를 말한다 — 줄마다 두 줄짜리 설명이
  * 붙으면 카드가 아니라 목록처럼 읽힌다. 줄 하나로 안 되는 안내는 `SettingsFooter` 로 내린다.
  */
 export function SettingsRow({
-  icon,
+  image,
   title,
   value,
   trailing,
@@ -65,16 +57,7 @@ export function SettingsRow({
 
   const content = (
     <>
-      {icon && (
-        // GREEN-500 은 데코 전용(§1.2)이라 텍스트는 못 얹지만, 흰 글리프는 3.6:1 로
-        // 비텍스트 대비 기준 3:1 을 넘는다.
-        <span
-          aria-hidden
-          className="grid size-[30px] shrink-0 place-items-center rounded-[8px] bg-[#788F4A]"
-        >
-          <span className="size-[18px] bg-white" style={maskStyle(icon)} />
-        </span>
-      )}
+      {image && <img src={image} alt="" aria-hidden className="size-[34px] shrink-0" />}
 
       <span
         className={`min-w-0 flex-1 truncate text-[17px] font-medium ${
@@ -150,7 +133,7 @@ export function SettingsList({
         const props = isValidElement<SettingsRowProps>(row) ? row.props : null;
 
         // 가운데 정렬 동작 줄(`action`)은 맞출 글자 시작점이 없어 선을 끝까지 긋는다.
-        const inset = props?.action ? 0 : props?.icon ? TEXT_INSET_PX : 16;
+        const inset = props?.action ? 0 : props?.image ? TEXT_INSET_PX : 16;
 
         return (
           <Fragment key={index}>
