@@ -68,65 +68,50 @@ select {
   font: inherit;
 }
 
-@keyframes blog-dot-bounce {
-  0%, 60%, 100% { transform: translateY(5px) scale(0.85); opacity: 0.55; }
-  30% { transform: translateY(-6px) scale(1.15); opacity: 1; }
+@keyframes blog-skeleton-shimmer {
+  from { background-position: 180% 0; }
+  to { background-position: -80% 0; }
 }
 
-@keyframes blog-progress-flow {
-  0% { transform: translateX(-100%); }
-  55%, 100% { transform: translateX(145%); }
+@keyframes blog-ai-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgb(197 216 157 / 0%); }
+  50% { transform: scale(1.06); box-shadow: 0 0 0 7px rgb(197 216 157 / 18%); }
 }
 
-@keyframes blog-sparkle-pop {
-  0%, 100% { transform: rotate(-15deg) scale(0.65); opacity: 0.25; }
-  50% { transform: rotate(18deg) scale(1.15); opacity: 1; }
+@keyframes blog-step-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes blog-glow-drift {
-  0%, 100% { transform: translate(-25%, -30%) scale(0.9); opacity: 0.25; }
-  50% { transform: translate(30%, 20%) scale(1.2); opacity: 0.5; }
+@keyframes blog-result-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.blog-generating-dot {
-  animation: blog-dot-bounce 1.15s ease-in-out infinite;
+.blog-skeleton {
+  background: linear-gradient(100deg, #f0f2ea 20%, #e1ebcf 42%, #f0f2ea 64%);
+  background-size: 220% 100%;
+  animation: blog-skeleton-shimmer 1.8s ease-in-out infinite;
 }
 
-.blog-generating-progress {
-  width: 48%;
-  animation: blog-progress-flow 2.1s ease-in-out infinite;
+.blog-ai-pulse {
+  animation: blog-ai-pulse 1.8s ease-in-out infinite;
 }
 
-.blog-generating-sparkle,
-.blog-generating-twinkle {
-  animation: blog-sparkle-pop 1.4s ease-in-out infinite;
+.blog-step-enter {
+  animation: blog-step-enter 280ms ease-out both;
 }
 
-.blog-generating-twinkle {
-  animation-delay: 350ms;
-}
-
-.blog-generating-glow {
-  position: absolute;
-  width: 150px;
-  height: 150px;
-  border-radius: 9999px;
-  background: radial-gradient(circle, rgb(205 227 166 / 45%), transparent 68%);
-  filter: blur(6px);
-  animation: blog-glow-drift 3.2s ease-in-out infinite;
+.blog-result-enter {
+  animation: blog-result-enter 360ms ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .blog-generating-dot,
-  .blog-generating-progress,
-  .blog-generating-sparkle,
-  .blog-generating-twinkle,
-  .blog-generating-glow {
+  .blog-skeleton,
+  .blog-ai-pulse,
+  .blog-step-enter,
+  .blog-result-enter {
     animation: none;
-  }
-
-  .blog-generating-progress {
-    width: 72%;
   }
 }
 

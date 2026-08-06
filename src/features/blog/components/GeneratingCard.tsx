@@ -1,26 +1,54 @@
+import { useEffect, useState } from 'react';
+
+const GENERATING_STEPS = [
+  '여행 기록을 모으고 있어요',
+  '사진과 방문 순서를 정리하고 있어요',
+  '블로그 문장을 다듬고 있어요',
+];
+
 export function GeneratingCard() {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setStep((current) => (current + 1) % GENERATING_STEPS.length);
+    }, 1600);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
-    <div
-      className="blog-generating-card relative mt-5 flex h-[178px] flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-[#c5d89d] bg-white"
-      role="status"
-      aria-live="polite"
-    >
-      <span className="blog-generating-glow" aria-hidden />
-      <div className="relative flex h-8 items-center gap-2" aria-hidden>
-        {[0, 1, 2].map((index) => (
-          <i
-            key={index}
-            className="blog-generating-dot h-2 w-2 rounded-full bg-[#c5d89d]"
-            style={{ animationDelay: `${index * 160}ms` }}
-          />
-        ))}
-        <span className="blog-generating-sparkle absolute -right-6 -top-1 text-[18px]">✦</span>
+    <div className="mt-5" role="status" aria-live="polite">
+      <div className="mb-4 flex items-center gap-3 px-1">
+        <span className="blog-ai-pulse grid size-10 shrink-0 place-items-center rounded-full bg-[#ecf6d8] text-[20px] text-[#6f8542]" aria-hidden>
+          ✦
+        </span>
+        <div className="min-w-0">
+          <p className="text-[15px] font-bold text-[#2c3930]">AI가 여행 글을 쓰고 있어요</p>
+          <p key={step} className="blog-step-enter mt-1 text-[13px] text-[#737970]">
+            {GENERATING_STEPS[step]}
+          </p>
+        </div>
       </div>
-      <p className="relative mt-3 text-[13px] font-medium">AI가 여행 일지를 작성하고 있어요</p>
-      <p className="relative mt-3 text-[13px] text-[#60655c]">방문 순서와 사진을 분석 중이에요 <span className="blog-generating-twinkle inline-block">✨</span></p>
-      <div className="relative mt-4 h-[6px] w-[82%] overflow-hidden rounded-full bg-[#ecf6d8]">
-        <div className="blog-generating-progress h-full rounded-full bg-[linear-gradient(90deg,#a9cb78,#d9e8bd,#a9cb78)]" />
-      </div>
+
+      <article className="overflow-hidden rounded-2xl border border-[#e7e8dc] bg-white shadow-[0_5px_18px_rgba(45,51,34,0.06)]" aria-hidden>
+        <header className="px-5 pb-5 pt-6">
+          <div className="blog-skeleton h-3 w-16 rounded-full" />
+          <div className="blog-skeleton mt-4 h-6 w-[84%] rounded-md" />
+          <div className="blog-skeleton mt-2 h-6 w-[58%] rounded-md" />
+          <div className="blog-skeleton mt-4 h-3 w-36 rounded-full" />
+        </header>
+        <div className="h-px bg-[#f0f0e9]" />
+        <div className="px-5 pb-8 pt-6">
+          <div className="blog-skeleton h-5 w-32 rounded-md" />
+          <div className="blog-skeleton mt-4 aspect-[16/10] w-full rounded-lg" />
+          <div className="mt-5 space-y-2.5">
+            <div className="blog-skeleton h-3.5 w-full rounded-full" />
+            <div className="blog-skeleton h-3.5 w-[94%] rounded-full" />
+            <div className="blog-skeleton h-3.5 w-[76%] rounded-full" />
+          </div>
+        </div>
+      </article>
     </div>
   );
 }

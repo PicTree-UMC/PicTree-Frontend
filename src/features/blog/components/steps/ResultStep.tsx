@@ -42,7 +42,7 @@ export function ResultStep({ status, draft, onSave }: ResultStepProps) {
   };
 
   return (
-    <div className="flex flex-1 flex-col pb-6 pt-2">
+    <div className="blog-result-enter flex flex-1 flex-col pb-6 pt-2">
       <article className="mx-5 overflow-hidden rounded-2xl border border-[#e7e8dc] bg-white shadow-[0_5px_18px_rgba(45,51,34,0.06)]">
         <header className="px-5 pb-5 pt-6">
           <span className="text-[12px] font-medium text-[#7b8f4d]">여행 기록</span>
