@@ -15,10 +15,8 @@ type CreateStepHeaderProps = {
 };
 
 export function CreateStepHeader({ step, onBack }: CreateStepHeaderProps) {
-  // 상단 여백 = 노치(safe-area) + 0.75rem. 고정 px(pt-[56px])는 safe-area 가 작은
-  // 기기에서 과하게 떠 보였다. BlogPage·AuthShell·CameraPage 와 같은 값으로 통일.
   return (
-    <header className="px-5 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+    <header className="px-5 pb-3 pt-header">
       <NavBar onBack={onBack} title={STEP_LABELS[step]} />
       <div className="mt-4 flex gap-2" aria-hidden>
         {STEPS.map((value) => (

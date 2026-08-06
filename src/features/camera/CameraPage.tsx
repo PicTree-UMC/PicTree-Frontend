@@ -126,10 +126,7 @@ export function CameraPage() {
 
       {/* 컨트롤 레이어 */}
       <div className="relative z-10 flex h-full flex-col text-white">
-        <header
-          className="flex items-center gap-2 px-4 pb-2"
-          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
-        >
+        <header className="flex items-center gap-2 px-4 pb-2 pt-header">
           {/* 지도 위 헤더(동선 보기)와 같은 원형 버튼이되, 색은 반전이다 — 사진 위에서는
               INK 면 + 크림 글자(가이드라인 §1.1 '텍스트·반전'). 크림 원을 그대로 얹으면
               화면에서 제일 밝은 덩어리가 돼 피사체보다 먼저 눈에 들어온다.

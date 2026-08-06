@@ -48,8 +48,7 @@ export function FavoritesPage() {
 
   return (
     <div className="relative flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      {/* 헤더 밴드 — pt-safe 는 상단 안전영역 확보 */}
-      <header className="bg-[#C5D89D] px-5 pb-8 pt-[calc(env(safe-area-inset-top)+1rem)]">
+      <header className="bg-[#C5D89D] px-5 pb-8 pt-header">
         <NavBar onBack={() => window.history.back()} title="즐겨찾기 장소" />
         <p className="mt-4 text-[14px] text-[#2C3930]">
           다시 방문하고 싶은 장소를 관리해보세요

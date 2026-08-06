@@ -26,8 +26,7 @@ export function TravelCalendarPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      {/* 헤더 밴드 — pt-safe 는 상단 안전영역 확보 */}
-      <header className="bg-[#C5D89D] px-5 pb-12 pt-[calc(env(safe-area-inset-top)+1rem)]">
+      <header className="bg-[#C5D89D] px-5 pb-12 pt-header">
         <NavBar onBack={() => window.history.back()} title="여행 캘린더" />
 
         {/* 연도 + 피커 트리거 */}

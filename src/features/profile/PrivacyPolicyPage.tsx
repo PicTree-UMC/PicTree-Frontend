@@ -221,10 +221,10 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
 
 export function PrivacyPolicyPage() {
   return (
-    // min-h-full: 100vh 는 셸 컬럼을 넘긴다. pt-safe 는 상단 안전영역 확보.
+    // min-h-full: 100vh 는 셸 컬럼을 넘긴다. 상단 안전영역은 헤더의 pt-header 가 갖는다.
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 */}
-      <header className="bg-[#C5D89D] px-5 pb-5 pt-[calc(env(safe-area-inset-top)+1rem)]">
+      <header className="bg-[#C5D89D] px-5 pb-5 pt-header">
         <NavBar onBack={() => window.history.back()} title="개인정보 처리방침" />
       </header>
 

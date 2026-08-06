@@ -185,7 +185,8 @@ export function AlertLogsPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      <header className="bg-[#C5D89D] px-5 pb-5 pt-4">
+      {/* pt-4 라 안전영역이 아예 없었다 — 노치 기기에서 제목이 노치 뒤로 들어갔다. */}
+      <header className="bg-[#C5D89D] px-5 pb-5 pt-header">
         <NavBar
           /* 선택 모드의 × 는 뒤로가기와 같은 40px 흰 원을 쓴다 — 모드가 바뀔 때
              헤더 첫 칸이 흔들리지 않게. */
