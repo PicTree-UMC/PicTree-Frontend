@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useLogout } from "@/features/auth/hooks/useLogout";
 import { ROUTES } from "@/shared/constants/routes";
 import { useSessionExpiredRedirect } from "@/features/auth/hooks/useSessionExpiredRedirect";
+import { SettingsFooter, SettingsList, SettingsRow } from "@/shared/components";
 import { useMyProfile } from "./hooks/useMyProfile";
 import { useNearbyAlertOpenListener } from "./hooks/useNearbyAlertOpenListener";
 import { useNearbyAlertToggle } from "./hooks/useNearbyAlertToggle";
@@ -10,42 +11,15 @@ import { useMyPushSubscriptions } from "./hooks/usePushSubscription";
 import { getPushUnavailableReason } from "./lib/webPush";
 import { getPlanLabel } from "./lib/plan";
 import { getApiErrorMessage, getProfileErrorKind } from "./lib/profileError";
+import personIcon from "@/shared/assets/icons/nav-profile.svg";
 import treeIcon from "./assets/icons/tree.svg";
 import cardIcon from "./assets/icons/card.svg";
 import statsIcon from "./assets/icons/stats.svg";
 import starIcon from "./assets/icons/star.svg";
-import logoutIcon from "./assets/icons/logout.svg";
-import chevronIcon from "./assets/icons/chevron.svg";
+import alertIcon from "./assets/icons/alert.svg";
+import menuBookIcon from "./assets/icons/menuBook.svg";
 import { useWithdraw } from "./hooks/useWithdraw";
 import { WithdrawModal } from "./components/WithdrawModal";
-
-
-interface MenuRowProps {
-  icon: string; 
-  title: string;
-  subtitle?: string;
-  onClick?: () => void;
-}
-
-function MenuRow({ icon, title, subtitle, onClick }: MenuRowProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center gap-3 py-2 text-left"
-    >
-      {icon && <img src={icon} alt="" className="h-6 w-6 flex-shrink-0" />}
-      <div className="min-w-0 flex-1">
-        <p className="text-[17px] font-medium text-[#111]">{title}</p>
-        {subtitle && (
-          <p className="text-[13px] font-medium text-[#90908F]">{subtitle}</p>
-        )}
-      </div>
-      {/* 오른쪽 화살표 (화살표_왼쪽.svg 는 오른쪽을 향하므로 회전 없이 사용) */}
-      <img src={chevronIcon} alt="" className="h-[20px] w-[23px] flex-shrink-0" />
-    </button>
-  );
-}
 
 export function ProfilePage() {
   const navigate = useNavigate();
@@ -100,215 +74,185 @@ export function ProfilePage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      {/* 헤더 밴드 — 눌러서 내 정보 화면으로 */}
-      <header className="bg-[#C5D89D] px-[31px] pb-8 pt-header">
-        <button
-          type="button"
-          onClick={() => navigate(ROUTES.profileEdit)}
-          aria-label="내 정보 보기"
-          className="flex w-full items-center gap-5 text-left"
-        >
-          {/* 아바타 — 프로필 이미지가 없으면 기본 나무 아이콘 */}
-          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
-            {profile?.profileImageUrl && !isAvatarBroken ? (
-              <img
-                src={profile.profileImageUrl}
-                alt=""
-                onError={() => setIsAvatarBroken(true)}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <img src={treeIcon} alt="" className="h-9 w-9" />
-            )}
-          </div>
-
-          {isPending ? (
-            // 스켈레톤 — 닉네임·이메일·플랜 배지 자리를 그대로 잡아 레이아웃이 튀지 않게 한다
-            <div className="flex flex-col gap-2">
-              <div className="h-6 w-28 animate-pulse rounded bg-[#B4C98A]" />
-              <div className="h-5 w-40 animate-pulse rounded bg-[#B4C98A]" />
-              <div className="h-4 w-20 animate-pulse rounded-xl bg-[#B4C98A]" />
-            </div>
-          ) : errorKind === 'session-expired' ? (
-            // useSessionExpiredRedirect 가 곧 로그인 화면으로 보낸다
-            <p className="text-[15px] font-medium text-[#2C3930]">
-              로그인 화면으로 이동합니다
-            </p>
-          ) : errorKind === 'account-unavailable' ? (
-            // 정지·삭제된 계정. 재시도해도 결과가 바뀌지 않으니 사유만 알린다.
-            <div>
-              <p className="text-[15px] font-medium text-[#2C3930]">
-                {getApiErrorMessage(error, '계정 정보를 확인할 수 없어요')}
-              </p>
-              <button
-                type="button"
-                onClick={() => navigate(ROUTES.auth, { replace: true })}
-                className="mt-1.5 rounded-xl bg-[#89986D] px-3 py-1 text-[13px] font-medium text-white"
-              >
-                로그인 화면으로
-              </button>
-            </div>
-          ) : isError ? (
-            // 500·네트워크 오류 — 여기서만 재시도가 의미 있다
-            <div>
-              <p className="text-[15px] font-medium text-[#2C3930]">
-                {getApiErrorMessage(error, '정보를 불러오지 못했어요')}
-              </p>
-              <button
-                type="button"
-                onClick={() => refetch()}
-                className="mt-1.5 rounded-xl bg-[#89986D] px-3 py-1 text-[13px] font-medium text-white"
-              >
-                다시 시도
-              </button>
-            </div>
+      {/*
+        머리글 — 아바타·이름·이메일을 가운데 모은다.
+        종전엔 초록 밴드 전체가 '내 정보' 로 가는 버튼이었는데, 누를 수 있다는 신호가
+        밴드 어디에도 없어서 사실상 숨은 진입점이었다. 지금은 머리글을 읽는 자리로 두고
+        아래 `개인정보` 줄이 그 일을 맡는다.
+      */}
+      <header className="flex flex-col items-center px-5 pt-header">
+        <div className="flex size-24 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
+          {profile?.profileImageUrl && !isAvatarBroken ? (
+            <img
+              src={profile.profileImageUrl}
+              alt=""
+              onError={() => setIsAvatarBroken(true)}
+              className="h-full w-full object-cover"
+            />
           ) : (
-            <div>
-              <p className="text-[20px] font-medium text-black">{profile?.nickname}</p>
-              {/* 이메일은 소셜 계정에 따라 없을 수 있어 있을 때만 그린다 */}
-              {profile?.email && (
-                <p className="mt-0.5 text-[15px] font-medium text-black">
-                  {profile.email}
-                </p>
-              )}
-              <span className="mt-1.5 inline-block rounded-xl bg-[#DDBF68] px-3 py-0.5 text-[13px] font-medium text-[#2C3930]">
-                {planLabel}
-              </span>
-            </div>
+            <img src={treeIcon} alt="" className="size-11" />
           )}
-        </button>
+        </div>
+
+        {isPending ? (
+          // 스켈레톤 — 이름·이메일 자리를 그대로 잡아 레이아웃이 튀지 않게 한다
+          <div className="mt-3 flex flex-col items-center gap-2">
+            <div className="h-6 w-28 animate-pulse rounded bg-[#F6F0D7]" />
+            <div className="h-4 w-40 animate-pulse rounded bg-[#F6F0D7]" />
+          </div>
+        ) : errorKind === 'session-expired' ? (
+          // useSessionExpiredRedirect 가 곧 로그인 화면으로 보낸다
+          <p className="mt-3 text-[15px] font-medium text-[#2C3930]">
+            로그인 화면으로 이동합니다
+          </p>
+        ) : errorKind === 'account-unavailable' ? (
+          // 정지·삭제된 계정. 재시도해도 결과가 바뀌지 않으니 사유만 알린다.
+          <div className="mt-3 flex flex-col items-center">
+            <p className="text-[15px] font-medium text-[#2C3930]">
+              {getApiErrorMessage(error, '계정 정보를 확인할 수 없어요')}
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate(ROUTES.auth, { replace: true })}
+              className="mt-2 rounded-xl bg-[#5B6B38] px-3 py-1 text-[13px] font-medium text-white"
+            >
+              로그인 화면으로
+            </button>
+          </div>
+        ) : isError ? (
+          // 500·네트워크 오류 — 여기서만 재시도가 의미 있다
+          <div className="mt-3 flex flex-col items-center">
+            <p className="text-[15px] font-medium text-[#2C3930]">
+              {getApiErrorMessage(error, '정보를 불러오지 못했어요')}
+            </p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-2 rounded-xl bg-[#5B6B38] px-3 py-1 text-[13px] font-medium text-white"
+            >
+              다시 시도
+            </button>
+          </div>
+        ) : (
+          <>
+            <p className="mt-3 text-[20px] font-medium text-[#2C3930]">{profile?.nickname}</p>
+            {/* 이메일은 소셜 계정에 따라 없을 수 있어 있을 때만 그린다 */}
+            {profile?.email && (
+              <p className="mt-0.5 text-[15px] text-[#60655C]">{profile.email}</p>
+            )}
+          </>
+        )}
       </header>
 
-      <div className="flex flex-col gap-4 px-5 pt-6">
+      <div className="flex flex-col gap-6 px-5 pt-7">
         {/*
-          알림 섹션 — 근처 나무 알림(토글)과 알림 기록을 한 묶음으로 둔다.
-          둘만 제목 없이 떠 있어서 아래 '계정'·'정보' 와 결이 달랐다.
-
-          카드 하나 안에 토글 줄과 메뉴 줄을 넣고 사이에 선을 긋는다. 두 카드로
-          나누면 같은 주제인데 따로 노는 것처럼 보인다.
+          계정 — 종전의 '계정' 묶음에 `개인정보`(옛 헤더 밴드의 진입점)를 앞에 붙였다.
+          섹션 제목은 두지 않는다. 카드 사이 간격만으로 묶음이 읽히고, 제목까지 있으면
+          네 글자짜리 초록 라벨이 정작 줄 내용보다 눈에 먼저 들어온다.
         */}
-        <section>
-          <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#9CAB84]">
-            알림
-          </h2>
-          <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-6">
-            <div className="flex items-center justify-between py-4">
-              <div>
-                <p className="text-[17px] font-medium text-[#111]">근처 나무 알림</p>
-                {/*
-                  아이폰은 홈 화면에 추가해야만 푸시를 받을 수 있다(웹 표준 제약).
-                  그냥 "꺼짐" 이라고만 하면 켜지지 않는 이유를 알 수 없어 따로 안내한다.
-                */}
-                <p className="mt-0.5 text-[13px] font-medium text-[#90908F]">
-                  {pushUnavailable === "ios-needs-install"
-                    ? "홈 화면에 추가하면 알림을 받을 수 있어요"
-                    : `${alarmOn ? "켜짐" : "꺼짐"} · 50m 안에 내 나무가 있으면 알려드려요`}
-                </p>
-              </div>
-              {/* 토글 */}
-              <button
-                type="button"
-                role="switch"
-                aria-checked={alarmOn}
-                aria-label="근처 나무 알림"
-                // 프로필을 못 불러왔으면 무엇을 바꿀지 알 수 없어 막는다
-                disabled={!profile || isUpdating}
-                onClick={() => toggleAlarm(!alarmOn)}
-                className={`relative h-6 w-10 flex-shrink-0 rounded-full transition-colors disabled:opacity-50 ${
-                  alarmOn ? "bg-[#9CAB84]" : "bg-[#CCC]"
-                }`}
-              >
-                <span
-                  className={`absolute top-[3px] h-[18px] w-[18px] rounded-full bg-white transition-all ${
-                    alarmOn ? "left-[19px]" : "left-[3px]"
+        <SettingsList>
+          <SettingsRow
+            icon={personIcon}
+            title="개인정보"
+            onClick={() => navigate(ROUTES.profileEdit)}
+          />
+          <SettingsRow
+            icon={cardIcon}
+            title="구독 및 결제"
+            // 플랜은 종전에 헤더의 골드 배지였다. 값이 하나뿐인 상태 표시라
+            // 배지보다 줄 오른쪽 값이 제자리다(`iCloud 50GB` 와 같은 꼴).
+            value={planLabel}
+            onClick={() => navigate(ROUTES.subscription)}
+          />
+          <SettingsRow
+            icon={statsIcon}
+            title="여행 캘린더"
+            onClick={() => navigate(ROUTES.calendar)}
+          />
+          <SettingsRow
+            icon={starIcon}
+            title="즐겨찾기 장소"
+            onClick={() => navigate(ROUTES.favorites)}
+          />
+        </SettingsList>
+
+        {/* 알림 */}
+        <div>
+          <SettingsList>
+            <SettingsRow
+              icon={alertIcon}
+              title="근처 나무 알림"
+              trailing={
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={alarmOn}
+                  aria-label="근처 나무 알림"
+                  // 프로필을 못 불러왔으면 무엇을 바꿀지 알 수 없어 막는다
+                  disabled={!profile || isUpdating}
+                  onClick={() => toggleAlarm(!alarmOn)}
+                  className={`relative h-6 w-10 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+                    alarmOn ? "bg-[#5B6B38]" : "bg-[#D9D9D9]"
                   }`}
-                />
-              </button>
-            </div>
+                >
+                  <span
+                    className={`absolute top-[3px] size-[18px] rounded-full bg-white transition-all ${
+                      alarmOn ? "left-[19px]" : "left-[3px]"
+                    }`}
+                  />
+                </button>
+              }
+            />
+            <SettingsRow
+              icon={menuBookIcon}
+              title="알림 기록"
+              onClick={() => navigate(ROUTES.alertLogs)}
+            />
+          </SettingsList>
 
-            <div className="border-t border-[#ECF6D8] py-2">
-              <MenuRow
-                icon=""
-                title="알림 기록"
-                subtitle="받은 알림을 다시 확인해요"
-                onClick={() => navigate(ROUTES.alertLogs)}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* 계정 섹션 */}
-        <section>
-          <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#9CAB84]">
-            계정
-          </h2>
-          <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-6 py-2">
-            <MenuRow
-              icon={cardIcon}
-              title="구독 및 결제"
-              subtitle={planLabel ? `${planLabel} · 이용중` : undefined}
-              onClick={() => navigate(ROUTES.subscription)}
-            />
-            <MenuRow
-              icon={statsIcon}
-              title="여행 캘린더"
-              subtitle="잔디로 보는 나의 여행기록"
-              onClick={() => navigate(ROUTES.calendar)}
-            />
-            <MenuRow
-              icon={starIcon}
-              title="즐겨찾기 장소"
-              subtitle="다시 방문하고 싶은 장소 관리"
-              onClick={() => navigate(ROUTES.favorites)}
-            />
-          </div>
-        </section>
-
-        {/* 정보 섹션 */}
-        <section>
-          <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#9CAB84]">
-            정보
-          </h2>
-          <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-6 py-2">
-            <MenuRow
-              icon=""
-              title="개인정보 처리방침"
-              onClick={() => navigate(ROUTES.privacy)}
-            />
-            <MenuRow
-              icon=""
-              title="도움말 / FAQ"
-              onClick={() => navigate(ROUTES.helpFaq)}
-            />
-          </div>
-        </section>
-
-        {/* 로그아웃 — 요청 중에는 중복 클릭 방지 */}
-        <button
-          type="button"
-          onClick={() => requestLogout()}
-          disabled={isLoggingOut}
-          className="mt-1 flex items-center justify-center gap-2 py-2 disabled:opacity-50"
-        >
-          <img src={logoutIcon} alt="" className="h-6 w-6" />
-          <span className="text-[15px] text-[#FF4B4B]">
-            {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
-          </span>
-        </button>
+          {/*
+            아이폰은 홈 화면에 추가해야만 푸시를 받을 수 있다(웹 표준 제약).
+            그냥 토글이 꺼져 있기만 하면 켜지지 않는 이유를 알 수 없어 따로 안내한다.
+          */}
+          <SettingsFooter>
+            {pushUnavailable === "ios-needs-install"
+              ? "홈 화면에 추가하면 알림을 받을 수 있어요."
+              : "50m 안에 내 나무가 있으면 알려드려요."}
+          </SettingsFooter>
+        </div>
 
         {/*
-          회원 탈퇴 — 로그아웃 아래에 한 칸 띄워 조용히 둔다.
-          로그아웃은 되돌릴 수 있고 탈퇴는 못 되돌리므로, 나란히 같은 빨강으로
-          두면 동급으로 읽히고 오탭 위험도 생긴다. 찾는 사람은 찾되 눈에 먼저
-          걸리지는 않도록 회색·작은 글씨로 낮춘다.
+          정보 — 아이콘을 달지 않는다. 앞의 두 카드가 '내 계정에서 하는 일' 이라면 이쪽은
+          읽기만 하는 문서라, 타일까지 붙이면 같은 무게로 읽힌다. 구분선 들여쓰기는
+          `SettingsList` 가 아이콘 유무를 보고 알아서 맞춘다.
         */}
-        <button
-          type="button"
-          onClick={() => setIsWithdrawModalOpen(true)}
-          className="mx-auto -mt-1 py-2 text-[13px] text-[#90908F] underline underline-offset-2"
-        >
-          회원탈퇴
-        </button>
+        <SettingsList>
+          <SettingsRow title="개인정보 처리방침" onClick={() => navigate(ROUTES.privacy)} />
+          <SettingsRow title="도움말 / FAQ" onClick={() => navigate(ROUTES.helpFaq)} />
+        </SettingsList>
+
+        {/*
+          계정에서 빠져나가는 동작 둘을 한 카드에 묶는다.
+
+          위계는 카드를 나누는 대신 **색으로** 남긴다 — 로그아웃은 되돌릴 수 있고 탈퇴는 못
+          되돌리므로, 나란히 같은 빨강으로 두면 동급으로 읽히고 오탭 위험이 생긴다. 탈퇴는
+          INK-muted 로 낮춰서 찾는 사람은 찾되 눈에 먼저 걸리지는 않게 한다.
+          되돌릴 수 없는 쪽이라 누른 뒤에도 모달로 한 번 더 확인받는다.
+        */}
+        <SettingsList>
+          <SettingsRow
+            title={isLoggingOut ? "로그아웃 중..." : "로그아웃"}
+            action="danger"
+            // 요청 중에는 중복 클릭 방지
+            disabled={isLoggingOut}
+            onClick={() => requestLogout()}
+          />
+          <SettingsRow
+            title="회원탈퇴"
+            action="quiet"
+            onClick={() => setIsWithdrawModalOpen(true)}
+          />
+        </SettingsList>
       </div>
 
       {isWithdrawModalOpen && (
