@@ -53,7 +53,27 @@ function createOverlay(
   const container = document.createElement('div');
   container.innerHTML = markup;
   container.style.cursor = 'pointer';
-  container.addEventListener('click', onClick);
+  container.addEventListener('click', () => {
+    /*
+      누른 마커가 살짝 들렸다 내려온다. 지금까지는 눌러도 마커가 아무 반응 없이
+      상세만 올라와서 "이걸 눌렀다" 가 안 보였다.
+
+      등장(pop) 애니메이션과 같은 프로퍼티(transform)를 쓰므로 클래스를 겹쳐 걸면
+      한쪽이 먹힌다 — 등장이 끝난 뒤에만 붙이고, 끝나면 바로 뗀다.
+    */
+    if (!container.classList.contains('animate-marker-pop')) {
+      container.classList.add('animate-marker-tap');
+    }
+    onClick();
+  });
+  container.addEventListener('animationend', (event) => {
+    if ((event as AnimationEvent).animationName === 'marker-pop-in') {
+      // 등장이 끝나면 클래스를 떼어 다음 탭부터 눌림 반응이 걸리게 한다.
+      container.classList.remove('animate-marker-pop');
+    } else {
+      container.classList.remove('animate-marker-tap');
+    }
+  });
 
   if (animationDelayMs !== undefined) {
     container.classList.add('animate-marker-pop');

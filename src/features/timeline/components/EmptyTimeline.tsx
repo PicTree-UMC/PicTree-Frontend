@@ -1,50 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
+import { SproutIllustration } from "@/shared/components";
 import { ROUTES } from "@/shared/constants/routes";
-
-/**
- * 새싹 일러스트.
- *
- * 흙 → 줄기 → 잎 순으로 자란다. 줄기는 `stroke-dasharray` 를 되감아 그려지고,
- * 잎은 살짝 커졌다 제자리로 돌아온다. 색은 잎이 GREEN-500/300, 줄기가 BARK 다
- * (`docs/design-guidelines.md` — 줄기 갈색은 선·데코 전용).
- */
-function SproutIllustration() {
-  return (
-    <svg
-      viewBox="0 0 100 96"
-      className="animate-fade-in-up w-[164px]"
-      fill="none"
-      aria-hidden
-    >
-      <ellipse
-        cx="50"
-        cy="78"
-        rx="30"
-        ry="5.5"
-        fill="#C5D89D"
-        className="animate-sprout-soil"
-      />
-      <path
-        d="M50 78 C50 66 50 56 50 40"
-        stroke="#7A5C3A"
-        strokeWidth="4"
-        strokeLinecap="round"
-        className="animate-sprout-stem"
-      />
-      <path
-        d="M50 50c-4-11-14-14-21-13-1 8 4 17 14 18 3 .3 5.5-.6 7-1.6z"
-        fill="#788F4A"
-        className="animate-sprout-leaf-left"
-      />
-      <path
-        d="M50 41c4.5-12 15-15 22.5-13.5 1 8.5-4.5 18-15 19-3 .3-6-.6-7.5-1.8z"
-        fill="#C5D89D"
-        className="animate-sprout-leaf-right"
-      />
-    </svg>
-  );
-}
 
 /**
  * 기록이 하나도 없을 때의 타임라인.
@@ -64,7 +21,7 @@ export function EmptyTimeline() {
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 pb-10 pt-6 text-center">
-      <SproutIllustration />
+      <SproutIllustration className="animate-fade-in-up w-[164px]" />
 
       <h2
         className="animate-fade-in-up mt-6 text-[17px] font-medium text-[#2C3930]"
