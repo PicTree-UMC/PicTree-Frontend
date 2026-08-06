@@ -10,5 +10,6 @@ export function formatLongDate(date: string) {
 
 export function formatDateRange(startDate: string, endDate: string, long = false) {
   const formatter = long ? formatLongDate : formatShortDate;
+  if (startDate === endDate) return formatter(startDate);
   return `${formatter(startDate)} ~ ${formatter(endDate)}`;
 }

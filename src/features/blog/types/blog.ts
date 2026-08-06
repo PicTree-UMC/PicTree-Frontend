@@ -1,6 +1,7 @@
 export interface AIBlogDraft {
   draftId: number;
   title: string;
+  thumbnailUrl: string | null;
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   createdAt: string; // ISO
@@ -26,7 +27,10 @@ export interface CreateAIBlogDraftResponseData {
 
 export interface SaveAIBlogDraftRequest {
   title: string;
-  content: string;
+  items: {
+    placeName: string;
+    content: string;
+  }[];
   startDate: string;
   endDate: string;
   treeIds: number[];
@@ -40,10 +44,14 @@ export interface SaveAIBlogDraftResponseData {
 export interface AIBlogDraftDetail {
   draftId: number;
   title: string;
-  content: string;
+  items: {
+    treeId: number;
+    imageUrl: string | null;
+    placeName: string;
+    content: string;
+  }[];
   startDate: string;
   endDate: string;
-  treeIds: number[];
   createdAt: string;
 }
 /** AI 초안 생성 단계 상태 (작성 플로우 3번째 스텝 내부에서만 사용). */
@@ -93,6 +101,7 @@ export interface BlogSection {
 export interface SavedBlog {
   id: string;
   title: string;
+  thumbnailUrl: string | null;
   startDate: string;
   endDate: string;
   toneId: ToneId;

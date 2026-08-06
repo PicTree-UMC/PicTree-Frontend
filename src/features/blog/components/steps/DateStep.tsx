@@ -50,10 +50,14 @@ export function DateStep({ startDate, endDate, trees, selectedTreeIds, onToggleT
           </span>
           <span className="mt-1.5 flex items-center gap-2 text-[16px] font-medium text-[#2c3930]">
             {formatDot(startDate)}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b6b38" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-            {formatDot(endDate)}
+            {startDate !== endDate && (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b6b38" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+                {formatDot(endDate)}
+              </>
+            )}
           </span>
         </span>
         <svg width="9" height="15" viewBox="0 0 9 15" fill="none" stroke="#c2c2c2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="shrink-0">

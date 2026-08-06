@@ -15,6 +15,13 @@ export interface UseBlogCreateOptions {
   initialEndDate?: string;
 }
 
+const API_TONE_BY_ID: Record<ToneId, CreateAIBlogDraftRequest['tone']> = {
+  emotional: 'RECORD',
+  plain: 'SIMPLE',
+  playful: 'WITTY',
+  polite: 'CALM',
+};
+
 /** 작성 플로우(3스텝)의 상태 기계. 날짜·어체 선택과 목 초안 생성을 관리한다. */
 export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreateOptions = {}) {
   const [step, setStep] = useState<CreateStep>(1);
@@ -89,7 +96,7 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
           startDate,
           endDate,
           treeIds: selectedTreeIds,
-          tone: toneId === 'emotional' ? 'RECORD' : 'SIMPLE',
+          tone: API_TONE_BY_ID[toneId],
         };
 
         const resp = await createAIBlogDraft(accessToken ?? undefined, payload);

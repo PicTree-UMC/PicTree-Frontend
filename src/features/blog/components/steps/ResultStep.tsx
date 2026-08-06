@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { BlogSection, BlogStatus } from '../../types/blog';
 import { GeneratingCard } from '../GeneratingCard';
 import { useToast } from '../../../../shared/components/toast/toastStore';
@@ -6,13 +6,12 @@ import { useToast } from '../../../../shared/components/toast/toastStore';
 type ResultStepProps = {
   status: BlogStatus;
   draft: { title: string; sections: BlogSection[] } | null;
-  onSave: () => void;
+  onSave: () => Promise<void>;
 };
 
 export function ResultStep({ status, draft, onSave }: ResultStepProps) {
   const { showToast } = useToast();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [index, setIndex] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
 
   if (status !== 'ready' || !draft) {
     return (
@@ -32,67 +31,62 @@ export function ResultStep({ status, draft, onSave }: ResultStepProps) {
     }
   };
 
-  const total = draft.sections.length;
-  const slideCount = total + 1; // 표지 + 장소 카드
-
-  const handleScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setIndex(Math.round(el.scrollLeft / el.clientWidth));
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await onSave();
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <div className="flex flex-1 flex-col pb-6 pt-2">
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="flex snap-x snap-mandatory overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {/* 표지 슬라이드 */}
-        <div className="w-full shrink-0 snap-center px-5">
-          <section className="relative flex aspect-[4/5] flex-col justify-center overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#5b6b38,#9db85f)] px-6 text-white shadow-[0_10px_24px_rgba(45,51,34,0.18)]">
-            <h2 className="text-center text-[22px] font-medium leading-snug">{draft.title}</h2>
-            <p className="absolute bottom-5 right-6 text-[13px] text-white/70">넘겨서 장소별 기록을 확인해 보세요 →</p>
-          </section>
+    <div className="blog-result-enter flex flex-1 flex-col pb-6 pt-2">
+      <article className="mx-5 overflow-hidden rounded-2xl border border-[#e7e8dc] bg-white shadow-[0_5px_18px_rgba(45,51,34,0.06)]">
+        <header className="px-5 pb-5 pt-6">
+          <span className="text-[12px] font-medium text-[#7b8f4d]">여행 기록</span>
+          <h2 className="mt-2 text-[23px] font-bold leading-[1.4] tracking-[-0.02em] text-[#20251f]">
+            {draft.title}
+          </h2>
+          <p className="mt-3 text-[12px] text-[#9a9e96]">AI가 여행 기록과 사진으로 작성한 초안이에요.</p>
+        </header>
+
+        <div className="h-px bg-[#f0f0e9]" />
+
+        <div className="px-5 pb-8 pt-6">
+          {draft.sections.map((section, i) => (
+            <section key={`${section.treeId}-${i}`} className={i > 0 ? 'mt-10' : undefined}>
+              <h3 className="text-[19px] font-bold leading-snug text-[#252b24]">
+                {i + 1}. {section.heading}
+              </h3>
+              {section.image && (
+                <figure className="mt-4 overflow-hidden rounded-lg bg-pictree-100">
+                  <img
+                    src={section.image}
+                    alt={`${section.heading}에서 촬영한 사진`}
+                    className="max-h-[440px] w-full object-cover"
+                  />
+                </figure>
+              )}
+              <p className="mt-4 whitespace-pre-line text-[15px] leading-[1.9] text-[#444a43]">
+                {section.body}
+              </p>
+            </section>
+          ))}
         </div>
-
-        {/* 장소별 슬라이드 */}
-        {draft.sections.map((section, i) => (
-          <div key={section.treeId} className="w-full shrink-0 snap-center px-5">
-            <article className="flex aspect-[4/5] flex-col overflow-hidden rounded-2xl border-2 border-pictree-300 bg-white shadow-[0_6px_16px_rgba(45,51,34,0.08)]">
-              <div className="relative h-[60%] w-full shrink-0">
-                <img src={section.image} alt={`${section.heading}에서 촬영한 사진`} className="h-full w-full object-cover" />
-                <span className="absolute left-3 top-3 grid h-8 min-w-8 place-items-center rounded-full bg-black/45 px-2 text-[13px] font-medium text-white backdrop-blur-sm">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                {section.mood && (
-                  <span className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/85 text-[18px] shadow-sm backdrop-blur-sm" aria-hidden>
-                    {section.mood}
-                  </span>
-                )}
-              </div>
-              <div className="flex min-h-0 flex-1 flex-col px-[22px] py-4">
-                <h3 className="text-[15px] font-medium text-[#2c3930]">{section.heading}</h3>
-                <p className="mt-2 overflow-hidden text-[15px] leading-6 text-[#555] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:5]">{section.body}</p>
-              </div>
-            </article>
-          </div>
-        ))}
-      </div>
-
-      {/* 캐러셀 인디케이터: 스와이프로 이동, 점으로 현재 위치 표시 */}
-      <div className="mt-4 flex items-center justify-center gap-1.5 px-5" aria-hidden>
-        {Array.from({ length: slideCount }).map((_, dot) => (
-          <span
-            key={dot}
-            className={`h-[6px] rounded-full transition-all ${dot === index ? 'w-4 bg-pictree-700' : 'w-[6px] bg-pictree-100'}`}
-          />
-        ))}
-      </div>
+      </article>
 
       <div className="mt-auto flex gap-3 px-5 pt-5">
         <button type="button" className="h-[54px] flex-1 rounded-xl bg-[#e4e5e6] text-[15px] font-medium text-[#60655c]" onClick={handleCopy}>복사하기</button>
-        <button type="button" className="h-[54px] flex-[2] rounded-xl bg-pictree-700 text-[15px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)]" onClick={onSave}>저장하기</button>
+        <button
+          type="button"
+          className="h-[54px] flex-[2] rounded-xl bg-pictree-700 text-[15px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)] disabled:cursor-not-allowed disabled:opacity-60"
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? '저장 중...' : '저장하기'}
+        </button>
       </div>
     </div>
   );
