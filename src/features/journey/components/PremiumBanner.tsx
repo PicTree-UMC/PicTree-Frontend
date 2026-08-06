@@ -17,7 +17,7 @@ interface PremiumBannerProps {
  */
 export function PremiumBanner({ onUpgrade }: PremiumBannerProps) {
   return (
-    <div className="flex items-center gap-3 rounded-[12px] bg-[#ecf6d8]/80 px-4 py-2.5 shadow-[0px_4px_12px_rgba(0,0,0,0.12)]">
+    <div className="flex items-center gap-3 rounded-[12px] bg-pictree-100/80 px-4 py-2.5 shadow-[0px_4px_12px_rgba(0,0,0,0.12)]">
       <CrownIcon className="h-[30px] w-[30px] shrink-0 text-[#2c3930]" />
       <div className="min-w-0 flex-1">
         <p className="text-base font-semibold text-[#111]">프리미엄 기능</p>
@@ -27,7 +27,7 @@ export function PremiumBanner({ onUpgrade }: PremiumBannerProps) {
       </div>
       <button
         onClick={onUpgrade}
-        className="shrink-0 rounded-[12px] bg-[#5b6b38] px-3.5 py-1.5 text-sm font-semibold text-white"
+        className="shrink-0 rounded-[12px] bg-pictree-700 px-3.5 py-1.5 text-sm font-semibold text-white"
       >
         업그레이드
       </button>

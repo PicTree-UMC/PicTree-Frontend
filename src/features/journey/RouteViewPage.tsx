@@ -354,7 +354,7 @@ export function RouteViewPage() {
           '표시할 동선이 없어요' 와 상태가 엇갈려 보이지 않는다. */}
       {isLoading && (
         <div className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-white/70">
-          <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#89986d]" />
+          <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-[#89986d]" />
           <p className="text-[15px] font-medium text-[#5c6f2b]">동선을 불러오는 중...</p>
         </div>
       )}
@@ -366,7 +366,7 @@ export function RouteViewPage() {
           </p>
           <button
             onClick={() => refetch()}
-            className="h-[46px] rounded-[24px] bg-[#89986d] px-8 text-[15px] font-medium text-white"
+            className="h-[46px] rounded-[24px] bg-pictree-700 px-8 text-[15px] font-medium text-white"
           >
             다시 시도
           </button>

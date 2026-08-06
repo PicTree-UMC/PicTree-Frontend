@@ -15,7 +15,7 @@ export function BillingFailPage() {
       <p className="text-[15px]">결제가 완료되지 않았어요.</p>
       {message && <p className="text-[13px] text-[#60655c]">{message}</p>}
       <button
-        className="h-[45px] rounded-xl bg-[#788f4a] px-6 font-bold text-white"
+        className="h-[45px] rounded-xl bg-pictree-700 px-6 font-bold text-white"
         onClick={() => navigate(ROUTES.premium, { replace: true })}
       >
         돌아가기

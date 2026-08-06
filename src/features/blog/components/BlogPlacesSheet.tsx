@@ -20,7 +20,7 @@ export function BlogPlacesSheet({ sections, onClose }: BlogPlacesSheetProps) {
       bottomPadding="1.5rem"
     >
       <h2 className="text-[17px] font-bold text-[#2c3930]">
-        방문한 장소 <span className="text-[#5b6b38]">{sections.length}곳</span>
+        방문한 장소 <span className="text-pictree-700">{sections.length}곳</span>
       </h2>
 
       <ul className="mt-3 max-h-[64vh] overflow-y-auto">

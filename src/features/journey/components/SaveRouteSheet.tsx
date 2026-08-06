@@ -39,7 +39,7 @@ export function SaveRouteSheet({ isSaving = false, onClose, onConfirm }: SaveRou
           키보드가 열리면 bottom 을 키보드 높이만큼 올려 시트만 위로 이동(배경은 고정). */}
       <div
         style={{ bottom: keyboardOffset }}
-        className="fixed inset-x-0 z-50 mx-auto w-full rounded-t-[24px] bg-[#c5d89d] px-3 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-5 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-[bottom] duration-300 ease-out sm:max-w-[390px]"
+        className="fixed inset-x-0 z-50 mx-auto w-full rounded-t-[24px] bg-pictree-300 px-3 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-5 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-[bottom] duration-300 ease-out sm:max-w-[390px]"
       >
         <h2 className="mb-4 px-3 text-base font-semibold tracking-wide text-[#2c3930]">
           동선 이름 설정

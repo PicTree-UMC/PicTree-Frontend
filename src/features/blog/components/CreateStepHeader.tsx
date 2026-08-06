@@ -28,7 +28,7 @@ export function CreateStepHeader({ step, onBack }: CreateStepHeaderProps) {
         {STEPS.map((value) => (
           <span
             key={value}
-            className={`h-[5px] flex-1 rounded-full transition-colors ${value <= step ? 'bg-[#5b6b38]' : 'bg-[#ecf6d8]'}`}
+            className={`h-[5px] flex-1 rounded-full transition-colors ${value <= step ? 'bg-pictree-700' : 'bg-pictree-100'}`}
           />
         ))}
       </div>

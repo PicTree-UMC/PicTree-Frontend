@@ -22,7 +22,7 @@ function PlaceAvatar({
   className?: string;
   style?: CSSProperties;
 }) {
-  const base = `h-11 w-11 shrink-0 rounded-full border border-[#c5d89d] ${className}`;
+  const base = `h-11 w-11 shrink-0 rounded-full border border-pictree-300 ${className}`;
 
   return place.imageUrl ? (
     <img src={place.imageUrl} alt={place.name} style={style} className={`${base} object-cover`} />
@@ -115,7 +115,7 @@ export function RoutePlacePreview({ places, onClear }: RoutePlacePreviewProps) {
             <button
               type="button"
               onClick={() => setShowAll(true)}
-              className="ml-auto flex shrink-0 items-center gap-0.5 py-2 text-[13px] font-medium text-[#5b6b38]"
+              className="ml-auto flex shrink-0 items-center gap-0.5 py-2 text-[13px] font-medium text-pictree-700"
             >
               더 보기 {places.length - PREVIEW_LIMIT}곳
               <ChevronRight className="h-4 w-4" />

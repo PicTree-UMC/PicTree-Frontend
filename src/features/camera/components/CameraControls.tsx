@@ -41,7 +41,7 @@ export function CameraControls({
           <button
             onClick={onSave}
             disabled={saveDisabled}
-            className="flex-1 rounded-xl bg-[#5B6B38] py-3 text-[15px] font-medium text-white transition-opacity disabled:opacity-50"
+            className="flex-1 rounded-xl bg-pictree-700 py-3 text-[15px] font-medium text-white transition-opacity disabled:opacity-50"
           >
             {isSaving ? '업로드 중…' : '업로드'}
           </button>
@@ -60,7 +60,7 @@ export function CameraControls({
             <button
               onClick={onSave}
               disabled={saveDisabled}
-              className="col-start-2 col-end-4 rounded-full bg-[#5B6B38] py-3 text-[15px] font-medium text-white transition-opacity disabled:opacity-50"
+              className="col-start-2 col-end-4 rounded-full bg-pictree-700 py-3 text-[15px] font-medium text-white transition-opacity disabled:opacity-50"
             >
               {isSaving ? '저장 중…' : '저장'}
             </button>

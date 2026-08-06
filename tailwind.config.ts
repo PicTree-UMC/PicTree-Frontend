@@ -7,12 +7,14 @@ export default {
       colors: {
         /*
           초기 세팅 때 들어온 라임그린 3종(#e5f7d9 / #8bcf5d / #4f8d34)을 앱이 실제로 쓰는
-          팔레트(docs/design-guidelines.md)로 맞춘 값. 이름은 그대로 두고 값만 바꾼다 —
-          쓰는 쪽이 6곳(Button·Toaster·Input·TreeMarker·ClusterMarker·NumberedMarker)이라
-          클래스를 하나씩 갈아끼우면 옮기다 만 곳이 남는다.
+          팔레트(docs/design-guidelines.md)로 맞춘 값. 당시(PR #147) 쓰는 쪽이 6곳뿐이라
+          이름은 그대로 두고 값만 바꿨다 — 클래스를 하나씩 갈아끼우면 옮기다 만 곳이 남는다.
 
           바뀐 것: 흰 글자를 얹는 700 이 #4f8d34(4.05:1, 본문 기준 4.5:1 미달) → #5B6B38(5.8:1).
           ⚠️ 500 은 휘도 천장이 3.5:1 이라 **흰 글자를 얹으면 안 된다** — 면·테두리·데코 전용.
+
+          이후 이슈 #58 토큰화 pass 에서 프로필을 뺀 전 화면의 GREEN hex 리터럴을
+          `bg-pictree-700` 형태로 옮겨 붙여, 쓰는 쪽이 100곳 이상으로 늘었다.
         */
         pictree: {
           100: '#ECF6D8', // GREEN-100

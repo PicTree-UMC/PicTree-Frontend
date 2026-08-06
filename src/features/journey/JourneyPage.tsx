@@ -141,8 +141,8 @@ export function JourneyPage() {
       <div className="flex flex-1 flex-col px-5 pb-nav pt-safe">
         {isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
-            <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#788f4a]" />
-            <p className="text-[15px] font-medium text-[#5b6b38]">동선을 불러오는 중...</p>
+            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
+            <p className="text-[15px] font-medium text-pictree-700">동선을 불러오는 중...</p>
           </div>
         ) : isError ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4">
@@ -151,7 +151,7 @@ export function JourneyPage() {
             </p>
             <button
               onClick={() => refetch()}
-              className="h-[46px] rounded-[24px] bg-[#788f4a] px-8 text-base font-bold text-white"
+              className="h-[46px] rounded-[24px] bg-pictree-700 px-8 text-base font-bold text-white"
             >
               다시 시도
             </button>
@@ -177,7 +177,7 @@ export function JourneyPage() {
             </p>
             <button
               onClick={() => navigate(ROUTES.journeyCreate)}
-              className="animate-fade-in-up mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-[#5B6B38] text-[15px] font-medium text-white"
+              className="animate-fade-in-up mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-pictree-700 text-[15px] font-medium text-white"
               style={{ animationDelay: '300ms' }}
             >
               동선 생성하기
@@ -214,7 +214,7 @@ export function JourneyPage() {
                         setShowBottomSheet(true);
                       }}
                       aria-label="동선 더보기"
-                      className="flex size-9 items-center justify-center rounded-full border border-[#c5d89d] bg-white text-[#2c3930]"
+                      className="flex size-9 items-center justify-center rounded-full border border-pictree-300 bg-white text-[#2c3930]"
                     >
                       <MoreIcon className="size-5" />
                     </button>

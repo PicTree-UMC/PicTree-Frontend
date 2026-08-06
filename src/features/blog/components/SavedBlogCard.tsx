@@ -31,7 +31,7 @@ export function SavedBlogCard({ blog }: SavedBlogCardProps) {
       <div className="mt-3 flex items-center gap-3 text-[13px] text-[#60655c]">
         <button
           type="button"
-          className="flex items-center gap-1 rounded-full bg-[#c5d89d] py-1 pl-2.5 pr-2 text-[13px] font-bold text-[#5b6b38] transition active:scale-95"
+          className="flex items-center gap-1 rounded-full bg-pictree-300 py-1 pl-2.5 pr-2 text-[13px] font-bold text-pictree-700 transition active:scale-95"
           onClick={() => setPlacesOpen(true)}
           aria-label={`방문한 장소 ${blog.sections.length}곳 보기`}
         >

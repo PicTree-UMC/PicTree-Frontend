@@ -456,7 +456,7 @@ export function RoutePlaceStrip({
                       <p className="truncate text-[15px] font-medium text-[#2c3930]">
                         {place.name}
                       </p>
-                      <p className="mt-0.5 text-[13px] text-[#5b6b38]">
+                      <p className="mt-0.5 text-[13px] text-pictree-700">
                         {formatDateLabel(place.date)}
                       </p>
                     </div>
@@ -474,7 +474,7 @@ export function RoutePlaceStrip({
                       규칙에 걸린다. 흰 글자를 얹는 초록은 GREEN-700 하나뿐(5.83:1).
                     */}
                     {disabled ? (
-                      <span className="shrink-0 rounded-[8px] bg-pictree-100 px-2 py-1 text-[13px] font-medium text-[#5b6b38]">
+                      <span className="shrink-0 rounded-[8px] bg-pictree-100 px-2 py-1 text-[13px] font-medium text-pictree-700">
                         제외됨
                       </span>
                     ) : (

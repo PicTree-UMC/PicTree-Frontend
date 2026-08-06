@@ -47,7 +47,7 @@ export function BottomTabBar() {
               to={tab.to}
               end={tab.end}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-1 text-[13px] font-medium transition-colors ${isActive ? 'text-[#5B6B38]' : 'text-[#60655C]'}`
+                `flex flex-col items-center gap-1 text-[13px] font-medium transition-colors ${isActive ? 'text-pictree-700' : 'text-[#60655C]'}`
               }
             >
               {({ isActive }) => (

@@ -147,17 +147,17 @@ export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
                 className="animate-roadmap-pop relative size-full"
                 style={{ animationDelay: nodeDelay }}
               >
-                <div className="relative size-full overflow-hidden rounded-full border-2 border-[#788f4a] bg-[#ecf6d8]">
+                <div className="relative size-full overflow-hidden rounded-full border-2 border-pictree-500 bg-pictree-100">
                   {photoUrl ? (
                     <img src={photoUrl} alt="" className="size-full object-cover" />
                   ) : (
-                    <span className="flex size-full items-center justify-center text-[#788f4a]">
+                    <span className="flex size-full items-center justify-center text-pictree-500">
                       <PhotoPlaceholder className="size-7" />
                     </span>
                   )}
                 </div>
                 {/* 순번 배지 */}
-                <span className="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full border-2 border-white bg-[#5b6b38] text-[10px] font-bold text-white">
+                <span className="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full border-2 border-white bg-pictree-700 text-[10px] font-bold text-white">
                   {index + 1}
                 </span>
               </div>
