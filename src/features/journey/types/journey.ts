@@ -21,6 +21,8 @@ export interface Journey {
   title: string;
   /** 방문 날짜. '2026년 4월 1일' 로 이미 포맷된 표시용 문자열. */
   date: string;
+  /** 방문 날짜 원본('YYYY-MM-DD' 배열). AI 블로그 이동 시 기간 프리필에 쓴다. */
+  recordDates: string[];
   /** 저장 날짜. '2026.4.2' 형식. */
   savedAt: string;
   /**
