@@ -11,7 +11,7 @@ import {
   parseDatesParam,
   toDatesParam,
 } from './lib/routeParams';
-import { BackButton, Chip } from '@/shared/components';
+import { Chip, NavBar } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { ROUTES } from '@/shared/constants/routes';
 
@@ -118,9 +118,8 @@ export function RouteCreatePage() {
     <div className="flex h-full w-full flex-col bg-[#FFFCEF]">
       {/* 상단 여백 = 노치(safe-area) + 0.75rem. 셸(AppShell)이 safe-area 를 안 주므로
           페이지가 직접 준다 — 고정 px 는 safe-area 가 작은 기기에서 과하게 뜬다. */}
-      <header className="flex items-center gap-2 px-5 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-        <BackButton onClick={goBack} />
-        <h1 className="flex-1 text-xl font-medium text-[#2c3930]">날짜 선택</h1>
+      <header className="px-5 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+        <NavBar onBack={goBack} title="날짜 선택" />
       </header>
 
       {/*

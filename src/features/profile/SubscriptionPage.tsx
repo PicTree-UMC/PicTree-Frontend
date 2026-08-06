@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
-import { BackButton, useToast } from "@/shared/components";
+import { NavBar, useToast } from "@/shared/components";
 import { formatKoreanDate } from "@/shared/lib/date";
 import { useMySubscription } from "../premium/hooks/useMySubscription";
 import { useSubscriptionPlans } from "../premium/hooks/useSubscriptionPlans";
@@ -178,9 +178,8 @@ export function SubscriptionPage() {
 
   return (
     <div className="relative flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      <header className="flex items-center gap-3 px-5 pt-4">
-        <BackButton onClick={() => window.history.back()} />
-        <h1 className="text-[20px] font-medium text-black">구독 관리</h1>
+      <header className="px-5 pt-4">
+        <NavBar onBack={() => window.history.back()} title="구독 관리" />
       </header>
 
       <div className="flex flex-col gap-4 px-5 pt-6">

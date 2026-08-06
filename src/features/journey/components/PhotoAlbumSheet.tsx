@@ -1,4 +1,4 @@
-import { BackButton, Sheet } from '@/shared/components';
+import { NavBar, Sheet } from '@/shared/components';
 import { Journey } from '../types/journey';
 import { useJourneyPhotos } from '../hooks/useJourneyPhotos';
 
@@ -30,12 +30,18 @@ export function PhotoAlbumSheet({ journey, onClose }: PhotoAlbumSheetProps) {
       bottomPadding="0"
     >
       {/* 헤더: 뒤로 가기 + 동선 이름 + 날짜 */}
-      <header className="flex h-[70px] shrink-0 items-center gap-[11px] bg-[#f6f0d7] px-[17px]">
-        <BackButton onClick={onClose} />
-        <h2 className="truncate text-xl font-bold tracking-[0.2px] text-[#111]">{journey.title}</h2>
-        <span className="shrink-0 text-xs font-medium tracking-[0.12px] text-[#2c3930]">
-          {journey.date}
-        </span>
+      {/* px-[17px] 이었는데 다른 헤더(px-5)와 어긋나 뒤로가기 원만 3px 안쪽에 있었다. */}
+      <header className="h-[70px] shrink-0 bg-[#f6f0d7] px-5">
+        <NavBar
+          className="h-full"
+          onBack={onClose}
+          title={journey.title}
+          action={
+            <span className="text-xs font-medium tracking-[0.12px] text-[#2c3930]">
+              {journey.date}
+            </span>
+          }
+        />
       </header>
 
       {/* 본문: 사진 개수 + 2열 그리드. 로딩·에러 중에는 개수를 숨긴다(목록 화면과 같은 규칙). */}

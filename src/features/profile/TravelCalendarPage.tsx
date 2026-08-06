@@ -3,7 +3,7 @@ import { CalendarGrid } from "../../shared/components";
 import { useMonthCursor } from "../../shared/hooks/useMonthCursor";
 import { useTravelCalendar } from "./hooks/useTravelCalendar";
 import { CALENDAR_LEVELS, CALENDAR_LEVEL_COLORS } from "./lib/calendarLevel";
-import { BackButton } from "@/shared/components";
+import { NavBar } from "@/shared/components";
 // 연·월 이동 화살표에는 계속 쓴다 — 뒤로가기 꺾쇠만 BackButton 으로 옮겼다.
 import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
 import treeIcon from "./assets/icons/tree.svg";
@@ -28,10 +28,7 @@ export function TravelCalendarPage() {
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 밴드 — pt-safe 는 상단 안전영역 확보 */}
       <header className="bg-[#C5D89D] px-5 pb-12 pt-[calc(env(safe-area-inset-top)+1rem)]">
-        <div className="flex items-center gap-3">
-          <BackButton onClick={() => window.history.back()} />
-          <h1 className="text-[20px] font-medium text-black">여행 캘린더</h1>
-        </div>
+        <NavBar onBack={() => window.history.back()} title="여행 캘린더" />
 
         {/* 연도 + 피커 트리거 */}
         <div className="relative mt-4 flex justify-center">

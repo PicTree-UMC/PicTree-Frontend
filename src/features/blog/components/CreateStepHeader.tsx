@@ -1,4 +1,4 @@
-import { BackButton } from '@/shared/components';
+import { NavBar } from '@/shared/components';
 import type { CreateStep } from '../hooks/useBlogCreate';
 
 const STEP_LABELS: Record<CreateStep, string> = {
@@ -19,10 +19,7 @@ export function CreateStepHeader({ step, onBack }: CreateStepHeaderProps) {
   // 기기에서 과하게 떠 보였다. BlogPage·AuthShell·CameraPage 와 같은 값으로 통일.
   return (
     <header className="px-5 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-      <div className="flex items-center gap-3">
-        <BackButton onClick={onBack} />
-        <h1 className="text-[19px] font-medium leading-6">{STEP_LABELS[step]}</h1>
-      </div>
+      <NavBar onBack={onBack} title={STEP_LABELS[step]} />
       <div className="mt-4 flex gap-2" aria-hidden>
         {STEPS.map((value) => (
           <span
