@@ -142,43 +142,39 @@ function FeedBody({ group, onToggleFavorite, onEdit, onDelete }: FeedBodyProps) 
               />
             </div>
 
-            {/*
-              사진 아래 한 줄에 클릭 요소를 모은다: 즐겨찾기 · 수정 · 삭제.
-
-              세 칸짜리 그리드로 두고 각자 자기 칸의 시작/가운데/끝에 붙인다.
-              flex + ml-auto 로 밀면 하트가 없는 기록(나무 없는 기록)에서 수정이
-              가운데를 벗어난다 — 칸을 고정해야 어느 기록에서든 같은 자리에 선다.
-            */}
+            {/* 사진 아래 한 줄에 클릭 요소를 모은다: 좌측 즐겨찾기 / 우측 수정·삭제. */}
             <div className="px-3 pt-2">
-              <div className="grid grid-cols-3 items-center text-[#2C3930]">
+              <div className="flex items-center text-[#2C3930]">
                 {record.treeId != null && (
                   <button
                     type="button"
                     onClick={() => onToggleFavorite(record)}
                     aria-label="즐겨찾기"
                     aria-pressed={!!record.isFavorite}
-                    className="col-start-1 -ml-1 justify-self-start p-1 transition active:scale-90"
+                    className="-ml-1 p-1 transition active:scale-90"
                   >
                     <HeartIcon filled={!!record.isFavorite} />
                   </button>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => onEdit(record)}
-                  aria-label="수정"
-                  className="col-start-2 justify-self-center p-1 transition active:scale-90"
-                >
-                  <PencilIcon />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDelete(record)}
-                  aria-label="삭제"
-                  className="col-start-3 -mr-1 justify-self-end p-1 transition active:scale-90"
-                >
-                  <TrashIcon />
-                </button>
+                <div className="ml-auto flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => onEdit(record)}
+                    aria-label="수정"
+                    className="p-1 transition active:scale-90"
+                  >
+                    <PencilIcon />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(record)}
+                    aria-label="삭제"
+                    className="-mr-1 p-1 transition active:scale-90"
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
               </div>
 
               {/* 한줄평이 있을 때만 캡션을 단다. font-light 로 medium 느낌을 뺀다. */}
