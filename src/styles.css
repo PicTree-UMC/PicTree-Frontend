@@ -450,11 +450,81 @@ select {
   animation: heart-pop 0.4s ease-in-out;
 }
 
+/* 타임라인 빈 화면의 새싹: 흙이 퍼지고 → 줄기가 그려지고 → 잎이 차례로 펴진다.
+   transform-origin 은 SVG 좌표계(viewBox 0 0 100 96) 기준이라 여기 둔다. */
+@keyframes sprout-soil {
+  from {
+    transform: scaleX(0.3);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes sprout-stem {
+  from {
+    stroke-dashoffset: 64;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes sprout-leaf {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-sprout-soil {
+  transform-origin: 50px 78px;
+  animation: sprout-soil 0.34s ease-out both;
+}
+
+.animate-sprout-stem {
+  /* 줄기 길이(약 38)보다 넉넉히 잡아 되감아도 선이 남지 않게 한다 */
+  stroke-dasharray: 64;
+  animation: sprout-stem 0.62s ease-out both;
+  animation-delay: 120ms;
+}
+
+.animate-sprout-leaf-left,
+.animate-sprout-leaf-right {
+  animation: sprout-leaf 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-sprout-leaf-left {
+  transform-origin: 50px 44px;
+  animation-delay: 520ms;
+}
+
+.animate-sprout-leaf-right {
+  transform-origin: 50px 40px;
+  animation-delay: 640ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-roadmap-pop,
   .animate-fade-in,
+  /* fade-in-up 은 빠져 있었다 — 동선·타임라인 빈 화면이 이걸 쓴다 */
+  .animate-fade-in-up,
   .animate-bubble-float,
-  .animate-heart-pop {
+  .animate-heart-pop,
+  .animate-sprout-soil,
+  .animate-sprout-stem,
+  .animate-sprout-leaf-left,
+  .animate-sprout-leaf-right {
     animation: none;
   }
 }
