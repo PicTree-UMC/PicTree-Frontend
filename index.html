@@ -124,14 +124,14 @@
           opacity: 1;
         }
         50% {
-          transform: translate3d(11vw, 45vh, 0) rotate(130deg);
+          transform: translate3d(6vw, 45vh, 0) rotate(120deg);
         }
         88% {
           opacity: 1;
         }
         100% {
           opacity: 0;
-          transform: translate3d(-6vw, 106vh, 0) rotate(250deg);
+          transform: translate3d(-1vw, 106vh, 0) rotate(230deg);
         }
       }
 
@@ -176,21 +176,27 @@
   <body>
     <div id="root"></div>
     <div id="splash" aria-hidden="true">
-      <!-- 잎 하나를 심볼로 두고 재사용한다 — 패스를 여덟 번 적지 않으려는 것. -->
+      <!--
+        잎 하나를 심볼로 두고 재사용한다 — 패스를 두 번 적지 않으려는 것.
+        워드마크와 같은 결로 그린다: 매트한 면 하나 + 아래쪽에 살짝 어긋난 짙은 면
+        (글자 PNG 에서 뽑은 값 — 면 #889058, 그림자 #586038). 가는 잎맥 선은 뺐다.
+        두툼한 3D 글자 옆에서 혼자 가늘어 재질이 달라 보였다.
+      -->
       <svg width="0" height="0" style="position: absolute" aria-hidden="true">
-        <symbol id="splash-leaf" viewBox="0 0 24 24">
-          <path fill="currentColor" d="M12 2.4c6.6 4.1 8.1 9.7 0 19.2-8.1-9.5-6.6-15.1 0-19.2Z" />
-          <path stroke="rgba(44, 57, 48, 0.16)" stroke-width="1.1" stroke-linecap="round" d="M12 5.6v12.4" />
+        <symbol id="splash-leaf" viewBox="0 0 26 26">
+          <path fill="#586038" d="M13.9 3.6c7 4.4 8.6 10.3 0 20.4-8.6-10.1-7-16 0-20.4Z" />
+          <path fill="currentColor" d="M12.8 2.4c7 4.4 8.6 10.3 0 20.4-8.6-10.1-7-16 0-20.4Z" />
+          <path fill="#586038" fill-opacity="0.22" d="M12.8 2.4c7 4.4 8.6 10.3 0 20.4V2.4Z" />
         </symbol>
       </svg>
 
       <div id="splash-leaves">
-        <svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"
-          style="--x: 22%; --w: 46px; --dur: 4.6s; --delay: -1.4s; --c: #A8BF7C">
+        <svg class="leaf" viewBox="0 0 26 26" aria-hidden="true"
+          style="--x: 4%; --w: 68px; --dur: 5.2s; --delay: -1.6s; --c: #889058">
           <use href="#splash-leaf" />
         </svg>
-        <svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"
-          style="--x: 68%; --w: 34px; --dur: 5.4s; --delay: -3.6s; --c: #C5D89D">
+        <svg class="leaf" viewBox="0 0 26 26" aria-hidden="true"
+          style="--x: 82%; --w: 50px; --dur: 6.2s; --delay: -4.0s; --c: #98A468">
           <use href="#splash-leaf" />
         </svg>
       </div>
