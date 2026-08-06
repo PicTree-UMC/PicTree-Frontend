@@ -14,6 +14,11 @@ interface NavBarProps {
   title?: ReactNode;
   /** 오른쪽 끝 액션(삭제, 전체 선택, 날짜 등). 폭은 자유 — 제목 위치에 영향을 주지 않는다. */
   action?: ReactNode;
+  /**
+   * 지도 위에 얹는 헤더일 때. 제목에 흰 외곽선을 둘러 지도 라벨·지형 위에서도 읽히게 한다.
+   * 알약 배경을 깔지 않는 이유는 `.text-halo` 주석 참고.
+   */
+  titleOnMap?: boolean;
   className?: string;
 }
 
@@ -29,7 +34,15 @@ interface NavBarProps {
  * 그 방식으로는 제목이 화면마다 조금씩 밀린다. 여기서는 **오른쪽에 뭐가 오든 제목은 화면
  * 정가운데**다. 긴 제목이 버튼을 덮지 않게 폭을 60% 로 묶고 넘치면 자른다.
  */
-export function NavBar({ onBack, backLabel, leading, title, action, className = '' }: NavBarProps) {
+export function NavBar({
+  onBack,
+  backLabel,
+  leading,
+  title,
+  action,
+  titleOnMap = false,
+  className = '',
+}: NavBarProps) {
   return (
     <div className={`relative flex items-center ${className}`}>
       {leading ?? (onBack && <BackButton onClick={onBack} aria-label={backLabel} />)}
@@ -37,7 +50,11 @@ export function NavBar({ onBack, backLabel, leading, title, action, className = 
       {title && (
         // pointer-events-none: 가운데 제목이 줄 전체를 가로지르므로, 켜 두면 오른쪽
         // 액션의 터치를 가로챌 수 있다. 제목은 누를 것이 아니라 읽는 것이다.
-        <h1 className="pointer-events-none absolute left-1/2 max-w-[60%] -translate-x-1/2 truncate text-center text-[20px] font-medium text-[#2c3930]">
+        <h1
+          className={`pointer-events-none absolute left-1/2 max-w-[60%] -translate-x-1/2 truncate text-center text-[18px] font-medium text-[#2c3930] ${
+            titleOnMap ? 'text-halo' : ''
+          }`}
+        >
           {title}
         </h1>
       )}

@@ -43,9 +43,10 @@ export function BlogDetailPage() {
 
   return (
     <main className="min-h-full bg-[#fffcef] text-[#252b24]">
-      {/* px-4 였는데 본문(px-5)과도, 다른 화면 헤더(px-5)와도 어긋나 있었다. 맞추면
-          뒤로가기 꺾쇠가 다른 화면과 같은 자리(화면 끝에서 27px)에 놓인다. */}
-      <header className="sticky top-0 z-10 flex h-[calc(env(safe-area-inset-top)+56px)] items-end border-b border-[#ececdf] bg-[#fffcef]/95 px-5 pb-2 backdrop-blur-sm">
+      {/* px-4 였는데 본문(px-5)과도, 다른 화면 헤더(px-5)와도 어긋나 있었다.
+          높이를 고정하고 items-end 로 내용을 아래에 붙이던 것도 pt-header 로 바꿨다 —
+          안전영역을 헤더 높이에 섞어 두면 다른 화면과 같은 값인지 눈으로 알 수 없다. */}
+      <header className="sticky top-0 z-10 border-b border-[#ececdf] bg-[#fffcef]/95 px-5 pb-3 pt-header backdrop-blur-sm">
         <NavBar
           className="w-full"
           onBack={() => navigate(-1)}

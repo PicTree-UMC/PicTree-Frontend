@@ -116,9 +116,8 @@ export function RouteCreatePage() {
 
   return (
     <div className="flex h-full w-full flex-col bg-[#FFFCEF]">
-      {/* 상단 여백 = 노치(safe-area) + 0.75rem. 셸(AppShell)이 safe-area 를 안 주므로
-          페이지가 직접 준다 — 고정 px 는 safe-area 가 작은 기기에서 과하게 뜬다. */}
-      <header className="px-5 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+      {/* 상단 여백은 pt-header 하나로 — 스텝 2(지도)와 같은 값이라 넘어갈 때 뒤로가기가 안 튄다. */}
+      <header className="px-5 pt-header">
         <NavBar onBack={goBack} title="날짜 선택" />
       </header>
 

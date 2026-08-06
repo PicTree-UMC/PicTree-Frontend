@@ -61,8 +61,7 @@ export function HelpFaqPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      {/* pt 에 safe-area 를 더해 헤더 초록이 노치 뒤까지 이어지게 한다 */}
-      <header className="bg-[#C5D89D] px-5 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
+      <header className="bg-[#C5D89D] px-5 pb-4 pt-header">
         <NavBar onBack={() => navigate(-1)} title="도움말 / FAQ" />
 
         {/*

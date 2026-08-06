@@ -178,7 +178,8 @@ export function SubscriptionPage() {
 
   return (
     <div className="relative flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      <header className="px-5 pt-4">
+      {/* pt-4 라 안전영역이 아예 없었다 — 노치 기기에서 제목이 노치 뒤로 들어갔다. */}
+      <header className="px-5 pt-header">
         <NavBar onBack={() => window.history.back()} title="구독 관리" />
       </header>
 
