@@ -439,6 +439,58 @@ select {
   animation-delay: 640ms;
 }
 
+
+/* 지도 로딩 화면의 새싹: 다 자란 상태에서 천천히 숨쉰다(무한 반복). */
+@keyframes sprout-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes sprout-ground {
+  0%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scaleX(1.18);
+    opacity: 0.55;
+  }
+}
+
+.animate-sprout-breathe {
+  transform-origin: 50px 78px;
+  animation: sprout-breathe 1.7s ease-in-out infinite;
+}
+
+.animate-sprout-ground {
+  transform-origin: 50px 78px;
+  animation: sprout-ground 1.7s ease-in-out infinite;
+}
+
+/* 마커를 누르면 살짝 들렸다 내려온다. */
+@keyframes marker-tap {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-7px) scale(1.08);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-marker-tap {
+  transform-origin: bottom center;
+  animation: marker-tap 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-roadmap-pop,
   .animate-fade-in,
@@ -449,7 +501,12 @@ select {
   .animate-sprout-soil,
   .animate-sprout-stem,
   .animate-sprout-leaf-left,
-  .animate-sprout-leaf-right {
+  .animate-sprout-leaf-right,
+  .animate-sprout-breathe,
+  .animate-sprout-ground,
+  .animate-marker-tap,
+  /* 현재 위치 점의 파란 링(Tailwind animate-ping). 여기 빠져 있어 혼자 계속 돌았다. */
+  .animate-ping {
     animation: none;
   }
 }

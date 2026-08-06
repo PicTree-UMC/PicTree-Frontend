@@ -8,6 +8,7 @@ import { useMapMarkers, type MapMarkerData } from './hooks/useMapMarkers';
 import { useDeleteTree, useToggleFavorite, useTreeDetail, useTrees } from './hooks/useTrees';
 import { JourneyBanner } from './components/JourneyBanner';
 import { NearbyTreeAlert } from '@/features/profile/components';
+import { SproutIllustration } from '@/shared/components';
 import { useNearbyAlertWatcher } from '@/features/profile/hooks/useNearbyAlertWatcher';
 import { MarkerStoryViewer } from './components/MarkerStoryViewer';
 
@@ -140,10 +141,16 @@ export function HomePage() {
       */}
       <div ref={containerRef} className="fixed inset-0 z-0 mx-auto sm:max-w-[390px]" />
 
-      {/* 현재 위치 확인/지도 준비 중 로딩 — 지도와 같은 영역을 덮는다 */}
+      {/*
+        현재 위치 확인/지도 준비 중 로딩 — 지도와 같은 영역을 덮는다.
+
+        회색 바탕에 작은 글씨 한 줄이었는데, 지도를 열 때마다 반드시 지나는 자리라
+        새싹이 숨쉬게 두었다. 그림은 타임라인 빈 화면과 같은 것을 쓴다.
+      */}
       {!map && (
-        <div className="fixed inset-0 z-10 mx-auto flex items-center justify-center bg-neutral-50 sm:max-w-[390px]">
-          <p className="text-sm text-neutral-400">현재 위치를 불러오는 중…</p>
+        <div className="fixed inset-0 z-10 mx-auto flex flex-col items-center justify-center gap-4 bg-[#FFFCEF] sm:max-w-[390px]">
+          <SproutIllustration motion="breathe" className="w-[120px]" />
+          <p className="text-[15px] text-[#60655C]">현재 위치를 불러오는 중…</p>
         </div>
       )}
 
