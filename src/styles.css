@@ -375,11 +375,222 @@ select {
   animation: heart-pop 0.4s ease-in-out;
 }
 
+/* 타임라인 빈 화면의 새싹: 흙이 퍼지고 → 줄기가 그려지고 → 잎이 차례로 펴진다.
+   transform-origin 은 SVG 좌표계(viewBox 0 0 100 96) 기준이라 여기 둔다. */
+@keyframes sprout-soil {
+  from {
+    transform: scaleX(0.3);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes sprout-stem {
+  from {
+    stroke-dashoffset: 64;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes sprout-leaf {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-sprout-soil {
+  transform-origin: 50px 78px;
+  animation: sprout-soil 0.34s ease-out both;
+}
+
+.animate-sprout-stem {
+  /* 줄기 길이(약 38)보다 넉넉히 잡아 되감아도 선이 남지 않게 한다 */
+  stroke-dasharray: 64;
+  animation: sprout-stem 0.62s ease-out both;
+  animation-delay: 120ms;
+}
+
+.animate-sprout-leaf-left,
+.animate-sprout-leaf-right {
+  animation: sprout-leaf 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-sprout-leaf-left {
+  transform-origin: 50px 44px;
+  animation-delay: 520ms;
+}
+
+.animate-sprout-leaf-right {
+  transform-origin: 50px 40px;
+  animation-delay: 640ms;
+}
+
+
+/* 지도 로딩 화면의 새싹: 다 자란 상태에서 천천히 숨쉰다(무한 반복). */
+@keyframes sprout-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes sprout-ground {
+  0%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scaleX(1.18);
+    opacity: 0.55;
+  }
+}
+
+.animate-sprout-breathe {
+  transform-origin: 50px 78px;
+  animation: sprout-breathe 1.7s ease-in-out infinite;
+}
+
+.animate-sprout-ground {
+  transform-origin: 50px 78px;
+  animation: sprout-ground 1.7s ease-in-out infinite;
+}
+
+/* 마커를 누르면 살짝 들렸다 내려온다. */
+@keyframes marker-tap {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-7px) scale(1.08);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-marker-tap {
+  transform-origin: bottom center;
+  animation: marker-tap 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+/* 동선 빈 화면 일러스트: 출발점 콕 → 경로가 드러나고 → 핀 낙하 → 나무가 자란다.
+   transform-origin 은 SVG 좌표계(viewBox 0 0 200 150) 기준이라 여기 둔다. */
+@keyframes journey-dot-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes journey-path-reveal {
+  from {
+    stroke-dashoffset: 170;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes journey-pin-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes journey-tree-grow {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-journey-dot {
+  transform-origin: 34px 118px;
+  animation: journey-dot-pop 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-journey-path {
+  /* 경로 길이(약 152)보다 넉넉히 — 모자라면 끝이 안 그려진 채 멈춘다 */
+  stroke-dasharray: 170;
+  animation: journey-path-reveal 0.9s ease-out both;
+  animation-delay: 180ms;
+}
+
+.animate-journey-pin {
+  animation: journey-pin-drop 0.45s cubic-bezier(0.3, 1.35, 0.5, 1) both;
+  animation-delay: 420ms;
+}
+
+.animate-journey-tree {
+  transform-origin: 168px 64px;
+  animation: journey-tree-grow 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 900ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-roadmap-pop,
   .animate-fade-in,
+  /* fade-in-up 은 빠져 있었다 — 동선·타임라인 빈 화면이 이걸 쓴다 */
+  .animate-fade-in-up,
   .animate-bubble-float,
-  .animate-heart-pop {
+  .animate-heart-pop,
+  .animate-sprout-soil,
+  .animate-sprout-stem,
+  .animate-sprout-leaf-left,
+  .animate-sprout-leaf-right,
+  .animate-sprout-breathe,
+  .animate-sprout-ground,
+  .animate-journey-dot,
+  .animate-journey-path,
+  .animate-journey-pin,
+  .animate-journey-tree,
+  .animate-marker-tap,
+  /* 현재 위치 점의 파란 링(Tailwind animate-ping). 여기 빠져 있어 혼자 계속 돌았다. */
+  .animate-ping {
     animation: none;
   }
 }

@@ -1,9 +1,17 @@
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/shared/constants/routes";
+import { useToast } from "@/shared/components";
 import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
 import treeIcon from "./assets/icons/tree.svg";
+import trashIcon from "./assets/icons/trash.svg";
 import { useNearbyAlertLogs, useOpenNearbyAlertLog } from "./hooks/useNearbyAlerts";
+import {
+  clearHiddenAlertLogs,
+  hideAlertLogs,
+  readHiddenAlertLogs,
+} from "./lib/hiddenAlertLogs";
 import type { NearbyAlertLog, NearbyAlertStatus } from "./types/nearbyAlert";
 
 /** ISO → "7월 25일 14:30". 값이 없으면 표시하지 않는다. */
@@ -34,10 +42,14 @@ const STATUS: Record<NearbyAlertStatus, { label: string; className: string } | n
 
 interface RowProps {
   log: NearbyAlertLog;
+  /** 선택 모드에서는 누르면 지도로 가지 않고 체크만 토글한다. */
+  selecting: boolean;
+  checked: boolean;
   onOpen: (log: NearbyAlertLog) => void;
+  onToggle: (alertLogId: number) => void;
 }
 
-function AlertLogRow({ log, onOpen }: RowProps) {
+function AlertLogRow({ log, selecting, checked, onOpen, onToggle }: RowProps) {
   const sentAt = formatSentAt(log.sentAt);
   const badge = STATUS[log.status];
   const isUnread = log.openedAt === null;
@@ -45,16 +57,32 @@ function AlertLogRow({ log, onOpen }: RowProps) {
   return (
     <button
       type="button"
-      onClick={() => onOpen(log)}
+      onClick={() => (selecting ? onToggle(log.alertLogId) : onOpen(log))}
+      aria-pressed={selecting ? checked : undefined}
       className="flex w-full items-center gap-3 py-3.5 text-left"
     >
-      {/*
-        나무 기본 이미지(defaultImage)는 "DEFAULT_1" 같은 식별자라 URL 이 아니다.
-        여기서는 공통 나무 아이콘으로 둔다.
-      */}
-      <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#F6F0D7]">
-        <img src={treeIcon} alt="" className="h-6 w-6" />
-      </span>
+      {selecting ? (
+        <span
+          aria-hidden
+          className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${
+            checked ? "border-[#5B6B38] bg-[#5B6B38]" : "border-[#C5D89D] bg-white"
+          }`}
+        >
+          {checked && (
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="#FFFCEF" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12.5l5 5 9-10" />
+            </svg>
+          )}
+        </span>
+      ) : (
+        /*
+          나무 기본 이미지(defaultImage)는 "DEFAULT_1" 같은 식별자라 URL 이 아니다.
+          여기서는 공통 나무 아이콘으로 둔다.
+        */
+        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#F6F0D7]">
+          <img src={treeIcon} alt="" className="h-6 w-6" />
+        </span>
+      )}
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
@@ -82,13 +110,27 @@ function AlertLogRow({ log, onOpen }: RowProps) {
  *
  * 푸시를 놓쳤거나 지웠을 때 여기서 다시 확인한다. 항목을 누르면 확인 처리
  * (`PATCH /nearby-alerts/logs/{id}/open`)가 나가고 지도로 이동해 그 나무를 연다.
+ *
+ * ⚠️ **삭제는 이 기기에서만 감추는 것이다.** 서버에 삭제 API 가 없어서
+ * (`lib/hiddenAlertLogs` 참고) 지운 id 를 브라우저에 적어 두고 목록에서 거를 뿐이다.
+ * 사용자가 오해하지 않도록 화면 아래에 그 사실을 적어 둔다.
  */
 export function AlertLogsPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { data, isPending, isError, refetch } = useNearbyAlertLogs();
   const { mutate: markOpened } = useOpenNearbyAlertLog();
 
-  const logs = data?.items ?? [];
+  const [hidden, setHidden] = useState<Set<number>>(() => readHiddenAlertLogs());
+  const [selecting, setSelecting] = useState(false);
+  const [checked, setChecked] = useState<Set<number>>(new Set());
+  /** 'all' 은 모두 삭제, 숫자는 선택 삭제 개수. null 이면 확인창이 닫혀 있다. */
+  const [confirming, setConfirming] = useState<"all" | "selected" | null>(null);
+
+  const logs = useMemo(
+    () => (data?.items ?? []).filter((log) => !hidden.has(log.alertLogId)),
+    [data, hidden],
+  );
 
   const handleOpen = (log: NearbyAlertLog) => {
     // 이미 확인한 기록은 다시 부르지 않는다 — 서버 값이 바뀌지 않는다.
@@ -99,22 +141,86 @@ export function AlertLogsPage() {
     navigate(ROUTES.home);
   };
 
+  const toggle = (alertLogId: number) => {
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(alertLogId)) next.delete(alertLogId);
+      else next.add(alertLogId);
+      return next;
+    });
+  };
+
+  const exitSelecting = () => {
+    setSelecting(false);
+    setChecked(new Set());
+  };
+
+  const removeSelected = () => {
+    const ids = [...checked];
+    setHidden(hideAlertLogs(ids));
+    exitSelecting();
+    setConfirming(null);
+    showToast(`알림 ${ids.length}개를 지웠어요.`, "success");
+  };
+
+  const removeAll = () => {
+    // 지금 화면에 있는 것만 지운다 — 서버에 남은 다음 페이지까지는 알 수 없다.
+    setHidden(hideAlertLogs(logs.map((log) => log.alertLogId)));
+    exitSelecting();
+    setConfirming(null);
+    showToast("알림 기록을 모두 지웠어요.", "success");
+  };
+
+  const restore = () => {
+    setHidden(clearHiddenAlertLogs());
+    showToast("지운 알림을 다시 불러왔어요.", "success");
+  };
+
+  const allChecked = logs.length > 0 && checked.size === logs.length;
+
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       <header className="bg-[#C5D89D] px-5 pb-5 pt-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate(-1)}
-            aria-label="뒤로 가기"
+            onClick={() => (selecting ? exitSelecting() : navigate(-1))}
+            aria-label={selecting ? "선택 취소" : "뒤로 가기"}
             className="flex h-6 w-6 items-center justify-center"
           >
-            <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
+            {selecting ? (
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="#2C3930" strokeWidth={2} strokeLinecap="round">
+                <path d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
+            )}
           </button>
-          <h1 className="text-[20px] font-medium text-black">알림 기록</h1>
+          <h1 className="flex-1 text-[20px] font-medium text-black">
+            {selecting ? `${checked.size}개 선택` : "알림 기록"}
+          </h1>
+
+          {logs.length > 0 &&
+            (selecting ? (
+              <button
+                type="button"
+                onClick={() => setChecked(allChecked ? new Set() : new Set(logs.map((l) => l.alertLogId)))}
+                className="text-[14px] text-[#2C3930]"
+              >
+                {allChecked ? "선택 해제" : "전체 선택"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setSelecting(true)}
+                className="text-[14px] text-[#2C3930]"
+              >
+                선택
+              </button>
+            ))}
         </div>
         <p className="mt-2 text-[13px] text-[#2C3930]">
-          근처 나무 알림으로 받은 기록이에요
+          {selecting ? "지울 알림을 골라주세요" : "근처 나무 알림으로 받은 기록이에요"}
         </p>
       </header>
 
@@ -135,22 +241,126 @@ export function AlertLogsPage() {
         ) : logs.length === 0 ? (
           /*
             알림을 아직 못 받은 상태다. 왜 비어 있는지 알려 줘야 사용자가
-            "고장났나" 하지 않는다.
+            "고장났나" 하지 않는다. 지워서 빈 경우는 되돌릴 방법을 함께 준다.
           */
           <div className="py-10 text-center">
-            <p className="text-[14px] text-[#60655C]">아직 받은 알림이 없어요.</p>
-            <p className="mt-1 text-[13px] text-[#60655C]">
-              기록해 둔 장소 근처에 가면 알려드릴게요.
-            </p>
+            {hidden.size > 0 ? (
+              <>
+                <p className="text-[14px] text-[#60655C]">지운 알림만 있어요.</p>
+                <button
+                  type="button"
+                  onClick={restore}
+                  className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
+                >
+                  지운 알림 다시 보기
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-[14px] text-[#60655C]">아직 받은 알림이 없어요.</p>
+                <p className="mt-1 text-[13px] text-[#60655C]">
+                  기록해 둔 장소 근처에 가면 알려드릴게요.
+                </p>
+              </>
+            )}
           </div>
         ) : (
-          <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-1">
-            {logs.map((log) => (
-              <AlertLogRow key={log.alertLogId} log={log} onOpen={handleOpen} />
-            ))}
-          </div>
+          <>
+            <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-5 py-1">
+              {logs.map((log) => (
+                <AlertLogRow
+                  key={log.alertLogId}
+                  log={log}
+                  selecting={selecting}
+                  checked={checked.has(log.alertLogId)}
+                  onOpen={handleOpen}
+                  onToggle={toggle}
+                />
+              ))}
+            </div>
+
+            {!selecting && (
+              <button
+                type="button"
+                onClick={() => setConfirming("all")}
+                className="mt-3 flex w-full items-center justify-center gap-1.5 py-2 text-[14px] text-[#60655C]"
+              >
+                <img src={trashIcon} alt="" className="h-4 w-4" />
+                알림 기록 모두 지우기
+              </button>
+            )}
+
+            {/*
+              진짜 삭제가 아니라는 걸 숨기지 않는다. 서버에 삭제 API 가 없어
+              이 기기에서만 감추는 것이라, 다른 기기에서 그대로 보이거나 데이터를
+              지우면 되살아난다. 모르면 "지웠는데 왜 남아 있지" 가 된다.
+            */}
+            <p className="mt-1 px-1 text-center text-[13px] leading-relaxed text-[#60655C]">
+              지운 알림은 이 기기에서만 사라져요.
+              {hidden.size > 0 && (
+                <>
+                  {" "}
+                  <button type="button" onClick={restore} className="underline underline-offset-2">
+                    다시 보기
+                  </button>
+                </>
+              )}
+            </p>
+          </>
         )}
       </div>
+
+      {/* 선택 삭제 바 — 고른 게 있을 때만 뜬다. */}
+      {selecting && checked.size > 0 && (
+        <div className="bottom-nav fixed inset-x-0 z-30 mx-auto px-5 sm:max-w-[390px]">
+          <button
+            type="button"
+            onClick={() => setConfirming("selected")}
+            className="flex h-[46px] w-full items-center justify-center gap-1.5 rounded-[24px] bg-[#DC2626] text-[15px] font-medium text-white"
+          >
+            {checked.size}개 지우기
+          </button>
+        </div>
+      )}
+
+      {confirming && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-5"
+          onClick={() => setConfirming(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-full max-w-[300px] rounded-2xl bg-white px-5 py-6 text-center"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <p className="text-[15px] font-medium text-[#2C3930]">
+              {confirming === "all"
+                ? "알림 기록을 모두 지울까요?"
+                : `선택한 ${checked.size}개를 지울까요?`}
+            </p>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-[#60655C]">
+              이 기기에서만 사라져요. 다른 기기에서는 그대로 보여요.
+            </p>
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirming(null)}
+                className="h-[44px] flex-1 rounded-xl bg-[#F1F1F1] text-[15px] text-[#2C3930]"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={confirming === "all" ? removeAll : removeSelected}
+                className="h-[44px] flex-1 rounded-xl bg-[#DC2626] text-[15px] font-medium text-white"
+              >
+                지우기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

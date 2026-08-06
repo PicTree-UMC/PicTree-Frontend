@@ -51,6 +51,7 @@ const toJourney = (item: RouteListItem): Journey => ({
   id: item.routeId,
   title: item.routeName,
   date: formatRecordDates(item.recordDates),
+  recordDates: item.recordDates ?? [],
   savedAt: formatSavedDate(item.createdAt),
   placeCount: item.placeCount,
   places: item.places ?? [],

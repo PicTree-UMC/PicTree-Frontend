@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { storageKeys } from '@/features/profile/hooks/useStorageUsage';
+import { routePlaceCandidateKey } from '@/features/journey/hooks/useRoutePlaceCandidates';
+import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
+import { timelineKeys } from '@/features/timeline/hooks/useTimeline';
 import {
   deleteTree,
   getNearbyTrees,
@@ -8,6 +12,7 @@ import {
   getTrees,
   toggleTreeFavorite,
 } from '../api/treesApi';
+import type { NearbyTreeItem } from '../types/tree';
 import type { MapMarkerData } from './useMapMarkers';
 
 export const treeKeys = {
@@ -84,6 +89,26 @@ const optimisticListUpdate = (
   return prev;
 };
 
+/**
+ * 근처 나무 캐시에서 한 그루를 즉시 빼낸다.
+ *
+ * 지도 위 "근처 나무 알림" 카드는 목록이 아니라 `treeKeys.nearby` 캐시를 본다
+ * (`useNearbyAlertWatcher`). 마커만 지우고 이쪽을 그대로 두면 **방금 지운 장소를
+ * 가리키는 알림이 계속 떠 있는다.**
+ *
+ * 좌표마다 키가 갈리므로(`nearby(lat, lng)`) 한 곳만 고쳐서는 안 되고 접두사로
+ * 전부 훑는다.
+ */
+const removeFromNearbyCache = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  treeId: string,
+) => {
+  queryClient.setQueriesData<NearbyTreeItem[]>(
+    { queryKey: [...treeKeys.all, 'nearby'] },
+    (old) => old?.filter((tree) => String(tree.treeId) !== treeId),
+  );
+};
+
 /** 즐겨찾기 토글. 비로그인 시 캐시만 낙관적 갱신(로컬 목 데모용). */
 export const useToggleFavorite = () => {
   const queryClient = useQueryClient();
@@ -113,7 +138,11 @@ export const useToggleFavorite = () => {
       if (context?.prev) queryClient.setQueryData(treeKeys.list(), context.prev);
     },
     onSettled: () => {
-      if (isAuthenticated) queryClient.invalidateQueries({ queryKey: treeKeys.list() });
+      if (!isAuthenticated) return;
+      queryClient.invalidateQueries({ queryKey: treeKeys.list() });
+      // 타임라인 피드의 하트도 같은 나무를 본다. 안 깨면 지도에서 켠 하트가
+      // 타임라인에서는 staleTime(60s) 동안 꺼진 채로 남는다.
+      queryClient.invalidateQueries({ queryKey: timelineKeys.all });
     },
   });
 };
@@ -128,17 +157,40 @@ export const useDeleteTree = () => {
       if (isAuthenticated) await deleteTree(Number(treeId));
     },
     onMutate: async (treeId) => {
-      await queryClient.cancelQueries({ queryKey: treeKeys.list() });
+      await queryClient.cancelQueries({ queryKey: treeKeys.all });
       const prev = optimisticListUpdate(queryClient, (markers) =>
         markers.filter((marker) => marker.id !== treeId),
       );
+      // 알림 카드가 보는 캐시. 여기서 안 빼면 지운 장소의 알림이 그대로 남는다.
+      removeFromNearbyCache(queryClient, treeId);
       return { prev };
     },
     onError: (_error, _treeId, context) => {
       if (context?.prev) queryClient.setQueryData(treeKeys.list(), context.prev);
+      // 되살리기는 서버에 다시 물어 맞춘다 — 지우기 전 좌표가 지금과 다를 수 있어
+      // 낙관적으로 되돌린 값이 오히려 틀릴 수 있다.
+      queryClient.invalidateQueries({ queryKey: [...treeKeys.all, 'nearby'] });
     },
     onSettled: () => {
-      if (isAuthenticated) queryClient.invalidateQueries({ queryKey: treeKeys.list() });
+      if (!isAuthenticated) return;
+      /*
+        list 만 무효화하면 안 된다 — 근처 나무(`nearby`)·상세(`detail`) 캐시가
+        그대로 남는다. 특히 nearby 는 지도 위 알림 카드의 출처라, 지운 장소를
+        가리키는 알림이 앱을 다시 켤 때까지 계속 떠 있었다.
+      */
+      queryClient.invalidateQueries({ queryKey: treeKeys.all });
+      /*
+        타임라인은 ['timeline'] 이라는 독립 키다. 여기 안 깨면 지도에서 지운 기록이
+        staleTime(60s) 동안 타임라인에 그대로 남는다 — 탭을 옮겨도 사라지지 않다가
+        한참 뒤에야 빠지는 증상이 이거였다. 동선 후보도 /trees 를 가공한 독립 키라
+        같이 깨야 한다(만들 때는 이미 그렇게 하고 있다 — useCreateTreeRecord).
+      */
+      queryClient.invalidateQueries({ queryKey: timelineKeys.all });
+      queryClient.invalidateQueries({ queryKey: routePlaceCandidateKey });
+      // 잔디는 나무 개수로 그려지므로 장소가 사라지면 같이 옅어져야 한다.
+      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+      // 나무를 지우면 사진도 함께 지워진다 — 용량도 다시 센다.
+      queryClient.invalidateQueries({ queryKey: storageKeys.usage });
     },
   });
 };

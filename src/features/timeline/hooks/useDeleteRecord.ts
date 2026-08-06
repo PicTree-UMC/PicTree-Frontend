@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { treeKeys } from "@/features/home/hooks/useTrees";
+import { routePlaceCandidateKey } from "@/features/journey/hooks/useRoutePlaceCandidates";
+import { storageKeys } from "@/features/profile/hooks/useStorageUsage";
+import { calendarKeys } from "@/features/profile/hooks/useTravelCalendar";
 import { useToast } from "@/shared/components";
 import { deleteTimeline } from "../api/timelineApi";
 import { getTimelineErrorMessage } from "../lib/timelineError";
@@ -27,6 +30,12 @@ export const useDeleteRecord = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: timelineKeys.all });
       queryClient.invalidateQueries({ queryKey: treeKeys.all });
+      // 동선 후보는 /trees 를 가공한 독립 키다. 지운 장소가 새 동선 만들기에 남지 않게.
+      queryClient.invalidateQueries({ queryKey: routePlaceCandidateKey });
+      // 잔디는 나무 개수로 그려지므로 장소가 사라지면 같이 옅어져야 한다.
+      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+      // 나무를 지우면 사진도 함께 지워진다 — 용량도 다시 센다.
+      queryClient.invalidateQueries({ queryKey: storageKeys.usage });
       // 확인 문구와 같은 말을 쓴다 — '기록' 이라고 하면 지도의 장소는 남은 줄 안다.
       showToast("장소가 삭제되었습니다.", "success");
     },

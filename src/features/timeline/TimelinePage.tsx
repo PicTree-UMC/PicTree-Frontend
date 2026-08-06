@@ -11,6 +11,7 @@ import { TimelinePhotoGroup } from "./components/TimelinePhotoGroup";
 import { RecordDetailSheet } from "./components/RecordDetailSheet";
 import { TimelineEditModal } from "./components/TimelineEditModal";
 import { DeleteRecordModal } from "./components/DeleteRecordModal";
+import { EmptyTimeline } from "./components/EmptyTimeline";
 import { useToast } from "@/shared/components";
 
 /** 상단 버튼 그룹에 쓰는 돋보기 아이콘. */
@@ -95,6 +96,14 @@ export function TimelinePage() {
   // 검색 결과가 없는 것과 기록 자체가 없는 것은 다른 상황이라 문구를 나눈다.
   const isSearching = keyword.trim().length > 0;
 
+  /**
+   * 기록이 정말 하나도 없는 상태.
+   *
+   * 검색 중이면 여기 해당하지 않는다 — 그건 기록이 없는 게 아니라 이번 검색어에
+   * 안 걸린 것뿐이라, 새싹과 "첫 기록 남기기" 를 띄우면 사실과 어긋난다.
+   */
+  const isEmpty = !isLoading && !isError && !isSearching && groups.length === 0;
+
   // 검색바를 닫으면 숨은 채로 목록이 걸러진 상태가 남지 않도록 키워드도 비운다.
   const toggleSearch = () => {
     setIsSearchOpen((open) => {
@@ -131,6 +140,12 @@ export function TimelinePage() {
           ) : (
             <div className="flex w-full items-center justify-between">
               <h1 className="text-[20px] font-medium text-[#2C3930]">타임라인</h1>
+              {/*
+                기록이 하나도 없으면 검색·보기 전환을 숨긴다. 걸러 줄 것도, 다르게
+                보여 줄 것도 없어서 눌러도 아무 일이 일어나지 않는 버튼이다.
+                기록이 하나라도 생기면 그대로 돌아온다.
+              */}
+              {!isEmpty && (
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -149,12 +164,13 @@ export function TimelinePage() {
                   {view === "grid" ? <FeedIcon /> : <GridIcon />}
                 </button>
               </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* 못 불러온 상태에서는 정렬을 숨긴다 — 걸러 줄 목록이 없다. */}
-        {!isError && (
+        {/* 못 불러온 상태·기록이 없는 상태에서는 정렬을 숨긴다 — 줄 세울 목록이 없다. */}
+        {!isError && !isEmpty && (
           <div className="flex justify-end">
             <TimelineSortTabs value={sort} onChange={setSort} />
           </div>
@@ -175,15 +191,16 @@ export function TimelinePage() {
             </button>
           </div>
         )}
-        {!isLoading && !isError && groups.length === 0 && (
+        {!isLoading && !isError && isSearching && groups.length === 0 && (
           <p className="py-10 text-center text-sm text-[#60655C]">
-            {isSearching
-              ? "검색과 일치하는 기록이 없어요."
-              : "아직 저장된 기록이 없어요."}
+            검색과 일치하는 기록이 없어요.
           </p>
         )}
 
       </div>
+
+      {/* 헤더 아래 남은 높이를 새싹이 차지한다 — 위로 붙으면 화면이 비어 보인다. */}
+      {isEmpty && <EmptyTimeline />}
 
       {/* 사진 그리드는 인스타 돋보기 탭처럼 좌우 여백 없이 화면 끝까지 채운다. */}
       <div className="flex flex-col gap-5 pb-4">

@@ -181,50 +181,62 @@ export function ProfilePage() {
       </header>
 
       <div className="flex flex-col gap-4 px-5 pt-6">
-        {/* 근처 나무 알림 카드 */}
-        <div className="flex items-center justify-between rounded-xl border-2 border-[#C5D89D] bg-white px-6 py-4">
-          <div>
-            <p className="text-[17px] font-medium text-[#111]">근처 나무 알림</p>
-            {/*
-              아이폰은 홈 화면에 추가해야만 푸시를 받을 수 있다(웹 표준 제약).
-              그냥 "꺼짐" 이라고만 하면 켜지지 않는 이유를 알 수 없어 따로 안내한다.
-            */}
-            <p className="mt-0.5 text-[13px] font-medium text-[#90908F]">
-              {pushUnavailable === "ios-needs-install"
-                ? "홈 화면에 추가하면 알림을 받을 수 있어요"
-                : `${alarmOn ? "켜짐" : "꺼짐"} · 50m 안에 내 나무가 있으면 알려드려요`}
-            </p>
-          </div>
-          {/* 토글 */}
-          <button
-            type="button"
-            role="switch"
-            aria-checked={alarmOn}
-            aria-label="근처 나무 알림"
-            // 프로필을 못 불러왔으면 무엇을 바꿀지 알 수 없어 막는다
-            disabled={!profile || isUpdating}
-            onClick={() => toggleAlarm(!alarmOn)}
-            className={`relative h-6 w-10 flex-shrink-0 rounded-full transition-colors disabled:opacity-50 ${
-              alarmOn ? "bg-[#9CAB84]" : "bg-[#CCC]"
-            }`}
-          >
-            <span
-              className={`absolute top-[3px] h-[18px] w-[18px] rounded-full bg-white transition-all ${
-                alarmOn ? "left-[19px]" : "left-[3px]"
-              }`}
-            />
-          </button>
-        </div>
+        {/*
+          알림 섹션 — 근처 나무 알림(토글)과 알림 기록을 한 묶음으로 둔다.
+          둘만 제목 없이 떠 있어서 아래 '계정'·'정보' 와 결이 달랐다.
 
-        {/* 알림 기록 — 알림 카드 바로 아래에 둔다. 같은 주제라 붙여 읽힌다. */}
-        <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-6 py-2">
-          <MenuRow
-            icon=""
-            title="알림 기록"
-            subtitle="받은 알림을 다시 확인해요"
-            onClick={() => navigate(ROUTES.alertLogs)}
-          />
-        </div>
+          카드 하나 안에 토글 줄과 메뉴 줄을 넣고 사이에 선을 긋는다. 두 카드로
+          나누면 같은 주제인데 따로 노는 것처럼 보인다.
+        */}
+        <section>
+          <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#9CAB84]">
+            알림
+          </h2>
+          <div className="rounded-xl border-2 border-[#C5D89D] bg-white px-6">
+            <div className="flex items-center justify-between py-4">
+              <div>
+                <p className="text-[17px] font-medium text-[#111]">근처 나무 알림</p>
+                {/*
+                  아이폰은 홈 화면에 추가해야만 푸시를 받을 수 있다(웹 표준 제약).
+                  그냥 "꺼짐" 이라고만 하면 켜지지 않는 이유를 알 수 없어 따로 안내한다.
+                */}
+                <p className="mt-0.5 text-[13px] font-medium text-[#90908F]">
+                  {pushUnavailable === "ios-needs-install"
+                    ? "홈 화면에 추가하면 알림을 받을 수 있어요"
+                    : `${alarmOn ? "켜짐" : "꺼짐"} · 50m 안에 내 나무가 있으면 알려드려요`}
+                </p>
+              </div>
+              {/* 토글 */}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={alarmOn}
+                aria-label="근처 나무 알림"
+                // 프로필을 못 불러왔으면 무엇을 바꿀지 알 수 없어 막는다
+                disabled={!profile || isUpdating}
+                onClick={() => toggleAlarm(!alarmOn)}
+                className={`relative h-6 w-10 flex-shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+                  alarmOn ? "bg-[#9CAB84]" : "bg-[#CCC]"
+                }`}
+              >
+                <span
+                  className={`absolute top-[3px] h-[18px] w-[18px] rounded-full bg-white transition-all ${
+                    alarmOn ? "left-[19px]" : "left-[3px]"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="border-t border-[#ECF6D8] py-2">
+              <MenuRow
+                icon=""
+                title="알림 기록"
+                subtitle="받은 알림을 다시 확인해요"
+                onClick={() => navigate(ROUTES.alertLogs)}
+              />
+            </div>
+          </div>
+        </section>
 
         {/* 계정 섹션 */}
         <section>

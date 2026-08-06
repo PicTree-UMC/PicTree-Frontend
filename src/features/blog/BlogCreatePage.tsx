@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../shared/constants/routes';
 import { getLocalDateString } from '../../shared/lib/date';
 import { useToast } from '../../shared/components/toast/toastStore';
@@ -9,11 +9,19 @@ import { DateStep } from './components/steps/DateStep';
 import { ToneStep } from './components/steps/ToneStep';
 import { ResultStep } from './components/steps/ResultStep';
 
+/** 동선 페이지의 "AI 블로그 작성"에서 넘어올 때 전달되는 기간 프리필. */
+type BlogCreateLocationState = { startDate?: string; endDate?: string } | null | undefined;
+
 export function BlogCreatePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const addBlog = useBlogDraftStore((state) => state.addBlog);
-  const flow = useBlogCreate();
+  const locationState = location.state as BlogCreateLocationState;
+  const flow = useBlogCreate({
+    initialStartDate: locationState?.startDate,
+    initialEndDate: locationState?.endDate,
+  });
 
   const handleBack = () => {
     if (flow.step === 1) {

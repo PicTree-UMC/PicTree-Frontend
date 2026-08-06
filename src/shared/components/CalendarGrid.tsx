@@ -1,4 +1,5 @@
 import { buildCalendarWeeks, toCalendarDate } from '../lib/calendar';
+import { GrassIcon } from './GrassIcon';
 
 /** 첫 열은 일요일(`buildCalendarWeeks` 와 같은 약속). */
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -37,7 +38,7 @@ type CalendarGridProps = {
   activityByDate?: Record<string, number>;
   activityIcon?: string;
   /**
-   * 날짜 → 잔디 농도(level). 값이 있는 날만 색 원을 그린다.
+   * 날짜 → 잔디 농도(level). 값이 있는 날만 숫자 뒤에 잔디를 깐다.
    * `activityByDate` 가 있다/없다면 이쪽은 **얼마나** 를 진하기로 나타낸다.
    */
   levelByDate?: Record<string, number>;
@@ -69,8 +70,8 @@ export function CalendarGrid({
   dateAriaLabel,
 }: CalendarGridProps) {
   const weeks = buildCalendarWeeks(year, month);
-  // 점·잔디는 숫자 아래 한 칸을 더 쓴다.
-  const cellHeight = activityIcon || levelByDate ? 'h-14' : 'h-11';
+  // 점·아이콘은 숫자 아래 한 칸을 더 쓴다. 잔디는 숫자 뒤에 깔리므로 안 쓴다.
+  const cellHeight = activityIcon ? 'h-14' : 'h-11';
 
   return (
     <div>
@@ -110,18 +111,25 @@ export function CalendarGrid({
             const content = (
               <>
                 <span
-                  className={`grid h-8 w-8 place-items-center rounded-full text-[15px] leading-none ${numberClass}`}
+                  className={`relative grid h-8 w-8 place-items-center rounded-full text-[15px] leading-none ${numberClass}`}
                   style={{ color: numberColor }}
                 >
-                  {day}
+                  {/*
+                    잔디는 숫자 **뒤에** 깔린다 (시안 그대로). 숫자 아래 색 원을 따로
+                    두던 방식은 한 칸을 더 먹으면서도 "며칠에 얼마나" 를 한눈에 못 줬다.
+                    아래쪽에 붙여 숫자보다 살짝 내려앉게 두면 잔디가 자란 것처럼 보인다.
+                  */}
+                  {level > 0 && (
+                    <GrassIcon
+                      className="pointer-events-none absolute bottom-0 left-1/2 h-6 w-6 -translate-x-1/2"
+                      style={{ color: levelColors[level] }}
+                      role="img"
+                      aria-label={`방문 기록 ${level}단계`}
+                    />
+                  )}
+                  <span className="relative">{day}</span>
                 </span>
-                {level > 0 ? (
-                  <span
-                    className="mt-0.5 h-4 w-4 rounded-full"
-                    style={{ backgroundColor: levelColors[level] }}
-                    aria-label={`방문 기록 ${level}단계`}
-                  />
-                ) : (
+                {level === 0 &&
                   activityCount > 0 &&
                   (activityIcon ? (
                     <img src={activityIcon} alt={`방문 기록 ${activityCount}개`} className="mt-0.5 h-4 w-4" />
@@ -130,8 +138,7 @@ export function CalendarGrid({
                       className={`mt-0.5 h-1.5 w-1.5 rounded-full ${isEdge ? 'bg-white' : 'bg-pictree-700'}`}
                       aria-label={`저장된 나무 ${activityCount}개`}
                     />
-                  ))
-                )}
+                  ))}
               </>
             );
 
