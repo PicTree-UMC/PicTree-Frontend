@@ -39,7 +39,7 @@ export function BlogCreatePage() {
   };
 
   return (
-    // min-h-full: 뷰포트 단위는 셸(body)만 안다. dvh 는 iOS PWA 에서 실제 화면보다 짧다(#139).
+    // min-h-full: 뷰포트 단위를 아는 곳은 셸(styles.css) 하나다.
     <main className="flex min-h-full flex-col bg-[#fffcef] text-[#2c3930]">
       <CreateStepHeader step={flow.step} onBack={handleBack} />
       <div className="flex flex-1 flex-col">

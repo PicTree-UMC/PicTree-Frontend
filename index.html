@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <!-- iOS PWA: 콘텐츠를 상태바(노치) 밑까지 full-bleed 로 확장한다. viewport-fit=cover 와 함께
-         두어야 페이지 배경이 safe-area 를 채우고 상단이 잘려 보이지 않는다. -->
+    <!-- iOS PWA: 상단은 OS 상태바에 맡기고(theme-color 로 칠해진다) 앱은 그 아래에서 시작한다.
+         viewport-fit=cover 는 하단 홈 인디케이터 inset 때문에 유지한다. -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#FFFCEF" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.jpg" />

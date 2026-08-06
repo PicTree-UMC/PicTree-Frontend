@@ -15,8 +15,7 @@ import type { ReactNode } from 'react';
  * 각자 `fixed inset-x-0 mx-auto sm:max-w-[390px]` 를 쓰고 있어 같은 자리에 정렬된다.
  *
  * 높이는 `h-full` 이다 — html/body 가 100% 라 결과는 100dvh 와 같고, 뷰포트 단위를 아는
- * 곳을 styles.css 한 군데로 모아둔다. iOS PWA 에서 이 컬럼 바닥이 화면 바닥에 못 닿는
- * 문제(#139/#141)는 여기서 dvh 를 어떻게 쓰든 해결되지 않는다 → TROUBLESHOOTING 1-2-2.
+ * 곳을 styles.css 한 군데로 모아둔다.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   return (

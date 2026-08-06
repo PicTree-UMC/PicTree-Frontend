@@ -221,7 +221,7 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
 
 export function PrivacyPolicyPage() {
   return (
-    // min-h-full: 100vh 는 셸 컬럼을 넘긴다. pt 의 safe-area 는 상태바 겹침 방지(#139).
+    // min-h-full: 100vh 는 셸 컬럼을 넘긴다. pt-safe 는 상단 안전영역 확보.
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 */}
       <header className="bg-[#C5D89D] px-5 pb-5 pt-[calc(env(safe-area-inset-top)+1rem)]">

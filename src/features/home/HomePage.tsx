@@ -135,15 +135,12 @@ export function HomePage() {
   return (
     <div className="relative h-full w-full overflow-hidden">
       {/*
-        카카오맵 — 노치(safe-area)까지 덮는 fixed 풀블리드.
-        기준 상자는 레이아웃 뷰포트이고, iOS PWA 에서 그 위쪽 끝은 화면 맨 위(상태바 뒤)다.
-        그래서 `inset-0` 하나로 노치 뒤까지 덮는다. 오프셋을 더하지 말 것 — 지도가 아래로
-        밀려 중심(현재 위치 마커)이 어긋난다. #137 이 그렇게 한 번 틀렸다.
+        카카오맵 — 뷰포트를 꽉 채우는 fixed 배경. flex 흐름에 두면 컬럼 안에만 그려진다.
         (mx-auto sm:max-w-[390px]: 데스크톱에서 앱 컬럼 폭에 맞춘다.)
       */}
       <div ref={containerRef} className="fixed inset-0 z-0 mx-auto sm:max-w-[390px]" />
 
-      {/* 현재 위치 확인/지도 준비 중 로딩 — 지도와 같은 영역(노치 포함)을 덮는다 */}
+      {/* 현재 위치 확인/지도 준비 중 로딩 — 지도와 같은 영역을 덮는다 */}
       {!map && (
         <div className="fixed inset-0 z-10 mx-auto flex items-center justify-center bg-neutral-50 sm:max-w-[390px]">
           <p className="text-sm text-neutral-400">현재 위치를 불러오는 중…</p>
@@ -206,8 +203,8 @@ export function HomePage() {
 
       {/*
         현재 위치 새로고침 — 우측 상단 플로팅 버튼. 상단 안내 카드 바로 아래에 둔다.
-        `.below-banner`(styles.css)로 카드와 같은 변수를 본다 — 예전엔 여기만 top-24 고정값
-        이어서, 카드가 safe-area 만큼(59px) 내려간 순간 버튼이 카드 밑에 깔렸다(#141).
+        `.below-banner`(styles.css)로 카드와 같은 변수를 본다 — 여기에 고정값을 들면
+        카드가 움직였을 때 그 밑에 깔린다.
         지도가 준비됐을 때만 노출하고, 탭하면 GPS 를 새로 읽어 그 위치로 이동한다.
         읽는 동안엔 아이콘을 회전시키고 중복 탭을 막는다.
       */}
