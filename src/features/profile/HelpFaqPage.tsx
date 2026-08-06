@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { FAQ_CATEGORIES } from "./constants/faq";
 import { SUPPORT_EMAIL } from "./constants/contact";
-import { BackButton } from "@/shared/components";
+import { NavBar } from "@/shared/components";
 
 const ICON = {
   fill: "none",
@@ -63,10 +63,7 @@ export function HelpFaqPage() {
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* pt 에 safe-area 를 더해 헤더 초록이 노치 뒤까지 이어지게 한다 */}
       <header className="bg-[#C5D89D] px-5 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
-        <div className="flex items-center gap-3">
-          <BackButton onClick={() => navigate(-1)} />
-          <h1 className="text-[20px] font-medium text-[#2C3930]">도움말 / FAQ</h1>
-        </div>
+        <NavBar onBack={() => navigate(-1)} title="도움말 / FAQ" />
 
         {/*
           카테고리 탭. 다섯 개라 390px 안에 다 안 들어가서 가로 스크롤로 둔다.

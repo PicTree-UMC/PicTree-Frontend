@@ -5,7 +5,7 @@ import { getAIBlogDraftDetail } from './api/blogApi';
 import { formatDateRange, formatLongDate } from './lib/formatBlogDate';
 import { DeleteDraftModal } from './components/DeleteDraftModal';
 import { useBlogDraftStore } from './store/blogDraftStore';
-import { BackButton } from '@/shared/components';
+import { NavBar } from '@/shared/components';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
 import { useBlogTrees } from './hooks/useBlogTrees';
@@ -46,23 +46,29 @@ export function BlogDetailPage() {
       {/* px-4 였는데 본문(px-5)과도, 다른 화면 헤더(px-5)와도 어긋나 있었다. 맞추면
           뒤로가기 꺾쇠가 다른 화면과 같은 자리(화면 끝에서 27px)에 놓인다. */}
       <header className="sticky top-0 z-10 flex h-[calc(env(safe-area-inset-top)+56px)] items-end border-b border-[#ececdf] bg-[#fffcef]/95 px-5 pb-2 backdrop-blur-sm">
-        <BackButton onClick={() => navigate(-1)} aria-label="블로그 목록으로 돌아가기" />
-        <span className="pb-2 text-[16px] font-bold">블로그</span>
-        {data && (
-          <button
-            type="button"
-            onClick={() => setDeleteOpen(true)}
-            aria-label="블로그 초안 삭제"
-            className="-mr-2 ml-auto grid size-10 place-items-center rounded-full text-[#dc2626] active:bg-red-50"
-          >
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M3 6h18" />
-              <path d="M8 6V4h8v2" />
-              <path d="M19 6l-1 14H6L5 6" />
-              <path d="M10 11v5M14 11v5" />
-            </svg>
-          </button>
-        )}
+        <NavBar
+          className="w-full"
+          onBack={() => navigate(-1)}
+          backLabel="블로그 목록으로 돌아가기"
+          title="블로그"
+          action={
+            data && (
+              <button
+                type="button"
+                onClick={() => setDeleteOpen(true)}
+                aria-label="블로그 초안 삭제"
+                className="grid size-10 place-items-center rounded-full text-[#dc2626] active:bg-red-50"
+              >
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4h8v2" />
+                  <path d="M19 6l-1 14H6L5 6" />
+                  <path d="M10 11v5M14 11v5" />
+                </svg>
+              </button>
+            )
+          }
+        />
       </header>
 
       {isPending && (

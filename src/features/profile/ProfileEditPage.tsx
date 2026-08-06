@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BackButton, useToast } from "@/shared/components";
+import { NavBar, useToast } from "@/shared/components";
 import { useMyProfile } from "./hooks/useMyProfile";
 import { useUpdateMyProfile } from "./hooks/useUpdateMyProfile";
 import { getPlanLabel } from "./lib/plan";
@@ -82,10 +82,7 @@ export function ProfileEditPage() {
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       <header className="bg-[#C5D89D] px-5 pb-16 pt-4">
-        <div className="flex items-center gap-3">
-          <BackButton onClick={() => navigate(-1)} />
-          <h1 className="text-[20px] font-medium text-black">내 정보</h1>
-        </div>
+        <NavBar onBack={() => navigate(-1)} title="내 정보" />
       </header>
 
       {/* 아바타 — 헤더 밴드에 걸쳐 앉힌다 (마이페이지와 같은 계열의 구성) */}

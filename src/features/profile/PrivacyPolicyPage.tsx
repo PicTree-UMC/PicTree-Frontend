@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { SUPPORT_EMAIL } from "./constants/contact";
-import { BackButton } from "@/shared/components";
+import { NavBar } from "@/shared/components";
 
 const iconBase = "h-[22px] w-[22px] flex-shrink-0";
 const stroke = {
@@ -225,10 +225,7 @@ export function PrivacyPolicyPage() {
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 */}
       <header className="bg-[#C5D89D] px-5 pb-5 pt-[calc(env(safe-area-inset-top)+1rem)]">
-        <div className="flex items-center gap-3">
-          <BackButton onClick={() => window.history.back()} />
-          <h1 className="text-[20px] font-medium text-black">개인정보 처리방침</h1>
-        </div>
+        <NavBar onBack={() => window.history.back()} title="개인정보 처리방침" />
       </header>
 
       <div className="flex flex-col gap-6 px-5 pt-5">
