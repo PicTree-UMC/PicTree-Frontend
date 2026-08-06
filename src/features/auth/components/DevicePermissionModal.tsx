@@ -45,7 +45,7 @@ export function DevicePermissionModal({ isOpen, onConfirm }: DevicePermissionMod
 
         <Button
           unstyled
-          className="mt-5 flex h-[2.4375rem] w-full items-center justify-center rounded-[0.625rem] bg-[#C5D89D] font-['KOROAD'] text-[1rem] font-bold text-[#2C3930]"
+          className="mt-5 flex h-[2.4375rem] w-full items-center justify-center rounded-[0.625rem] bg-pictree-300 font-['KOROAD'] text-[1rem] font-bold text-[#2C3930]"
           type="button"
           onClick={onConfirm}
         >
@@ -67,7 +67,7 @@ function PermissionRow({
 }) {
   return (
     <div className="flex items-center gap-4 py-2">
-      <span className="grid h-8 w-8 shrink-0 place-items-center text-[#5B6B38]">{icon}</span>
+      <span className="grid h-8 w-8 shrink-0 place-items-center text-pictree-700">{icon}</span>
       <div>
         <p className="font-['KOROAD'] text-[1rem] font-bold text-[#111]">{title}</p>
         <p className="mt-0.5 font-['KOROAD'] text-[0.75rem] font-medium text-[#111]">

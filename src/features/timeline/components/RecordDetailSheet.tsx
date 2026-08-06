@@ -92,7 +92,7 @@ export function RecordDetailSheet({ record, onClose, onEdit, onDelete }: Props) 
         <button
           type="button"
           onClick={onEdit}
-          className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#C5D89D] text-[15px] font-medium text-[#2C3930]"
+          className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-pictree-300 text-[15px] font-medium text-[#2C3930]"
         >
           <img src={penIcon} alt="" className="h-[18px] w-[18px]" />
           기록 수정

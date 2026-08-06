@@ -81,7 +81,7 @@ export function LocationPickerSheet({
         <button
           onClick={handleConfirm}
           disabled={!map}
-          className={`h-[38px] w-[110px] rounded-[12px] bg-[#c5d89d] text-[15px] font-medium tracking-wide text-[#2c3930] transition-opacity ${
+          className={`h-[38px] w-[110px] rounded-[12px] bg-pictree-300 text-[15px] font-medium tracking-wide text-[#2c3930] transition-opacity ${
             map ? '' : 'opacity-50'
           }`}
         >

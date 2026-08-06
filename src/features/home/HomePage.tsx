@@ -184,7 +184,7 @@ export function HomePage() {
       <button
         onClick={() => navigate(ROUTES.camera)}
         aria-label="장소 기록하기"
-        className="bottom-nav absolute left-1/2 z-20 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full bg-white text-[#788F4A] shadow-lg ring-1 ring-black/5 transition active:scale-95"
+        className="bottom-nav absolute left-1/2 z-20 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full bg-white text-pictree-500 shadow-lg ring-1 ring-black/5 transition active:scale-95"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -221,7 +221,7 @@ export function HomePage() {
           disabled={locating}
           aria-label="현재 위치 새로고침"
           /* 흰 배경 + GREEN-500(#788F4A) 아이콘 — 흰 위 3.6:1 로 그래픽 요소(3:1) 충족. */
-          className="below-banner absolute right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#788F4A] shadow-lg ring-1 ring-black/5 transition active:scale-95 disabled:opacity-70"
+          className="below-banner absolute right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-pictree-500 shadow-lg ring-1 ring-black/5 transition active:scale-95 disabled:opacity-70"
         >
           <MyLocationIcon spinning={locating} />
         </button>

@@ -130,7 +130,7 @@ export function BlogRoadmap({ trees, selectedIds, onToggle }: BlogRoadmapProps) 
               >
                 <span
                   className={`relative block size-full overflow-hidden rounded-full border-2 transition ${
-                    selected ? 'border-[#5b6b38] bg-[#c5d89d]' : 'border-[#d4d4d4] bg-[#f0f0f0]'
+                    selected ? 'border-pictree-700 bg-pictree-300' : 'border-[#d4d4d4] bg-[#f0f0f0]'
                   }`}
                 >
                   {tree.defaultImage ? (
@@ -144,7 +144,7 @@ export function BlogRoadmap({ trees, selectedIds, onToggle }: BlogRoadmapProps) 
                   ) : (
                     <span
                       className={`flex size-full items-center justify-center ${
-                        selected ? 'text-[#5b6b38]' : 'text-[#b4b4b4]'
+                        selected ? 'text-pictree-700' : 'text-[#b4b4b4]'
                       }`}
                     >
                       <PhotoPlaceholder className="size-7" />
@@ -154,7 +154,7 @@ export function BlogRoadmap({ trees, selectedIds, onToggle }: BlogRoadmapProps) 
                 {/* 상태 배지: 선택=체크 / 해제=빈 원 */}
                 <span
                   className={`absolute -right-1 -top-1 flex size-[22px] items-center justify-center rounded-full border-2 border-white transition ${
-                    selected ? 'bg-[#5b6b38] text-white' : 'bg-white text-transparent ring-1 ring-inset ring-[#d4d4d4]'
+                    selected ? 'bg-pictree-700 text-white' : 'bg-white text-transparent ring-1 ring-inset ring-[#d4d4d4]'
                   }`}
                 >
                   <CheckIcon className="size-3" />

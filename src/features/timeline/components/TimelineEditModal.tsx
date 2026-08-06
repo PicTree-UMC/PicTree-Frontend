@@ -78,7 +78,7 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={100}
-            className="h-[45px] w-full rounded-[20px] border-2 border-[#788F4A] bg-[#FFFDFD] px-4 text-center text-[14px] font-medium text-[#2C3930] outline-none"
+            className="h-[45px] w-full rounded-[20px] border-2 border-pictree-500 bg-[#FFFDFD] px-4 text-center text-[14px] font-medium text-[#2C3930] outline-none"
           />
         </div>
 
@@ -98,7 +98,7 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
             value={content}
             onChange={(e) => setContent(e.target.value)}
             maxLength={500}
-            className="h-[45px] w-full rounded-[20px] border-2 border-[#788F4A] bg-[#FFFDFD] px-4 text-center text-[14px] font-medium text-[#2C3930] outline-none"
+            className="h-[45px] w-full rounded-[20px] border-2 border-pictree-500 bg-[#FFFDFD] px-4 text-center text-[14px] font-medium text-[#2C3930] outline-none"
           />
         </div>
 
@@ -120,7 +120,7 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
             type="button"
             disabled={!canSave}
             onClick={() => onSave({ title: title.trim(), content: content.trim() })}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#C5D89D] text-[16px] font-medium tracking-[0.8px] text-[#2C3930] disabled:opacity-50"
+            className="h-[38px] w-[92px] rounded-[12px] bg-pictree-300 text-[16px] font-medium tracking-[0.8px] text-[#2C3930] disabled:opacity-50"
           >
             {isSaving ? "저장 중" : "저장하기"}
           </button>

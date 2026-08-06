@@ -17,11 +17,11 @@ export function SavedBlogCard({ blog }: SavedBlogCardProps) {
       {/* 제목 · 본문 미리보기 · 썸네일: 모바일 네이버 블로그 목록 카드 레이아웃 */}
       <div className="flex gap-3.5">
         {cover ? (
-          <div className="h-[88px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-[#ecf6d8]">
+          <div className="h-[88px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-pictree-100">
             <img src={cover.image} alt="" className="h-full w-full object-cover" />
           </div>
         ) : (
-          <div className="h-[88px] w-[88px] shrink-0 rounded-xl bg-[#ecf6d8]" aria-hidden />
+          <div className="h-[88px] w-[88px] shrink-0 rounded-xl bg-pictree-100" aria-hidden />
         )}
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -34,7 +34,7 @@ export function SavedBlogCard({ blog }: SavedBlogCardProps) {
           <div className="mt-auto flex items-center gap-2.5 pt-2 text-[12px] text-[#a3a89a]">
             <button
               type="button"
-              className="flex items-center gap-0.5 font-medium text-[#5b6b38] transition active:opacity-70"
+              className="flex items-center gap-0.5 font-medium text-pictree-700 transition active:opacity-70"
               onClick={() => setPlacesOpen(true)}
               aria-label={`방문한 장소 ${blog.sections.length}곳 보기`}
             >
