@@ -1,6 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../shared/constants/routes';
-import { getLocalDateString } from '../../shared/lib/date';
 import { useToast } from '../../shared/components/toast/toastStore';
 import { useBlogCreate } from './hooks/useBlogCreate';
 import { useBlogDraftStore } from './store/blogDraftStore';
@@ -16,7 +15,7 @@ export function BlogCreatePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
-  const addBlog = useBlogDraftStore((state) => state.addBlog);
+  const saveDraft = useBlogDraftStore((state) => state.saveDraft);
   const locationState = location.state as BlogCreateLocationState;
   const flow = useBlogCreate({
     initialStartDate: locationState?.startDate,
@@ -31,19 +30,26 @@ export function BlogCreatePage() {
     flow.back();
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!flow.draft) return;
-    addBlog({
-      id: crypto.randomUUID(),
-      title: flow.draft.title,
-      startDate: flow.startDate,
-      endDate: flow.endDate,
-      toneId: flow.toneId,
-      sections: flow.draft.sections,
-      savedAt: getLocalDateString(),
-    });
-    showToast('블로그를 저장했어요', 'success');
-    navigate(ROUTES.blog);
+
+    try {
+      await saveDraft({
+        title: flow.draft.title,
+        items: flow.draft.sections.map((section) => ({
+          placeName: section.heading,
+          content: section.body,
+        })),
+        startDate: flow.startDate,
+        endDate: flow.endDate,
+        treeIds: flow.selectedTreeIds,
+      });
+      showToast('블로그를 저장했어요', 'success');
+      navigate(ROUTES.blog);
+    } catch (error) {
+      console.error('save draft failed', error);
+      showToast('블로그 저장에 실패했어요', 'error');
+    }
   };
 
   return (

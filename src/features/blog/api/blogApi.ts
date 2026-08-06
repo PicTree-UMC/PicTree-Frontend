@@ -55,7 +55,7 @@ export const saveAIBlogDraft = async (
   payload: SaveAIBlogDraftRequest,
 ): Promise<SaveAIBlogDraftResponseData> => {
   const { data } = await httpClient.post<ApiResponse<SaveAIBlogDraftResponseData>>(
-    '/blogs-drafts',
+    '/blog-drafts',
     payload,
     { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined },
   );
