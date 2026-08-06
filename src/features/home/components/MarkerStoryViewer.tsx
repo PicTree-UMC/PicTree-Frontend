@@ -161,59 +161,57 @@ export function MarkerStoryViewer({
             </div>
           )}
 
-          {/*
-            슬라이드 인디케이터. 묶인 나무가 **둘 이상일 때만** 그린다 — 한 장뿐인데
-            그리면 가운데에 짧은 선 하나가 덩그러니 남아 구분선처럼 보인다.
-            아래 버튼 줄의 가운데는 '수정' 자리라 이 줄은 그 위로 뺐다.
-          */}
-          {markers.length > 1 && (
-            <div className="mb-3 flex justify-center gap-1.5">
-              {markers.map((item, i) => (
-                <span
-                  key={item.id}
-                  className={`h-1.5 rounded-full transition-all ${
-                    i === activeIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/40'
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* 즐겨찾기 · 수정 · 삭제 — 맨끝 / 가운데 / 맨끝 (타임라인 피드와 같은 배치) */}
+          {/* 좌: 즐겨찾기 / 중앙: 점 인디케이터 / 우: 수정·삭제 */}
           <div className="grid grid-cols-3 items-center text-white">
-            <button
-              onClick={handleToggleFavorite}
-              aria-label="즐겨찾기"
-              aria-pressed={!!marker.isFavorite}
-              className="col-start-1 -ml-1 justify-self-start p-1"
-            >
-              {/*
-                하트 팝 애니메이션용 래퍼. `inline-block` 이면 글자 베이스라인에 얹혀
-                옆 아이콘보다 몇 px 높게 앉는다 — `block` 으로 두어야 줄이 맞는다.
-              */}
-              <span
-                className={`block ${favBump ? 'animate-heart-pop' : ''}`}
-                onAnimationEnd={() => setFavBump(false)}
+            <div className="justify-self-start">
+              <button
+                onClick={handleToggleFavorite}
+                aria-label="즐겨찾기"
+                aria-pressed={!!marker.isFavorite}
+                className="-ml-1 p-1"
               >
-                <HeartIcon filled={!!marker.isFavorite} />
-              </span>
-            </button>
+                {/*
+                  하트 팝 애니메이션용 래퍼. `inline-block` 이면 글자 베이스라인에 얹혀
+                  옆 아이콘보다 몇 px 높게 앉는다 — `block` 으로 두어야 줄이 맞는다.
+                */}
+                <span
+                  className={`block ${favBump ? 'animate-heart-pop' : ''}`}
+                  onAnimationEnd={() => setFavBump(false)}
+                >
+                  <HeartIcon filled={!!marker.isFavorite} />
+                </span>
+              </button>
+            </div>
 
-            <button
-              onClick={onEdit}
-              aria-label="수정"
-              className="col-start-2 justify-self-center p-1"
-            >
-              <PencilIcon />
-            </button>
+            {/*
+              점 인디케이터 — 그룹에 묶인 나무 수만큼, 현재 슬라이드는 길게 강조.
+              한 그루뿐이면 그리지 않는다. 점 하나가 길쭉한 막대로 그려져 가운데에
+              구분선처럼 남는다.
+            */}
+            <div className="flex justify-center gap-1.5 justify-self-center">
+              {markers.length > 1 &&
+                markers.map((item, i) => (
+                  <span
+                    key={item.id}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === activeIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/40'
+                    }`}
+                  />
+                ))}
+            </div>
 
-            <button
-              onClick={() => setConfirmingDelete(true)}
-              aria-label="삭제"
-              className="col-start-3 -mr-1 justify-self-end p-1"
-            >
-              <TrashIcon />
-            </button>
+            <div className="flex items-center gap-3 justify-self-end">
+              <button onClick={onEdit} aria-label="수정" className="p-1">
+                <PencilIcon />
+              </button>
+              <button
+                onClick={() => setConfirmingDelete(true)}
+                aria-label="삭제"
+                className="-mr-1 p-1"
+              >
+                <TrashIcon />
+              </button>
+            </div>
           </div>
         </div>
       </div>
