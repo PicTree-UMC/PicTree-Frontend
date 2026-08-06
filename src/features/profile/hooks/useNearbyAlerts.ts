@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import {
   checkNearbyAlerts,
+  deleteNearbyAlertLogs,
   getNearbyAlertLogs,
   NEARBY_ALERT_PAGE_SIZE,
   openNearbyAlertLog,
@@ -117,6 +118,55 @@ export const useOpenNearbyAlertLog = () => {
       }
     },
 
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: nearbyAlertKeys.all });
+    },
+  });
+};
+
+/**
+ * 알림 기록 삭제 훅. `DELETE /nearby-alerts/logs/{alertLogId}`
+ *
+ * 여러 건을 받아 건별로 부른다 — 서버에 일괄 삭제가 없다. 한 건이 실패해도
+ * 나머지는 계속 진행하고, **실제로 지워진 것만** 캐시에서 뺀다.
+ *
+ * 낙관적 갱신은 하지 않는다. 지우기는 되돌릴 수 없는 동작이라, 먼저 지워 보이고
+ * 나중에 되살리는 것보다 응답을 받고 빼는 편이 덜 혼란스럽다. 건수가 많아도
+ * 병렬로 나가므로 체감 차이가 크지 않다.
+ */
+export const useDeleteNearbyAlertLogs = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteNearbyAlertLogs,
+
+    onSuccess: ({ deletedIds }) => {
+      if (deletedIds.length === 0) return;
+
+      const deleted = new Set(deletedIds);
+
+      /*
+        목록이 페이지마다 캐시 키가 달라서 열려 있는 페이지를 전부 훑어 뺀다.
+        totalElements 도 같이 줄여야 개수 표시가 어긋나지 않는다.
+      */
+      queryClient.setQueriesData<NearbyAlertLogPage>(
+        { queryKey: nearbyAlertKeys.all },
+        (old) => {
+          if (!old) return old;
+
+          const items = old.items.filter((item) => !deleted.has(item.alertLogId));
+          const removed = old.items.length - items.length;
+
+          return {
+            ...old,
+            items,
+            totalElements: Math.max(0, old.totalElements - removed),
+          };
+        },
+      );
+    },
+
+    // 지운 뒤에는 서버 값으로 맞춘다 — 페이지 경계가 밀려 다음 항목이 당겨 온다.
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: nearbyAlertKeys.all });
     },
