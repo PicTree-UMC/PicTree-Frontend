@@ -61,7 +61,7 @@ export function ResultStep({ status, draft, onSave }: ResultStepProps) {
                 {i + 1}. {section.heading}
               </h3>
               {section.image && (
-                <figure className="mt-4 overflow-hidden rounded-lg bg-[#ecf6d8]">
+                <figure className="mt-4 overflow-hidden rounded-lg bg-pictree-100">
                   <img
                     src={section.image}
                     alt={`${section.heading}에서 촬영한 사진`}
@@ -81,7 +81,7 @@ export function ResultStep({ status, draft, onSave }: ResultStepProps) {
         <button type="button" className="h-[54px] flex-1 rounded-xl bg-[#e4e5e6] text-[15px] font-medium text-[#60655c]" onClick={handleCopy}>복사하기</button>
         <button
           type="button"
-          className="h-[54px] flex-[2] rounded-xl bg-[#5b6b38] text-[15px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-[54px] flex-[2] rounded-xl bg-pictree-700 text-[15px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)] disabled:cursor-not-allowed disabled:opacity-60"
           onClick={handleSave}
           disabled={isSaving}
         >

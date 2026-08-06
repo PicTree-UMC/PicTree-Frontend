@@ -22,8 +22,9 @@ export function BlogPage() {
     <main className="min-h-full w-full bg-[#fffcef] pb-nav text-[#2c3930]">
       {/* 상단 여백은 노치(safe-area) + 0.75rem 로 계산한다. 고정 px(pt-[68px])는
           safe-area 가 작은 기기에서 과하게 떠 보였다. AuthShell·CameraPage 와 같은 값. */}
-      <header className="border-b border-[#ececdf] px-5 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-        <h1 className="text-[22px] font-bold">블로그</h1>
+      {/* 제목 밑 구분선은 뺐다 — 다른 탭(타임라인·동선) 머리글엔 선이 없다. */}
+      <header className="px-5 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+        <h1 className="text-[20px] font-medium">블로그</h1>
         {savedBlogs.length > 0 && (
           <p className="mt-0.5 text-[13px] text-[#8b9086]">전체 {savedBlogs.length}개</p>
         )}

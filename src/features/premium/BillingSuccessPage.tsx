@@ -78,7 +78,7 @@ export function BillingSuccessPage() {
         <>
           <p className="text-[15px]">결제 확인에 실패했어요.</p>
           <button
-            className="h-[45px] rounded-xl bg-[#788f4a] px-6 font-bold text-white"
+            className="h-[45px] rounded-xl bg-pictree-700 px-6 font-bold text-white"
             onClick={() => navigate(ROUTES.premium, { replace: true })}
           >
             다시 시도

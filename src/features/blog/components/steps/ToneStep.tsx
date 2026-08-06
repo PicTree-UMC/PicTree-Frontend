@@ -21,12 +21,12 @@ export function ToneStep({ toneId, onSelect, onNext }: ToneStepProps) {
               key={tone.id}
               type="button"
               aria-pressed={selected}
-              className={`rounded-xl border-2 bg-white px-[18px] py-4 text-left transition-colors ${selected ? 'border-[#5b6b38]' : 'border-[#ecf6d8]'}`}
+              className={`rounded-xl border-2 bg-white px-[18px] py-4 text-left transition-colors ${selected ? 'border-pictree-700' : 'border-pictree-100'}`}
               onClick={() => onSelect(tone.id)}
             >
               <div className="flex items-center justify-between">
                 <span className="text-[16px] font-medium">{tone.label}</span>
-                {selected && <span className="scale-[0.55] text-[#5b6b38]"><CheckIcon /></span>}
+                {selected && <span className="scale-[0.55] text-pictree-700"><CheckIcon /></span>}
               </div>
               <p className="mt-[2px] text-[13px] text-[#60655c]">{tone.description}</p>
               <p className="mt-2 rounded-lg bg-[#f6f9ec] px-3 py-2 text-[13px] leading-5 text-[#60655c]">"{tone.example}"</p>
@@ -37,7 +37,7 @@ export function ToneStep({ toneId, onSelect, onNext }: ToneStepProps) {
 
       <button
         type="button"
-        className="mt-6 h-[54px] w-full rounded-xl bg-[#5b6b38] text-[16px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)]"
+        className="mt-6 h-[54px] w-full rounded-xl bg-pictree-700 text-[16px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)]"
         onClick={onNext}
       >
         이 어체로 작성하기

@@ -94,7 +94,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
 
       <Button
         unstyled
-        className="mt-6 flex h-[3.75rem] w-full items-center gap-4 rounded-[1.125rem] bg-[#ECF6D8] px-6 font-['KOROAD'] text-[1.125rem] font-bold text-[#111]"
+        className="mt-6 flex h-[3.75rem] w-full items-center gap-4 rounded-[1.125rem] bg-pictree-100 px-6 font-['KOROAD'] text-[1.125rem] font-bold text-[#111]"
         type="button"
         onClick={toggleAll}
       >
@@ -115,7 +115,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
             </p>
             <Button
               unstyled
-              className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 font-['KOROAD'] text-[0.8125rem] font-medium text-white"
+              className="mt-2 rounded-xl bg-pictree-700 px-4 py-1.5 font-['KOROAD'] text-[0.8125rem] font-medium text-white"
               type="button"
               onClick={() => refetch()}
             >
@@ -164,7 +164,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
                         href={term.contentUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-1 inline-block font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-[#5B6B38] underline"
+                        className="mt-1 inline-block font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-pictree-700 underline"
                       >
                         약관 전문 보기
                       </a>
@@ -190,7 +190,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
       <Button
         unstyled
         className={`mt-auto flex h-[3.75rem] w-full items-center justify-center rounded-[1.125rem] font-['KOROAD'] text-[1.125rem] font-bold transition ${
-          canStart ? 'bg-[#C5D89D] text-[#111] hover:bg-[#c5d89d]' : 'bg-[#EDEDED] text-[#60655C]'
+          canStart ? 'bg-pictree-300 text-[#111] hover:bg-pictree-300' : 'bg-[#EDEDED] text-[#60655C]'
         }`}
         disabled={!canStart || isSaving}
         type="button"
@@ -207,7 +207,7 @@ function CheckCircle({ checked, compact = false }: { checked: boolean; compact?:
     <span
       className={`grid shrink-0 place-items-center rounded-full border-2 ${
         compact ? 'h-6 w-6' : 'h-7 w-7'
-      } ${checked ? 'border-[#788F4A] bg-[#788F4A]' : 'border-[#9B9B9B] bg-white'}`}
+      } ${checked ? 'border-pictree-500 bg-pictree-500' : 'border-[#9B9B9B] bg-white'}`}
       aria-hidden="true"
     >
       <svg width="15" height="12" viewBox="0 0 15 12" fill="none">

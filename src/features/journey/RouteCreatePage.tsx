@@ -177,7 +177,7 @@ export function RouteCreatePage() {
       <div className="mt-4 flex-1 overflow-y-auto px-5">
         {isLoading ? (
           <div className="flex h-full flex-col items-center justify-center gap-3">
-            <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#89986d]" />
+            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-[#89986d]" />
             <p className="text-[15px] font-medium text-[#5c6f2b]">방문한 날짜를 불러오는 중...</p>
           </div>
         ) : isError || isOffline ? (
@@ -187,7 +187,7 @@ export function RouteCreatePage() {
             </p>
             <button
               onClick={() => refetch()}
-              className="h-[46px] rounded-[24px] bg-[#89986d] px-8 text-[15px] font-medium text-white"
+              className="h-[46px] rounded-[24px] bg-pictree-700 px-8 text-[15px] font-medium text-white"
             >
               다시 시도
             </button>
@@ -230,7 +230,7 @@ export function RouteCreatePage() {
           type="button"
           onClick={goToMap}
           disabled={pickedDates.length === 0}
-          className="mt-3 h-[52px] w-full rounded-[24px] bg-[#5B6B38] text-[15px] font-medium text-white disabled:bg-[#b4b4b4]"
+          className="mt-3 h-[52px] w-full rounded-[24px] bg-pictree-700 text-[15px] font-medium text-white disabled:bg-[#b4b4b4]"
         >
           {pickedDates.length === 0 ? '날짜를 선택해주세요' : '다음'}
         </button>

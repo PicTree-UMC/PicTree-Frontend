@@ -47,7 +47,7 @@ export function BlogDateRangePicker({ startDate, endDate, activityByDate, onClos
         <div className="mt-4 flex gap-3">
           <button type="button" className="h-11 flex-1 rounded-xl bg-[#e4e5e6] font-medium text-[#60655c]" onClick={onClose}>취소</button>
           {/* 흰 글자를 얹으므로 GREEN-700. 500(#788f4a)은 흰 글자와 3.5:1 이라 못 쓴다(#147). */}
-          <button type="button" className="h-11 flex-1 rounded-xl bg-[#5B6B38] font-medium text-white disabled:opacity-40" disabled={!rangeStart || !rangeEnd} onClick={() => onApply(rangeStart, rangeEnd)}>적용</button>
+          <button type="button" className="h-11 flex-1 rounded-xl bg-pictree-700 font-medium text-white disabled:opacity-40" disabled={!rangeStart || !rangeEnd} onClick={() => onApply(rangeStart, rangeEnd)}>적용</button>
         </div>
       </section>
     </div>,

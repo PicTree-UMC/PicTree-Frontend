@@ -2,7 +2,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { storageKeys } from '@/features/profile/hooks/useStorageUsage';
+import { routePlaceCandidateKey } from '@/features/journey/hooks/useRoutePlaceCandidates';
 import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
+import { timelineKeys } from '@/features/timeline/hooks/useTimeline';
 import {
   deleteTree,
   getNearbyTrees,
@@ -136,7 +138,11 @@ export const useToggleFavorite = () => {
       if (context?.prev) queryClient.setQueryData(treeKeys.list(), context.prev);
     },
     onSettled: () => {
-      if (isAuthenticated) queryClient.invalidateQueries({ queryKey: treeKeys.list() });
+      if (!isAuthenticated) return;
+      queryClient.invalidateQueries({ queryKey: treeKeys.list() });
+      // 타임라인 피드의 하트도 같은 나무를 본다. 안 깨면 지도에서 켠 하트가
+      // 타임라인에서는 staleTime(60s) 동안 꺼진 채로 남는다.
+      queryClient.invalidateQueries({ queryKey: timelineKeys.all });
     },
   });
 };
@@ -173,6 +179,14 @@ export const useDeleteTree = () => {
         가리키는 알림이 앱을 다시 켤 때까지 계속 떠 있었다.
       */
       queryClient.invalidateQueries({ queryKey: treeKeys.all });
+      /*
+        타임라인은 ['timeline'] 이라는 독립 키다. 여기 안 깨면 지도에서 지운 기록이
+        staleTime(60s) 동안 타임라인에 그대로 남는다 — 탭을 옮겨도 사라지지 않다가
+        한참 뒤에야 빠지는 증상이 이거였다. 동선 후보도 /trees 를 가공한 독립 키라
+        같이 깨야 한다(만들 때는 이미 그렇게 하고 있다 — useCreateTreeRecord).
+      */
+      queryClient.invalidateQueries({ queryKey: timelineKeys.all });
+      queryClient.invalidateQueries({ queryKey: routePlaceCandidateKey });
       // 잔디는 나무 개수로 그려지므로 장소가 사라지면 같이 옅어져야 한다.
       queryClient.invalidateQueries({ queryKey: calendarKeys.all });
       // 나무를 지우면 사진도 함께 지워진다 — 용량도 다시 센다.

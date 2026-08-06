@@ -35,10 +35,6 @@ export function PencilIcon({ size = 26 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>;
 }
 
-export function EmptyBlogIcon() {
-  return <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#bcd08c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5Z" /><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5Z" /><path d="M15.5 8.5h1.5M15.5 11.5h1.5M15.5 14.5h1.5M7 8.5h1.5M7 11.5h1.5M7 14.5h1.5" /></svg>;
-}
-
 export function DeleteIcon({ size = 20 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 10v7m4-7v7"/></svg>;
 }

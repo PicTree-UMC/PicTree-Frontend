@@ -102,9 +102,9 @@ export function CalendarGrid({
               면·테두리 전용).
             */
             const numberClass = isEdge
-              ? 'bg-[#5B6B38] text-white'
+              ? 'bg-pictree-700 text-white'
               : isPicked
-                ? 'bg-[#C5D89D]'
+                ? 'bg-pictree-300'
                 : '';
             const numberColor = disabled ? DISABLED : isEdge ? undefined : weekdayColor(column);
 
@@ -135,7 +135,7 @@ export function CalendarGrid({
                     <img src={activityIcon} alt={`방문 기록 ${activityCount}개`} className="mt-0.5 h-4 w-4" />
                   ) : (
                     <span
-                      className={`mt-0.5 h-1.5 w-1.5 rounded-full ${isEdge ? 'bg-white' : 'bg-[#5B6B38]'}`}
+                      className={`mt-0.5 h-1.5 w-1.5 rounded-full ${isEdge ? 'bg-white' : 'bg-pictree-700'}`}
                       aria-label={`저장된 나무 ${activityCount}개`}
                     />
                   ))}
@@ -143,7 +143,7 @@ export function CalendarGrid({
             );
 
             const className = `flex ${cellHeight} flex-col items-center justify-start pt-0.5 ${
-              isInRange ? 'bg-[#ECF6D8]' : ''
+              isInRange ? 'bg-pictree-100' : ''
             }`;
 
             return onDateSelect ? (

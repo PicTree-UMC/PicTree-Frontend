@@ -36,15 +36,15 @@ export function DateStep({ startDate, endDate, trees, selectedTreeIds, onToggleT
         type="button"
         onClick={() => setPickerOpen(true)}
         aria-label="여행 기간 선택"
-        className="mt-4 flex w-full items-center gap-4 rounded-2xl border border-[#ecf6d8] bg-white px-5 py-[18px] text-left shadow-[0_6px_18px_rgba(45,51,34,0.06)] transition active:scale-[0.99]"
+        className="mt-4 flex w-full items-center gap-4 rounded-2xl border border-pictree-100 bg-white px-5 py-[18px] text-left shadow-[0_6px_18px_rgba(45,51,34,0.06)] transition active:scale-[0.99]"
       >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#ecf6d8] text-[#5b6b38]">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-pictree-100 text-pictree-700">
           <CalendarIcon />
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
             <span className="text-[13px] font-medium text-[#60655c]">여행 기간</span>
-            <span className="rounded-full bg-[#ecf6d8] px-2 py-[1px] text-[13px] font-medium text-[#5b6b38]">
+            <span className="rounded-full bg-pictree-100 px-2 py-[1px] text-[13px] font-medium text-pictree-700">
               {durationLabel(startDate, endDate)}
             </span>
           </span>
@@ -67,7 +67,7 @@ export function DateStep({ startDate, endDate, trees, selectedTreeIds, onToggleT
 
       <div className="mt-5">
         <p className="text-[13px] font-medium text-[#2c3930]">
-          이 기간의 기록 <span className="text-[#5b6b38]">{selectedTreeIds.length}/{trees.length}개</span>
+          이 기간의 기록 <span className="text-pictree-700">{selectedTreeIds.length}/{trees.length}개</span>
         </p>
         {trees.length === 0 ? (
           <p className="py-2 text-[13px] text-[#999]">선택한 기간에 저장된 기록이 없어요.</p>
@@ -83,7 +83,7 @@ export function DateStep({ startDate, endDate, trees, selectedTreeIds, onToggleT
 
       <button
         type="button"
-        className="mt-auto h-[54px] w-full rounded-xl bg-[#5b6b38] text-[16px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)] disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-auto h-[54px] w-full rounded-xl bg-pictree-700 text-[16px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)] disabled:cursor-not-allowed disabled:opacity-40"
         onClick={onNext}
         disabled={selectedTreeIds.length === 0}
       >

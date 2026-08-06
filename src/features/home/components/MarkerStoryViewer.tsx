@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
+import { IconFrame } from '@/shared/components';
 import { DeleteMarkerModal } from './DeleteMarkerModal';
 import type { MapMarkerData } from '../hooks/useMapMarkers';
 
@@ -27,7 +28,7 @@ const FALLBACK_AVATAR = '/markers/tree.svg';
  *  - 선택한 기분 이모지가 아래에서 위로 떠오른다(스토리 하트 효과 대체).
  *  - 상단: 좌측 = 장소명 · 날짜(가로 배치), 우측 = 닫기(X)만.
  *  - 하단: 한줄평 말풍선(아바타 = 사용자 프로필 사진) + 컨트롤 한 줄
- *    (좌: 즐겨찾기 하트 / 중앙: 점 인디케이터 / 우: 수정·삭제 아이콘).
+ *    (좌: 즐겨찾기 하트 / 우: 수정·삭제 아이콘).
  *  - 사진이 없으면 어두운 배경에 이모지 플레이스홀더를 중앙에 둔다.
  *
  * 닫기는 우상단 X 버튼(또는 Esc)로만 — 사진을 탭해도 닫히지 않는다.
@@ -160,32 +161,33 @@ export function MarkerStoryViewer({
             </div>
           )}
 
-          {/* 좌: 즐겨찾기 / 중앙: 점 인디케이터 / 우: 수정·삭제 */}
-          <div className="grid grid-cols-3 items-center">
-            <div className="justify-self-start">
-              <button onClick={handleToggleFavorite} aria-label="즐겨찾기" className="-ml-1 p-1">
-                <span
-                  className={`inline-block ${favBump ? 'animate-heart-pop' : ''}`}
-                  onAnimationEnd={() => setFavBump(false)}
-                >
-                  <HeartIcon filled={!!marker.isFavorite} />
-                </span>
-              </button>
-            </div>
+          {/*
+            좌: 즐겨찾기 / 우: 수정·삭제.
 
-            {/* 점 인디케이터 — 그룹에 묶인 나무 수만큼, 현재 슬라이드는 길게 강조. */}
-            <div className="flex justify-center gap-1.5 justify-self-center">
-              {markers.map((item, i) => (
-                <span
-                  key={item.id}
-                  className={`h-1.5 rounded-full transition-all ${
-                    i === activeIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/40'
-                  }`}
-                />
-              ))}
-            </div>
+            가운데에 있던 점 인디케이터는 뺐다. 묶인 나무가 한 그루일 때 점 하나가
+            길쭉한 막대로 그려져 구분선처럼 보였고, 여러 그루일 때도 좌우 스와이프로
+            넘긴다는 건 사진이 바뀌는 것으로 이미 드러난다.
+          */}
+          <div className="flex items-center text-white">
+            <button
+              onClick={handleToggleFavorite}
+              aria-label="즐겨찾기"
+              aria-pressed={!!marker.isFavorite}
+              className="-ml-1 p-1"
+            >
+              {/*
+                하트 팝 애니메이션용 래퍼. `inline-block` 이면 글자 베이스라인에 얹혀
+                옆 아이콘보다 몇 px 높게 앉는다 — `block` 으로 두어야 줄이 맞는다.
+              */}
+              <span
+                className={`block ${favBump ? 'animate-heart-pop' : ''}`}
+                onAnimationEnd={() => setFavBump(false)}
+              >
+                <HeartIcon filled={!!marker.isFavorite} />
+              </span>
+            </button>
 
-            <div className="flex items-center gap-3 justify-self-end">
+            <div className="ml-auto flex items-center gap-3">
               <button onClick={onEdit} aria-label="수정" className="p-1">
                 <PencilIcon />
               </button>
@@ -218,58 +220,31 @@ export function MarkerStoryViewer({
 
 function HeartIcon({ filled }: { filled: boolean }) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-8 w-8"
-      viewBox="0 0 24 24"
+    <IconFrame
+      box={{ cx: 12, cy: 12, h: 16.5 }}
       fill={filled ? '#ff4d6d' : 'none'}
-      stroke={filled ? '#ff4d6d' : 'white'}
-      strokeWidth={1.7}
+      stroke={filled ? '#ff4d6d' : 'currentColor'}
+      aria-hidden
     >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-      />
-    </svg>
+      <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+    </IconFrame>
   );
 }
 
 function PencilIcon() {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-7 w-7 text-white"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.7}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zM19.5 7.125L16.875 4.5"
-      />
-    </svg>
+    <IconFrame box={{ cx: 13.8, cy: 10.4, h: 15.2 }} aria-hidden>
+      <path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+      <path d="M19.5 7.125L16.875 4.5" />
+    </IconFrame>
   );
 }
 
 function TrashIcon() {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-7 w-7 text-white"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.7}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.02-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-      />
-    </svg>
+    <IconFrame box={{ cx: 12, cy: 13, h: 18 }} aria-hidden>
+      <path d="M4 7h16M10 11v6M14 11v6M5 7l1 13a2 2 0 002 2h8a2 2 0 002-2l1-13M9 7V4h6v3" />
+    </IconFrame>
   );
 }
 

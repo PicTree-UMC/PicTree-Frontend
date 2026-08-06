@@ -424,6 +424,199 @@ select {
   animation-delay: 640ms;
 }
 
+
+/* 지도 로딩 화면의 새싹: 다 자란 상태에서 천천히 숨쉰다(무한 반복). */
+@keyframes sprout-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes sprout-ground {
+  0%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scaleX(1.18);
+    opacity: 0.55;
+  }
+}
+
+.animate-sprout-breathe {
+  transform-origin: 50px 78px;
+  animation: sprout-breathe 1.7s ease-in-out infinite;
+}
+
+.animate-sprout-ground {
+  transform-origin: 50px 78px;
+  animation: sprout-ground 1.7s ease-in-out infinite;
+}
+
+/* 마커를 누르면 살짝 들렸다 내려온다. */
+@keyframes marker-tap {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-7px) scale(1.08);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-marker-tap {
+  transform-origin: bottom center;
+  animation: marker-tap 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+/* 동선 빈 화면 일러스트: 출발점 콕 → 경로가 드러나고 → 핀 낙하 → 나무가 자란다.
+   transform-origin 은 SVG 좌표계(viewBox 0 0 200 150) 기준이라 여기 둔다. */
+@keyframes journey-dot-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes journey-path-reveal {
+  from {
+    stroke-dashoffset: 170;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes journey-pin-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes journey-tree-grow {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-journey-dot {
+  transform-origin: 34px 118px;
+  animation: journey-dot-pop 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-journey-path {
+  /* 경로 길이(약 152)보다 넉넉히 — 모자라면 끝이 안 그려진 채 멈춘다 */
+  stroke-dasharray: 170;
+  animation: journey-path-reveal 0.9s ease-out both;
+  animation-delay: 180ms;
+}
+
+.animate-journey-pin {
+  animation: journey-pin-drop 0.45s cubic-bezier(0.3, 1.35, 0.5, 1) both;
+  animation-delay: 420ms;
+}
+
+.animate-journey-tree {
+  transform-origin: 168px 64px;
+  animation: journey-tree-grow 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 900ms;
+}
+
+
+/* 블로그 빈 화면의 책: 책등이 서고 → 양쪽 페이지가 펼쳐지고 → 글줄이 찍힌다.
+   transform-origin 은 SVG 좌표계(viewBox 0 0 24 24) 기준이라 여기 둔다. */
+@keyframes blog-spine-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes blog-page-open {
+  from {
+    transform: scaleX(0.08);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes blog-tick-in {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.animate-blog-spine {
+  transform-origin: 12px 12px;
+  animation: blog-spine-in 0.25s ease-out both;
+}
+
+/* 페이지는 책등(가운데)을 축으로 바깥으로 펼쳐진다 — 좌/우 축이 서로 반대다. */
+.animate-blog-page-left,
+.animate-blog-page-right {
+  animation: blog-page-open 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 200ms;
+}
+
+.animate-blog-page-left {
+  transform-origin: 11.5px 12px;
+}
+
+.animate-blog-page-right {
+  transform-origin: 12.5px 12px;
+}
+
+/* 글줄은 왼쪽 끝에서 자란다. 지연은 쓰는 쪽에서 한 줄씩 준다. */
+.animate-blog-tick {
+  transform-origin: left center;
+  transform-box: fill-box;
+  animation: blog-tick-in 0.22s ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-roadmap-pop,
   .animate-fade-in,
@@ -434,7 +627,20 @@ select {
   .animate-sprout-soil,
   .animate-sprout-stem,
   .animate-sprout-leaf-left,
-  .animate-sprout-leaf-right {
+  .animate-sprout-leaf-right,
+  .animate-sprout-breathe,
+  .animate-sprout-ground,
+  .animate-journey-dot,
+  .animate-journey-path,
+  .animate-journey-pin,
+  .animate-journey-tree,
+  .animate-blog-spine,
+  .animate-blog-page-left,
+  .animate-blog-page-right,
+  .animate-blog-tick,
+  .animate-marker-tap,
+  /* 현재 위치 점의 파란 링(Tailwind animate-ping). 여기 빠져 있어 혼자 계속 돌았다. */
+  .animate-ping {
     animation: none;
   }
 }

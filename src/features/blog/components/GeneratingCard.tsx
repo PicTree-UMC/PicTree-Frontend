@@ -20,7 +20,7 @@ export function GeneratingCard() {
   return (
     <div className="mt-5" role="status" aria-live="polite">
       <div className="mb-4 flex items-center gap-3 px-1">
-        <span className="blog-ai-pulse grid size-10 shrink-0 place-items-center rounded-full bg-[#ecf6d8] text-[20px] text-[#6f8542]" aria-hidden>
+        <span className="blog-ai-pulse grid size-10 shrink-0 place-items-center rounded-full bg-pictree-100 text-[20px] text-pictree-700" aria-hidden>
           ✦
         </span>
         <div className="min-w-0">
