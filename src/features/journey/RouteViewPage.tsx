@@ -303,19 +303,20 @@ export function RouteViewPage() {
       <div ref={containerRef} className="isolate fixed inset-0 z-0 mx-auto sm:max-w-[390px]" />
 
       {/* 헤더와 날짜 관리 바는 지도 위에 떠 있다. 지도 영역을 깎지 않도록 absolute. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 pt-safe">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 pt-header">
         {/* 스크림이 없다 — 예전엔 상단 전체에 크림 그라데이션을 깔아 제목·뒤로가기가 지도
             라벨에 묻히는 걸 막았다(#103). 지금은 **요소마다 자기 배경을 갖는다**: 뒤로가기는
-            크림 원, 제목은 크림 알약. 지도를 덮는 면적이 그라데이션보다 훨씬 작아
+            흰 원(다른 화면의 `BackButton` 과 같은 면), 제목은 크림 알약. 지도를 덮는 면적이 그라데이션보다 훨씬 작아
             상단 지형이 그대로 보이고, 대비는 오히려 더 확실하다(반투명 크림 위 짙은 초록).
 
             날짜 칩까지 하단 시트로 내려가면서 ① 모드의 헤더는 **뒤로가기 하나**만 남았다.
             조작은 아래 한 곳에 모으고 지도 위쪽은 비워 두는 게 이 화면의 원칙이다. */}
-        <header className="pointer-events-auto flex items-center gap-2 px-5 pt-4">
+        {/* 위 여백은 바깥 pt-header 가 준다 — 여기서 또 주면 스텝 1 보다 내려앉는다. */}
+        <header className="pointer-events-auto flex items-center gap-2 px-5">
           <button
             onClick={goBack}
             aria-label="뒤로가기"
-            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#fffcef]/90 text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
           >
             <svg
               viewBox="0 0 24 24"
