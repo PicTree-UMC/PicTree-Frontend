@@ -261,6 +261,21 @@ select {
   padding-top: var(--banner-top);
 }
 
+/*
+ * 지도 위에 얹는 글자의 흰 외곽선. 지도 라벨·등고선·지형색이 뒤에 뭐가 오든 읽히게 한다.
+ * 카카오맵이 지명(`의왕시 학의동`)에 쓰는 것과 같은 방식이다.
+ *
+ * 알약 배경보다 이걸 쓰는 이유: 알약은 글자 길이만큼 지도를 사각으로 덮는데, 외곽선은
+ * 글자 획 주변 몇 px 만 덮어서 지형이 그대로 보인다.
+ *
+ * ⚠️ `paint-order: stroke fill` 이 핵심이다 — 이게 없으면 획이 글자 **위에** 그려져
+ * 안쪽을 파먹고 글자가 가늘어진다. 획은 글자 뒤에 깔려야 한다.
+ */
+.text-halo {
+  paint-order: stroke fill;
+  -webkit-text-stroke: 3px #fff;
+}
+
 /* 스크롤 페이지의 하단 여백 (탭바 + 안전영역 + 여유 24px) */
 .pb-nav {
   padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 24px);

@@ -15,6 +15,7 @@ import { RouteNodeStepper } from './components/RouteNodeStepper';
 import { DATES_PARAM, MAX_PLACES, parseDatesParam, toDatesParam } from './lib/routeParams';
 import { buildSequenceMap } from './lib/sequence';
 import { useGoBack } from '@/shared/hooks/useGoBack';
+import { NavBar } from '@/shared/components';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
 
@@ -305,50 +306,26 @@ export function RouteViewPage() {
       {/* 헤더와 날짜 관리 바는 지도 위에 떠 있다. 지도 영역을 깎지 않도록 absolute. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 pt-header">
         {/* 스크림이 없다 — 예전엔 상단 전체에 크림 그라데이션을 깔아 제목·뒤로가기가 지도
-            라벨에 묻히는 걸 막았다(#103). 지금은 **요소마다 자기 배경을 갖는다**: 뒤로가기는
-            흰 원(다른 화면의 `BackButton` 과 같은 면), 제목은 크림 알약. 지도를 덮는 면적이 그라데이션보다 훨씬 작아
-            상단 지형이 그대로 보이고, 대비는 오히려 더 확실하다(반투명 크림 위 짙은 초록).
+            라벨에 묻히는 걸 막았다(#103). 지금은 **요소마다 자기 방어책을 갖는다**: 뒤로가기는
+            흰 원, 제목은 흰 외곽선(`.text-halo`). 지도를 덮는 면적이 그라데이션보다 훨씬 작아
+            상단 지형이 그대로 보이고, 대비는 오히려 더 확실하다.
 
-            날짜 칩까지 하단 시트로 내려가면서 ① 모드의 헤더는 **뒤로가기 하나**만 남았다.
-            조작은 아래 한 곳에 모으고 지도 위쪽은 비워 두는 게 이 화면의 원칙이다. */}
-        {/* 위 여백은 바깥 pt-header 가 준다 — 여기서 또 주면 스텝 1 보다 내려앉는다. */}
-        <header className="pointer-events-auto flex items-center gap-2 px-5">
-          <button
-            onClick={goBack}
-            aria-label="뒤로가기"
-            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.25"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
-          {/* ② 는 어느 동선을 보고 있는지가 제목 자리에 들어간다. 이름이 길 수 있어 한 줄로
-              자르고, 아직 안 불러왔으면 자리를 비워 제목이 깜빡이지 않게 한다.
-              ① 은 제목이 아예 없다 — '동선 보기' 는 앞 단계를 거쳐 온 사용자에게 알려주는 게
-              없는데 헤더 한 줄을 통째로 차지하고 있었다.
+            제목이 알약이었다가 외곽선으로 바뀌었다 — 알약은 글자 길이만큼 지도를 사각으로
+            덮는데, 외곽선은 획 주변 몇 px 만 덮는다. 카카오맵이 지명에 쓰는 방식이다.
 
-              제목은 뒤로가기와 같은 톤의 크림 알약이다. `inline-block` 인 이유: 줄 전체를
-              채우는 알약은 이름이 짧을 때 지도를 괜히 가린다 — 글자 길이만큼만 차지하게 둔다. */}
-          {isSavedView && (
-            <div className="min-w-0 flex-1">
-              {/* 알약이 자기 배경을 갖게 되면서, 이름이 없는 동안 빈 알약이 뜨면 그게 더
-                  눈에 띈다 — 이름이 올 때까지 통째로 안 그린다. */}
-              {routeDetail?.name && (
-                <h1 className="inline-block h-10 max-w-full truncate rounded-[10px] bg-[#fffcef]/90 px-4 text-[15px] font-medium leading-10 text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
-                  {routeDetail.name}
-                </h1>
-              )}
-            </div>
-          )}
-        </header>
+            ① 도 제목을 갖는다. 한동안 뺐었지만(앞 단계를 거쳐 온 사람에게 '동선 보기' 가
+            알려주는 게 없다는 이유), 지금은 제목이 알약처럼 한 줄을 차지하지도 않고
+            다른 화면과 헤더 얼개가 같아야 해서 되살렸다.
+
+            위 여백은 바깥 pt-header 가 준다 — 여기서 또 주면 스텝 1 보다 내려앉는다. */}
+        <NavBar
+          className="pointer-events-auto px-5"
+          onBack={goBack}
+          /* ② 는 어느 동선을 보고 있는지가 제목이다. 아직 안 불러왔으면 비워 둬서
+             제목이 깜빡이지 않게 한다. */
+          title={isSavedView ? routeDetail?.name : '장소 선택'}
+          titleOnMap
+        />
       </div>
 
       {/* 불러오는 동안·실패했을 때 지도 위에 얹는다. 하단 strip 을 가리지 않아서
