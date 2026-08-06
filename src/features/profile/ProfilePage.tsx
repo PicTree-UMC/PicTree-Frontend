@@ -14,8 +14,9 @@ import { getApiErrorMessage, getProfileErrorKind } from "./lib/profileError";
 import treeIcon from "./assets/icons/tree.svg";
 import accountImage from "./assets/icons/account3d.jpg";
 import cardImage from "./assets/icons/card3d.jpg";
-import calendarImage from "./assets/icons/calendar3d.jpg";
-import favoriteImage from "./assets/icons/favorite3d.jpg";
+// 이 둘만 투명 PNG 다 — 다른 세트에서 왔고 흰 배경이 안 구워져 있다(§8).
+import calendarImage from "./assets/icons/calendar3d.png";
+import favoriteImage from "./assets/icons/favorite3d.png";
 import alertImage from "./assets/icons/alert3d.jpg";
 import alertLogImage from "./assets/icons/alertLog3d.jpg";
 import { useWithdraw } from "./hooks/useWithdraw";
