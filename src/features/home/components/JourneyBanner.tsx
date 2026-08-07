@@ -46,8 +46,13 @@ export function JourneyBanner({ placeCount, nearby }: JourneyBannerProps) {
         <button
           type="button"
           onClick={nearby.onView}
-          /* GREEN-300 위 다크 텍스트 7.9:1. 알림 카드에 있던 #C5D89D 가 이 토큰이다. */
-          className="h-8 shrink-0 rounded-xl bg-pictree-300 px-3 text-[14px] font-medium text-neutral-900"
+          /*
+            GREEN-300 위 다크 텍스트 7.9:1. 알림 카드에 있던 #C5D89D 가 이 토큰이다.
+            글자는 13px — 가이드 §2 의 두 기본값(13/15) 중 아래쪽이다. 흡수한 카드는 14px
+            이었지만 그 중간값을 뒷받침하는 시안 근거가 없었고, 15px 로 올리면 보조 액션이
+            제목 줄과 같은 무게가 된다.
+          */
+          className="h-8 shrink-0 rounded-xl bg-pictree-300 px-3 text-[13px] font-medium text-neutral-900"
         >
           보기
         </button>
