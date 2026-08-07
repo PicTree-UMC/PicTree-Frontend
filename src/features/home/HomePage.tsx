@@ -6,7 +6,7 @@ import { useKakaoMap } from './hooks/useKakaoMap';
 import { useCurrentLocation } from './hooks/useCurrentLocation';
 import { useMapMarkers, type MapMarkerData } from './hooks/useMapMarkers';
 import { useDeleteTree, useToggleFavorite, useTreeDetail, useTrees } from './hooks/useTrees';
-import { JourneyBanner } from './components/JourneyBanner';
+import { TopBanner } from './components/TopBanner';
 import { SproutIllustration } from '@/shared/components';
 import { useNearbyAlertWatcher } from '@/features/profile/hooks/useNearbyAlertWatcher';
 import { MarkerStoryViewer } from './components/MarkerStoryViewer';
@@ -187,10 +187,10 @@ export function HomePage() {
 
       {/*
         상단 안내 카드 — 평소에는 기록한 장소 수를, 반경 50m 안에 내 나무가 있으면 그 알림을
-        보여준다. 카드를 하나 더 얹지 않고 자리를 나눠 쓴다(JourneyBanner 주석 참고).
+        보여준다. 카드를 하나 더 얹지 않고 자리를 나눠 쓴다(TopBanner 주석 참고).
         여러 곳이 반경 안에 들어와도 알림은 하나다(가장 가까운 곳 + "외 N곳").
       */}
-      <JourneyBanner
+      <TopBanner
         placeCount={markers.length}
         nearby={
           nearbyAlert && {
