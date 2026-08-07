@@ -152,7 +152,7 @@ export function BenefitShowcase({ freePlan }: { freePlan: SubscriptionPlanDto })
       <p className="mx-auto mt-2 max-w-[300px] text-center text-[15px] leading-relaxed text-[#60655C]">
         {freeLimitSentence(freePlan)}
         <br />
-        유료 플랜으로 올리면 여행마다 한 편씩 쓸 수 있어요.
+        플랜을 성장시키고 더 많은 기록을 손쉽게 작성해보세요
       </p>
     </section>
   );
