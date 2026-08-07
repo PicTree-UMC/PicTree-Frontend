@@ -4,8 +4,8 @@ import { NavBar, useToast } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { ROUTES } from '../../shared/constants/routes';
 import { BenefitShowcase } from './components/BenefitShowcase';
+import { PaymentCheckoutView } from './components/PaymentCheckoutView';
 import { PaymentCompleteModal } from './components/PaymentCompleteModal';
-import { PaymentConfirmSheet } from './components/PaymentConfirmSheet';
 import { PlanCheckoutButton } from './components/PlanCheckoutButton';
 import { PlanComparison } from './components/PlanComparison';
 import { PremiumFaq } from './components/PremiumFaq';
@@ -16,47 +16,9 @@ import { useBillingKeys } from './hooks/useBillingKeys';
 import { useMySubscription } from './hooks/useMySubscription';
 import { useSubscribeWithCard } from './hooks/useSubscriptionActions';
 import { useSubscriptionPlans } from './hooks/useSubscriptionPlans';
-import { findActiveCard } from './lib/billingKey';
+import { PREMIUM_BACKDROP_CLASS } from './lib/backdrop';
+import { isActiveCard } from './lib/billingKey';
 import type { PaymentStep } from './types/premium';
-
-/**
- * 페이지 배경 그라데이션.
- *
- * 결제 페이지만 크림 단색(§1.1)에서 벗어난다 — 앱에서 유일하게 무언가를 파는 화면이라
- * 다른 화면과 같은 바닥이면 그냥 또 하나의 설정 화면으로 읽힌다. 유튜브 프리미엄도 같은
- * 이유로 이 페이지에만 다른 바탕을 쓴다.
- *
- * 색은 새로 만들지 않고 앱에 있던 것을 되살렸다 — 즐겨찾기 화면의 '저장한 장소' 정렬
- * 버튼이 쓰던 `#ECF6D8 → #FFF6D1` 이다(`1bcf851` 에서 프로필 재디자인과 함께 사라졌다).
- *
- * ⚠️ **그 두 색만으로는 페이지에서 안 보인다.** L* 가 95 와 96.5 로 사실상 같은 밝기고
- * 노랑 쪽으로 색상만 살짝 도는 값이라, 40px 짜리 버튼에서는 충분했지만 화면 전체에 깔면
- * 단색으로 읽힌다. 그래서 **맨 위 30% 에 GREEN-300 을 얹어** 실제로 기울기가 보이게 했다
- * (L* 84 → 95 → 96.5). 참고한 유튜브 프리미엄도 같은 얼개다 — 위쪽에 색이 몰리고 아래로
- * 갈수록 흰색에 가까워진다. 종전 이 페이지의 그라데이션도 GREEN-300 에서 시작했다.
- *
- * 세 값 모두 canonical 이거나(§1.1 GREEN-300·GREEN-100) 되살린 원래 값이다 — 눈대중
- * 중간색을 새로 만들지 않았다(§1.2).
- *
- * INK(`#2C3930`) 대비는 위 끝 7.9:1, 아래 끝 11.2:1 로 전 구간 AA 이상이다.
- *
- * ⚠️ **콘텐츠에 붙이지 않고 뒤에 깐다.** 페이지가 길어서 배경에 직접 걸면 그라데이션이
- * 2,500px 넘게 늘어나 색이 거의 안 변한다. 뷰포트를 덮는 고정 레이어로 두면 스크롤과
- * 무관하게 의도한 폭으로 유지되고, 노치까지 덮는다(§3 의 full-bleed 방식).
- *
- * ⚠️⚠️ **`-z-10` 을 쓰면 안 된다 — 이 레이어가 통째로 안 보인다.** 한 번 그렇게 넣었다가
- * 화면이 크림 단색으로 나왔다. CSS 페인트 순서(CSS 2.1 Appendix E)에서
- *   2단계 = 음수 z-index 후손 · 3단계 = 흐름상 블록 후손의 **배경**
- * 인데, `AppShell` 의 안쪽 div 가 `bg-[#fffcef]` 를 든 흐름상 블록이라 3단계에서 칠해진다.
- * 즉 음수 z 레이어는 앱 배경보다 **아래**에 깔려 크림이 그대로 덮는다. 빌드된 CSS 에는
- * 멀쩡히 들어가 있어서 '적용이 안 됐다'로 보이지만 실제로는 '가려졌다' 다.
- *
- * 그래서 **레이어는 `z-0`(6단계: 위치 지정 + z-index 0), 콘텐츠는 `relative z-10`(7단계)**
- * 로 올린다. 둘 다 3단계보다 뒤에 칠해지므로 앱 배경 위에 놓인다. 하단 탭바(z-40)와
- * 포털로 나가는 시트·모달은 이보다 위라 영향 없다.
- */
-const BACKDROP_CLASS =
-  'fixed inset-0 z-0 mx-auto sm:max-w-[390px] bg-[linear-gradient(180deg,#C5D89D_0%,#ECF6D8_30%,#FFF6D1_100%)]';
 
 /**
  * 이 페이지의 헤더 — 뒤로가기 하나뿐이다.
@@ -91,10 +53,14 @@ export function PremiumPage() {
   /*
     등록된 카드가 있으면 그 카드로 앱 안에서 결제한다. 없으면 종전처럼 토스 인증창을
     연다 — 두 길의 차이는 `useSubscribeWithCard` 주석 참고.
+
+    ⚠️ 한 장만 고르지 않고 **쓸 수 있는 카드를 전부** 결제 화면에 넘긴다. 어느 것으로 낼지는
+    거기서 사용자가 고른다 — 서버가 기본 카드를 알려주지 않아 프론트가 대신 고르면 그건
+    목록 순서에 기댄 짐작일 뿐이다(`PaymentCheckoutView` 주석 참고).
   */
   const { data: billingKeys } = useBillingKeys();
   const subscribeWithCard = useSubscribeWithCard();
-  const activeCard = findActiveCard(billingKeys);
+  const payableCards = (billingKeys ?? []).filter(isActiveCard);
   const [step, setStep] = useState<PaymentStep>('plan');
   /**
    * 고른 플랜 — **비교표의 칩 하나가 정한다.**
@@ -128,12 +94,12 @@ export function PremiumPage() {
    * 성공 시점이 이 화면에 있다 — 그래서 완료 모달(`complete` 스텝)을 여기서 띄운다.
    * 새 카드로 가는 길에는 그 시점이 없다(페이지가 토스로 떠났다가 다른 URL 로 착지한다).
    */
-  const handlePayWithSavedCard = () => {
-    if (!selectedPlan || !activeCard) return;
+  const handlePayWithSavedCard = (billingKeyId: number) => {
+    if (!selectedPlan) return;
     subscribeWithCard.mutate(
       {
         subscriptionPlanId: selectedPlan.id,
-        billingKeyId: activeCard.billingKeyId,
+        billingKeyId,
       },
       {
         onSuccess: () => setStep('complete'),
@@ -168,7 +134,7 @@ export function PremiumPage() {
   if (isLoading) {
     return (
       <main className="relative flex min-h-full flex-col">
-        <div className={BACKDROP_CLASS} />
+        <div className={PREMIUM_BACKDROP_CLASS} />
         <div className="relative z-10 flex flex-1 flex-col">
           <PremiumNavBar />
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-5">
@@ -185,7 +151,7 @@ export function PremiumPage() {
   if (isError || !freePlan || paidPlans.length === 0) {
     return (
       <main className="relative flex min-h-full flex-col">
-        <div className={BACKDROP_CLASS} />
+        <div className={PREMIUM_BACKDROP_CLASS} />
         <div className="relative z-10 flex flex-1 flex-col">
           <PremiumNavBar />
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5">
@@ -207,9 +173,9 @@ export function PremiumPage() {
 
   return (
     <main className="relative min-h-full pb-nav text-[#2C3930]">
-      <div className={BACKDROP_CLASS} />
+      <div className={PREMIUM_BACKDROP_CLASS} />
 
-      {/* 배경 레이어(z-0) 위로 올린다 — 위 BACKDROP_CLASS 주석의 페인트 순서 참고. */}
+      {/* 배경 레이어(z-0) 위로 올린다 — `lib/backdrop.ts` 주석의 페인트 순서 참고. */}
       {/*
         페이지는 크게 **세 덩어리 + 푸터**다. 여백이 그 경계를 말하게 두고, 값은 두 단만
         쓴다 — **섹션 사이 80px · 섹션 안 48px**. 세 번째 값을 들이면 어느 것이 큰 경계인지
@@ -290,9 +256,9 @@ export function PremiumPage() {
       </div>
 
       {step === 'confirm' && (
-        <PaymentConfirmSheet
+        <PaymentCheckoutView
           plan={selectedPlan}
-          card={activeCard}
+          cards={payableCards}
           isPending={subscribeWithCard.isPending}
           onCancel={() => setStep('plan')}
           onPay={handlePayWithSavedCard}
