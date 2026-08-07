@@ -1,15 +1,51 @@
-import { useState } from "react";
-import { CalendarGrid } from "../../shared/components";
-import { useMonthCursor } from "../../shared/hooks/useMonthCursor";
-import { useTravelCalendar } from "./hooks/useTravelCalendar";
-import { CALENDAR_LEVELS, CALENDAR_LEVEL_COLORS } from "./lib/calendarLevel";
-import { NavBar } from "@/shared/components";
-// 연·월 이동 화살표에는 계속 쓴다 — 뒤로가기 꺾쇠만 BackButton 으로 옮겼다.
-import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
-import treeIcon from "./assets/icons/tree.svg";
+import { useState } from 'react';
+import { CalendarGrid, CalendarMonthNav, NavBar } from '@/shared/components';
+import { useMonthCursor } from '@/shared/hooks/useMonthCursor';
+import { useTravelCalendar } from './hooks/useTravelCalendar';
+import { useCalendarTrees } from './hooks/useCalendarTrees';
+import { CALENDAR_LEVEL_COLORS } from './lib/calendarLevel';
+import { GrassLegendSheet } from './components/GrassLegendSheet';
+import { DayTreeList } from './components/DayTreeList';
 
-const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
+/** 헤더 오른쪽 `i`. 뒤로가기와 같은 흰 원 위에 얹어 좌우 무게를 맞춘다. */
+function InfoButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="잔디 색 안내"
+      className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-6 w-6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.25"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v5" />
+        <path d="M12 7.75h.01" />
+      </svg>
+    </button>
+  );
+}
 
+/**
+ * 여행 캘린더 — 하루에 나무를 몇 그루 심었는지 잔디 농도로 보여주고, 날짜를 누르면
+ * 그날 심은 나무를 아래에 늘어놓는다.
+ *
+ * **달력 얼개는 동선 만들기 ①단계(`RouteCalendar`)와 같다.** 예전에는 이 화면만 흰 카드
+ * 안에 격자를 넣고, 헤더에 큼직한 `2026년 ▼` 피커를, 카드 안에 자체 구현한 `‹ 8월 ›` 줄을
+ * 따로 뒀다 — 같은 앱의 두 달력이 테두리·연도 위치·꺾쇠 모양까지 전부 달라 보였다.
+ * 지금은 크림 바닥 위에 공용 `CalendarMonthNav` + `CalendarGrid` 한 벌뿐이다.
+ *
+ * 잔디 색 안내는 헤더의 `i` → 바텀시트로 옮겼다. 늘 펼쳐 두던 패널이 달력 아래를 차지하고
+ * 있었는데, 그 자리는 날짜를 눌렀을 때 뜨는 나무 목록의 것이다.
+ */
 export function TravelCalendarPage() {
   /*
    * 들어오면 이번 달이 보인다(`useMonthCursor` 의 기본값).
@@ -17,173 +53,97 @@ export function TravelCalendarPage() {
    * ⚠️ 예전에는 2026·4 로 박혀 있었다. 그래서 8월에 들어가도 4월이 열렸다.
    *
    * 12월↔1월 넘김은 공용 훅이 맡는다 — 연·월을 따로 들고 손으로 넘기던 코드였다(#104).
+   * 범위(min·max)는 안 준다: 동선 만들기와 달리 여기는 어느 달이든 열어 볼 수 있다.
    */
-  const { year, month, goPrev, goNext, moveTo } = useMonthCursor();
+  const { year, month, goPrev, goNext } = useMonthCursor();
 
   // 달을 넘길 때마다 그 달치를 받는다 (queryKey 에 연·월이 들어 있어 캐시가 산다)
   const { levelByDate, isPending, isError, refetch } = useTravelCalendar(year, month);
-  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const [legendOpen, setLegendOpen] = useState(false);
+  const [pickedDate, setPickedDate] = useState<string | null>(null);
+
+  /*
+    나무 목록은 **날짜를 처음 누른 뒤에야** 받는다 — `/trees` 에 날짜 필터가 없어 전체를
+    페이지 끝까지 훑는 호출이라, 잔디만 보고 나가는 사람에게 물릴 이유가 없다.
+  */
+  const treesQuery = useCalendarTrees(pickedDate !== null);
+
+  /*
+    달을 넘기면 고른 날짜를 놓는다. 안 놓으면 8월을 보고 있는데 아래 목록만 7월 15일에
+    남아 둘이 어긋난 채로 읽힌다. 렌더 중에 상태를 고치는 대신 파생값으로 처리한다 —
+    선택은 '지금 보고 있는 달의 날짜일 때만' 살아 있다.
+  */
+  const visibleDate =
+    pickedDate?.startsWith(`${year}-${String(month).padStart(2, '0')}`) ? pickedDate : null;
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      {/* pb-12 + 아래 카드의 -mt-6 은 카드를 초록 밴드에 걸치게 하던 짝이었다. 밴드가
-          없어졌으니 둘 다 평범한 간격으로 되돌린다. */}
-      <header className="px-5 pb-5 pt-header">
-        <NavBar onBack={() => window.history.back()} title="여행 캘린더" />
-
-        {/* 연도 + 피커 트리거 */}
-        <div className="relative mt-4 flex justify-center">
-          <button
-            type="button"
-            onClick={() => setPickerOpen((prev) => !prev)}
-            aria-expanded={pickerOpen}
-            aria-label="연·월 선택"
-            className="flex items-center gap-1.5 text-2xl font-medium text-[#2C3930]"
-          >
-            {year}년
-            {/* 역삼각형(▼) */}
-            <svg
-              width="14"
-              height="9"
-              viewBox="0 0 14 9"
-              className={`transition-transform ${pickerOpen ? "rotate-180" : ""}`}
-              aria-hidden
-            >
-              <path
-                d="M1 1l6 6 6-6"
-                stroke="#111"
-                strokeWidth="2"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-
-          {pickerOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-20"
-                onClick={() => setPickerOpen(false)}
-              />
-              <div className="absolute top-full z-30 mt-3 w-[280px] rounded-2xl bg-white p-4 shadow-[0px_8px_24px_0px_rgba(0,0,0,0.14)]">
-                <div className="mb-3 flex items-center justify-between px-2">
-                  <button
-                    type="button"
-                    onClick={() => moveTo({ year: year - 1, month })}
-                    aria-label="이전 해"
-                    className="p-2"
-                  >
-                    <img src={chevronLeftIcon} alt="" className="h-4 w-[9px]" />
-                  </button>
-                  <span className="text-[15px] font-medium text-[#2C3930]">
-                    {year}년
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => moveTo({ year: year + 1, month })}
-                    aria-label="다음 해"
-                    className="p-2"
-                  >
-                    <img src={chevronLeftIcon} alt="" className="h-4 w-[9px] rotate-180" />
-                  </button>
-                </div>
-                {/* 월 선택 */}
-                <div className="grid grid-cols-4 gap-2">
-                  {MONTHS.map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => {
-                        moveTo({ year, month: m });
-                        setPickerOpen(false);
-                      }}
-                      className={`rounded-lg py-2 text-[14px] ${
-                        m === month
-                          ? "bg-[#C5D89D] font-medium text-[#2C3930]"
-                          : "text-[#2C3930]"
-                      }`}
-                    >
-                      {m}월
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+      <header className="px-5 pt-header">
+        <NavBar
+          onBack={() => window.history.back()}
+          title="여행 캘린더"
+          action={<InfoButton onClick={() => setLegendOpen(true)} />}
+        />
       </header>
 
-      <div className="px-5">
-        <div className="rounded-[20px] border border-[#ECECEC] bg-white p-5">
-          <div className="mb-4 flex items-center justify-center gap-8">
-            <button type="button" onClick={goPrev} aria-label="이전 달" className="p-1">
-              <img src={chevronLeftIcon} alt="" className="h-[18px] w-[10px]" />
-            </button>
-            <p className="text-[20px] font-medium text-[#2C3930]">{month}월</p>
-            <button type="button" onClick={goNext} aria-label="다음 달" className="p-1">
-              <img src={chevronLeftIcon} alt="" className="h-[18px] w-[10px] rotate-180" />
-            </button>
-          </div>
-
-          {isError ? (
-            <div className="py-8 text-center">
-              <p className="text-[14px] text-[#DC2626]">캘린더를 불러오지 못했어요.</p>
-              <button
-                type="button"
-                onClick={() => refetch()}
-                className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
-              >
-                다시 시도
-              </button>
-            </div>
-          ) : (
-            /*
-              불러오는 중에도 격자는 그린다. 날짜 칸은 연·월만으로 정해지므로
-              잔디만 나중에 채워지면 되고, 통째로 비우면 달을 넘길 때마다 화면이 튄다.
-            */
-            <div className={isPending ? "opacity-50 transition-opacity" : undefined}>
-              <CalendarGrid
-                year={year}
-                month={month}
-                levelByDate={levelByDate}
-                levelColors={CALENDAR_LEVEL_COLORS}
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="mt-4 rounded-xl bg-[#ECF6D8] px-5 py-4">
-          <div className="flex items-center gap-2">
-            <img src={treeIcon} alt="" className="h-5 w-5" />
-            <p className="text-[13px] font-medium text-[#2C3930]">
-              하루에 방문하는 수만큼 잔디가 진해져요
+      <div className="mt-4 px-5">
+        {isError ? (
+          <div className="flex flex-col items-center gap-4 py-10">
+            <p className="text-center text-[15px] font-medium text-[#2c3930]">
+              캘린더를 불러오지 못했어요
             </p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="h-[46px] rounded-[24px] bg-pictree-700 px-8 text-[15px] font-medium text-white"
+            >
+              다시 시도
+            </button>
           </div>
-          {/*
-            items-start 로 두고 적음·많음 에만 mt 를 준다. 라벨이 붙은 만큼
-            열이 길어져도 두 글자는 점 높이(20px) 가운데에 계속 걸리게 하려는 것.
+        ) : (
+          /*
+            불러오는 중에도 격자는 그린다. 날짜 칸은 연·월만으로 정해지므로
+            잔디만 나중에 채워지면 되고, 통째로 비우면 달을 넘길 때마다 화면이 튄다.
+          */
+          <div className={isPending ? 'opacity-50 transition-opacity' : undefined}>
+            <CalendarMonthNav year={year} month={month} onPrev={goPrev} onNext={goNext} />
 
-            열 너비는 점(20px)이 아니라 **가장 긴 라벨**('3~4곳')에 맞춘다. 점 너비로
-            잡아 두면 라벨이 칸 밖으로 삐져나와 옆 라벨과 맞붙어 읽힌다.
-          */}
-          <div className="mt-4 flex items-start justify-center gap-1">
-            <span className="mt-[5px] px-1 text-[13px] text-[#2C3930]">적음</span>
-            {CALENDAR_LEVELS.map(({ shade, label }) => (
-              <span key={label} className="flex w-12 flex-col items-center gap-1.5">
-                <span
-                  className="h-5 w-5 rounded-full"
-                  style={{ backgroundColor: shade }}
-                />
-                <span className="whitespace-nowrap text-[13px] leading-none text-[#2C3930]">
-                  {label}
-                </span>
-              </span>
-            ))}
-            <span className="mt-[5px] px-1 text-[13px] text-[#2C3930]">많음</span>
+            <CalendarGrid
+              year={year}
+              month={month}
+              levelByDate={levelByDate}
+              levelColors={CALENDAR_LEVEL_COLORS}
+              /*
+                고른 날은 연초록 원(GREEN-300)이다. 짙은 초록(`rangeStart`)을 안 쓰는 이유:
+                흰 글자 위로 잔디가 겹쳐 깔리면서 숫자가 안 읽힌다 — 잔디는 숫자 뒤가 아니라
+                **숫자와 같은 칸**에 그려지기 때문이다. 연초록 위 INK 는 7.9:1 로 안전하다.
+              */
+              selectedDates={visibleDate ? [visibleDate] : []}
+              // 한 번 더 누르면 닫힌다 — 목록을 치우는 다른 길이 없다.
+              onDateSelect={(date) => setPickedDate((current) => (current === date ? null : date))}
+              dateAriaLabel={(date, day) => {
+                const level = levelByDate[date] ?? 0;
+                return `${month}월 ${day}일 ${level > 0 ? `잔디 ${level}단계` : '기록 없음'}`;
+              }}
+            />
           </div>
-        </div>
+        )}
+
+        {visibleDate && (
+          <DayTreeList
+            date={visibleDate}
+            trees={treesQuery.data?.[visibleDate] ?? []}
+            // `isPending` 이 아니라 `isLoading` 이다 — 토큰이 없어 쿼리가 꺼져 있으면
+            // `isPending` 은 영영 true 라 스피너가 멈추지 않는다.
+            isPending={treesQuery.isLoading}
+            isError={treesQuery.isError}
+            onRetry={() => treesQuery.refetch()}
+          />
+        )}
       </div>
+
+      {legendOpen && <GrassLegendSheet onClose={() => setLegendOpen(false)} />}
     </div>
   );
 }

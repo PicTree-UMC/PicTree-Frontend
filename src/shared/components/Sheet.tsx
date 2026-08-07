@@ -20,6 +20,18 @@ interface SheetProps {
   handle?: boolean;
   /** 손잡이 색. 배경이 밝은 시트는 진하게, 어두운 시트는 흐리게 쓴다. */
   handleColor?: string;
+  /**
+   * 손잡이 크기.
+   *
+   * - `wide` — 134×5px. 이 셸이 생길 때 있던 시트들이 쓰던 값이라 기본값으로 남겨 뒀다.
+   * - `grip` — 40×4px. **동선 만들기 ②(`RoutePlaceStrip`)의 손잡이**이고, 시트를 이쪽으로
+   *   통일해 가는 중이다. 흰 바닥 시트에서 유일하게 '선'인 요소라 LINE 회색(#d9d9d9)과 짝이다.
+   *
+   * ⚠️ 기본값을 아직 안 바꾼 이유: 이 셸을 쓰는 시트가 아홉이라, 한꺼번에 뒤집으면 이번
+   * 변경과 무관한 화면까지 같이 움직인다. 옮길 때마다 이 값을 `grip` 으로 넘기고, 남는 게
+   * 없어지면 그때 기본값을 바꾸고 이 prop 을 지운다.
+   */
+  handleSize?: 'wide' | 'grip';
   /** 열릴 때 슬라이드업. */
   animateIn?: boolean;
   /**
@@ -64,6 +76,7 @@ export function Sheet({
   dim = 'light',
   handle = true,
   handleColor = '#111',
+  handleSize = 'wide',
   animateIn = true,
   top,
   className = '',
@@ -109,7 +122,7 @@ export function Sheet({
             className="flex w-full shrink-0 justify-center pb-2 pt-3"
           >
             <span
-              className="h-[5px] w-[134px] rounded-full"
+              className={`rounded-full ${handleSize === 'grip' ? 'h-1 w-10' : 'h-[5px] w-[134px]'}`}
               style={{ backgroundColor: handleColor }}
               aria-hidden
             />
