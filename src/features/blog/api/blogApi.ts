@@ -11,7 +11,7 @@ import type {
 
 /**
  * AI 블로그 초안 목록 조회
- * GET /blogs/ai/drafts
+ * GET /api/v1/blog-drafts
  */
 export const getAIBlogDrafts = async (accessToken?: string): Promise<AIBlogDraftListData> => {
   const { data } = await httpClient.get<ApiResponse<AIBlogDraftListData>>('/blog-drafts', {
@@ -27,7 +27,7 @@ export const getAIBlogDrafts = async (accessToken?: string): Promise<AIBlogDraft
 
 /**
  * AI 블로그 초안 생성
- * POST /blogs/ai/drafts
+ * POST /api/v1/blog-drafts/generate
  */
 export const createAIBlogDraft = async (
   accessToken: string | undefined,
@@ -48,7 +48,7 @@ export const createAIBlogDraft = async (
 
 /**
  * AI 블로그 초안 저장(스크랩)
- * POST /blogs/drafts
+ * POST /api/v1/blog-drafts
  */
 export const saveAIBlogDraft = async (
   accessToken: string | undefined,
@@ -69,7 +69,7 @@ export const saveAIBlogDraft = async (
 
 /**
  * AI 블로그 초안 상세 조회
- * GET /blogs/drafts/{draftId}
+ * GET /api/v1/blog-drafts/{draftId}
  */
 export const getAIBlogDraftDetail = async (
   accessToken: string | undefined,
@@ -88,7 +88,7 @@ export const getAIBlogDraftDetail = async (
 
 /**
  * AI 블로그 초안 삭제
- * DELETE /blogs/drafts/{draftId}
+ * DELETE /api/v1/blog-drafts/{draftId}
  */
 export const deleteAIBlogDraft = async (accessToken: string | undefined, draftId: number) => {
   const { data } = await httpClient.delete<ApiResponse<null>>(`/blog-drafts/${draftId}`, {

@@ -36,13 +36,17 @@ export function BlogCreatePage() {
     try {
       await saveDraft({
         title: flow.draft.title,
-        items: flow.draft.sections.map((section) => ({
-          placeName: section.heading,
-          content: section.body,
+        days: flow.draft.days.map((day) => ({
+          date: day.date,
+          items: day.sections.map((section) => ({
+            treeId: section.treeId,
+            imageUrl: section.image || null,
+            placeName: section.heading,
+            content: section.body,
+          })),
         })),
         startDate: flow.startDate,
         endDate: flow.endDate,
-        treeIds: flow.selectedTreeIds,
       });
       showToast('블로그를 저장했어요', 'success');
       navigate(ROUTES.blog);

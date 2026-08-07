@@ -18,38 +18,41 @@ export interface CreateAIBlogDraftRequest {
   tone: 'RECORD' | 'SIMPLE' | 'WITTY' | 'CALM';
 }
 
+export interface AIBlogDraftItem {
+  treeId: number;
+  imageUrl: string | null;
+  placeName: string;
+  content: string;
+}
+
+export interface AIBlogDraftDay {
+  date: string; // YYYY-MM-DD
+  items: AIBlogDraftItem[];
+}
+
 export interface CreateAIBlogDraftResponseData {
   title: string;
-  items: { placeName: string; content: string }[];
+  days: AIBlogDraftDay[];
   startDate: string;
   endDate: string;
 }
 
 export interface SaveAIBlogDraftRequest {
   title: string;
-  items: {
-    placeName: string;
-    content: string;
-  }[];
+  days: AIBlogDraftDay[];
   startDate: string;
   endDate: string;
-  treeIds: number[];
 }
 
 export interface SaveAIBlogDraftResponseData {
   draftId: number;
 }
 
-/** GET /blogs/drafts/{draftId} 상세 응답. */
+/** GET /api/v1/blog-drafts/{draftId} 상세 응답. */
 export interface AIBlogDraftDetail {
   draftId: number;
   title: string;
-  items: {
-    treeId: number;
-    imageUrl: string | null;
-    placeName: string;
-    content: string;
-  }[];
+  days: AIBlogDraftDay[];
   startDate: string;
   endDate: string;
   createdAt: string;
@@ -95,6 +98,12 @@ export interface BlogSection {
   image: string;
   /** 기록 당시 기분 이모지 (예: "😍"). 카드뉴스 뱃지에 사용. */
   mood: string;
+}
+
+/** 생성 결과 화면에서 날짜별로 묶은 초안 항목. */
+export interface BlogDay {
+  date: string;
+  sections: BlogSection[];
 }
 
 /** 저장된 블로그. 메인 목록 렌더와 저장에 필요한 최소 필드. */

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { BlogSection, BlogStatus, ToneId, BlogTreeRecord, CreateAIBlogDraftRequest } from '../types/blog';
+import type { BlogDay, BlogStatus, ToneId, BlogTreeRecord, CreateAIBlogDraftRequest } from '../types/blog';
 import { getLocalDateString } from '../../../shared/lib/date';
 import { DEFAULT_TONE_ID } from '../constants/blogTones';
 import { suggestToneFromMoods } from '../lib/moodTone';
@@ -29,7 +29,7 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
   const [endDate, setEndDate] = useState(initialEndDate ?? '2026-04-01');
   const [toneId, setToneId] = useState<ToneId>(DEFAULT_TONE_ID);
   const [status, setStatus] = useState<BlogStatus>('idle');
-  const [draft, setDraft] = useState<{ title: string; sections: BlogSection[] } | null>(null);
+  const [draft, setDraft] = useState<{ title: string; days: BlogDay[] } | null>(null);
 
   const accessToken = useAuthStore((s) => s.accessToken);
 
@@ -103,15 +103,21 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
 
         if (cancelled) return;
 
-        const sections: BlogSection[] = (resp.items ?? []).map((it, idx) => ({
-          treeId: selectedTreeIds[idx] ?? 0,
-          heading: it.placeName,
-          body: it.content,
-          image: trees.find((t) => t.name === it.placeName)?.defaultImage ?? '',
-          mood: trees.find((t) => t.name === it.placeName)?.mood ?? '😌',
+        const days: BlogDay[] = (resp.days ?? []).map((day) => ({
+          date: day.date,
+          sections: day.items.map((item) => {
+            const tree = trees.find((candidate) => candidate.treeId === item.treeId);
+            return {
+              treeId: item.treeId,
+              heading: item.placeName,
+              body: item.content,
+              image: item.imageUrl ?? tree?.defaultImage ?? '',
+              mood: tree?.mood ?? '😌',
+            };
+          }),
         }));
 
-        setDraft({ title: resp.title, sections });
+        setDraft({ title: resp.title, days });
         setStatus('ready');
       } catch (err) {
         // 실패하면 상태를 idle로 돌리고 로그를 남긴다.
