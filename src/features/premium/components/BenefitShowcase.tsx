@@ -2,17 +2,24 @@ import type { CSSProperties } from 'react';
 import { useInView } from '@/shared/hooks/useInView';
 
 /**
- * 사진 네 장의 자리와, 가운데(문서 카드)까지 옮겨갈 거리.
+ * 사진 네 장의 자리와, 무대 정중앙(문서 카드)까지 옮겨갈 거리.
  *
  * 무대는 280×240 고정이다 — 320px 기기에서도 페이지 좌우 여백(`px-5`)을 빼면 280px 이
  * 남아 딱 들어간다. 좌표를 %로 두면 `translate` 의 % 기준이 자기 자신 크기라 거리가
  * 어긋나므로, 무대를 고정하고 px 로 적는다.
+ *
+ * **네 귀퉁이에 하나씩 둔다.** 한때 넷 다 위쪽에 몰려 있었는데, 그러면 카드가 아래에서
+ * 올라오는 꼴이라 위아래 여백이 갈리고 화면이 한쪽으로 쏠린다. 가운데를 둘러싸게 놓으면
+ * '모인다'도 더 잘 읽히고 무대도 고르게 찬다.
+ *
+ * tx/ty 는 각 사진의 **중심**에서 무대 중심(140, 120)까지의 거리다. 사진은 52px 이라
+ * 중심 = left + 26, top + 26.
  */
 const PHOTOS = [
-  { left: 28, top: 10, tx: 86, ty: 120, delay: 0 },
-  { left: 156, top: 2, tx: -42, ty: 128, delay: 0.12 },
-  { left: 6, top: 70, tx: 108, ty: 60, delay: 0.24 },
-  { left: 192, top: 58, tx: -78, ty: 72, delay: 0.36 },
+  { left: 24, top: 18, tx: 90, ty: 76, delay: 0 },
+  { left: 196, top: 8, tx: -82, ty: 86, delay: 0.12 },
+  { left: 10, top: 148, tx: 104, ty: -54, delay: 0.24 },
+  { left: 204, top: 158, tx: -90, ty: -64, delay: 0.36 },
 ];
 
 /** 글줄의 최종 폭. 마지막 줄을 짧게 둬야 문단이 끝난 것으로 읽힌다. */
@@ -81,14 +88,19 @@ export function BenefitShowcase() {
         ))}
 
         {/*
-          사진들이 빨려드는 그 자리에 올라온다.
+          사진들이 빨려드는 자리 — 무대 정중앙이다.
 
-          ⚠️ **가운데 정렬을 `-translate-x-1/2` 로 하면 안 된다.** 그것도 `transform` 이라
-          아래 `benefit-doc` 키프레임의 `transform`(translateY·scale)이 통째로 덮어쓴다 —
-          가로 보정이 사라져 카드 왼쪽 끝이 무대 50% 에 놓이고 오른쪽이 잘려 나간다.
-          그래서 **바깥 줄이 flex 로 가운데를 잡고**, 카드의 transform 은 연출만 쓴다.
+          ⚠️ **가운데 정렬을 `transform`(`-translate-x-1/2` 등)으로 하면 안 된다.** 아래
+          `benefit-doc` 키프레임이 `transform`(translateY·scale)을 쓰기 때문에 정렬 보정이
+          통째로 덮어써진다 — 실제로 카드 왼쪽 끝이 무대 50% 에 놓여 오른쪽이 잘렸다.
+          그래서 **바깥 줄이 flex 로 두 축을 다 잡고**, 카드의 transform 은 연출만 쓴다.
+
+          `top` 을 px 로 박지 않는 이유도 있다: 세로 가운데를 손으로 맞추려면 카드의 실제
+          높이를 알아야 하는데(글줄 수·글꼴에 따라 달라진다) `items-center` 는 높이가
+          바뀌어도 알아서 맞춘다. 한때 `top-[100px]` 이었고 그 값이 카드를 아래로 밀어
+          위 여백 100px · 아래 27px 로 갈라 놨다.
         */}
-        <div className="absolute inset-x-0 top-[100px] flex justify-center">
+        <div className="absolute inset-0 flex items-center justify-center">
           <div className="benefit-doc w-[200px] rounded-2xl border border-[#ECECEC] bg-white p-4 shadow-sm">
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-pictree-500" />
