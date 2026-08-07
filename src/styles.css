@@ -693,3 +693,139 @@ select {
     animation: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   프리미엄 혜택 소개 — 사진이 모여 글이 되는 연출
+   (features/premium/components/BenefitShowcase.tsx)
+
+   스크롤해서 들어왔을 때 `.benefit-play` 가 붙으면서 한 번 재생된다. 붙기 전에는
+   전부 opacity 0 이라 화면 밖에서 미리 재생돼 버리는 일이 없다 — 아래쪽 섹션이라
+   마운트 시점에 틀면 사용자가 도착했을 땐 이미 끝나 있다(shared/hooks/useInView).
+
+   흐름: 사진 네 장이 흩어진 자리에서 하나씩 떠오르고 → 가운데로 빨려들며 작아지고 →
+   그 자리에 문서 카드가 올라오고 → 글줄이 한 줄씩 써진다.
+
+   사진마다 --tx/--ty(가운데까지의 거리)를 인라인으로 받는다. 키프레임 하나로 네 장을
+   다 굴리기 위해서다. 도착 시각이 조금씩 어긋나는 건 의도다 — 네 장이 동시에 빨려들면
+   한 덩어리로 움직여 '모은다'로 안 읽힌다.
+   ───────────────────────────────────────────────────────────── */
+
+/* 사진: 떠오름(7%) → 머무름(19%) → 가운데로 빨려듦(33%). 그 뒤로는 안 보이는 채
+   제자리로 되돌려 놓는다(34%) — 다음 바퀴의 0% 와 같은 상태여야 이어붙은 자국이 안 난다. */
+@keyframes benefit-photo {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.55);
+  }
+  7% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  19% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    opacity: 0;
+    transform: translate(var(--tx, 0), var(--ty, 0)) scale(0.4);
+  }
+  /* 사라진 뒤 한 프레임 만에 원위치로. 투명할 때 옮겨야 되돌아가는 게 안 보인다. */
+  34%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.55);
+  }
+}
+
+/* 문서: 올라옴(8%) → 머무름(52%) → 사라짐(62%). 62% 는 절대 시각으로 6.84초라
+   사진이 다시 떠오르는 7.0초보다 앞선다 — 둘이 겹치면 화면에 두 장면이 같이 남는다. */
+@keyframes benefit-doc {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.96);
+  }
+  8% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  52% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  62% {
+    opacity: 0;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.96);
+  }
+}
+
+/* 글이 '써지는' 건 폭이 늘어나는 것으로 만든다. scaleX 는 둥근 끝이 같이 늘어나
+   찌그러져 보인다 — 줄이 네 개뿐이라 폭 애니메이션의 비용은 문제되지 않는다. */
+/* 글줄: 써짐(8%) → 머무름(56%) → 폭 0 으로 되돌림(58%). 되돌리는 58% 는 7.06초라
+   문서가 이미 사라진 뒤다 — 문서가 보이는 동안 줄이 줄어들면 지워지는 것처럼 보인다. */
+@keyframes benefit-line {
+  0% {
+    width: 0;
+  }
+  8% {
+    width: var(--w, 100%);
+  }
+  56% {
+    width: var(--w, 100%);
+  }
+  58%,
+  100% {
+    width: 0;
+  }
+}
+
+.benefit-photo,
+.benefit-doc,
+.benefit-line {
+  opacity: 0;
+}
+.benefit-line {
+  width: 0;
+}
+
+/*
+  ⚠️ **세 애니메이션의 duration 이 모두 7s 로 같아야 한다.** 무한 반복에서 길이가 다르면
+  각자 다른 주기로 돌아 바퀴를 거듭할수록 어긋난다(사진이 모이기도 전에 글이 써진다).
+  길이를 묶어 두고 **각 단계는 키프레임 %로**, 요소별 시차는 `--d`(animation-delay)로 낸다.
+  delay 는 시작만 늦출 뿐 주기는 그대로라 위상차가 영원히 유지된다.
+
+  화면 밖으로 나가면 `.benefit-play` 가 떨어져 재생이 멈춘다(useInView) — 안 보이는
+  섹션이 계속 도는 걸 막는다.
+*/
+.benefit-play .benefit-photo {
+  animation: benefit-photo 7s ease-in-out var(--d, 0s) infinite both;
+}
+.benefit-play .benefit-doc {
+  animation: benefit-doc 7s cubic-bezier(0.22, 1, 0.36, 1) 2.5s infinite both;
+}
+.benefit-play .benefit-line {
+  animation: benefit-line 7s ease-out var(--d, 3s) infinite both;
+  opacity: 1;
+}
+
+/* 움직임을 줄이라고 한 사용자에게는 '다 끝난 그림'을 그대로 보여준다. 사진은 흩어진
+   자리에 그대로 두고 문서와 글줄만 채운다 — 연출 없이도 무엇을 말하는지는 읽힌다. */
+@media (prefers-reduced-motion: reduce) {
+  .benefit-photo,
+  .benefit-doc,
+  .benefit-line,
+  .benefit-play .benefit-photo,
+  .benefit-play .benefit-doc,
+  .benefit-play .benefit-line {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .benefit-line,
+  .benefit-play .benefit-line {
+    width: var(--w, 100%);
+  }
+}

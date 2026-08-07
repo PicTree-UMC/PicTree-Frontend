@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { NavBar, useToast } from "@/shared/components";
+import { NavBar, SettingsList, SettingsRow, useToast } from "@/shared/components";
+import { ROUTES } from "@/shared/constants/routes";
 import { useMyProfile } from "./hooks/useMyProfile";
 import { useUpdateMyProfile } from "./hooks/useUpdateMyProfile";
 import { getPlanLabel } from "./lib/plan";
 import { ProfileImageSheet } from "./components/ProfileImageSheet";
 import treeIcon from "./assets/icons/tree.svg";
+import cardImage from "./assets/icons/card3d.jpg";
 
 /** 서버 `UpdateUserRequestDto` 의 제약. 넘기면 400 이 떨어진다. */
 const NICKNAME_MAX = 50;
@@ -198,6 +200,22 @@ export function ProfileEditPage() {
         >
           {isSaving ? "저장 중..." : "저장하기"}
         </button>
+
+        {/*
+          결제 수단은 이 화면의 폼과 **다른 묶음**이다 — 저장하기가 닫는 것은 위의 닉네임·
+          이메일뿐이고, 이 줄은 다른 화면으로 나가는 문이다. 그래서 저장 버튼 아래에
+          그룹 리스트로 따로 세운다(iOS 설정이 폼과 이동 줄을 가르는 방식).
+
+          프로필 최상위 목록이 아니라 여기 있는 이유: 카드는 평생 한두 번 여는 화면이라
+          최상위 줄을 하나 차지할 만큼 자주 쓰이지 않고, 내용상 '내 정보' 에 딸린 값이다.
+        */}
+        <SettingsList className="mt-3">
+          <SettingsRow
+            image={cardImage}
+            title="결제 수단"
+            onClick={() => navigate(ROUTES.paymentMethods)}
+          />
+        </SettingsList>
       </div>
 
       {isSheetOpen && (

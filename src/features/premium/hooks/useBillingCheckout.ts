@@ -1,6 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
 import { getCustomerKey } from '../api/paymentApi';
-import { PENDING_PLAN_STORAGE_KEY, requestBillingAuth } from '../lib/tossPayments';
+import {
+  BILLING_INTENT_STORAGE_KEY,
+  PENDING_PLAN_STORAGE_KEY,
+  requestBillingAuth,
+} from '../lib/tossPayments';
 
 /**
  * "결제하기" 를 누르면 실행되는 결제 시작 훅.
@@ -17,6 +21,7 @@ export const useBillingCheckout = () => {
   return useMutation({
     mutationFn: async (subscriptionPlanId: number) => {
       const customerKey = await getCustomerKey();
+      sessionStorage.setItem(BILLING_INTENT_STORAGE_KEY, 'subscribe');
       sessionStorage.setItem(PENDING_PLAN_STORAGE_KEY, String(subscriptionPlanId));
       await requestBillingAuth(customerKey); // 성공 시 리다이렉트 (반환 없음)
     },
