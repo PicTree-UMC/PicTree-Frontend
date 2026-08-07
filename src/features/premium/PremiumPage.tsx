@@ -35,9 +35,20 @@ import type { PaymentStep } from './types/premium';
  * ⚠️ **콘텐츠에 붙이지 않고 뒤에 깐다.** 페이지가 길어서 배경에 직접 걸면 그라데이션이
  * 2,500px 넘게 늘어나 색이 거의 안 변한다. 뷰포트를 덮는 고정 레이어로 두면 스크롤과
  * 무관하게 의도한 폭으로 유지되고, 노치까지 덮는다(§3 의 full-bleed 방식).
+ *
+ * ⚠️⚠️ **`-z-10` 을 쓰면 안 된다 — 이 레이어가 통째로 안 보인다.** 한 번 그렇게 넣었다가
+ * 화면이 크림 단색으로 나왔다. CSS 페인트 순서(CSS 2.1 Appendix E)에서
+ *   2단계 = 음수 z-index 후손 · 3단계 = 흐름상 블록 후손의 **배경**
+ * 인데, `AppShell` 의 안쪽 div 가 `bg-[#fffcef]` 를 든 흐름상 블록이라 3단계에서 칠해진다.
+ * 즉 음수 z 레이어는 앱 배경보다 **아래**에 깔려 크림이 그대로 덮는다. 빌드된 CSS 에는
+ * 멀쩡히 들어가 있어서 '적용이 안 됐다'로 보이지만 실제로는 '가려졌다' 다.
+ *
+ * 그래서 **레이어는 `z-0`(6단계: 위치 지정 + z-index 0), 콘텐츠는 `relative z-10`(7단계)**
+ * 로 올린다. 둘 다 3단계보다 뒤에 칠해지므로 앱 배경 위에 놓인다. 하단 탭바(z-40)와
+ * 포털로 나가는 시트·모달은 이보다 위라 영향 없다.
  */
 const BACKDROP_CLASS =
-  'fixed inset-0 -z-10 mx-auto sm:max-w-[390px] bg-[linear-gradient(180deg,#C5D89D_0%,#ECF6D8_30%,#FFF6D1_100%)]';
+  'fixed inset-0 z-0 mx-auto sm:max-w-[390px] bg-[linear-gradient(180deg,#C5D89D_0%,#ECF6D8_30%,#FFF6D1_100%)]';
 
 export function PremiumPage() {
   const navigate = useNavigate();
@@ -73,10 +84,12 @@ export function PremiumPage() {
 
   if (isLoading) {
     return (
-      <main className="flex min-h-full flex-col items-center justify-center gap-3 px-5">
+      <main className="relative flex min-h-full flex-col items-center justify-center gap-3 px-5">
         <div className={BACKDROP_CLASS} />
-        <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-700" />
-        <p className="text-[15px] font-medium text-[#5B6B38]">요금제를 불러오는 중...</p>
+        <div className="relative z-10 size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-700" />
+        <p className="relative z-10 text-[15px] font-medium text-[#5B6B38]">
+          요금제를 불러오는 중...
+        </p>
       </main>
     );
   }
@@ -85,15 +98,15 @@ export function PremiumPage() {
   // 값 없이 카드를 그리면 예전처럼 하드코딩으로 되돌아가게 된다.
   if (isError || !freePlan || paidPlans.length === 0) {
     return (
-      <main className="flex min-h-full flex-col items-center justify-center gap-4 px-5">
+      <main className="relative flex min-h-full flex-col items-center justify-center gap-4 px-5">
         <div className={BACKDROP_CLASS} />
-        <p className="text-center text-[15px] font-medium text-[#2C3930]">
+        <p className="relative z-10 text-center text-[15px] font-medium text-[#2C3930]">
           요금제를 불러오지 못했어요
         </p>
         <button
           type="button"
           onClick={() => refetch()}
-          className="h-12 rounded-xl bg-pictree-700 px-8 text-[15px] font-medium text-white"
+          className="relative z-10 h-12 rounded-xl bg-pictree-700 px-8 text-[15px] font-medium text-white"
         >
           다시 시도
         </button>
@@ -102,45 +115,48 @@ export function PremiumPage() {
   }
 
   return (
-    <main className="min-h-full pb-nav text-[#2C3930]">
+    <main className="relative min-h-full pb-nav text-[#2C3930]">
       <div className={BACKDROP_CLASS} />
 
-      <PremiumHero />
+      {/* 배경 레이어(z-0) 위로 올린다 — 위 BACKDROP_CLASS 주석의 페인트 순서 참고. */}
+      <div className="relative z-10">
+        <PremiumHero />
 
-      {/* 섹션 사이는 gap-10. 각 섹션이 자기 제목을 갖고 있어 이만큼 떨어져야 묶음이 읽힌다. */}
-      <div className="mt-10 flex flex-col gap-10 px-5">
-        <section className="flex flex-col gap-4">
-          {paidPlans.map((plan, i) => (
-            <PlanIntroCard
-              key={plan.id}
-              plan={plan}
-              // 가장 비싼 것 바로 앞을 '추천' 으로 — 종전 PlanCard 의 규칙 그대로다.
-              // 유료가 하나뿐이면 그것이 곧 유일한 선택이라 배지를 달지 않는다.
-              recommended={paidPlans.length > 1 && i === paidPlans.length - 2}
-              onStart={() => openConfirm(plan.id)}
-            />
-          ))}
-        </section>
+        {/* 섹션 사이는 gap-10. 각 섹션이 자기 제목을 갖고 있어 이만큼 떨어져야 묶음이 읽힌다. */}
+        <div className="mt-10 flex flex-col gap-10 px-5">
+          <section className="flex flex-col gap-4">
+            {paidPlans.map((plan, i) => (
+              <PlanIntroCard
+                key={plan.id}
+                plan={plan}
+                // 가장 비싼 것 바로 앞을 '추천' 으로 — 종전 PlanCard 의 규칙 그대로다.
+                // 유료가 하나뿐이면 그것이 곧 유일한 선택이라 배지를 달지 않는다.
+                recommended={paidPlans.length > 1 && i === paidPlans.length - 2}
+                onStart={() => openConfirm(plan.id)}
+              />
+            ))}
+          </section>
 
-        <PlanComparison
-          freePlan={freePlan}
-          paidPlans={paidPlans}
-          // 기본은 가장 비싼 플랜 — 혜택 차이가 가장 크게 보이는 열이다.
-          selectedId={comparedId ?? paidPlans[paidPlans.length - 1].id}
-          onSelect={setComparedId}
-        />
+          <PlanComparison
+            freePlan={freePlan}
+            paidPlans={paidPlans}
+            // 기본은 가장 비싼 플랜 — 혜택 차이가 가장 크게 보이는 열이다.
+            selectedId={comparedId ?? paidPlans[paidPlans.length - 1].id}
+            onSelect={setComparedId}
+          />
 
-        <PremiumFaq />
+          <PremiumFaq />
 
-        {/*
+          {/*
           결제 고지. 13px 로 올렸다(종전 10px 은 §2 의 최소 13px 위반이었다).
           '무료 체험'·'상위 요금제로 변경' 은 근거가 없어 빠졌다 — constants/premiumFaq.ts 주석 참고.
         */}
-        <p className="text-center text-[13px] leading-relaxed text-[#60655C]">
-          결제 후 즉시 저장 용량과 월 작성 횟수가 적용돼요.
-          <br />
-          매월 자동으로 갱신되고, 다음 결제일 전까지 언제든 해지할 수 있어요.
-        </p>
+          <p className="text-center text-[13px] leading-relaxed text-[#60655C]">
+            결제 후 즉시 저장 용량과 월 작성 횟수가 적용돼요.
+            <br />
+            매월 자동으로 갱신되고, 다음 결제일 전까지 언제든 해지할 수 있어요.
+          </p>
+        </div>
       </div>
 
       {step === 'confirm' && checkoutPlan && (
