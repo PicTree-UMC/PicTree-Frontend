@@ -45,7 +45,7 @@ export function BlogPage() {
         <section className="flex flex-col px-5">
           {savedBlogs.map((blog) => (
             <SavedBlogCard
-              key={blog.id}
+              key={blog.draftId}
               blog={blog}
               treeCount={trees?.filter((tree) => {
                 const recordedDate = getLocalDateString(new Date(tree.createdAt));

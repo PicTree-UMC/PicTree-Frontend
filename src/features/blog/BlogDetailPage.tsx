@@ -3,13 +3,11 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getAIBlogDraftDetail } from './api/blogApi';
 import { formatDateRange, formatLongDate } from './lib/formatBlogDate';
-import { DeleteDraftModal } from './components/DeleteDraftModal';
 import { useBlogDraftStore } from './store/blogDraftStore';
 import { NavBar } from '@/shared/components';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
-import { useBlogTrees } from './hooks/useBlogTrees';
-import { formatKoreanDate } from '@/shared/lib/date';
+import { DeleteConfirmModal, DeleteIconButton } from '@/shared/components/DeleteConfirmModal';
 
 export function BlogDetailPage() {
   const navigate = useNavigate();
@@ -19,11 +17,10 @@ export function BlogDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const deleteBlog = useBlogDraftStore((state) => state.deleteBlogAsync);
   const { showToast } = useToast();
-  const { data: trees } = useBlogTrees();
 
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ['blog-drafts', 'detail', numericDraftId],
-    queryFn: () => getAIBlogDraftDetail(undefined, numericDraftId),
+    queryFn: () => getAIBlogDraftDetail(numericDraftId),
     enabled: Number.isInteger(numericDraftId) && numericDraftId > 0,
   });
 
@@ -54,19 +51,10 @@ export function BlogDetailPage() {
           title="블로그"
           action={
             data && (
-              <button
-                type="button"
+              <DeleteIconButton
+                label="블로그 초안 삭제"
                 onClick={() => setDeleteOpen(true)}
-                aria-label="블로그 초안 삭제"
-                className="grid size-10 place-items-center rounded-full text-[#dc2626] active:bg-red-50"
-              >
-                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M3 6h18" />
-                  <path d="M8 6V4h8v2" />
-                  <path d="M19 6l-1 14H6L5 6" />
-                  <path d="M10 11v5M14 11v5" />
-                </svg>
-              </button>
+              />
             )
           }
         />
@@ -102,41 +90,39 @@ export function BlogDetailPage() {
             </time>
           </header>
 
-          <div className="pb-4 pt-8">
-            {data.items.map((item, index) => (
-              <section key={item.treeId} className={index > 0 ? 'mt-14' : undefined}>
-                <h2 className="text-[20px] font-bold leading-[1.5] text-[#202520]">
-                  {index + 1}. {item.placeName}
+          <div className="pb-4 pt-4">
+            {data.days.map((day, dayIndex) => (
+              <section key={day.date} className={dayIndex > 0 ? 'mt-16 border-t border-[#eeeeea] pt-12' : 'pt-8'}>
+                <h2 className="text-center text-[20px] font-bold tracking-[-0.015em] text-[#202520]">
+                  {formatLongDate(day.date)}
                 </h2>
-                {item.imageUrl && (
-                  <figure className="mt-5">
-                    <img src={item.imageUrl} alt={`${item.placeName}에서 촬영한 사진`} className="max-h-[560px] w-full bg-[#f1f3eb] object-cover" />
-                    {(() => {
-                      const recordedAt = trees?.find((tree) => tree.treeId === item.treeId)?.createdAt;
-                      const label = formatKoreanDate(recordedAt);
-                      return label ? (
-                        <figcaption className="mt-2 flex items-center justify-end gap-1 text-[12px] text-[#9a9f97]">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                            <rect x="3" y="5" width="18" height="16" rx="2" />
-                            <path d="M16 3v4M8 3v4M3 11h18" />
-                          </svg>
-                          {label} 촬영
-                        </figcaption>
-                      ) : null;
-                    })()}
-                  </figure>
-                )}
-                <p className="mt-5 whitespace-pre-line text-[16px] leading-[2] tracking-[-0.01em] text-[#3f453e]">
-                  {item.content}
-                </p>
+                <div className="mt-8">
+                  {day.items.map((item, itemIndex) => (
+                    <article key={`${item.treeId}-${itemIndex}`} className={itemIndex > 0 ? 'mt-14' : undefined}>
+                      {item.imageUrl && (
+                        <figure>
+                          <img src={item.imageUrl} alt={`${item.placeName}에서 촬영한 사진`} className="max-h-[560px] w-full bg-[#f1f3eb] object-cover" />
+                        </figure>
+                      )}
+                      <h3 className={`${item.imageUrl ? 'mt-5' : ''} text-[19px] font-bold leading-[1.5] text-[#202520]`}>
+                        {item.placeName}
+                      </h3>
+                      <p className="mt-3 whitespace-pre-line text-[16px] leading-[2] tracking-[-0.01em] text-[#3f453e]">
+                        {item.content}
+                      </p>
+                    </article>
+                  ))}
+                </div>
               </section>
             ))}
           </div>
         </article>
       )}
 
-      <DeleteDraftModal
+      <DeleteConfirmModal
         isOpen={deleteOpen}
+        title="이 초안을 삭제할까요?"
+        description="삭제한 초안은 다시 되돌릴 수 없어요."
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
         isDeleting={isDeleting}
