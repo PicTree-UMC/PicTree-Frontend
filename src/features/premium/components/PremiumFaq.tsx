@@ -34,9 +34,11 @@ export function PremiumFaq() {
 
   return (
     <section>
-      <h2 className="text-[17px] font-medium text-[#2C3930]">자주 묻는 질문</h2>
+      {/* 섹션 제목 21px + 가운데 정렬 — `PlanComparison` 주석의 규칙과 같다. */}
+      <h2 className="text-center text-[21px] font-medium text-[#2C3930]">자주 묻는 질문</h2>
 
-      <div className="mt-4 flex flex-col gap-2.5">
+      {/* 제목 → 내용 32px. 플랜 비교 섹션(제목 → 피커바)과 같은 값으로 맞췄다. */}
+      <div className="mt-8 flex flex-col gap-2.5">
         {PREMIUM_FAQ.map((item) => {
           const isOpen = openQuestion === item.q;
 
@@ -48,11 +50,17 @@ export function PremiumFaq() {
                 aria-expanded={isOpen}
                 className="flex w-full items-center gap-3 text-left"
               >
-                <h3 className="flex-1 text-[15px] font-medium text-[#2C3930]">{item.q}</h3>
+                {/*
+                  질문 17px · 답 15px. 종전엔 15px/13px 이라 **질문이 본문 크기였고 답은
+                  그보다 작았다** — 접힌 상태에서 다섯 줄이 나란히 있는데 그게 목록 제목인지
+                  본문인지 구분이 안 됐고, 펼친 답은 고지사항처럼 읽혔다.
+                  이 페이지의 사다리는 27(헤드라인) → 21(섹션) → 17(항목) → 15(본문) → 13(고지) 다.
+                */}
+                <h3 className="flex-1 text-[17px] font-medium text-[#2C3930]">{item.q}</h3>
                 <Chevron open={isOpen} />
               </button>
               {isOpen && (
-                <p className="mt-2.5 text-[13px] leading-relaxed text-[#60655C]">{item.a}</p>
+                <p className="mt-2.5 text-[15px] leading-relaxed text-[#60655C]">{item.a}</p>
               )}
             </div>
           );

@@ -25,6 +25,22 @@ export interface PremiumFaqItem {
 
 export const PREMIUM_FAQ: PremiumFaqItem[] = [
   {
+    /*
+      근거: 'PICTREE 토큰' 은 서버 혜택 `AI_BLOG_MONTHLY`(unit 'COUNT', limitValue) 를
+      부르는 마케팅 이름이다 — 새 기능이 아니라 같은 값의 다른 이름이다(planDisplay 의
+      `featureLabel` 참고). 초안 한 편 = 토큰 하나인 것은 그 혜택의 정의 자체이고,
+      한 달 단위인 것은 코드명(MONTHLY)과 billingCycle 'MONTHLY' 에 근거한다.
+
+      ⚠️ **이월(안 쓴 토큰이 다음 달로 넘어가는지)은 적지 않는다.** 응답에 그걸 말해 주는
+      필드가 없고 서버 동작도 확인된 바 없다. 결제 직전 화면이라 짐작을 적으면 안 된다.
+
+      맨 앞에 두는 이유: 위 혜택 문구와 비교표가 이미 이 낱말을 쓴다. 뜻을 모르는 채로
+      두 번 마주친 사람이 답을 찾는 자리가 여기다.
+    */
+    q: 'PICTREE 토큰이 뭔가요?',
+    a: 'AI가 여행기 초안을 써 줄 때 쓰는 이용권이에요. 초안 한 편에 토큰 하나를 쓰고, 플랜마다 한 달에 주어지는 개수가 달라요. 위 비교표에서 플랜별로 확인할 수 있어요.',
+  },
+  {
     // 근거: billingCycle 'MONTHLY' + 빌링키 결제(useBillingCheckout → registerBillingKey).
     q: '결제는 어떻게 이뤄지나요?',
     a: '카드를 한 번 등록해 두면 매월 같은 날 자동으로 결제돼요. 결제가 끝나면 늘어난 용량과 횟수가 바로 적용돼요.',
@@ -35,19 +51,27 @@ export const PREMIUM_FAQ: PremiumFaqItem[] = [
     a: '아니요. 자동 갱신만 꺼지고, 이미 결제한 기간이 끝날 때까지는 그대로 쓸 수 있어요. 그 뒤에 무료 플랜으로 돌아가요.',
   },
   {
-    // 근거: resumeSubscription — 만료 전이면 autoRenew 를 되돌려 nextBillingAt 이 복귀한다.
+    /*
+      근거: resumeSubscription — 만료 전이면 autoRenew 를 되돌려 nextBillingAt 이 복귀한다.
+      '구독 및 결제' 화면을 가리키던 문장이었는데 그 줄이 '구독' 으로 바뀌면서 여기(/premium)
+      로 오게 됐고, 자동 갱신 스위치도 이 페이지 맨 아래(SubscriptionCancelSection)에 있다.
+    */
     q: '해지했다가 마음이 바뀌면요?',
-    a: '이용 기간이 끝나기 전이라면 마이페이지의 구독 및 결제에서 자동 갱신을 다시 켤 수 있어요. 결제가 한 번 더 나가지 않고 그대로 이어져요.',
+    a: '이용 기간이 끝나기 전이라면 이 페이지 맨 아래에서 자동 갱신을 다시 켤 수 있어요. 결제가 한 번 더 나가지 않고 그대로 이어져요.',
   },
   {
-    // 근거: getBillingKeys / deleteBillingKey 를 SubscriptionPage 가 쓴다.
+    /*
+      근거: `PaymentMethodsPage`(/profile/payment-methods) — getBillingKeys 로 목록을 보고
+      useCardRegistration 으로 등록, deleteBillingKey 로 지운다.
+      ⚠️ 경로가 바뀌었다. 종전 '구독 및 결제' 안이 아니라 **마이페이지 › 개인정보 › 결제 수단** 이다.
+    */
     q: '등록한 카드는 어디서 바꾸나요?',
-    a: '마이페이지의 구독 및 결제에서 등록된 카드를 확인하고 지울 수 있어요.',
+    a: '마이페이지의 개인정보 화면에서 결제 수단을 열면 등록된 카드를 확인하고, 새 카드를 등록하거나 지울 수 있어요.',
   },
   {
     // 근거: 무료 플랜도 /subscription-plans 에 있고 features 가 용량·AI 블로그에만 걸린다.
     // 기록·동선에 제한이 없다는 건 profile/constants/faq.ts 와 같은 근거.
     q: '무료로는 어디까지 쓸 수 있나요?',
-    a: '장소를 기록하고 동선을 만드는 데에는 제한이 없어요. 사진 저장 용량과 AI 블로그 횟수에만 제한이 있고, 위 비교표에서 플랜별로 확인할 수 있어요.',
+    a: '장소를 기록하고 동선을 만드는 데에는 제한이 없어요. 사진 저장 용량과 PICTREE 토큰에만 제한이 있고, 위 비교표에서 플랜별로 확인할 수 있어요.',
   },
 ];

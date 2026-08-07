@@ -1,7 +1,5 @@
 import type { CSSProperties } from 'react';
 import { useInView } from '@/shared/hooks/useInView';
-import { FEATURE_CODE, findFeature } from '../lib/planDisplay';
-import type { SubscriptionPlanDto } from '../types/payment';
 
 /**
  * 사진 네 장의 자리와, 무대 정중앙(문서 카드)까지 옮겨갈 거리.
@@ -32,25 +30,15 @@ const LINES = [
   { w: '54%', delay: 3.84 },
 ];
 
-/**
- * 무료 플랜이 한 달에 몇 편까지 되는지를 문장으로.
- *
- * **숫자를 박지 않는다.** 지금은 월 1회지만 서버가 정하는 값이고, 바뀌면 이 문구가 곧바로
- * 거짓이 된다(`lib/planDisplay.ts` 의 "되돌리지 말 것" 과 같은 이유 — 예전에 하드코딩한
- * 가격이 실제와 어긋난 채 굳어 있었다).
- *
- * 1 일 때만 '한 편'으로 읽는다. '1편'은 세는 말투라 이 문장의 결과 안 맞는다.
- */
-function freeLimitSentence(freePlan: SubscriptionPlanDto): string {
-  const feature = findFeature(freePlan, FEATURE_CODE.aiBlogMonthly);
-  if (!feature?.isEnabled || feature.limitValue == null) {
-    // 무료에서 아예 막힌 경우. 지금 서버는 이 상태가 아니지만, 그렇게 바뀌어도
-    // 문장이 '한 달에 null편'이 되지는 않게 한다.
-    return '무료 플랜에서는 AI 블로그를 쓸 수 없어요.';
-  }
-  if (feature.limitValue === 1) return '무료 플랜은 한 달에 한 편이에요.';
-  return `무료 플랜은 한 달에 ${feature.limitValue}편이에요.`;
-}
+/*
+  freeLimitSentence('무료 플랜은 한 달에 한 편이에요' 를 `freePlan` 에서 파생하던 함수)는
+  지웠다 — 아래 문구가 무료 한도를 언급하지 않는 쪽으로 다시 쓰이면서 쓰는 곳이 없어졌다.
+  그래서 `freePlan` prop 도 함께 뺐다.
+
+  ⚠️ 무료 한도를 다시 문구에 넣을 거라면 그 함수를 되살릴 것(git 이력에 있다). **숫자를
+  직접 박으면 안 된다** — 서버가 정하는 값이라 바뀌는 순간 문구가 거짓이 된다
+  (`lib/planDisplay.ts` 의 "되돌리지 말 것" 과 같은 이유).
+*/
 
 /** 사진 한 장. 안의 그림은 풍경 한 컷을 최소한으로 줄인 것(해 + 능선). */
 function PhotoTile({ tone }: { tone: 'a' | 'b' }) {
@@ -83,10 +71,10 @@ function PhotoTile({ tone }: { tone: 'a' | 'b' }) {
  * 내려왔을 땐 이미 끝나 있다. 나갔다 들어오면 다시 튼다 — 한 번 놓치면 볼 방법이
  * 없어지는 것보다 낫다.
  *
- * 무료 쪽 한도는 `freePlan` 에서 파생한다 — 숫자를 문구에 박으면 서버가 바꿨을 때
- * 그대로 거짓이 된다(`freeLimitSentence` 주석 참고).
+ * 문구에는 요금제 값이 하나도 안 들어간다 — 서버 값을 쓸 일이 생기면 `freePlan` 을 다시
+ * 받아 파생시킬 것(위 `freeLimitSentence` 주석 참고). 숫자를 직접 박지 않는다.
  */
-export function BenefitShowcase({ freePlan }: { freePlan: SubscriptionPlanDto }) {
+export function BenefitShowcase() {
   const { ref, inView } = useInView<HTMLElement>({ threshold: 0.3 });
 
   return (
@@ -147,12 +135,12 @@ export function BenefitShowcase({ freePlan }: { freePlan: SubscriptionPlanDto })
       </div>
 
       <h2 className="mt-8 text-center text-[21px] font-medium text-[#2C3930]">
-        다녀온 만큼, 남길 수 있게
+        흩어져있던 여정의 파편들을
+        <br/>
+        하나의 이야기로 만드세요
       </h2>
-      <p className="mx-auto mt-2 max-w-[300px] text-center text-[15px] leading-relaxed text-[#60655C]">
-        {freeLimitSentence(freePlan)}
-        <br />
-        플랜을 성장시키고 더 많은 기록을 손쉽게 작성해보세요
+      <p className="mx-auto mt-2 max-w-[300px] text-center text-[18px] leading-relaxed text-[#60655C]">
+        플랜을 성장시키고 더 많은 저장 공간과 PICTREE 토큰을 누려보세요
       </p>
     </section>
   );

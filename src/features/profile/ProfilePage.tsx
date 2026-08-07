@@ -157,13 +157,27 @@ export function ProfilePage() {
             title="개인정보"
             onClick={() => navigate(ROUTES.profileEdit)}
           />
+          {/*
+            '결제 수단' 은 이 목록이 아니라 '개인정보'(내 정보) 안에 있다. 카드는 구독보다
+            오래 살고(해지해도 남는다) 만료·교체가 구독과 무관해서 '구독' 줄에 묶을 수
+            없는데, 그렇다고 최상위 줄로 세우기엔 평생 한두 번 여는 화면이다.
+          */}
           <SettingsRow
             image={cardImage}
-            title="구독 및 결제"
+            title="구독"
             // 플랜은 종전에 헤더의 골드 배지였다. 값이 하나뿐인 상태 표시라
             // 배지보다 줄 오른쪽 값이 제자리다(`iCloud 50GB` 와 같은 꼴).
             value={planLabel}
-            onClick={() => navigate(ROUTES.subscription)}
+            /*
+              플랜과 무관하게 /premium 으로 보낸다. 한때 구독자만 구 관리 화면
+              (/profile/subscription)으로 갈랐는데, /premium 이 요금제·비교표·해지·
+              현재 플랜 표시를 모두 갖게 되면서 갈라 보낼 이유가 없어졌다.
+
+              ⚠️ 이 분기가 사라지면서 `/profile/subscription` 은 앱에서 갈 수 있는
+              길이 없어졌다 — 지우기 전에 저장 용량 사용량(StorageCard·useStorageUsage)을
+              먼저 옮겨야 한다. 그 화면에만 있다.
+            */
+            onClick={() => navigate(ROUTES.premium)}
           />
           <SettingsRow
             image={calendarImage}

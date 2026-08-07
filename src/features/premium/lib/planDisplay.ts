@@ -44,6 +44,26 @@ export const findFeature = (
   code: string,
 ): PlanFeatureDto | undefined => plan.features.find((f) => f.code === code);
 
+/**
+ * 화면에 쓰는 혜택 **이름**. 서버 `name` 을 우리 낱말로 갈아끼우는 자리다.
+ *
+ * `AI_BLOG_MONTHLY` 를 'PICTREE 토큰' 으로 부른다 — 새 기능이 아니라 **같은 값의 다른
+ * 이름**이다. 서버가 주는 건 그대로 '한 달에 몇 편' 이고, 바뀌는 건 부르는 말뿐이다.
+ *
+ * ⚠️ **이건 값 하드코딩이 아니다.** 이 파일 맨 위의 "되돌리지 말 것" 은 용량·횟수·가격
+ * 같은 **숫자**를 화면에 박지 말라는 것이고, 여기서 정하는 건 이름표다. 숫자는 여전히
+ * `formatFeatureValue` 가 서버 응답에서 뽑는다. 둘을 헷갈려 이 맵에 '월 5회' 같은 값을
+ * 넣기 시작하면 그때부터 진짜 하드코딩이 된다.
+ *
+ * 여기 없는 코드는 서버 `name` 을 그대로 쓴다 — 혜택이 새로 생겨도 화면이 안 깨진다.
+ */
+const FEATURE_LABEL: Record<string, string> = {
+  [FEATURE_CODE.aiBlogMonthly]: 'PICTREE 토큰',
+};
+
+export const featureLabel = (feature: PlanFeatureDto): string =>
+  FEATURE_LABEL[feature.code] ?? feature.name;
+
 /** 1024MB 단위로 딱 떨어지면 GB 로 줄인다 (100MB · 1GB · 5GB · 20GB). */
 export const formatStorage = (mb: number | null): string => {
   if (mb == null) return '-';
@@ -66,29 +86,29 @@ export const formatFeatureValue = (feature: PlanFeatureDto | undefined): string 
   비교표가 이제 피커로 고른 플랜 하나만 열로 보여준다(그쪽 주석에 이유를 적어 뒀다).
 */
 
-/**
- * 플랜 소개 카드의 혜택 한 줄. 표가 아니라 문장처럼 읽히게 이름과 값을 붙인다
- * ('사진 저장 1GB', 'AI 블로그 월 5회', '광고 제거').
- *
- * **못 받는 혜택은 `null` 이다.** 소개 카드는 "이 플랜을 사면 무엇이 되는지" 를 말하는
- * 자리라 '광고 표시' 같은 줄이 섞이면 파는 글에 안 되는 것이 끼어든다. 무료와의 대비는
- * 아래 비교 섹션이 맡는다.
- */
-export const featureLine = (feature: PlanFeatureDto): string | null => {
-  if (!feature.isEnabled) return null;
-  if (feature.valueType === 'BOOLEAN') return feature.textValue ?? feature.name;
-  if (feature.limitValue == null) return null;
-  return `${feature.name} ${formatFeatureValue(feature)}`;
-};
-
-/** 소개 카드가 그릴 혜택 줄 묶음 — 표시 순서대로, 못 받는 것은 빠진 채로. */
-export const planBenefitLines = (plan: SubscriptionPlanDto): string[] =>
-  sortedFeatures(plan)
-    .map(featureLine)
-    .filter((line): line is string => line !== null);
+/*
+  featureLine / planBenefitLines('사진 저장 1GB' 처럼 혜택을 문장 한 줄로 잇던 함수들)는
+  지웠다. 유일한 사용처인 PlanIntroCard 가 사라졌다 — 카드에 적던 이름·가격·혜택이
+  바로 아래 비교표에 무료와 나란히 다시 나와서 같은 값을 두 번 읽히는 자리였다.
+*/
 
 /** 2900 → '2,900원' */
 export const formatPrice = (won: number): string => `${won.toLocaleString('ko-KR')}원`;
+
+/**
+ * 비교표의 '가격' 줄에 들어갈 문구 — '무료' / '월 2,900원'.
+ *
+ * 주기는 `billingCycle` 에서 파생한다. 화면에 '월' 을 박아 두면 연간 요금제가 생기는
+ * 순간 월 가격으로 거짓말을 하게 된다.
+ *
+ * 0원은 `formatPrice` 를 태우지 않는다 — '0원' 은 값이 비어 보이고, 이 자리에서
+ * 하려는 말은 '돈을 안 낸다' 다.
+ */
+export const planPriceLabel = (plan: SubscriptionPlanDto): string => {
+  if (plan.price === 0) return '무료';
+  const cycle = plan.billingCycle === 'YEARLY' ? '년' : '월';
+  return `${cycle} ${formatPrice(plan.price)}`;
+};
 
 /** 플랜 카드·결제 시트가 쓰는 요약 문구 묶음. */
 export const planSummary = (plan: SubscriptionPlanDto) => ({
