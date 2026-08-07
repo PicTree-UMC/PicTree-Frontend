@@ -69,8 +69,8 @@ select {
 }
 
 @keyframes blog-skeleton-shimmer {
-  from { background-position: 180% 0; }
-  to { background-position: -80% 0; }
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
 }
 
 @keyframes blog-ai-pulse {
@@ -89,9 +89,17 @@ select {
 }
 
 .blog-skeleton {
-  background: linear-gradient(100deg, #f0f2ea 20%, #e1ebcf 42%, #f0f2ea 64%);
-  background-size: 220% 100%;
-  animation: blog-skeleton-shimmer 1.8s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+  background: #f0f2ea;
+}
+
+.blog-skeleton::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, #e1ebcf 50%, transparent 70%);
+  content: '';
+  animation: blog-skeleton-shimmer 1.8s linear infinite;
 }
 
 .blog-ai-pulse {
@@ -108,6 +116,7 @@ select {
 
 @media (prefers-reduced-motion: reduce) {
   .blog-skeleton,
+  .blog-skeleton::after,
   .blog-ai-pulse,
   .blog-step-enter,
   .blog-result-enter {
