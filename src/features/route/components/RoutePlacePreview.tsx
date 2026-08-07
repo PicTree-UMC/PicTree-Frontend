@@ -101,7 +101,7 @@ export function RoutePlacePreview({ places, onClear }: RoutePlacePreviewProps) {
           {/* 순서대로 톡톡 떠오른다. 간격(70ms)은 길이(420ms)보다 훨씬 짧아 겹치게 두는데,
               셋뿐이라 '하나 끝나고 다음' 으로 하면 마지막이 늦어 굼떠 보인다.
               ⚠️ 지연은 인라인이어야 한다 — Tailwind `animation` 단축 속성이 `[animation-delay]`
-              유틸을 덮어쓴다(JourneyRoadmap 과 같은 이유). */}
+              유틸을 덮어쓴다(RouteRoadmap 과 같은 이유). */}
           {places.slice(0, PREVIEW_LIMIT).map((place, index) => (
             <PlaceAvatar
               key={place.id}

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Chip } from '@/shared/components';
-import { Journey } from '../types/journey';
+import { Route } from '../types/route';
 
 /** 새 동선 만들기 칩의 + 아이콘. */
 function PlusIcon({ className }: { className?: string }) {
@@ -19,10 +19,10 @@ function PlusIcon({ className }: { className?: string }) {
   );
 }
 
-interface JourneyChipsProps {
-  journeys: Journey[];
+interface RouteChipsProps {
+  routes: Route[];
   selectedId: number | null;
-  onSelect: (journey: Journey) => void;
+  onSelect: (route: Route) => void;
   /** 새 동선 만들기(`/journey/view`). 칩 줄 맨 왼쪽의 + 버튼이 부른다. */
   onCreate: () => void;
 }
@@ -45,7 +45,7 @@ const SCROLL_MARGIN = 16;
  * 이건 새 동선을 만드는 유일한 입구라 항상 닿을 수 있어야 한다. 위의 자동 스크롤도
  * 한몫한다 — 저장 직후처럼 사용자가 누르지 않았는데 선택이 바뀌면 줄이 저절로 밀린다.
  */
-export function JourneyChips({ journeys, selectedId, onSelect, onCreate }: JourneyChipsProps) {
+export function RouteChips({ routes, selectedId, onSelect, onCreate }: RouteChipsProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<HTMLButtonElement>(null);
 
@@ -86,16 +86,16 @@ export function JourneyChips({ journeys, selectedId, onSelect, onCreate }: Journ
         ref={scrollerRef}
         className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {journeys.map((journey) => {
-          const isSelected = journey.id === selectedId;
+        {routes.map((route) => {
+          const isSelected = route.id === selectedId;
           return (
             <Chip
-              key={journey.id}
+              key={route.id}
               ref={isSelected ? selectedRef : undefined}
-              onClick={() => onSelect(journey)}
+              onClick={() => onSelect(route)}
               selected={isSelected}
             >
-              {journey.title}
+              {route.title}
             </Chip>
           );
         })}

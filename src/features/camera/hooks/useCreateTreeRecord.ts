@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { createTree, uploadTreeImage } from '@/features/home/api/treesApi';
 import { treeKeys } from '@/features/home/hooks/useTrees';
-import { routePlaceCandidateKey } from '@/features/journey/hooks/useRoutePlaceCandidates';
+import { routePlaceCandidateKey } from '@/features/route/hooks/useRoutePlaceCandidates';
 import { storageKeys } from '@/features/profile/hooks/useStorageUsage';
 import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
 import { timelineKeys } from '@/features/timeline/hooks/useTimeline';

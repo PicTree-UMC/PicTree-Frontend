@@ -1,9 +1,9 @@
 import { NavBar, Sheet } from '@/shared/components';
-import { Journey } from '../types/journey';
-import { useJourneyPhotos } from '../hooks/useJourneyPhotos';
+import { Route } from '../types/route';
+import { useRoutePhotos } from '../hooks/useRoutePhotos';
 
 interface PhotoAlbumSheetProps {
-  journey: Journey;
+  route: Route;
   onClose: () => void;
 }
 
@@ -11,8 +11,8 @@ interface PhotoAlbumSheetProps {
  * 동선의 사진 앨범. 동선 목록 위에 딤과 함께 덮이는 전체 높이 시트.
  * 상단 80px는 뒤 화면이 비치도록 비워 둔다(시안 기준).
  */
-export function PhotoAlbumSheet({ journey, onClose }: PhotoAlbumSheetProps) {
-  const { data: photos = [], isLoading, isError, refetch } = useJourneyPhotos(journey.id);
+export function PhotoAlbumSheet({ route, onClose }: PhotoAlbumSheetProps) {
+  const { data: photos = [], isLoading, isError, refetch } = useRoutePhotos(route.id);
 
   return (
     /*
@@ -21,7 +21,7 @@ export function PhotoAlbumSheet({ journey, onClose }: PhotoAlbumSheetProps) {
     */
     <Sheet
       onClose={onClose}
-      label={`${journey.title} 사진 앨범`}
+      label={`${route.title} 사진 앨범`}
       dim="dark"
       handle={false}
       top="5rem"
@@ -35,10 +35,10 @@ export function PhotoAlbumSheet({ journey, onClose }: PhotoAlbumSheetProps) {
         <NavBar
           className="h-full"
           onBack={onClose}
-          title={journey.title}
+          title={route.title}
           action={
             <span className="text-xs font-medium tracking-[0.12px] text-[#2c3930]">
-              {journey.date}
+              {route.date}
             </span>
           }
         />

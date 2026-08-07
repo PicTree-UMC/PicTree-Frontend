@@ -19,7 +19,7 @@ export const TIMELINE_PAGE_SIZE = 20;
  * **이제 타임라인의 한 '기록'은 나무 하나(`Tree`)와 같은 것이다.**
  *
  * 화면이 쓰는 용어(`placeName`·`comment`·`recordedAt`)는 그대로 두고 여기서만 매핑한다
- * — `journeyApi` 가 `/routes` ↔ `Journey` 를 처리하는 방식과 같다. 그래서 이 파일만
+ * — `routeApi` 가 `/routes` ↔ `Route` 를 처리하는 방식과 같다. 그래서 이 파일만
  * 갈아끼우면 훅·화면은 거의 그대로 산다.
  *
  * 통합으로 사라진 것:
