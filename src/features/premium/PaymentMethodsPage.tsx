@@ -6,7 +6,7 @@ import { ROUTES } from '@/shared/constants/routes';
 import cardIcon from '@/features/profile/assets/icons/card.svg';
 import { useBillingKeys, useCardRegistration, useDeleteBillingKey } from './hooks/useBillingKeys';
 import { useMySubscription } from './hooks/useMySubscription';
-import { isActiveCard } from './lib/billingKey';
+import { formatCardNumber, isActiveCard } from './lib/billingKey';
 import type { BillingKeyDto } from './types/payment';
 
 /**
@@ -112,8 +112,10 @@ export function PaymentMethodsPage() {
                   <img src={cardIcon} alt="" className="h-6 w-6 shrink-0" />
 
                   <div className="min-w-0 flex-1">
+                    {/* 결제 화면과 같은 꼴로 끊는다 — 같은 값을 두 화면이 다르게 보여주면
+                        내 카드가 맞는지 대조할 때 한 번 더 되짚게 된다. */}
                     <p className="truncate text-[17px] font-medium text-[#2C3930]">
-                      {card.cardNumberMasked}
+                      {formatCardNumber(card.cardNumberMasked)}
                     </p>
                     {/*
                       카드사 코드('11' 같은 문자열)는 안 쓴다 — 이름으로 옮길 표가 없어

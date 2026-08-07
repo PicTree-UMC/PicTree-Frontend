@@ -9,12 +9,38 @@ import type { BillingKeyDto } from '../types/payment';
  */
 export const isActiveCard = (card: BillingKeyDto) => card.status === 'ACTIVE';
 
+/*
+  findActiveCard('첫 ACTIVE 한 장' 을 골라 주던 함수)는 지웠다. 결제 화면이 쓸 수 있는 카드를
+  전부 늘어놓고 고르게 바뀌면서 프론트가 대신 고를 일이 없어졌다 — 서버가 기본 카드를
+  알려주지 않아 그건 목록 순서에 기댄 짐작이었다(`PaymentCheckoutView` 주석 참고).
+*/
+
 /**
- * 재사용할 카드 한 장. 없으면 `undefined`.
+ * 마스킹 자리에 쓰는 점.
  *
- * 여러 장이면 첫 ACTIVE 를 고른다. 서버가 '기본 카드' 를 표시해 주지 않아서 고를 근거가
- * 목록 순서뿐이다 — 결제 확인 시트가 어느 카드인지 마스킹 번호로 보여주고, 아니면
- * '다른 카드로 결제' 로 빠질 수 있게 해서 이 짐작이 막다른 길이 되지 않게 한다.
+ * `*` 은 '지워진 글자' 로 읽히지만 `•` 은 **아직 안 보이는 자리**로 읽힌다 — 카드 실물의
+ * 엠보싱 숫자 자리에 더 가깝고, 별표보다 시각적 무게가 가벼워 앞 네 자리(실제로 읽어야 할
+ * 정보)가 먼저 눈에 들어온다.
  */
-export const findActiveCard = (cards: BillingKeyDto[] | undefined) =>
-  cards?.find(isActiveCard);
+const MASK_DOT = '•';
+
+/**
+ * 마스킹된 카드 번호를 **네 자리씩 끊어** 보여준다. `1276812600000000` → `1276 8126 •••• ••••`
+ *
+ * 카드 번호를 확인하는 눈은 네 자리 덩어리에 익숙하다(실물 카드·결제창이 전부 그 꼴이다).
+ * 열여섯 자가 붙어 있으면 내 카드가 맞는지 대조하려고 손가락으로 짚어 세게 된다.
+ *
+ * ⚠️ **서버가 어떤 꼴로 주는지 확정되지 않았다**(`types/payment.ts` 의 `cardNumberMasked`).
+ * 그래서 아는 꼴일 때만 다시 끊고, **아니면 원본을 그대로 돌려준다** — 결제 직전 화면에서
+ * 카드 번호를 우리가 짐작해 고쳐 쓰면 사용자가 대조할 근거를 우리가 망가뜨리는 셈이다.
+ */
+export const formatCardNumber = (masked: string): string => {
+  const compact = masked.replace(/[\s-]/g, '');
+  // 카드 번호 길이(13~19)와 아는 문자(숫자·마스킹 기호)를 벗어나면 우리가 아는 값이 아니다.
+  if (!/^[0-9*xX•]{13,19}$/.test(compact)) return masked;
+
+  return compact
+    .replace(/[*xX]/g, MASK_DOT)
+    .replace(/(.{4})/g, '$1 ')
+    .trim();
+};
