@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { BlogDay, BlogStatus, ToneId, BlogTreeRecord, CreateAIBlogDraftRequest } from '../types/blog';
+import type { BlogDay, BlogDraftPreview, BlogStatus, ToneId, CreateAIBlogDraftRequest } from '../types/blog';
 import { getLocalDateString } from '../../../shared/lib/date';
 import { DEFAULT_TONE_ID } from '../constants/blogTones';
 import { suggestToneFromMoods } from '../lib/moodTone';
 import { createAIBlogDraft } from '../api/blogApi';
-import { getMyBlogPlaces } from '../api/blogPlacesApi';
-import { useAuthStore } from '../../auth/store/authStore';
+import { useBlogTrees } from './useBlogTrees';
 
 export type CreateStep = 1 | 2 | 3;
 
@@ -25,35 +24,15 @@ const API_TONE_BY_ID: Record<ToneId, CreateAIBlogDraftRequest['tone']> = {
 /** 작성 플로우(3스텝)의 상태 기계. 날짜·어체 선택과 목 초안 생성을 관리한다. */
 export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreateOptions = {}) {
   const [step, setStep] = useState<CreateStep>(1);
-  const [startDate, setStartDate] = useState(initialStartDate ?? '2026-03-31');
-  const [endDate, setEndDate] = useState(initialEndDate ?? '2026-04-01');
+  const today = getLocalDateString(new Date());
+  const [startDate, setStartDate] = useState(initialStartDate ?? today);
+  const [endDate, setEndDate] = useState(initialEndDate ?? today);
   const [toneId, setToneId] = useState<ToneId>(DEFAULT_TONE_ID);
   const [status, setStatus] = useState<BlogStatus>('idle');
-  const [draft, setDraft] = useState<{ title: string; days: BlogDay[] } | null>(null);
+  const [draft, setDraft] = useState<BlogDraftPreview | null>(null);
 
-  const accessToken = useAuthStore((s) => s.accessToken);
-
-  const [allPlaces, setAllPlaces] = useState<BlogTreeRecord[]>([]);
-
-  // 내 나무(=기록) 전체를 한 번만 불러온다. 기간 필터는 이 목록을 클라이언트에서
-  // 걸러 쓴다(캘린더 활동 표시에도 재사용).
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        if (!accessToken) {
-          setAllPlaces([]);
-          return;
-        }
-        const places = await getMyBlogPlaces();
-        if (!cancelled) setAllPlaces(places);
-      } catch (err) {
-        console.error('[useBlogCreate] fetch my blog places failed', err);
-        if (!cancelled) setAllPlaces([]);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [accessToken]);
+  // 목록 화면과 같은 query key를 사용해 나무 전체 조회 결과를 재사용한다.
+  const { data: allPlaces = [] } = useBlogTrees();
 
   const trees = useMemo(
     () => allPlaces.filter((tree) => {
@@ -99,7 +78,7 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
           tone: API_TONE_BY_ID[toneId],
         };
 
-        const resp = await createAIBlogDraft(accessToken ?? undefined, payload);
+        const resp = await createAIBlogDraft(payload);
 
         if (cancelled) return;
 
@@ -112,7 +91,6 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
               heading: item.placeName,
               body: item.content,
               image: item.imageUrl ?? tree?.defaultImage ?? '',
-              mood: tree?.mood ?? '😌',
             };
           }),
         }));
@@ -128,7 +106,7 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
     })();
 
     return () => { cancelled = true; };
-  }, [status, selectedTreeIds, toneId, startDate, endDate, accessToken, trees]);
+  }, [status, selectedTreeIds, toneId, startDate, endDate, trees]);
 
   return {
     step,

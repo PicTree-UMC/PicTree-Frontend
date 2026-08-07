@@ -19,7 +19,7 @@ export function BlogDetailPage() {
 
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ['blog-drafts', 'detail', numericDraftId],
-    queryFn: () => getAIBlogDraftDetail(undefined, numericDraftId),
+    queryFn: () => getAIBlogDraftDetail(numericDraftId),
     enabled: Number.isInteger(numericDraftId) && numericDraftId > 0,
   });
 

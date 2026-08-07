@@ -9,20 +9,21 @@ import type {
   SaveAIBlogDraftResponseData,
 } from '../types/blog';
 
+const unwrapBlogResponse = <T>(response: ApiResponse<T>, fallbackMessage: string): T => {
+  if (!response.success) {
+    throw new Error(response.message || fallbackMessage);
+  }
+  return response.data;
+};
+
 /**
  * AI 블로그 초안 목록 조회
  * GET /api/v1/blog-drafts
  */
-export const getAIBlogDrafts = async (accessToken?: string): Promise<AIBlogDraftListData> => {
-  const { data } = await httpClient.get<ApiResponse<AIBlogDraftListData>>('/blog-drafts', {
-    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-  });
+export const getAIBlogDrafts = async (): Promise<AIBlogDraftListData> => {
+  const { data } = await httpClient.get<ApiResponse<AIBlogDraftListData>>('/blog-drafts');
 
-  if (!data.success) {
-    throw new Error(data.message || 'Failed to get AI blog drafts');
-  }
-
-  return data.data;
+  return unwrapBlogResponse(data, 'Failed to get AI blog drafts');
 };
 
 /**
@@ -30,20 +31,14 @@ export const getAIBlogDrafts = async (accessToken?: string): Promise<AIBlogDraft
  * POST /api/v1/blog-drafts/generate
  */
 export const createAIBlogDraft = async (
-  accessToken: string | undefined,
   payload: CreateAIBlogDraftRequest,
 ): Promise<CreateAIBlogDraftResponseData> => {
   const { data } = await httpClient.post<ApiResponse<CreateAIBlogDraftResponseData>>(
     '/blog-drafts/generate',
     payload,
-    { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined },
   );
 
-  if (!data.success) {
-    throw new Error(data.message || 'Failed to create AI blog draft');
-  }
-
-  return data.data;
+  return unwrapBlogResponse(data, 'Failed to create AI blog draft');
 };
 
 /**
@@ -51,20 +46,14 @@ export const createAIBlogDraft = async (
  * POST /api/v1/blog-drafts
  */
 export const saveAIBlogDraft = async (
-  accessToken: string | undefined,
   payload: SaveAIBlogDraftRequest,
 ): Promise<SaveAIBlogDraftResponseData> => {
   const { data } = await httpClient.post<ApiResponse<SaveAIBlogDraftResponseData>>(
     '/blog-drafts',
     payload,
-    { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined },
   );
 
-  if (!data.success) {
-    throw new Error(data.message || 'Failed to save AI blog draft');
-  }
-
-  return data.data;
+  return unwrapBlogResponse(data, 'Failed to save AI blog draft');
 };
 
 /**
@@ -72,32 +61,19 @@ export const saveAIBlogDraft = async (
  * GET /api/v1/blog-drafts/{draftId}
  */
 export const getAIBlogDraftDetail = async (
-  accessToken: string | undefined,
   draftId: number,
 ): Promise<AIBlogDraftDetail> => {
-  const { data } = await httpClient.get<ApiResponse<AIBlogDraftDetail>>(`/blog-drafts/${draftId}`, {
-    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-  });
+  const { data } = await httpClient.get<ApiResponse<AIBlogDraftDetail>>(`/blog-drafts/${draftId}`);
 
-  if (!data.success) {
-    throw new Error(data.message || 'Failed to get AI blog draft detail');
-  }
-
-  return data.data;
+  return unwrapBlogResponse(data, 'Failed to get AI blog draft detail');
 };
 
 /**
  * AI 블로그 초안 삭제
  * DELETE /api/v1/blog-drafts/{draftId}
  */
-export const deleteAIBlogDraft = async (accessToken: string | undefined, draftId: number) => {
-  const { data } = await httpClient.delete<ApiResponse<null>>(`/blog-drafts/${draftId}`, {
-    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-  });
+export const deleteAIBlogDraft = async (draftId: number) => {
+  const { data } = await httpClient.delete<ApiResponse<null>>(`/blog-drafts/${draftId}`);
 
-  if (!data.success) {
-    throw new Error(data.message || 'Failed to delete AI blog draft');
-  }
-
-  return null;
+  return unwrapBlogResponse(data, 'Failed to delete AI blog draft');
 };

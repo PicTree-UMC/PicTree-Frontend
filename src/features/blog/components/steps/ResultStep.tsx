@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import type { BlogDay, BlogStatus } from '../../types/blog';
+import type { BlogDraftPreview, BlogStatus } from '../../types/blog';
 import { GeneratingCard } from '../GeneratingCard';
 import { useToast } from '../../../../shared/components/toast/toastStore';
 import { formatLongDate } from '../../lib/formatBlogDate';
 
 type ResultStepProps = {
   status: BlogStatus;
-  draft: { title: string; days: BlogDay[] } | null;
+  draft: BlogDraftPreview | null;
   onSave: () => Promise<void>;
 };
 
