@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getAIBlogDraftDetail } from './api/blogApi';
 import { formatDateRange, formatLongDate } from './lib/formatBlogDate';
 import { useBlogDraftStore } from './store/blogDraftStore';
+import { NavBar } from '@/shared/components';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
 import { DeleteConfirmModal, DeleteIconButton } from '@/shared/components/DeleteConfirmModal';
@@ -39,25 +40,24 @@ export function BlogDetailPage() {
 
   return (
     <main className="min-h-full bg-[#fffcef] text-[#252b24]">
-      <header className="sticky top-0 z-10 flex h-[calc(env(safe-area-inset-top)+56px)] items-end border-b border-[#ececdf] bg-[#fffcef]/95 px-4 pb-2 backdrop-blur-sm">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          aria-label="블로그 목록으로 돌아가기"
-          className="grid size-10 place-items-center rounded-full active:bg-black/5"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="m15 18-6-6 6-6" />
-          </svg>
-        </button>
-        <span className="pb-2 text-[16px] font-bold">블로그</span>
-        {data && (
-          <DeleteIconButton
-            label="블로그 초안 삭제"
-            onClick={() => setDeleteOpen(true)}
-            className="ml-auto"
-          />
-        )}
+      {/* px-4 였는데 본문(px-5)과도, 다른 화면 헤더(px-5)와도 어긋나 있었다.
+          높이를 고정하고 items-end 로 내용을 아래에 붙이던 것도 pt-header 로 바꿨다 —
+          안전영역을 헤더 높이에 섞어 두면 다른 화면과 같은 값인지 눈으로 알 수 없다. */}
+      <header className="sticky top-0 z-10 border-b border-[#ececdf] bg-[#fffcef]/95 px-5 pb-3 pt-header backdrop-blur-sm">
+        <NavBar
+          className="w-full"
+          onBack={() => navigate(-1)}
+          backLabel="블로그 목록으로 돌아가기"
+          title="블로그"
+          action={
+            data && (
+              <DeleteIconButton
+                label="블로그 초안 삭제"
+                onClick={() => setDeleteOpen(true)}
+              />
+            )
+          }
+        />
       </header>
 
       {isPending && (

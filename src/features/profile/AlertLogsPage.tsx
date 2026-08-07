@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/shared/constants/routes";
-import { useToast } from "@/shared/components";
-import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
+import { NavBar, useToast } from "@/shared/components";
 import treeIcon from "./assets/icons/tree.svg";
 import trashIcon from "./assets/icons/trash.svg";
 import {
@@ -186,27 +185,29 @@ export function AlertLogsPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      <header className="bg-[#C5D89D] px-5 pb-5 pt-4">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => (selecting ? exitSelecting() : navigate(-1))}
-            aria-label={selecting ? "선택 취소" : "뒤로 가기"}
-            className="flex h-6 w-6 items-center justify-center"
-          >
-            {selecting ? (
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="#2C3930" strokeWidth={2} strokeLinecap="round">
-                <path d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
-            )}
-          </button>
-          <h1 className="flex-1 text-[20px] font-medium text-black">
-            {selecting ? `${checked.size}개 선택` : "알림 기록"}
-          </h1>
-
-          {logs.length > 0 &&
+      {/* pt-4 라 안전영역이 아예 없었다 — 노치 기기에서 제목이 노치 뒤로 들어갔다. */}
+      <header className="bg-[#C5D89D] px-5 pb-5 pt-header">
+        <NavBar
+          /* 선택 모드의 × 는 뒤로가기와 같은 40px 흰 원을 쓴다 — 모드가 바뀔 때
+             헤더 첫 칸이 흔들리지 않게. */
+          leading={
+            selecting ? (
+              <button
+                type="button"
+                onClick={exitSelecting}
+                aria-label="선택 취소"
+                className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                  <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            ) : undefined
+          }
+          onBack={() => navigate(-1)}
+          title={selecting ? `${checked.size}개 선택` : "알림 기록"}
+          action={
+            logs.length > 0 &&
             (selecting ? (
               <button
                 type="button"
@@ -223,8 +224,9 @@ export function AlertLogsPage() {
               >
                 선택
               </button>
-            ))}
-        </div>
+            ))
+          }
+        />
         <p className="mt-2 text-[13px] text-[#2C3930]">
           {selecting ? "지울 알림을 골라주세요" : "근처 나무 알림으로 받은 기록이에요"}
         </p>

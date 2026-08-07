@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { FAQ_CATEGORIES } from "./constants/faq";
 import { SUPPORT_EMAIL } from "./constants/contact";
-import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
+import { NavBar } from "@/shared/components";
 
 const ICON = {
   fill: "none",
@@ -61,19 +61,8 @@ export function HelpFaqPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      {/* pt 에 safe-area 를 더해 헤더 초록이 노치 뒤까지 이어지게 한다 */}
-      <header className="bg-[#C5D89D] px-5 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            aria-label="뒤로 가기"
-            className="flex h-6 w-6 items-center justify-center"
-          >
-            <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
-          </button>
-          <h1 className="text-[20px] font-medium text-[#2C3930]">도움말 / FAQ</h1>
-        </div>
+      <header className="bg-[#C5D89D] px-5 pb-4 pt-header">
+        <NavBar onBack={() => navigate(-1)} title="도움말 / FAQ" />
 
         {/*
           카테고리 탭. 다섯 개라 390px 안에 다 안 들어가서 가로 스크롤로 둔다.

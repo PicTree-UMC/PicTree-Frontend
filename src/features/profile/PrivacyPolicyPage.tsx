@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { SUPPORT_EMAIL } from "./constants/contact";
-import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
+import { NavBar } from "@/shared/components";
 
 const iconBase = "h-[22px] w-[22px] flex-shrink-0";
 const stroke = {
@@ -221,21 +221,11 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
 
 export function PrivacyPolicyPage() {
   return (
-    // min-h-full: 100vh 는 셸 컬럼을 넘긴다. pt-safe 는 상단 안전영역 확보.
+    // min-h-full: 100vh 는 셸 컬럼을 넘긴다. 상단 안전영역은 헤더의 pt-header 가 갖는다.
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/* 헤더 */}
-      <header className="bg-[#C5D89D] px-5 pb-5 pt-[calc(env(safe-area-inset-top)+1rem)]">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => window.history.back()}
-            aria-label="뒤로 가기"
-            className="flex h-6 w-6 items-center justify-center"
-          >
-            <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
-          </button>
-          <h1 className="text-[20px] font-medium text-black">개인정보 처리방침</h1>
-        </div>
+      <header className="bg-[#C5D89D] px-5 pb-5 pt-header">
+        <NavBar onBack={() => window.history.back()} title="개인정보 처리방침" />
       </header>
 
       <div className="flex flex-col gap-6 px-5 pt-5">

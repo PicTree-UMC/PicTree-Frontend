@@ -28,7 +28,7 @@ const FALLBACK_AVATAR = '/markers/tree.svg';
  *  - 선택한 기분 이모지가 아래에서 위로 떠오른다(스토리 하트 효과 대체).
  *  - 상단: 좌측 = 장소명 · 날짜(가로 배치), 우측 = 닫기(X)만.
  *  - 하단: 한줄평 말풍선(아바타 = 사용자 프로필 사진) + 컨트롤 한 줄
- *    (좌: 즐겨찾기 하트 / 우: 수정·삭제 아이콘).
+ *    (좌: 즐겨찾기 하트 / 중앙: 점 인디케이터 / 우: 수정·삭제 아이콘).
  *  - 사진이 없으면 어두운 배경에 이모지 플레이스홀더를 중앙에 둔다.
  *
  * 닫기는 우상단 X 버튼(또는 Esc)로만 — 사진을 탭해도 닫히지 않는다.
@@ -161,33 +161,46 @@ export function MarkerStoryViewer({
             </div>
           )}
 
-          {/*
-            좌: 즐겨찾기 / 우: 수정·삭제.
-
-            가운데에 있던 점 인디케이터는 뺐다. 묶인 나무가 한 그루일 때 점 하나가
-            길쭉한 막대로 그려져 구분선처럼 보였고, 여러 그루일 때도 좌우 스와이프로
-            넘긴다는 건 사진이 바뀌는 것으로 이미 드러난다.
-          */}
-          <div className="flex items-center text-white">
-            <button
-              onClick={handleToggleFavorite}
-              aria-label="즐겨찾기"
-              aria-pressed={!!marker.isFavorite}
-              className="-ml-1 p-1"
-            >
-              {/*
-                하트 팝 애니메이션용 래퍼. `inline-block` 이면 글자 베이스라인에 얹혀
-                옆 아이콘보다 몇 px 높게 앉는다 — `block` 으로 두어야 줄이 맞는다.
-              */}
-              <span
-                className={`block ${favBump ? 'animate-heart-pop' : ''}`}
-                onAnimationEnd={() => setFavBump(false)}
+          {/* 좌: 즐겨찾기 / 중앙: 점 인디케이터 / 우: 수정·삭제 */}
+          <div className="grid grid-cols-3 items-center text-white">
+            <div className="justify-self-start">
+              <button
+                onClick={handleToggleFavorite}
+                aria-label="즐겨찾기"
+                aria-pressed={!!marker.isFavorite}
+                className="-ml-1 p-1"
               >
-                <HeartIcon filled={!!marker.isFavorite} />
-              </span>
-            </button>
+                {/*
+                  하트 팝 애니메이션용 래퍼. `inline-block` 이면 글자 베이스라인에 얹혀
+                  옆 아이콘보다 몇 px 높게 앉는다 — `block` 으로 두어야 줄이 맞는다.
+                */}
+                <span
+                  className={`block ${favBump ? 'animate-heart-pop' : ''}`}
+                  onAnimationEnd={() => setFavBump(false)}
+                >
+                  <HeartIcon filled={!!marker.isFavorite} />
+                </span>
+              </button>
+            </div>
 
-            <div className="ml-auto flex items-center gap-3">
+            {/*
+              점 인디케이터 — 그룹에 묶인 나무 수만큼, 현재 슬라이드는 길게 강조.
+              한 그루뿐이면 그리지 않는다. 점 하나가 길쭉한 막대로 그려져 가운데에
+              구분선처럼 남는다.
+            */}
+            <div className="flex justify-center gap-1.5 justify-self-center">
+              {markers.length > 1 &&
+                markers.map((item, i) => (
+                  <span
+                    key={item.id}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === activeIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/40'
+                    }`}
+                  />
+                ))}
+            </div>
+
+            <div className="flex items-center gap-3 justify-self-end">
               <button onClick={onEdit} aria-label="수정" className="p-1">
                 <PencilIcon />
               </button>

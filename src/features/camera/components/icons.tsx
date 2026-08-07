@@ -27,6 +27,15 @@ export function SwitchCameraIcon() {
   );
 }
 
+/** 뒤로가기 꺾쇠. 동선 보기 화면의 헤더 버튼과 같은 굵기·크기다. */
+export function BackIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.25} d="M15 18l-6-6 6-6" />
+    </svg>
+  );
+}
+
 export function XIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

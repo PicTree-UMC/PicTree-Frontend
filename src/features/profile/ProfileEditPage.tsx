@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/shared/components";
+import { NavBar, useToast } from "@/shared/components";
 import { useMyProfile } from "./hooks/useMyProfile";
 import { useUpdateMyProfile } from "./hooks/useUpdateMyProfile";
 import { getPlanLabel } from "./lib/plan";
 import { ProfileImageSheet } from "./components/ProfileImageSheet";
 import treeIcon from "./assets/icons/tree.svg";
-import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
 
 /** 서버 `UpdateUserRequestDto` 의 제약. 넘기면 400 이 떨어진다. */
 const NICKNAME_MAX = 50;
@@ -83,17 +82,7 @@ export function ProfileEditPage() {
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       <header className="bg-[#C5D89D] px-5 pb-16 pt-4">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            aria-label="뒤로 가기"
-            className="flex h-6 w-6 items-center justify-center"
-          >
-            <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
-          </button>
-          <h1 className="text-[20px] font-medium text-black">내 정보</h1>
-        </div>
+        <NavBar onBack={() => navigate(-1)} title="내 정보" />
       </header>
 
       {/* 아바타 — 헤더 밴드에 걸쳐 앉힌다 (마이페이지와 같은 계열의 구성) */}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
-import { useToast } from "@/shared/components";
+import { NavBar, useToast } from "@/shared/components";
 import { formatKoreanDate } from "@/shared/lib/date";
 import { useMySubscription } from "../premium/hooks/useMySubscription";
 import { useSubscriptionPlans } from "../premium/hooks/useSubscriptionPlans";
@@ -23,7 +23,6 @@ import checkIcon from "./assets/icons/check.svg";
 import gisRouteIcon from "./assets/icons/gisRoute.svg";
 import menuBookIcon from "./assets/icons/menuBook.svg";
 import adsOffIcon from "./assets/icons/adsoff.svg";
-import chevronLeftIcon from "./assets/icons/chevronLeft.svg";
 
 const BENEFIT_ICON: Record<string, string> = {
   [FEATURE_CODE.photoStorage]: gisRouteIcon,
@@ -179,16 +178,9 @@ export function SubscriptionPage() {
 
   return (
     <div className="relative flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      <header className="flex items-center gap-3 px-5 pt-4">
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          aria-label="뒤로 가기"
-          className="flex h-6 w-6 items-center justify-center"
-        >
-          <img src={chevronLeftIcon} alt="" className="h-[21px] w-[12px]" />
-        </button>
-        <h1 className="text-[20px] font-medium text-black">구독 관리</h1>
+      {/* pt-4 라 안전영역이 아예 없었다 — 노치 기기에서 제목이 노치 뒤로 들어갔다. */}
+      <header className="px-5 pt-header">
+        <NavBar onBack={() => window.history.back()} title="구독 관리" />
       </header>
 
       <div className="flex flex-col gap-4 px-5 pt-6">

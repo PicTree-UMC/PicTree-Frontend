@@ -1,5 +1,7 @@
 // 공용 컴포넌트 배럴 export — import { Button, Modal } from '@/shared/components';
 export { Button } from './Button';
+export { BackButton } from './BackButton';
+export { NavBar } from './NavBar';
 export { Chip } from './Chip';
 export type { ChipTone, ChipSize } from './Chip';
 export { Input } from './Input';
@@ -12,6 +14,7 @@ export { Sheet } from './Sheet';
 export { ErrorPage } from './ErrorPage';
 export { PicTreeMark } from './PicTreeMark';
 export { CalendarGrid } from './CalendarGrid';
+export { SettingsList, SettingsRow, SettingsFooter } from './SettingsList';
 export { GrassIcon } from './GrassIcon';
 export { IconFrame } from './IconFrame';
 export { SproutIllustration } from './SproutIllustration';

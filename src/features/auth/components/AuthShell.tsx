@@ -17,7 +17,7 @@ import type { PropsWithChildren } from 'react';
  */
 export function AuthShell({ children }: PropsWithChildren) {
   return (
-    <main className="relative flex min-h-full w-full flex-col bg-[#FFFCEF] px-6 pb-[max(calc(env(safe-area-inset-bottom)+1.25rem),2.5rem)] pt-[calc(env(safe-area-inset-top)+0.75rem)] text-[#2c3930]">
+    <main className="relative flex min-h-full w-full flex-col bg-[#FFFCEF] px-6 pb-[max(calc(env(safe-area-inset-bottom)+1.25rem),2.5rem)] pt-header text-[#2c3930]">
       {children}
     </main>
   );

@@ -11,26 +11,9 @@ import {
   parseDatesParam,
   toDatesParam,
 } from './lib/routeParams';
-import { Chip } from '@/shared/components';
+import { Chip, NavBar } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { ROUTES } from '@/shared/constants/routes';
-
-function BackIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.25"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M15 18l-6-6 6-6" />
-    </svg>
-  );
-}
 
 /** 날짜 칩의 해제 표시. 칩 전체가 버튼이라 이건 그림일 뿐이다. */
 function CloseIcon({ className }: { className?: string }) {
@@ -133,13 +116,9 @@ export function RouteCreatePage() {
 
   return (
     <div className="flex h-full w-full flex-col bg-[#FFFCEF]">
-      {/* 상단 여백 = 노치(safe-area) + 0.75rem. 셸(AppShell)이 safe-area 를 안 주므로
-          페이지가 직접 준다 — 고정 px 는 safe-area 가 작은 기기에서 과하게 뜬다. */}
-      <header className="flex items-center gap-2 px-5 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-        <button onClick={goBack} aria-label="뒤로가기" className="-ml-1 p-1 text-[#2c3930]">
-          <BackIcon className="h-6 w-6" />
-        </button>
-        <h1 className="flex-1 text-xl font-medium text-[#2c3930]">날짜 선택</h1>
+      {/* 상단 여백은 pt-header 하나로 — 스텝 2(지도)와 같은 값이라 넘어갈 때 뒤로가기가 안 튄다. */}
+      <header className="px-5 pt-header">
+        <NavBar onBack={goBack} title="날짜 선택" />
       </header>
 
       {/*
