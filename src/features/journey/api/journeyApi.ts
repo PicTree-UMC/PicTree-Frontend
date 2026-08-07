@@ -106,7 +106,7 @@ export const getRouteDetail = async (routeId: number): Promise<RouteDetail> => {
 
   return {
     id: detail?.routeId ?? routeId,
-    name: detail?.routeName ?? '',
+    title: detail?.routeName ?? '',
     savedAt: formatSavedDate(detail?.createdAt),
     places: points.map(
       (point, index): RoutePlace => ({

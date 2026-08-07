@@ -323,7 +323,7 @@ export function RouteViewPage() {
           onBack={goBack}
           /* ② 는 어느 동선을 보고 있는지가 제목이다. 아직 안 불러왔으면 비워 둬서
              제목이 깜빡이지 않게 한다. */
-          title={isSavedView ? routeDetail?.name : '장소 선택'}
+          title={isSavedView ? routeDetail?.title : '장소 선택'}
           titleOnMap
         />
       </div>
