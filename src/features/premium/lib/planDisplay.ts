@@ -18,6 +18,27 @@ export const FEATURE_CODE = {
   photoStorage: 'PHOTO_STORAGE',
 } as const;
 
+/**
+ * 혜택을 늘어놓는 순서. 서버 `features[]` 는 코드 알파벳순으로 와서 그대로 그리면
+ * 저장 용량보다 광고 제거가 먼저 나온다 — 유료 전환의 근거가 약한 것부터 읽히는 셈이다.
+ *
+ * 여기 없는 코드는 뒤에 붙는다. 혜택이 새로 생겨도 화면 코드를 안 고치기 위해서다.
+ */
+const ROW_ORDER: string[] = [
+  FEATURE_CODE.photoStorage,
+  FEATURE_CODE.aiBlogMonthly,
+  FEATURE_CODE.adFree,
+];
+
+const orderOf = (code: string) => {
+  const i = ROW_ORDER.indexOf(code);
+  return i === -1 ? ROW_ORDER.length : i;
+};
+
+/** 혜택을 표시 순서대로 정렬해서 돌려준다. 원본 배열은 건드리지 않는다. */
+export const sortedFeatures = (plan: SubscriptionPlanDto): PlanFeatureDto[] =>
+  [...plan.features].sort((a, b) => orderOf(a.code) - orderOf(b.code));
+
 export const findFeature = (
   plan: SubscriptionPlanDto,
   code: string,
@@ -39,24 +60,32 @@ export const formatFeatureValue = (feature: PlanFeatureDto | undefined): string 
   return `월 ${feature.limitValue}회`;
 };
 
+/*
+  formatFeatureRange('1GB~20GB' 처럼 유료 플랜 전체를 한 칸에 접던 함수)는 지웠다.
+  유일한 사용처인 BenefitTable 이 PlanComparison 으로 바뀌면서 필요가 없어졌다 —
+  비교표가 이제 피커로 고른 플랜 하나만 열로 보여준다(그쪽 주석에 이유를 적어 뒀다).
+*/
+
 /**
- * 혜택표의 '프리미엄' 열 — 유료 플랜 전체를 한 칸에 요약한다.
- * 최저·최고가 같으면 한 값만, 다르면 범위로 ('1GB ~ 20GB', '월 5~50회').
+ * 플랜 소개 카드의 혜택 한 줄. 표가 아니라 문장처럼 읽히게 이름과 값을 붙인다
+ * ('사진 저장 1GB', 'AI 블로그 월 5회', '광고 제거').
+ *
+ * **못 받는 혜택은 `null` 이다.** 소개 카드는 "이 플랜을 사면 무엇이 되는지" 를 말하는
+ * 자리라 '광고 표시' 같은 줄이 섞이면 파는 글에 안 되는 것이 끼어든다. 무료와의 대비는
+ * 아래 비교 섹션이 맡는다.
  */
-export const formatFeatureRange = (
-  low: PlanFeatureDto | undefined,
-  high: PlanFeatureDto | undefined,
-): string => {
-  const lowText = formatFeatureValue(low);
-  const highText = formatFeatureValue(high);
-  if (lowText === highText) return lowText;
-  // 횟수는 '월 5회 ~ 월 50회' 가 장황해서 접두사를 한 번만 쓴다.
-  if (low?.unit === 'COUNT' && high?.unit === 'COUNT') {
-    return `월 ${low.limitValue}~${high.limitValue}회`;
-  }
-  // 물결 좌우 공백을 두면 '1GB ~ 20GB' 가 375px 혜택표에서 두 줄로 접힌다.
-  return `${lowText}~${highText}`;
+export const featureLine = (feature: PlanFeatureDto): string | null => {
+  if (!feature.isEnabled) return null;
+  if (feature.valueType === 'BOOLEAN') return feature.textValue ?? feature.name;
+  if (feature.limitValue == null) return null;
+  return `${feature.name} ${formatFeatureValue(feature)}`;
 };
+
+/** 소개 카드가 그릴 혜택 줄 묶음 — 표시 순서대로, 못 받는 것은 빠진 채로. */
+export const planBenefitLines = (plan: SubscriptionPlanDto): string[] =>
+  sortedFeatures(plan)
+    .map(featureLine)
+    .filter((line): line is string => line !== null);
 
 /** 2900 → '2,900원' */
 export const formatPrice = (won: number): string => `${won.toLocaleString('ko-KR')}원`;
