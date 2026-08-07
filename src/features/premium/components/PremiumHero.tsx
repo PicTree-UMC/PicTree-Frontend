@@ -36,7 +36,7 @@ export function PremiumHero() {
         (KOROAD 는 Bold 700 face 를 실제로 싣는다 — 폴백이 아니다.)
         가이드라인 §2 에 이 예외를 적어 뒀다. 본문·버튼으로 번지지 않게 할 것.
       */}
-      <h1 className="mt-7 text-[27px] font-bold leading-[1.35] tracking-[-0.01em] text-[#2C3930]">
+      <h1 className="mt-7 text-[27px] font-medium leading-[1.35] tracking-[-0.01em] text-[#2C3930]">
         나만의 순간과 기록을
         <br />
         제한없이 남겨보세요

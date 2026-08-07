@@ -129,7 +129,7 @@ export function PremiumPage() {
             혜택 소개를 값보다 먼저 둔다. 무엇이 좋아지는지를 모르는 채 가격표부터 보면
             비교할 기준이 없다 — 참고한 유튜브 프리미엄도 혜택을 보여준 뒤 요금을 꺼낸다.
           */}
-          <BenefitShowcase />
+          <BenefitShowcase freePlan={freePlan} />
 
           <section className="flex flex-col gap-4">
             {paidPlans.map((plan, i) => (

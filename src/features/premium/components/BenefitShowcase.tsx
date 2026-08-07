@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react';
 import { useInView } from '@/shared/hooks/useInView';
+import { FEATURE_CODE, findFeature } from '../lib/planDisplay';
+import type { SubscriptionPlanDto } from '../types/payment';
 
 /**
  * 사진 네 장의 자리와, 무대 정중앙(문서 카드)까지 옮겨갈 거리.
@@ -30,6 +32,26 @@ const LINES = [
   { w: '54%', delay: 3.84 },
 ];
 
+/**
+ * 무료 플랜이 한 달에 몇 편까지 되는지를 문장으로.
+ *
+ * **숫자를 박지 않는다.** 지금은 월 1회지만 서버가 정하는 값이고, 바뀌면 이 문구가 곧바로
+ * 거짓이 된다(`lib/planDisplay.ts` 의 "되돌리지 말 것" 과 같은 이유 — 예전에 하드코딩한
+ * 가격이 실제와 어긋난 채 굳어 있었다).
+ *
+ * 1 일 때만 '한 편'으로 읽는다. '1편'은 세는 말투라 이 문장의 결과 안 맞는다.
+ */
+function freeLimitSentence(freePlan: SubscriptionPlanDto): string {
+  const feature = findFeature(freePlan, FEATURE_CODE.aiBlogMonthly);
+  if (!feature?.isEnabled || feature.limitValue == null) {
+    // 무료에서 아예 막힌 경우. 지금 서버는 이 상태가 아니지만, 그렇게 바뀌어도
+    // 문장이 '한 달에 null편'이 되지는 않게 한다.
+    return '무료 플랜에서는 AI 블로그를 쓸 수 없어요.';
+  }
+  if (feature.limitValue === 1) return '무료 플랜은 한 달에 한 편이에요.';
+  return `무료 플랜은 한 달에 ${feature.limitValue}편이에요.`;
+}
+
 /** 사진 한 장. 안의 그림은 풍경 한 컷을 최소한으로 줄인 것(해 + 능선). */
 function PhotoTile({ tone }: { tone: 'a' | 'b' }) {
   return (
@@ -48,6 +70,11 @@ function PhotoTile({ tone }: { tone: 'a' | 'b' }) {
  * 그 자리에 놓을 게 AI 블로그다 — 저장 용량이나 광고 제거와 달리 "무슨 일이 일어나는지"
  * 를 글로 설명하면 길고, 그림으로 보여주면 한 번에 통한다.
  *
+ * ⚠️ **파는 건 기능이 아니라 한도다.** AI 블로그 자체는 무료 플랜에도 있다(월 1회).
+ * 그래서 문구가 "사진을 모으면 여행기가 돼요" 라고만 하면 **돈을 안 내도 되는 것을
+ * 자랑하는 꼴**이 된다 — 처음에 그렇게 썼다가 고쳤다. 그림은 기능을 보여주고, 글은
+ * 무료와 유료의 차이를 말한다.
+ *
  * 연출은 `styles.css` 의 `benefit-*` 키프레임이다(애니메이션 정의를 한곳에 모으는 이
  * 저장소 관행 — `SproutIllustration` 과 같다). 라이브러리를 들이지 않았다: 번들이 이미
  * 860KB 라 경고가 떠 있고, 이 정도 연출에 런타임은 필요 없다.
@@ -56,10 +83,10 @@ function PhotoTile({ tone }: { tone: 'a' | 'b' }) {
  * 내려왔을 땐 이미 끝나 있다. 나갔다 들어오면 다시 튼다 — 한 번 놓치면 볼 방법이
  * 없어지는 것보다 낫다.
  *
- * 문구는 실제 동작에 근거한다(`profile/constants/faq.ts` 의 AI 블로그 항목과 같은 근거):
- * 기간을 고르면 그 기간의 기록으로 초안을 만들고, 넣을 기록과 말투를 고를 수 있다.
+ * 무료 쪽 한도는 `freePlan` 에서 파생한다 — 숫자를 문구에 박으면 서버가 바꿨을 때
+ * 그대로 거짓이 된다(`freeLimitSentence` 주석 참고).
  */
-export function BenefitShowcase() {
+export function BenefitShowcase({ freePlan }: { freePlan: SubscriptionPlanDto }) {
   const { ref, inView } = useInView<HTMLElement>({ threshold: 0.3 });
 
   return (
@@ -119,12 +146,13 @@ export function BenefitShowcase() {
         </div>
       </div>
 
-      <h2 className="mt-2 text-center text-[19px] font-medium text-[#2C3930]">
-        사진을 모으면, 여행기가 돼요
+      <h2 className="mt-8 text-center text-[21px] font-medium text-[#2C3930]">
+        다녀온 만큼, 남길 수 있게
       </h2>
       <p className="mx-auto mt-2 max-w-[300px] text-center text-[15px] leading-relaxed text-[#60655C]">
-        기간만 고르면 그동안의 기록으로 초안을 만들어 드려요. 넣을 기록과 말투는 직접 고를 수
-        있어요.
+        {freeLimitSentence(freePlan)}
+        <br />
+        유료 플랜으로 올리면 여행마다 한 편씩 쓸 수 있어요.
       </p>
     </section>
   );
