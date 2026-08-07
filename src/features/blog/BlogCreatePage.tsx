@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../shared/constants/routes';
 import { useToast } from '../../shared/components/toast/toastStore';
 import { useBlogCreate } from './hooks/useBlogCreate';
@@ -7,11 +7,12 @@ import { CreateStepHeader } from './components/CreateStepHeader';
 import { DateStep } from './components/steps/DateStep';
 import { ToneStep } from './components/steps/ToneStep';
 import { ResultStep } from './components/steps/ResultStep';
+import { useMySubscription } from '../premium/hooks/useMySubscription';
 
 /** 동선 페이지의 "AI 블로그 작성"에서 넘어올 때 전달되는 기간 프리필. */
 type BlogCreateLocationState = { startDate?: string; endDate?: string } | null | undefined;
 
-export function BlogCreatePage() {
+function BlogCreateContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
@@ -82,4 +83,34 @@ export function BlogCreatePage() {
       </div>
     </main>
   );
+}
+
+/** 무료 사용자의 URL 직접 진입까지 막는 AI 블로그 작성 권한 경계. */
+export function BlogCreatePage() {
+  const { data: subscription, isPending, isError, refetch } = useMySubscription();
+
+  if (isPending) {
+    return (
+      <main className="grid min-h-full place-items-center bg-[#fffcef]" role="status" aria-label="구독 정보를 확인하는 중">
+        <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#788f4a]" />
+      </main>
+    );
+  }
+
+  if (isError) {
+    return (
+      <main className="flex min-h-full flex-col items-center justify-center bg-[#fffcef] px-5 text-center">
+        <p className="text-[15px] text-[#60655c]">구독 정보를 확인하지 못했어요.</p>
+        <button type="button" onClick={() => refetch()} className="mt-4 rounded-xl bg-pictree-700 px-5 py-3 text-[14px] font-medium text-white">
+          다시 시도
+        </button>
+      </main>
+    );
+  }
+
+  if (!subscription) {
+    return <Navigate to={ROUTES.premium} replace />;
+  }
+
+  return <BlogCreateContent />;
 }
