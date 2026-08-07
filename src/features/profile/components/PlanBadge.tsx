@@ -21,7 +21,7 @@ export function PlanBadge({ planName, summary, note }: Props) {
       <div className="flex items-center gap-2">
         <img src={crownIcon} alt="" className="h-7 w-7" />
         <span className="text-[13px] font-medium text-[#2C3930]">현재 플랜</span>
-        <span className="text-[17px] font-medium text-black">{planName}</span>
+        <span className="text-[17px] font-medium text-[#2C3930]">{planName}</span>
       </div>
 
       {summary && summary.length > 0 && (
@@ -31,14 +31,14 @@ export function PlanBadge({ planName, summary, note }: Props) {
               key={label}
               className="min-w-[104px] rounded-lg border border-[#C5D89D] bg-white px-3 py-1.5 text-center"
             >
-              <p className="text-[13px] font-medium text-[#90908F]">{label}</p>
+              <p className="text-[13px] font-medium text-[#60655C]">{label}</p>
               <p className="text-[13px] font-medium text-[#2C3930]">{value}</p>
             </div>
           ))}
         </div>
       )}
 
-      {note && <p className="mt-2 text-[13px] text-[#898888]">{note}</p>}
+      {note && <p className="mt-2 text-[13px] text-[#60655C]">{note}</p>}
     </div>
   );
 }

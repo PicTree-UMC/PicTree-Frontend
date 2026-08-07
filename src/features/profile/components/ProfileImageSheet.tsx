@@ -29,7 +29,7 @@ export function ProfileImageSheet({ onRemove, onClose }: Props) {
       bottomPadding="2rem"
     >
       <p className="text-center text-[15px] font-medium text-[#2C3930]">프로필 사진을 지울까요?</p>
-      <p className="mt-1 text-center text-[13px] leading-[18px] text-[#8D8D8D]">
+      <p className="mt-1 text-center text-[13px] leading-[18px] text-[#60655C]">
         기본 이미지로 바뀌어요.
         <br />
         소셜 계정에서 가져온 사진이 지워집니다.
@@ -39,14 +39,14 @@ export function ProfileImageSheet({ onRemove, onClose }: Props) {
         <button
           type="button"
           onClick={onClose}
-          className="h-[44px] flex-1 rounded-[12px] bg-[#E6E6E6] text-[15px] font-medium text-[#2C3930]"
+          className="h-[44px] flex-1 rounded-[12px] bg-[#D9D9D9] text-[15px] font-medium text-[#2C3930]"
         >
           취소
         </button>
         <button
           type="button"
           onClick={onRemove}
-          className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#FF5858] text-[15px] font-medium text-white"
+          className="flex h-[44px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#DC2626] text-[15px] font-medium text-white"
         >
           <img src={trashIcon} alt="" className="h-[18px] w-[18px] brightness-0 invert" />
           지우기

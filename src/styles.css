@@ -260,7 +260,7 @@ select {
   top: var(--banner-top);
 }
 
-/* 안내 카드 바로 아래에 놓이는 것(현재 위치 버튼 · 근처 나무 알림) */
+/* 안내 카드 바로 아래에 놓이는 것(현재 위치 버튼) */
 .below-banner {
   top: calc(var(--banner-top) + var(--banner-height) + var(--banner-gap));
 }

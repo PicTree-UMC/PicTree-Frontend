@@ -26,7 +26,9 @@ export function TravelCalendarPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      <header className="bg-[#C5D89D] px-5 pb-12 pt-header">
+      {/* pb-12 + 아래 카드의 -mt-6 은 카드를 초록 밴드에 걸치게 하던 짝이었다. 밴드가
+          없어졌으니 둘 다 평범한 간격으로 되돌린다. */}
+      <header className="px-5 pb-5 pt-header">
         <NavBar onBack={() => window.history.back()} title="여행 캘린더" />
 
         {/* 연도 + 피커 트리거 */}
@@ -36,7 +38,7 @@ export function TravelCalendarPage() {
             onClick={() => setPickerOpen((prev) => !prev)}
             aria-expanded={pickerOpen}
             aria-label="연·월 선택"
-            className="flex items-center gap-1.5 text-2xl font-medium text-black"
+            className="flex items-center gap-1.5 text-2xl font-medium text-[#2C3930]"
           >
             {year}년
             {/* 역삼각형(▼) */}
@@ -113,12 +115,12 @@ export function TravelCalendarPage() {
       </header>
 
       <div className="px-5">
-        <div className="-mt-6 rounded-[20px] bg-white p-5 shadow-[4px_4px_8px_0px_rgba(0,0,0,0.12)]">
+        <div className="rounded-[20px] border border-[#ECECEC] bg-white p-5">
           <div className="mb-4 flex items-center justify-center gap-8">
             <button type="button" onClick={goPrev} aria-label="이전 달" className="p-1">
               <img src={chevronLeftIcon} alt="" className="h-[18px] w-[10px]" />
             </button>
-            <p className="text-[20px] font-medium text-black">{month}월</p>
+            <p className="text-[20px] font-medium text-[#2C3930]">{month}월</p>
             <button type="button" onClick={goNext} aria-label="다음 달" className="p-1">
               <img src={chevronLeftIcon} alt="" className="h-[18px] w-[10px] rotate-180" />
             </button>
@@ -126,11 +128,11 @@ export function TravelCalendarPage() {
 
           {isError ? (
             <div className="py-8 text-center">
-              <p className="text-[14px] text-[#FF5858]">캘린더를 불러오지 못했어요.</p>
+              <p className="text-[14px] text-[#DC2626]">캘린더를 불러오지 못했어요.</p>
               <button
                 type="button"
                 onClick={() => refetch()}
-                className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-[13px] font-medium text-white"
+                className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
               >
                 다시 시도
               </button>
@@ -166,19 +168,19 @@ export function TravelCalendarPage() {
             잡아 두면 라벨이 칸 밖으로 삐져나와 옆 라벨과 맞붙어 읽힌다.
           */}
           <div className="mt-4 flex items-start justify-center gap-1">
-            <span className="mt-[5px] px-1 text-[13px] text-black">적음</span>
+            <span className="mt-[5px] px-1 text-[13px] text-[#2C3930]">적음</span>
             {CALENDAR_LEVELS.map(({ shade, label }) => (
               <span key={label} className="flex w-12 flex-col items-center gap-1.5">
                 <span
                   className="h-5 w-5 rounded-full"
                   style={{ backgroundColor: shade }}
                 />
-                <span className="whitespace-nowrap text-[13px] leading-none text-black">
+                <span className="whitespace-nowrap text-[13px] leading-none text-[#2C3930]">
                   {label}
                 </span>
               </span>
             ))}
-            <span className="mt-[5px] px-1 text-[13px] text-black">많음</span>
+            <span className="mt-[5px] px-1 text-[13px] text-[#2C3930]">많음</span>
           </div>
         </div>
       </div>

@@ -48,9 +48,10 @@ export function FavoritesPage() {
 
   return (
     <div className="relative flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      <header className="bg-[#C5D89D] px-5 pb-8 pt-header">
+      <header className="px-5 pb-4 pt-header">
         <NavBar onBack={() => window.history.back()} title="즐겨찾기 장소" />
-        <p className="mt-4 text-[14px] text-[#2C3930]">
+        {/* 초록 밴드 위 흰 글씨였다 — 크림 위로 내려오면서 캡션 티어(INK-muted)로 맞춘다. */}
+        <p className="mt-3 text-[13px] text-[#60655C]">
           다시 방문하고 싶은 장소를 관리해보세요
         </p>
       </header>
@@ -59,7 +60,7 @@ export function FavoritesPage() {
         {/* 요약 카드 */}
         <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)]">
           <img src={starBadgeIcon} alt="" className="h-12 w-12 flex-shrink-0" />
-          <span className="text-[17px] font-medium text-black">
+          <span className="text-[17px] font-medium text-[#2C3930]">
             즐겨찾기 {count}곳
           </span>
         </div>
@@ -74,14 +75,15 @@ export function FavoritesPage() {
 
         {/* 저장한 장소 + 정렬 */}
         <div className="flex items-center justify-between">
-          <h2 className="text-[17px] font-medium text-black">저장한 장소</h2>
+          <h2 className="text-[17px] font-medium text-[#2C3930]">저장한 장소</h2>
           <div className="relative">
             <button
               type="button"
               onClick={() => setSortOpen((prev) => !prev)}
               aria-expanded={sortOpen}
-              className="inline-flex items-center gap-1.5 rounded-[20px] py-1.5 pl-4 pr-2 text-[14px] text-[#303030]"
-              style={{ background: "linear-gradient(180deg, #ECF6D8, #FFF6D1)" }}
+              // 종전엔 팔레트 밖 그라디언트(#ECF6D8 → #FFF6D1)였다. 정렬은 보조 전환이라
+              // 칩 규칙(§5)의 `ghost` 고른 상태와 같은 GREEN-100 평면으로 맞춘다.
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#ECF6D8] py-1.5 pl-4 pr-2 text-[15px] font-medium text-[#2C3930]"
             >
               {SORT_LABELS[sortOrder]}
               <img
@@ -110,7 +112,7 @@ export function FavoritesPage() {
                       className={`block w-full px-4 py-2.5 text-left text-[14px] ${
                         opt === sortOrder
                           ? "bg-[#ECF6D8] font-medium text-[#2C3930]"
-                          : "text-[#303030]"
+                          : "text-[#2C3930]"
                       }`}
                     >
                       {SORT_LABELS[opt]}
@@ -124,20 +126,20 @@ export function FavoritesPage() {
 
         {/* 장소 목록 */}
         {isPending ? (
-          <p className="py-10 text-center text-[14px] text-[#90908F]">불러오는 중...</p>
+          <p className="py-10 text-center text-[14px] text-[#60655C]">불러오는 중...</p>
         ) : isError ? (
           <div className="py-10 text-center">
-            <p className="text-[14px] text-[#FF5858]">즐겨찾기를 불러오지 못했어요.</p>
+            <p className="text-[14px] text-[#DC2626]">즐겨찾기를 불러오지 못했어요.</p>
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-2 rounded-xl bg-[#89986D] px-4 py-1.5 text-[13px] font-medium text-white"
+              className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
             >
               다시 시도
             </button>
           </div>
         ) : favorites.length === 0 ? (
-          <p className="py-10 text-center text-[14px] text-[#90908F]">
+          <p className="py-10 text-center text-[14px] text-[#60655C]">
             즐겨찾기한 장소가 없어요.
           </p>
         ) : (
@@ -158,20 +160,20 @@ export function FavoritesPage() {
               )}
 
               <div className="min-w-0 flex-1 pr-7">
-                <p className="text-[15px] font-medium text-black">{place.name}</p>
+                <p className="text-[15px] font-medium text-[#2C3930]">{place.name}</p>
                 {place.description && (
-                  <p className="mt-0.5 text-[13px] text-[#90908F]">
+                  <p className="mt-0.5 text-[13px] text-[#60655C]">
                     {place.description}
                   </p>
                 )}
-                <p className="mt-1 text-[13px] text-[#90908F]">{place.createdAt}</p>
+                <p className="mt-1 text-[13px] text-[#60655C]">{place.createdAt}</p>
               </div>
 
               <button
                 type="button"
                 onClick={() => setTarget(place)}
                 aria-label={`${place.name} 즐겨찾기에서 제거`}
-                className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-[#FFECEC]"
+                className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-[#FEF7F7]"
               >
                 <img src={trashIcon} alt="" className="h-4 w-4" />
               </button>
@@ -190,23 +192,23 @@ export function FavoritesPage() {
             onClick={(event) => event.stopPropagation()}
           >
             <img src={trashLargeIcon} alt="" className="mx-auto h-[34px] w-[30px]" />
-            <p className="mt-3 text-[17px] font-medium text-black">
+            <p className="mt-3 text-[17px] font-medium text-[#2C3930]">
               즐겨찾기에서 제거할까요?
             </p>
-            <p className="mt-1 text-[13px] text-[#303030]">{target.name}</p>
+            <p className="mt-1 text-[13px] text-[#2C3930]">{target.name}</p>
 
             <div className="mt-5 flex justify-center gap-3">
               <button
                 type="button"
                 onClick={() => setTarget(null)}
-                className="h-9 w-[86px] rounded-xl bg-[#E6E6E6] text-[14px] font-medium text-[#303030]"
+                className="h-9 w-[86px] rounded-xl bg-[#D9D9D9] text-[14px] font-medium text-[#2C3930]"
               >
                 취소
               </button>
               <button
                 type="button"
                 onClick={handleRemove}
-                className="h-9 w-[86px] rounded-xl bg-[#FF5858] text-[14px] font-medium text-white"
+                className="h-9 w-[86px] rounded-xl bg-[#DC2626] text-[14px] font-medium text-white"
               >
                 제거
               </button>
