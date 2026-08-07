@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import type { SavedBlog } from '../types/blog';
+import type { AIBlogDraft } from '../types/blog';
 import { formatDateRange } from '../lib/formatBlogDate';
 import { blogDetailPath } from '@/shared/constants/routes';
 
 type SavedBlogCardProps = {
-  blog: SavedBlog;
+  blog: AIBlogDraft;
   treeCount?: number;
 };
 
@@ -16,7 +16,7 @@ export function SavedBlogCard({ blog, treeCount }: SavedBlogCardProps) {
       <button
         type="button"
         className="flex w-full items-center gap-3.5 rounded-xl text-left transition active:bg-[#faf9f2]"
-        onClick={() => navigate(blogDetailPath(blog.id))}
+        onClick={() => navigate(blogDetailPath(blog.draftId))}
         aria-label={`${blog.title} 상세 보기`}
       >
         {blog.thumbnailUrl ? (

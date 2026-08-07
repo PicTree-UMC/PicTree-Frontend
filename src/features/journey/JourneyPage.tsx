@@ -8,8 +8,8 @@ import { useDeleteJourney } from './hooks/useDeleteJourney';
 import { useRenameJourney } from './hooks/useRenameJourney';
 import { JourneyChips } from './components/JourneyChips';
 import { JourneyRoadmap } from './components/JourneyRoadmap';
-import { DeleteModal } from './components/DeleteModal';
 import { ROUTES, journeyViewPath } from '../../shared/constants/routes';
+import { DeleteConfirmModal, DeleteIconButton } from '../../shared/components/DeleteConfirmModal';
 
 /**
  * 저장된 동선이 없을 때 보여주는 감성 일러스트.
@@ -88,24 +88,6 @@ function MoreIcon({ className }: { className?: string }) {
   );
 }
 
-/** 삭제 버튼 안 휴지통 아이콘(디자인 ix:trashcan). 인라인 SVG. */
-function TrashIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M4 7h16M10 11v6M14 11v6M5 7l1 13a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-13M9 7V4h6v3" />
-    </svg>
-  );
-}
-
 export function JourneyPage() {
   const navigate = useNavigate();
   // 조회는 useQuery, 삭제·이름변경은 useMutation 으로 처리한다.
@@ -157,8 +139,9 @@ export function JourneyPage() {
 
   const handleDelete = () => {
     if (!selectedJourney) return;
-    deleteMutation.mutate(selectedJourney.id);
-    setShowDeleteModal(false);
+    deleteMutation.mutate(selectedJourney.id, {
+      onSuccess: () => setShowDeleteModal(false),
+    });
   };
 
   const handleRename = (newTitle: string) => {
@@ -253,13 +236,11 @@ export function JourneyPage() {
                     >
                       <MoreIcon className="size-5" />
                     </button>
-                    <button
+                    <DeleteIconButton
+                      label="동선 삭제"
                       onClick={() => setShowDeleteModal(true)}
-                      aria-label="동선 삭제"
-                      className="flex size-9 items-center justify-center rounded-full border-[1.5px] border-[#dc2626] text-[#dc2626]"
-                    >
-                      <TrashIcon className="size-[18px]" />
-                    </button>
+                      className="size-9 border-[1.5px] border-[#dc2626]"
+                    />
                   </div>
                 </div>
 
@@ -322,11 +303,14 @@ export function JourneyPage() {
           onConfirm={handleRename}
         />
       )}
-      {showDeleteModal && selectedJourney && (
-        <DeleteModal
-          journeyTitle={selectedJourney.title}
+      {selectedJourney && (
+        <DeleteConfirmModal
+          isOpen={showDeleteModal}
+          title="동선을 삭제할까요?"
+          description={`“${selectedJourney.title}”이(가) 영구 삭제됩니다.`}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDelete}
+          isDeleting={deleteMutation.isPending}
         />
       )}
     </div>

@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../../shared/constants/routes';
 import { PencilIcon } from './icons';
+import { useMySubscription } from '../../premium/hooks/useMySubscription';
+import { PremiumUpsellSheet } from './PremiumUpsellSheet';
+import { useToast } from '../../../shared/components/toast/toastStore';
 
 /**
  * 작성 진입 플로팅 버튼. 하단 탭바 위 우하단에 고정.
@@ -10,17 +14,43 @@ import { PencilIcon } from './icons';
  */
 export function BlogCreateFab() {
   const navigate = useNavigate();
+  const { data: subscription, isPending, isError } = useMySubscription();
+  const [showPremiumSheet, setShowPremiumSheet] = useState(false);
+  const { showToast } = useToast();
+
+  const handleCreate = () => {
+    if (isPending) return;
+    if (isError) {
+      showToast('구독 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.', 'error');
+      return;
+    }
+    if (!subscription) {
+      setShowPremiumSheet(true);
+      return;
+    }
+    navigate(ROUTES.blogCreate);
+  };
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto sm:max-w-[390px]">
-      <button
-        type="button"
-        aria-label="블로그 작성하기"
-        className="bottom-nav pointer-events-auto absolute right-5 grid h-14 w-14 place-items-center rounded-full bg-pictree-700 text-white shadow-[0_10px_22px_rgba(45,51,34,0.32)] transition-transform active:scale-95"
-        onClick={() => navigate(ROUTES.blogCreate)}
-      >
-        <PencilIcon />
-      </button>
-    </div>
+    <>
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto sm:max-w-[390px]">
+        <button
+          type="button"
+          aria-label="블로그 작성하기"
+          className="bottom-nav pointer-events-auto absolute right-5 grid h-14 w-14 place-items-center rounded-full bg-pictree-700 text-white shadow-[0_10px_22px_rgba(45,51,34,0.32)] transition-transform active:scale-95 disabled:cursor-wait disabled:opacity-60"
+          onClick={handleCreate}
+          disabled={isPending}
+        >
+          <PencilIcon />
+        </button>
+      </div>
+
+      {showPremiumSheet && (
+        <PremiumUpsellSheet
+          onClose={() => setShowPremiumSheet(false)}
+          onUpgrade={() => navigate(ROUTES.premium)}
+        />
+      )}
+    </>
   );
 }

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import type { BlogSection, BlogStatus } from '../../types/blog';
+import type { BlogDraftPreview, BlogStatus } from '../../types/blog';
 import { GeneratingCard } from '../GeneratingCard';
 import { useToast } from '../../../../shared/components/toast/toastStore';
+import { formatLongDate } from '../../lib/formatBlogDate';
 
 type ResultStepProps = {
   status: BlogStatus;
-  draft: { title: string; sections: BlogSection[] } | null;
+  draft: BlogDraftPreview | null;
   onSave: () => Promise<void>;
 };
 
@@ -22,7 +23,14 @@ export function ResultStep({ status, draft, onSave }: ResultStepProps) {
   }
 
   const handleCopy = async () => {
-    const text = [draft.title, '', ...draft.sections.map((section, i) => `${i + 1}. ${section.heading}\n${section.body}`)].join('\n\n');
+    const text = [
+      draft.title,
+      '',
+      ...draft.days.map((day) => [
+        formatLongDate(day.date),
+        ...day.sections.map((section) => `${section.heading}\n${section.body}`),
+      ].join('\n\n')),
+    ].join('\n\n');
     try {
       await navigator.clipboard.writeText(text);
       showToast('초안을 복사했어요', 'success');
@@ -54,24 +62,33 @@ export function ResultStep({ status, draft, onSave }: ResultStepProps) {
 
         <div className="h-px bg-[#f0f0e9]" />
 
-        <div className="px-5 pb-8 pt-6">
-          {draft.sections.map((section, i) => (
-            <section key={`${section.treeId}-${i}`} className={i > 0 ? 'mt-10' : undefined}>
-              <h3 className="text-[19px] font-bold leading-snug text-[#252b24]">
-                {i + 1}. {section.heading}
+        <div className="px-5 pb-8 pt-2">
+          {draft.days.map((day, dayIndex) => (
+            <section key={day.date} className={dayIndex > 0 ? 'mt-14 border-t border-[#eeeeea] pt-10' : 'pt-6'}>
+              <h3 className="text-center text-[18px] font-bold tracking-[-0.01em] text-[#30362f]">
+                {formatLongDate(day.date)}
               </h3>
-              {section.image && (
-                <figure className="mt-4 overflow-hidden rounded-lg bg-pictree-100">
-                  <img
-                    src={section.image}
-                    alt={`${section.heading}에서 촬영한 사진`}
-                    className="max-h-[440px] w-full object-cover"
-                  />
-                </figure>
-              )}
-              <p className="mt-4 whitespace-pre-line text-[15px] leading-[1.9] text-[#444a43]">
-                {section.body}
-              </p>
+              <div className="mt-7">
+                {day.sections.map((section, sectionIndex) => (
+                  <article key={`${section.treeId}-${sectionIndex}`} className={sectionIndex > 0 ? 'mt-10' : undefined}>
+                    {section.image && (
+                      <figure className="overflow-hidden rounded-lg bg-pictree-100">
+                        <img
+                          src={section.image}
+                          alt={`${section.heading}에서 촬영한 사진`}
+                          className="max-h-[440px] w-full object-cover"
+                        />
+                      </figure>
+                    )}
+                    <h4 className={`${section.image ? 'mt-5' : ''} text-[18px] font-bold leading-snug text-[#252b24]`}>
+                      {section.heading}
+                    </h4>
+                    <p className="mt-3 whitespace-pre-line text-[15px] leading-[1.9] text-[#444a43]">
+                      {section.body}
+                    </p>
+                  </article>
+                ))}
+              </div>
             </section>
           ))}
         </div>
