@@ -111,7 +111,7 @@
 ### 3-4. 페이지별 주요 컴포넌트 (feature 로컬)
 
 - **auth**: `AuthShell`, `WelcomeView`, `TermsAgreementView`, `DevicePermissionModal` + `lib/oauth.ts`, `store/authStore.ts`
-- **home**: `MarkerDetailSheet`, `TreeMarker`, `JourneyBanner` + `useKakaoMap`, `useMapMarkers`
+- **home**: `MarkerDetailSheet`, `TreeMarker`, `TopBanner` + `useKakaoMap`, `useMapMarkers`
 - **journey**: `JourneyList`, `JourneyCard`, `BottomSheet`, `RenameModal`, `DeleteModal`, `PhotoAlbumSheet`, `PlaceTrail`, `SaveRouteSheet` + `api/journeyApi`, `hooks/useJourneys·useDeleteJourney·useRenameJourney`
 - **timeline**: `TimelineGroup`, `TimelineCard`, `TimelineHeader`, `RecordActionSheet`, `DeleteRecordModal`, `StorageBanner`
 - **premium**: `PlanCard`, `BenefitTable`, `PaymentConfirmSheet`, `PaymentCompleteModal`, `ModalShell`

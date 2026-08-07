@@ -5,7 +5,7 @@ type NearbyContent = {
   onView: () => void;
 };
 
-type JourneyBannerProps = {
+type TopBannerProps = {
   placeCount: number;
   nearby?: NearbyContent | null;
 };
@@ -25,7 +25,7 @@ type JourneyBannerProps = {
  * (styles.css)이고 이 카드 아래에 놓이는 것들이 같은 변수를 보고 있어서, 한쪽만 키우면
  * 그것들이 카드 밑에 깔린다. 버튼은 h-8(32px)이라 아이콘 h-9(36px) 줄 안에 들어온다.
  */
-export function JourneyBanner({ placeCount, nearby }: JourneyBannerProps) {
+export function TopBanner({ placeCount, nearby }: TopBannerProps) {
   return (
     <div className="top-banner absolute inset-x-4 z-30 flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pictree-100 text-lg">
