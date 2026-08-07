@@ -80,20 +80,29 @@ export function BenefitShowcase() {
           </div>
         ))}
 
-        {/* 사진들이 빨려드는 그 자리에 올라온다. */}
-        <div className="benefit-doc absolute left-1/2 top-[100px] w-[200px] -translate-x-1/2 rounded-2xl border border-[#ECECEC] bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-pictree-500" />
-            <span className="text-[13px] font-medium text-[#5B6B38]">여행기 초안</span>
-          </div>
-          <div className="mt-3 flex flex-col gap-2">
-            {LINES.map((line) => (
-              <span
-                key={line.delay}
-                className="benefit-line block h-[7px] rounded-full bg-[#ECF6D8]"
-                style={{ '--w': line.w, '--d': `${line.delay}s` } as CSSProperties}
-              />
-            ))}
+        {/*
+          사진들이 빨려드는 그 자리에 올라온다.
+
+          ⚠️ **가운데 정렬을 `-translate-x-1/2` 로 하면 안 된다.** 그것도 `transform` 이라
+          아래 `benefit-doc` 키프레임의 `transform`(translateY·scale)이 통째로 덮어쓴다 —
+          가로 보정이 사라져 카드 왼쪽 끝이 무대 50% 에 놓이고 오른쪽이 잘려 나간다.
+          그래서 **바깥 줄이 flex 로 가운데를 잡고**, 카드의 transform 은 연출만 쓴다.
+        */}
+        <div className="absolute inset-x-0 top-[100px] flex justify-center">
+          <div className="benefit-doc w-[200px] rounded-2xl border border-[#ECECEC] bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-pictree-500" />
+              <span className="text-[13px] font-medium text-[#5B6B38]">여행기 초안</span>
+            </div>
+            <div className="mt-3 flex flex-col gap-2">
+              {LINES.map((line) => (
+                <span
+                  key={line.delay}
+                  className="benefit-line block h-[7px] rounded-full bg-[#ECF6D8]"
+                  style={{ '--w': line.w, '--d': `${line.delay}s` } as CSSProperties}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
