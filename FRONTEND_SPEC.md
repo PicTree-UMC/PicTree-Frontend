@@ -116,7 +116,7 @@
 - **timeline**: `TimelineGroup`, `TimelineCard`, `TimelineHeader`, `RecordActionSheet`, `DeleteRecordModal`, `StorageBanner`
 - **premium**: `PlanCard`, `BenefitTable`, `PaymentConfirmSheet`, `PaymentCompleteModal`, `ModalShell`
 - **blog**: `BlogComposer`, `DraftCard`, `GeneratingCard`, `DateRangeCard` + `useBlogFlow`
-- **profile**: `RouteFootprintBanner`, `NearbyTreeAlert`, `MapNotifications`
+- **profile**: `RouteFootprintBanner`
 
 ---
 

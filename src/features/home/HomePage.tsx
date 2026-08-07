@@ -7,7 +7,6 @@ import { useCurrentLocation } from './hooks/useCurrentLocation';
 import { useMapMarkers, type MapMarkerData } from './hooks/useMapMarkers';
 import { useDeleteTree, useToggleFavorite, useTreeDetail, useTrees } from './hooks/useTrees';
 import { JourneyBanner } from './components/JourneyBanner';
-import { NearbyTreeAlert } from '@/features/profile/components';
 import { SproutIllustration } from '@/shared/components';
 import { useNearbyAlertWatcher } from '@/features/profile/hooks/useNearbyAlertWatcher';
 import { MarkerStoryViewer } from './components/MarkerStoryViewer';
@@ -26,7 +25,7 @@ export function HomePage() {
 
   /*
    * 근처 나무 알림. 위치가 의미 있게 바뀌면 서버에 확인을 요청하고(푸시는 서버가 쏜다),
-   * 반경 50m 안에 내 나무가 있으면 지도 위에도 카드로 알린다.
+   * 반경 50m 안에 내 나무가 있으면 상단 배너가 그 알림으로 갈아탄다.
    *
    * ⚠️ 앱이 켜져 있을 때만 동작한다 — 웹은 앱이 꺼진 상태에서 위치를 추적할 수 없다.
    * 지도가 위치를 계속 받는 유일한 화면이라 여기에 둔다.
@@ -186,25 +185,22 @@ export function HomePage() {
         </div>
       )}
 
-      {/* 상단 안내 카드 — 기록한 장소 수만 보여준다 */}
-      <JourneyBanner placeCount={markers.length} />
-
       {/*
-        근처 나무 알림 — 시안대로 발자국 배너 바로 아래에 얹는다.
-        여러 곳이 반경 안에 들어와도 카드는 하나다(가장 가까운 곳 + "외 N곳").
-        지도를 가리지 않도록 카드 밖은 터치가 통과하게 둔다.
+        상단 안내 카드 — 평소에는 기록한 장소 수를, 반경 50m 안에 내 나무가 있으면 그 알림을
+        보여준다. 카드를 하나 더 얹지 않고 자리를 나눠 쓴다(JourneyBanner 주석 참고).
+        여러 곳이 반경 안에 들어와도 알림은 하나다(가장 가까운 곳 + "외 N곳").
       */}
-      {nearbyAlert && (
-        <div className="below-banner pointer-events-none absolute inset-x-4 z-30 flex justify-center [&_button]:pointer-events-auto">
-          <NearbyTreeAlert
-            placeName={nearbyAlert.label}
-            distanceM={Math.round(nearbyAlert.distanceM)}
-            onView={() =>
-              setSelection({ ids: nearbyAlert.trees.map((t) => String(t.treeId)), index: 0 })
-            }
-          />
-        </div>
-      )}
+      <JourneyBanner
+        placeCount={markers.length}
+        nearby={
+          nearbyAlert && {
+            placeName: nearbyAlert.label,
+            distanceM: Math.round(nearbyAlert.distanceM),
+            onView: () =>
+              setSelection({ ids: nearbyAlert.trees.map((t) => String(t.treeId)), index: 0 }),
+          }
+        }
+      />
 
       {/*
         장소 기록(카메라) — 하단 중앙 플로팅 버튼. 탭바가 지도 위에 얹히므로
