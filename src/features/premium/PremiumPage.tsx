@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../shared/constants/routes';
+import { BenefitShowcase } from './components/BenefitShowcase';
 import { PaymentCompleteModal } from './components/PaymentCompleteModal';
 import { PaymentConfirmSheet } from './components/PaymentConfirmSheet';
 import { PlanComparison } from './components/PlanComparison';
@@ -124,6 +125,12 @@ export function PremiumPage() {
 
         {/* 섹션 사이는 gap-10. 각 섹션이 자기 제목을 갖고 있어 이만큼 떨어져야 묶음이 읽힌다. */}
         <div className="mt-10 flex flex-col gap-10 px-5">
+          {/*
+            혜택 소개를 값보다 먼저 둔다. 무엇이 좋아지는지를 모르는 채 가격표부터 보면
+            비교할 기준이 없다 — 참고한 유튜브 프리미엄도 혜택을 보여준 뒤 요금을 꺼낸다.
+          */}
+          <BenefitShowcase />
+
           <section className="flex flex-col gap-4">
             {paidPlans.map((plan, i) => (
               <PlanIntroCard

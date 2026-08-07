@@ -693,3 +693,101 @@ select {
     animation: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   프리미엄 혜택 소개 — 사진이 모여 글이 되는 연출
+   (features/premium/components/BenefitShowcase.tsx)
+
+   스크롤해서 들어왔을 때 `.benefit-play` 가 붙으면서 한 번 재생된다. 붙기 전에는
+   전부 opacity 0 이라 화면 밖에서 미리 재생돼 버리는 일이 없다 — 아래쪽 섹션이라
+   마운트 시점에 틀면 사용자가 도착했을 땐 이미 끝나 있다(shared/hooks/useInView).
+
+   흐름: 사진 네 장이 흩어진 자리에서 하나씩 떠오르고 → 가운데로 빨려들며 작아지고 →
+   그 자리에 문서 카드가 올라오고 → 글줄이 한 줄씩 써진다.
+
+   사진마다 --tx/--ty(가운데까지의 거리)를 인라인으로 받는다. 키프레임 하나로 네 장을
+   다 굴리기 위해서다. 도착 시각이 조금씩 어긋나는 건 의도다 — 네 장이 동시에 빨려들면
+   한 덩어리로 움직여 '모은다'로 안 읽힌다.
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes benefit-photo {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.55);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  42% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  72%,
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx, 0), var(--ty, 0)) scale(0.4);
+  }
+}
+
+@keyframes benefit-doc {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 글이 '써지는' 건 폭이 늘어나는 것으로 만든다. scaleX 는 둥근 끝이 같이 늘어나
+   찌그러져 보인다 — 줄이 네 개뿐이라 폭 애니메이션의 비용은 문제되지 않는다. */
+@keyframes benefit-line {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: var(--w, 100%);
+  }
+}
+
+.benefit-photo,
+.benefit-doc,
+.benefit-line {
+  opacity: 0;
+}
+.benefit-line {
+  width: 0;
+}
+
+.benefit-play .benefit-photo {
+  animation: benefit-photo 3.2s ease-in-out var(--d, 0s) both;
+}
+.benefit-play .benefit-doc {
+  opacity: 0;
+  animation: benefit-doc 0.5s cubic-bezier(0.22, 1, 0.36, 1) 2.5s both;
+}
+.benefit-play .benefit-line {
+  animation: benefit-line 0.55s ease-out var(--d, 3s) both;
+  opacity: 1;
+}
+
+/* 움직임을 줄이라고 한 사용자에게는 '다 끝난 그림'을 그대로 보여준다. 사진은 흩어진
+   자리에 그대로 두고 문서와 글줄만 채운다 — 연출 없이도 무엇을 말하는지는 읽힌다. */
+@media (prefers-reduced-motion: reduce) {
+  .benefit-photo,
+  .benefit-doc,
+  .benefit-line,
+  .benefit-play .benefit-photo,
+  .benefit-play .benefit-doc,
+  .benefit-play .benefit-line {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .benefit-line,
+  .benefit-play .benefit-line {
+    width: var(--w, 100%);
+  }
+}

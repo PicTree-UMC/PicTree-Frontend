@@ -42,7 +42,7 @@ export function PlanComparison({ freePlan, paidPlans, selectedId, onSelect }: Pr
     <section>
       <h2 className="text-[17px] font-medium text-[#2C3930]">플랜 비교</h2>
       <p className="mt-1 text-[13px] text-[#60655C]">
-        보고 싶은 플랜을 고르면 무료와 나란히 견줘 볼 수 있어요.
+        필요한 플랜을 선택하고 혜택을 확인하세요.
       </p>
 
       {/*
