@@ -47,8 +47,8 @@ export const useNearbyAlertToggle = () => {
     const response = await updateMyProfile(accessToken ?? '', { notification });
 
     // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-    if (response.resultType === 'FAIL') {
-      throw new Error(response.error.message);
+    if (!response.success) {
+      throw new Error(response.message);
     }
   };
 

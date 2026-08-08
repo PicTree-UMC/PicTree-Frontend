@@ -1,5 +1,5 @@
 import { httpClient } from '@/shared/lib/httpClient';
-import type { ApiResponse } from '@/features/auth/types/auth';
+import type { ApiResponse } from '@/shared/types/api';
 import type {
   PushSubscription,
   RegisterPushSubscriptionRequest,
@@ -27,8 +27,8 @@ export async function registerPushSubscription(
   );
 
   // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-  if (data.resultType === 'FAIL') {
-    throw new Error(data.error.message);
+  if (!data.success) {
+    throw new Error(data.message);
   }
 
   return data.data;
@@ -51,8 +51,8 @@ export async function getMyPushSubscriptions(): Promise<PushSubscription[]> {
   const { data } =
     await httpClient.get<ApiResponse<PushSubscription[]>>('/push-subscriptions/me');
 
-  if (data.resultType === 'FAIL') {
-    throw new Error(data.error.message);
+  if (!data.success) {
+    throw new Error(data.message);
   }
 
   return data.data ?? [];
@@ -79,7 +79,7 @@ export async function deactivatePushSubscription(
     `/push-subscriptions/${subscriptionId}/deactivate`,
   );
 
-  if (data.resultType === 'FAIL') {
-    throw new Error(data.error.message);
+  if (!data.success) {
+    throw new Error(data.message);
   }
 }

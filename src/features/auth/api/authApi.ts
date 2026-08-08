@@ -1,6 +1,6 @@
 import { httpClient } from '../../../shared/lib/httpClient';
+import type { ApiResponse } from '@/shared/types/api';
 import type {
-  ApiResponse,
   RefreshTokenData,
   SocialLoginData,
   SocialLoginRequest,

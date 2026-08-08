@@ -38,7 +38,7 @@ export function ProtectedRoute() {
 
     refreshAccessToken()
       .then((response) => {
-        if (response.resultType === 'FAIL') {
+        if (!response.success) {
           clearAuth();
           setStatus('unauthenticated');
           return;

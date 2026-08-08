@@ -1,5 +1,5 @@
 import { httpClient } from '@/shared/lib/httpClient';
-import type { ApiResponse } from '@/features/auth/types/auth';
+import type { ApiResponse } from '@/shared/types/api';
 import type { BulkFavoriteResult, FavoriteList, ToggledFavorite } from '../types/favorite';
 
 /**
@@ -12,8 +12,8 @@ export async function getFavorites(): Promise<FavoriteList> {
   const { data } = await httpClient.get<ApiResponse<FavoriteList>>('/trees/favorites');
 
   // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-  if (data.resultType === 'FAIL') {
-    throw new Error(data.error.message);
+  if (!data.success) {
+    throw new Error(data.message);
   }
 
   return data.data;
@@ -44,8 +44,8 @@ export async function setFavorite(
     { isFavorite },
   );
 
-  if (data.resultType === 'FAIL') {
-    throw new Error(data.error.message);
+  if (!data.success) {
+    throw new Error(data.message);
   }
 
   return data.data;

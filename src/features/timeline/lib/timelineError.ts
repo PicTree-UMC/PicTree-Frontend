@@ -7,10 +7,9 @@ import { isAxiosError } from "axios";
  * 이걸 안 쓰면 화면에 axios 기본 문구("Request failed with status code 404")가
  * 그대로 노출된다.
  *
- * ⚠️ 명세서와 서버 구현의 래퍼 형식이 다르다.
- *   - 명세서: `{ resultType: 'FAIL', error: { code, message }, ... }`
- *   - 서버(main): `{ success: false, code, message }`
- * 어느 쪽이 확정되든 화면이 깨지지 않도록 두 형태를 모두 읽는다.
+ * 종전엔 명세서 형태(`{ resultType, error: { message } }`)와 서버 형태를 둘 다 읽었다.
+ * 2026-08-08 스웨거 대조에서 **서버는 아래 한 형태뿐**임이 확인돼 명세서 쪽 갈래를 지웠다.
+ *   `{ success: false, code, message }`
  */
 export function getTimelineErrorMessage(error: unknown, fallback: string): string {
   if (!isAxiosError(error)) {
@@ -18,9 +17,7 @@ export function getTimelineErrorMessage(error: unknown, fallback: string): strin
     return error instanceof Error && error.message ? error.message : fallback;
   }
 
-  const body = error.response?.data as
-    | { message?: string; error?: { message?: string } }
-    | undefined;
+  const body = error.response?.data as { message?: string } | undefined;
 
-  return body?.error?.message ?? body?.message ?? fallback;
+  return body?.message ?? fallback;
 }

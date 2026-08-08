@@ -1,5 +1,5 @@
 import { httpClient } from '@/shared/lib/httpClient';
-import type { ApiResponse } from '@/features/auth/types/auth';
+import type { ApiResponse } from '@/shared/types/api';
 import type { TravelCalendar } from '../types/calendar';
 
 /**
@@ -21,8 +21,8 @@ export async function getTravelCalendar(
   });
 
   // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-  if (data.resultType === 'FAIL') {
-    throw new Error(data.error.message);
+  if (!data.success) {
+    throw new Error(data.message);
   }
 
   return data.data;

@@ -43,8 +43,8 @@ export function AuthCallbackPage() {
       redirectUri: getOAuthRedirectUri(),
     })
       .then((response) => {
-        if (response.resultType === 'FAIL') {
-          showToast(response.error.message, 'error', { placement: 'top' });
+        if (!response.success) {
+          showToast(response.message, 'error', { placement: 'top' });
           navigate(ROUTES.auth, { replace: true });
           return;
         }
