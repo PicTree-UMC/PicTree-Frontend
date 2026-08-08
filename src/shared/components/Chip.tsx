@@ -32,7 +32,7 @@ interface ChipProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'child
   /** 글자 뒤. 주로 × 아이콘. */
   trailing?: ReactNode;
   /**
-   * 고른 칩을 화면 안으로 끌어오는 쪽(`JourneyChips`)이 위치를 재려고 쓴다.
+   * 고른 칩을 화면 안으로 끌어오는 쪽(`RouteChips`)이 위치를 재려고 쓴다.
    * React 19 부터는 함수 컴포넌트도 ref 를 보통 prop 으로 받으므로 forwardRef 가 필요 없다.
    */
   ref?: Ref<HTMLButtonElement>;
@@ -48,7 +48,7 @@ interface ChipProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'child
 
   ⚠️ **고른 칩에 GREEN-500(#788F4A)을 쓰지 않는다** — 흰 글자가 3.6:1 이라 본문 기준
   4.5:1 에 못 미친다. 가이드라인에 '데코 전용 · 텍스트 금지'로 적혀 있는 색이다.
-  (`JourneyChips` 가 이 조합을 쓰고 있었고 이 컴포넌트로 옮기면서 풀렸다.)
+  (`RouteChips` 가 이 조합을 쓰고 있었고 이 컴포넌트로 옮기면서 풀렸다.)
 
   ⚠️ **안 고른 칩의 글자를 흐리게 하지 않는다.** 안 골랐어도 여전히 눌러서 고를 수 있는
   버튼이라 읽혀야 한다 — 상태 차이는 채움과 테두리로 낸다.

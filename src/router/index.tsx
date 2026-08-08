@@ -10,9 +10,9 @@ import { BillingFailPage } from '../features/premium/BillingFailPage';
 import { BillingSuccessPage } from '../features/premium/BillingSuccessPage';
 import { CameraPage } from '../features/camera/CameraPage';
 import { HomePage } from '../features/home/HomePage';
-import { JourneyPage } from '../features/journey/JourneyPage';
-import { RouteCreatePage } from '../features/journey/RouteCreatePage';
-import { RouteViewPage } from '../features/journey/RouteViewPage';
+import { RouteListPage } from '../features/route/RouteListPage';
+import { RouteCreatePage } from '../features/route/RouteCreatePage';
+import { RouteViewPage } from '../features/route/RouteViewPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { PaymentMethodsPage } from '../features/premium/PaymentMethodsPage';
 import { PremiumPage } from '../features/premium/PremiumPage';
@@ -90,7 +90,7 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTES.journey,
-            element: <JourneyPage />,
+            element: <RouteListPage />,
           },
           {
             path: ROUTES.profile,

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createRoute } from '../api/journeyApi';
-import { journeyKeys } from './useJourneys';
+import { createRoute } from '../api/routeApi';
+import { routeKeys } from './useSavedRoutes';
 
 interface CreateRouteVars {
   routeName: string;
@@ -21,7 +21,7 @@ export const useCreateRoute = () => {
   return useMutation({
     mutationFn: ({ routeName, treeIds }: CreateRouteVars) => createRoute(routeName, treeIds),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: journeyKeys.all });
+      queryClient.invalidateQueries({ queryKey: routeKeys.all });
     },
   });
 };

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { getRouteDetail } from '../api/journeyApi';
-import { journeyKeys } from './useJourneys';
+import { getRouteDetail } from '../api/routeApi';
+import { routeKeys } from './useSavedRoutes';
 
 /**
  * 저장된 동선 1건 조회 훅. `/journey/view/:routeId` 로 들어왔을 때만 돈다.
@@ -10,7 +10,7 @@ import { journeyKeys } from './useJourneys';
  */
 export const useRouteDetail = (routeId: number | undefined) =>
   useQuery({
-    queryKey: journeyKeys.detail(routeId ?? -1),
+    queryKey: routeKeys.detail(routeId ?? -1),
     queryFn: () => getRouteDetail(routeId as number),
     enabled: routeId !== undefined,
   });

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getRoutePlaceCandidates } from '../api/routeCandidatesApi';
 
-/** `/trees` 를 동선 관점으로 가공한 것이라 `journeyKeys`(=/routes) 밑에 두지 않는다. */
+/** `/trees` 를 동선 관점으로 가공한 것이라 `routeKeys`(=/routes) 밑에 두지 않는다. */
 export const routePlaceCandidateKey = ['routePlaceCandidates'] as const;
 
 /**

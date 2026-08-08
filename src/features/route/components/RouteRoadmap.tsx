@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import { Journey } from '../types/journey';
-import { useJourneyPhotos } from '../hooks/useJourneyPhotos';
+import { Route } from '../types/route';
+import { useRoutePhotos } from '../hooks/useRoutePhotos';
 
 /** 사진이 없는 노드를 채우는 플레이스홀더(사진 아이콘, tabler:photo 계열). */
 function PhotoPlaceholder({ className }: { className?: string }) {
@@ -44,8 +44,8 @@ const INSET = 46; // 컨테이너 가장자리 ~ 노드 중심
 const NODE_EDGE = INSET - R; // 가장자리 ~ 노드 상자 바깥면
 const LABEL_EDGE = INSET + R + 12; // 가장자리 ~ 라벨 시작(노드 반대편)
 
-interface JourneyRoadmapProps {
-  journey: Journey;
+interface RouteRoadmapProps {
+  route: Route;
 }
 
 /**
@@ -58,9 +58,9 @@ interface JourneyRoadmapProps {
  * 로드맵은 사진을 기다리지 않고 먼저 그리고, 도착하면 플레이스홀더가 사진으로 바뀐다 —
  * 장소·순서는 목록 응답만으로 알 수 있으므로 뼈대를 붙잡아 둘 이유가 없다.
  */
-export function JourneyRoadmap({ journey }: JourneyRoadmapProps) {
-  const { places } = journey;
-  const { data: photos = [] } = useJourneyPhotos(journey.id);
+export function RouteRoadmap({ route }: RouteRoadmapProps) {
+  const { places } = route;
+  const { data: photos = [] } = useRoutePhotos(route.id);
   const listRef = useRef<HTMLOListElement>(null);
   // path 를 그리려면 실제 폭이 필요하다. useLayoutEffect 라 첫 페인트 전에 보정돼 깜빡임이 없다.
   const [width, setWidth] = useState(MAX_W);

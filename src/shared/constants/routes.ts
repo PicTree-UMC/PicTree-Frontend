@@ -29,6 +29,15 @@ export const ROUTES = {
   // 토스 빌링 인증 후 리다이렉트되는 착지 라우트 (successUrl/failUrl 오리진 뒤 경로)
   premiumBillingSuccess: '/premium/billing/success',
   premiumBillingFail: '/premium/billing/fail',
+  /**
+   * ⚠️ **동선 도메인에서 `journey` 라는 이름이 남은 유일한 곳이다.** 코드 용어는 서버에 맞춰
+   * `route` 로 통일했지만(#185) URL 은 사용자에게 보이고 북마크·공유 링크에 박혀 있어서
+   * 같이 바꾸지 않았다. 아래 `journeyView*` · `journeyViewPath` · `nav-journey*.svg` 가
+   * 여기 묶여 있다. 바꾸려면 옛 경로 리다이렉트를 함께 넣어야 한다.
+   *
+   * 이 파일의 `ROUTES` 는 **URL 경로 상수**지 동선(route) 도메인이 아니다 — 이름이 겹쳐
+   * 보이지만 다른 것이다.
+   */
   journey: '/journey',
   /** 새 동선 만들기 ①단계 — 날짜 고르기. 여기서 고른 날짜를 `?dates=` 로 ② 에 넘긴다. */
   journeyCreate: '/journey/create',

@@ -1,10 +1,10 @@
 import { type ReactNode } from 'react';
 import { Sheet } from '@/shared/components';
-import { Journey } from '../types/journey';
+import { Route } from '../types/route';
 import { PlaceTrail } from './PlaceTrail';
 
 interface BottomSheetProps {
-  journey: Journey;
+  route: Route;
   onClose: () => void;
   onMapView: () => void;
   onPhotoGallery: () => void;
@@ -92,7 +92,7 @@ function SheetMenuItem({ icon, title, desc, onClick }: SheetMenuItemProps) {
 }
 
 export function BottomSheet({
-  journey,
+  route,
   onClose,
   onMapView,
   onPhotoGallery,
@@ -103,7 +103,7 @@ export function BottomSheet({
   return (
     <Sheet
       onClose={onClose}
-      label={`${journey.title} 옵션`}
+      label={`${route.title} 옵션`}
       dim="dark"
       animateIn={animateIn}
       className="rounded-t-[20px] bg-[#fffcef]"
@@ -112,10 +112,10 @@ export function BottomSheet({
     >
       {/* 헤더: 제목 + 날짜, 미니 동선 */}
       <div className="flex items-baseline gap-2.5">
-        <h2 className="truncate text-xl font-bold text-[#111]">{journey.title}</h2>
-        <span className="shrink-0 text-xs font-medium text-[#2c3930]">{journey.date}</span>
+        <h2 className="truncate text-xl font-bold text-[#111]">{route.title}</h2>
+        <span className="shrink-0 text-xs font-medium text-[#2c3930]">{route.date}</span>
       </div>
-      <PlaceTrail places={journey.places} className="mt-4" />
+      <PlaceTrail places={route.places} className="mt-4" />
 
       <hr className="my-4 border-t border-[#e5e5e5]" />
 

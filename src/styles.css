@@ -528,7 +528,7 @@ select {
 
 /* 동선 빈 화면 일러스트: 출발점 콕 → 경로가 드러나고 → 핀 낙하 → 나무가 자란다.
    transform-origin 은 SVG 좌표계(viewBox 0 0 200 150) 기준이라 여기 둔다. */
-@keyframes journey-dot-pop {
+@keyframes route-dot-pop {
   0% {
     opacity: 0;
     transform: scale(0);
@@ -543,7 +543,7 @@ select {
   }
 }
 
-@keyframes journey-path-reveal {
+@keyframes route-path-reveal {
   from {
     stroke-dashoffset: 170;
   }
@@ -552,7 +552,7 @@ select {
   }
 }
 
-@keyframes journey-pin-drop {
+@keyframes route-pin-drop {
   0% {
     opacity: 0;
     transform: translateY(-30px);
@@ -567,7 +567,7 @@ select {
   }
 }
 
-@keyframes journey-tree-grow {
+@keyframes route-tree-grow {
   0% {
     opacity: 0;
     transform: scale(0.2);
@@ -582,26 +582,26 @@ select {
   }
 }
 
-.animate-journey-dot {
+.animate-route-dot {
   transform-origin: 34px 118px;
-  animation: journey-dot-pop 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: route-dot-pop 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.animate-journey-path {
+.animate-route-path {
   /* 경로 길이(약 152)보다 넉넉히 — 모자라면 끝이 안 그려진 채 멈춘다 */
   stroke-dasharray: 170;
-  animation: journey-path-reveal 0.9s ease-out both;
+  animation: route-path-reveal 0.9s ease-out both;
   animation-delay: 180ms;
 }
 
-.animate-journey-pin {
-  animation: journey-pin-drop 0.45s cubic-bezier(0.3, 1.35, 0.5, 1) both;
+.animate-route-pin {
+  animation: route-pin-drop 0.45s cubic-bezier(0.3, 1.35, 0.5, 1) both;
   animation-delay: 420ms;
 }
 
-.animate-journey-tree {
+.animate-route-tree {
   transform-origin: 168px 64px;
-  animation: journey-tree-grow 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: route-tree-grow 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 900ms;
 }
 
@@ -679,10 +679,10 @@ select {
   .animate-sprout-leaf-right,
   .animate-sprout-breathe,
   .animate-sprout-ground,
-  .animate-journey-dot,
-  .animate-journey-path,
-  .animate-journey-pin,
-  .animate-journey-tree,
+  .animate-route-dot,
+  .animate-route-path,
+  .animate-route-pin,
+  .animate-route-tree,
   .animate-blog-spine,
   .animate-blog-page-left,
   .animate-blog-page-right,

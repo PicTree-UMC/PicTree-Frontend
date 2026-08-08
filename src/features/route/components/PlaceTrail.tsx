@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { Place } from '../types/journey';
+import { Place } from '../types/route';
 
 /**
  * 기분 이모지가 없는 장소의 대체 얼굴(디자인 image 20). 인라인 SVG.
