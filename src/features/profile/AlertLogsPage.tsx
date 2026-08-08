@@ -212,7 +212,7 @@ export function AlertLogsPage() {
               <button
                 type="button"
                 onClick={() => setChecked(allChecked ? new Set() : new Set(logs.map((l) => l.alertLogId)))}
-                className="text-[14px] text-[#2C3930]"
+                className="text-[13px] text-[#2C3930]"
               >
                 {allChecked ? "선택 해제" : "전체 선택"}
               </button>
@@ -220,7 +220,7 @@ export function AlertLogsPage() {
               <button
                 type="button"
                 onClick={() => setSelecting(true)}
-                className="text-[14px] text-[#2C3930]"
+                className="text-[13px] text-[#2C3930]"
               >
                 선택
               </button>
@@ -234,10 +234,10 @@ export function AlertLogsPage() {
 
       <div className="px-5 pt-5">
         {isPending ? (
-          <p className="py-10 text-center text-[14px] text-[#60655C]">불러오는 중...</p>
+          <p className="py-10 text-center text-[15px] text-[#60655C]">불러오는 중...</p>
         ) : isError ? (
           <div className="py-10 text-center">
-            <p className="text-[14px] text-[#DC2626]">알림 기록을 불러오지 못했어요.</p>
+            <p className="text-[15px] text-[#DC2626]">알림 기록을 불러오지 못했어요.</p>
             <button
               type="button"
               onClick={() => refetch()}
@@ -253,7 +253,7 @@ export function AlertLogsPage() {
             지워진 것이라 되살릴 방법이 없다.
           */
           <div className="py-10 text-center">
-            <p className="text-[14px] text-[#60655C]">아직 받은 알림이 없어요.</p>
+            <p className="text-[15px] text-[#60655C]">아직 받은 알림이 없어요.</p>
             <p className="mt-1 text-[13px] text-[#60655C]">
               기록해 둔 장소 근처에 가면 알려드릴게요.
             </p>
@@ -277,7 +277,7 @@ export function AlertLogsPage() {
               <button
                 type="button"
                 onClick={() => setConfirming("all")}
-                className="mt-3 flex w-full items-center justify-center gap-1.5 py-2 text-[14px] text-[#60655C]"
+                className="mt-3 flex w-full items-center justify-center gap-1.5 py-2 text-[13px] text-[#60655C]"
               >
                 <img src={trashIcon} alt="" className="h-4 w-4" />
                 알림 기록 모두 지우기

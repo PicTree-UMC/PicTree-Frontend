@@ -69,7 +69,7 @@ export function BlogDetailPage() {
       {isError && (
         <div className="flex min-h-[60vh] flex-col items-center justify-center px-5 text-center">
           <p className="text-[15px] text-[#60655c]">블로그를 불러오지 못했어요.</p>
-          <button type="button" onClick={() => refetch()} className="mt-4 rounded-xl bg-[#5b6b38] px-5 py-3 text-[14px] font-medium text-white">
+          <button type="button" onClick={() => refetch()} className="mt-4 rounded-xl bg-[#5b6b38] px-5 py-3 text-[15px] font-medium text-white">
             다시 시도
           </button>
         </div>

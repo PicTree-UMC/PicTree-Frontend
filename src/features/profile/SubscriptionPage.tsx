@@ -190,7 +190,7 @@ export function SubscriptionPage() {
         */}
         {isError && (
           <div className="rounded-xl border border-[#DC2626] bg-white px-5 py-4 text-center">
-            <p className="text-[14px] text-[#DC2626]">
+            <p className="text-[15px] text-[#DC2626]">
               구독 정보를 불러오지 못했어요. 아래는 실제 플랜과 다를 수 있어요.
             </p>
             <button
@@ -244,12 +244,12 @@ export function SubscriptionPage() {
         */}
         <section className="rounded-xl border border-[#ECECEC] bg-white px-5 py-1">
           {isPlansPending ? (
-            <p className="py-6 text-center text-[14px] text-[#60655C]">
+            <p className="py-6 text-center text-[15px] text-[#60655C]">
               요금제를 불러오는 중...
             </p>
           ) : benefits.length === 0 ? (
             <div className="py-6 text-center">
-              <p className="text-[14px] text-[#DC2626]">요금제를 불러오지 못했어요.</p>
+              <p className="text-[15px] text-[#DC2626]">요금제를 불러오지 못했어요.</p>
               <button
                 type="button"
                 onClick={() => refetchPlans()}
