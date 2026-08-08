@@ -14,6 +14,7 @@ import { RouteListPage } from '../features/route/RouteListPage';
 import { RouteCreatePage } from '../features/route/RouteCreatePage';
 import { RouteViewPage } from '../features/route/RouteViewPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
+import { PaymentMethodsPage } from '../features/premium/PaymentMethodsPage';
 import { PremiumPage } from '../features/premium/PremiumPage';
 import { ProfileEditPage } from '../features/profile/ProfileEditPage';
 import { SubscriptionPage } from '../features/profile/SubscriptionPage';
@@ -102,6 +103,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.subscription,
             element: <SubscriptionPage />,
+          },
+          {
+            path: ROUTES.paymentMethods,
+            element: <PaymentMethodsPage />,
           },
           {
             path: ROUTES.calendar,

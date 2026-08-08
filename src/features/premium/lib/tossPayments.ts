@@ -21,6 +21,20 @@ const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY;
 export const PENDING_PLAN_STORAGE_KEY = 'pictree.pendingPlan';
 
 /**
+ * 이 인증창을 **왜** 열었는지. 착지 페이지가 그 다음에 뭘 할지를 이 값으로 가른다.
+ *
+ * 토스 인증창은 두 경로에서 똑같이 열린다 — 구독 결제와 카드만 등록하기. 돌아오는
+ * successUrl 도 같아서, 착지 페이지는 쿼리스트링만 보고는 둘을 구분할 수 없다.
+ *
+ * ⚠️ **'플랜 id 가 없으면 카드 등록' 으로 때우면 안 된다.** 결제 도중 세션이 유실돼
+ * 플랜 id 가 날아간 경우와 구분이 안 돼서, 구독하려던 사람의 카드만 조용히 등록해
+ * 놓고 결제는 안 된 채로 끝난다. 의도를 따로 적어 두면 그 경우는 지금처럼 오류로 잡힌다.
+ */
+export const BILLING_INTENT_STORAGE_KEY = 'pictree.billingIntent';
+
+export type BillingIntent = 'subscribe' | 'register-card';
+
+/**
  * 카드 자동결제(빌링) 인증창을 띄운다.
  * 성공하면 이 함수는 반환하지 않고 successUrl 로 페이지가 이동한다.
  */

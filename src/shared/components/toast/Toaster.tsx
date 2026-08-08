@@ -25,6 +25,24 @@ const placementClass: Record<ToastPlacement, string> = {
 
 const PLACEMENTS: ToastPlacement[] = ['top', 'bottom'];
 
+/**
+ * 토스트는 **앱에서 가장 위**다. 이 값을 내리지 말 것.
+ *
+ * 토스트는 방금 누른 것이 어떻게 됐는지 알리는 유일한 창구고, 그 알림이 필요한 순간은
+ * 대개 무언가가 열려 있을 때다(결제 화면에서 결제가 실패하는 것처럼). 무엇 하나라도 토스트
+ * 위에 있으면 **하필 제일 중요한 순간에만 안 보인다.**
+ *
+ * 종전에 `z-50` 이었고 실제로 그 일이 났다. `<Toaster />` 는 `main.tsx` 에서 `#root` 안에
+ * 있는데 시트·모달은 `createPortal` 로 `body` 에 붙는다 — **`#root` 의 형제이면서 DOM 상
+ * 뒤에 온다.** z-index 가 같으면 뒤에 온 쪽이 이기므로, 같은 `z-50` 을 든 오버레이는 전부
+ * 토스트를 덮었다. `z-[60]` 인 `ModalShell` 은 말할 것도 없다.
+ * (`#root` 는 `height:100%` 뿐이라 쌓임 맥락을 만들지 않는다 — 그래서 이 값이 전역으로 먹는다.)
+ *
+ * 이 앱의 층은 이렇게 쌓인다:
+ *   탭바 40 · 전체 화면 오버레이/시트 50 · 모달 60 · **토스트 70**
+ */
+const TOAST_Z = 'z-[70]';
+
 export default function Toaster() {
   const toasts = useToastStore((s) => s.toasts);
   const removeToast = useToastStore((s) => s.removeToast);
@@ -40,7 +58,7 @@ export default function Toaster() {
         return (
           <div
             key={placement}
-            className={`pointer-events-none fixed inset-x-0 z-50 flex flex-col items-center gap-2 px-4 ${placementClass[placement]}`}
+            className={`pointer-events-none fixed inset-x-0 ${TOAST_Z} flex flex-col items-center gap-2 px-4 ${placementClass[placement]}`}
           >
             {items.map((toast) => (
               <button

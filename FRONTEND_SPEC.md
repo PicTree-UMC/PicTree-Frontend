@@ -41,7 +41,7 @@
 | 즐겨찾기 | `/profile/favorites` | `FavoritesPage` | 즐겨찾기 목록, 정렬 | ✓ | KIM JAE WON |
 | 개인정보처리방침 | `/profile/privacy` | `PrivacyPolicyPage` | 방침 전문 표시 | ✓ | KIM JAE WON |
 | AI 블로그 | `/blog` | `BlogPage` | 블로그 생성 플로우 (스텁) | ✓ | Gureum |
-| 프리미엄 결제 | `/premium` | `PremiumPage` | 요금제 선택, 결제(미연동) | ✓ | Gureum |
+| 프리미엄 결제 | `/premium` | `PremiumPage` | 플랜 소개·비교·FAQ, 토스 빌링 결제 | ✓ | Gureum |
 | 카메라 | `/camera` | `CameraPage` | 카메라 스트림, 촬영·기록 입력 | ✕ | ciracino88 |
 | (루트) | `/` | — | `/home` 으로 리다이렉트 | ✕ | — |
 
@@ -114,7 +114,7 @@
 - **home**: `MarkerDetailSheet`, `TreeMarker`, `TopBanner` + `useKakaoMap`, `useMapMarkers`
 - **journey**: `JourneyList`, `JourneyCard`, `BottomSheet`, `RenameModal`, `DeleteModal`, `PhotoAlbumSheet`, `PlaceTrail`, `SaveRouteSheet` + `api/journeyApi`, `hooks/useJourneys·useDeleteJourney·useRenameJourney`
 - **timeline**: `TimelineGroup`, `TimelineCard`, `TimelineHeader`, `RecordActionSheet`, `DeleteRecordModal`, `StorageBanner`
-- **premium**: `PlanCard`, `BenefitTable`, `PaymentConfirmSheet`, `PaymentCompleteModal`, `ModalShell`
+- **premium**: `PremiumHero`, `PlanIntroCard`, `PlanComparison`, `PremiumFaq`, `PaymentConfirmSheet`, `PaymentCompleteModal`, `ModalShell`
 - **blog**: `BlogComposer`, `DraftCard`, `GeneratingCard`, `DateRangeCard` + `useBlogFlow`
 - **profile**: `PlanBadge`, `StorageCard`, `ProfileImageSheet`, `CancelSubscriptionModal`, `WithdrawModal`
 
@@ -130,7 +130,7 @@
 | **journey** | 🟡 API 레이어 완료 (목 데이터) | `api/journeyApi.ts` → `hooks/useJourneys` | ✅ 목을 API 레이어 뒤로 분리 완료. 페이지는 훅만 사용. **함수 본문만 교체하면 실 연동** (`/routes`) |
 | **timeline** | 🟡 API 함수 준비 | `api/timelineApi.ts` → `httpClient` | 엔드포인트 `/timeline` 은 추측, 백엔드 확정 후 교체 |
 | **home** | 🔴 Mock | `mocks/markers.ts` | API 레이어 없음 |
-| **premium** | 🔴 하드코딩 | `PremiumPage.tsx` | 요금제 가격 하드코딩. 토스 SDK 미설치 |
+| **premium** | 🟢 연동 | `api/paymentApi.ts` → `httpClient` | 요금제·빌링키·구독 전부 서버값. 표시 문구는 `lib/planDisplay.ts` 에서만 파생(하드코딩 금지) |
 | **blog** | 🔴 로컬 스텁 | `hooks/useBlogFlow.ts` | 서버 무관, 화면 플로우만 |
 | **camera** | ⚙️ 디바이스 | `useCameraStream`, `captureFrame` | 카메라 스트림 (API 무관) |
 | **profile** | 🔴 로컬 | — | API 레이어 없음 |
