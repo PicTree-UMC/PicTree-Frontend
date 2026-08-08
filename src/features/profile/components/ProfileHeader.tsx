@@ -70,7 +70,12 @@ export function ProfileHeader() {
   return (
     <header className="flex flex-col items-center px-5 pt-header">
       <div className="relative">
-        <div className="flex size-24 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
+        {/*
+          ⚠️ **96px 에서 64px 로 줄였다.** 이 머리글은 탭 셋이 나눠 쓰는 고정 자리라, 위에서
+          먹는 만큼 세 탭의 본문이 한꺼번에 아래로 밀린다. 아바타는 여기서 제일 큰 덩어리다.
+          기본 나무 글리프는 지름 대비 비율(약 46%)을 지켜 44px → 28px 로 같이 줄인다.
+        */}
+        <div className="flex size-16 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
           {imageUrl ? (
             <img
               src={imageUrl}
@@ -79,7 +84,7 @@ export function ProfileHeader() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <img src={treeIcon} alt="" className="size-11" />
+            <img src={treeIcon} alt="" className="size-7" />
           )}
         </div>
 
@@ -93,7 +98,12 @@ export function ProfileHeader() {
             type="button"
             onClick={() => setIsSheetOpen(true)}
             aria-label="프로필 사진 제거"
-            className="absolute bottom-0 right-0 flex size-8 items-center justify-center rounded-full border-2 border-[#FFFCEF] bg-[#5B6B38] text-[14px] text-white"
+            /*
+              ⚠️ 32px 였다. 아바타가 64px 로 줄면서 그대로 두면 지름의 **절반**을 덮는다
+              (종전 비율은 33%). 비율만 지키면 21px 인데 그건 못 누른다 — 28px 이 눌리는
+              크기와 비율 사이의 타협점이다. 여기서 더 줄이지 말 것.
+            */
+            className="absolute bottom-0 right-0 flex size-7 items-center justify-center rounded-full border-2 border-[#FFFCEF] bg-[#5B6B38] text-[13px] text-white"
           >
             ✎
           </button>
