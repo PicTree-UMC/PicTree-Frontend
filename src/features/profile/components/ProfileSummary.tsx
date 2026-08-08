@@ -12,6 +12,10 @@ import {
 import { getPlanLabel, getStorageLimitBytes } from "../lib/plan";
 import { formatBytes } from "../lib/formatBytes";
 import { useTreeStats } from "../hooks/useTreeStats";
+import treeImage from "../assets/icons/tree3d.png";
+import photoImage from "../assets/icons/photo3d.png";
+import planImage from "../assets/icons/plan3d.png";
+import tokenImage from "../assets/icons/token3d.png";
 
 /**
  * 숫자 한 칸.
@@ -25,6 +29,12 @@ import { useTreeStats } from "../hooks/useTreeStats";
  * 내려가 있는 이유다(`100MB 중 42MB 사용 중` 은 여기 안 들어간다).
  * `onClick` 을 주면 꺾쇠가 붙어 그 자리가 **83px** 로 줄어든다. 지금 그 칸(요금제)의 값은
  * 서버 플랜 이름을 줄인 것(무료·플러스·프로·맥스)이라 넉넉히 들어간다.
+ *
+ * ⚠️ **아이콘 뒤의 연두 칸(`#ECF6D8`)을 걷었다.** 이모지 자리표시일 때는 글자 한 자를
+ * 30px 자리에 붙들어 두는 받침이 필요했는데, 3D 그림은 저 혼자 30px 을 채우고 그림자까지
+ * 갖고 있다. 테두리 있는 카드 **안에** 색 면을 또 깔면 면이 세 겹이 되고, 금색 코인·파란
+ * 사진과 연두가 부딪힌다. `SettingsRow` 의 `image` 도 받침 없이 그림만 놓는다(§같은 결).
+ * **자리 크기는 30px 그대로다** — 위의 103px 계산이 그대로 성립한다.
  */
 function StatTile({
   icon,
@@ -32,7 +42,7 @@ function StatTile({
   label,
   onClick,
 }: {
-  /** 이모지 한 글자. ⚠️ 자리표시다 — 아이콘 자산이 생기면 여기만 갈아끼운다. */
+  /** 아이콘 이미지 경로(`assets/icons/*3d.png`, 96px 정사각 투명 PNG). */
   icon: string;
   /** 큰 값. 아직 모르면 `null` — 그 자리는 스켈레톤으로 둔다. */
   value: ReactNode;
@@ -52,12 +62,12 @@ function StatTile({
 
   const content = (
     <>
-      <span
+      <img
+        src={icon}
+        alt=""
         aria-hidden
-        className="grid size-[30px] flex-none place-items-center rounded-[9px] bg-[#ECF6D8] text-[16px] leading-none"
-      >
-        {icon}
-      </span>
+        className="size-[30px] flex-none object-contain"
+      />
 
       <div className="min-w-0 flex-1">
         {value === null ? (
@@ -199,10 +209,10 @@ export function ProfileSummary() {
     */
     <section className="flex flex-col gap-2.5">
       <div className="grid grid-cols-2 gap-2.5">
-        <StatTile icon="🌳" value={stats?.treeCount ?? null} label="심은 나무" />
-        <StatTile icon="📷" value={stats?.photoCount ?? null} label="사진" />
+        <StatTile icon={treeImage} value={stats?.treeCount ?? null} label="심은 나무" />
+        <StatTile icon={photoImage} value={stats?.photoCount ?? null} label="사진" />
         <StatTile
-          icon="✨"
+          icon={planImage}
           value={isPlansPending && !planDto ? null : planName}
           label="요금제"
           /*
@@ -213,7 +223,7 @@ export function ProfileSummary() {
           onClick={() => navigate(ROUTES.premium)}
         />
         <StatTile
-          icon="✍️"
+          icon={tokenImage}
           /*
             잔량을 알면 잔량이 주인공이고, 모르면 한도만 말한다 — "몇 번 남았다" 를
             지어내지 않는다(`usePictreeToken` 의 `usedThisMonth` 주석에 왜인지 적어 뒀다).
