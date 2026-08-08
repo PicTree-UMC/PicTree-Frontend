@@ -2,12 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
 import { useSessionExpiredRedirect } from "@/features/auth/hooks/useSessionExpiredRedirect";
-import { SettingsFooter, SettingsList, SettingsRow } from "@/shared/components";
+import { SettingsList, SettingsRow } from "@/shared/components";
 import { useMyProfile } from "./hooks/useMyProfile";
-import { useNearbyAlertOpenListener } from "./hooks/useNearbyAlertOpenListener";
-import { useNearbyAlertToggle } from "./hooks/useNearbyAlertToggle";
-import { useMyPushSubscriptions } from "./hooks/usePushSubscription";
-import { getPushUnavailableReason } from "./lib/webPush";
 import { getApiErrorMessage, getProfileErrorKind } from "./lib/profileError";
 import { ProfileSummary } from "./components/ProfileSummary";
 import treeIcon from "./assets/icons/tree.svg";
@@ -16,8 +12,6 @@ import cardImage from "./assets/icons/card3d.jpg";
 // 이 둘만 투명 PNG 다 — 다른 세트에서 왔고 흰 배경이 안 구워져 있다(§8).
 import calendarImage from "./assets/icons/calendar3d.png";
 import favoriteImage from "./assets/icons/favorite3d.png";
-import alertImage from "./assets/icons/alert3d.jpg";
-import alertLogImage from "./assets/icons/alertLog3d.jpg";
 
 export function ProfilePage() {
   const navigate = useNavigate();
@@ -27,12 +21,6 @@ export function ProfilePage() {
    * 그러면 데이터가 없는 채로 성공 분기가 그려져 닉네임·플랜이 빈 칸으로 남는다.
    */
   const { data: profile, isPending, isError, error, refetch } = useMyProfile();
-
-  const { mutate: toggleAlarm, isPending: isUpdating } = useNearbyAlertToggle();
-  const { isEnabled: hasPushSubscription } = useMyPushSubscriptions();
-
-  // 푸시를 눌러 돌아온 경우 확인 처리를 건다.
-  useNearbyAlertOpenListener();
 
   const errorKind = isError ? getProfileErrorKind(error) : null;
 
@@ -45,23 +33,6 @@ export function ProfilePage() {
    * 이때 깨진 이미지 아이콘 대신 기본 나무 아이콘으로 떨어뜨린다.
    */
   const [isAvatarBroken, setIsAvatarBroken] = useState(false);
-
-  /**
-   * 근처 나무 알림이 실제로 켜져 있는가.
-   *
-   * **두 조건이 모두 맞아야 켜진 것이다** — 서버 `check` 가 둘 다 볼 때만
-   * 알림을 쏘기 때문이다.
-   * 1. `notification` 플래그 (사용자의 의사)
-   * 2. 활성 푸시 구독 (실제로 보낼 통로)
-   *
-   * 플래그만 켜진 상태를 "켜짐" 으로 보여 주면, 알림이 안 오는데 화면은
-   * 켜졌다고 말하는 꼴이 된다. 다른 기기에서 껐거나 브라우저 알림 권한이
-   * 취소되면 실제로 이 상태가 된다.
-   */
-  const alarmOn = (profile?.notification ?? false) && hasPushSubscription;
-
-  /** 이 브라우저에서 아예 푸시를 못 쓰는 경우(예: iOS 를 홈 화면에 추가 안 함). */
-  const pushUnavailable = getPushUnavailableReason();
 
   return (
     /*
@@ -189,54 +160,12 @@ export function ProfilePage() {
           />
         </SettingsList>
 
-        {/* 알림 */}
-        <div>
-          <SettingsList>
-            <SettingsRow
-              image={alertImage}
-              title="근처 나무 알림"
-              trailing={
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={alarmOn}
-                  aria-label="근처 나무 알림"
-                  // 프로필을 못 불러왔으면 무엇을 바꿀지 알 수 없어 막는다
-                  disabled={!profile || isUpdating}
-                  onClick={() => toggleAlarm(!alarmOn)}
-                  className={`relative h-6 w-10 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
-                    alarmOn ? "bg-[#5B6B38]" : "bg-[#D9D9D9]"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-[3px] size-[18px] rounded-full bg-white transition-all ${
-                      alarmOn ? "left-[19px]" : "left-[3px]"
-                    }`}
-                  />
-                </button>
-              }
-            />
-            {/*
-              같은 카드의 위 줄(나무+종)과 종 모양을 공유한다 — 알림을 받는 설정과 받은
-              알림을 보는 곳이라 한 가족으로 읽히는 게 맞다.
-            */}
-            <SettingsRow
-              image={alertLogImage}
-              title="알림 기록"
-              onClick={() => navigate(ROUTES.alertLogs)}
-            />
-          </SettingsList>
-
-          {/*
-            아이폰은 홈 화면에 추가해야만 푸시를 받을 수 있다(웹 표준 제약).
-            그냥 토글이 꺼져 있기만 하면 켜지지 않는 이유를 알 수 없어 따로 안내한다.
-          */}
-          <SettingsFooter>
-            {pushUnavailable === "ios-needs-install"
-              ? "홈 화면에 추가하면 알림을 받을 수 있어요."
-              : "50m 안에 내 나무가 있으면 알려드려요."}
-          </SettingsFooter>
-        </div>
+        {/*
+          알림 묶음(`근처 나무 알림` 토글 · `알림 기록`)이 있던 자리다. 웹 푸시를 통째로
+          걷어내면서 둘 다 없앴다 — 앱을 끄면 위치를 못 읽어(PWA 제약) 정작 기대하던
+          "가까이 가면 알려준다" 가 성립하지 않았다. 지금은 지도를 보고 있는 동안
+          홈 상단 배너가 그 일을 한다. 켜고 끌 것이 없어 설정 줄도 필요 없다.
+        */}
 
         {/*
           정보 — 아이콘을 달지 않는다. 앞의 두 카드가 '내 계정에서 하는 일' 이라면 이쪽은

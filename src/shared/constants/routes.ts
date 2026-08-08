@@ -23,8 +23,11 @@ export const ROUTES = {
   calendar: '/profile/calendar',
   favorites: '/profile/favorites',
   privacy: '/profile/privacy',
-  /** 근처 나무 알림으로 받은 기록 목록. */
-  alertLogs: '/profile/alerts',
+  /*
+    `alertLogs: '/profile/alerts'` 는 지웠다. 근처 나무 알림으로 받은 기록 목록이었는데,
+    거기서 할 수 있는 일이 지도로 가는 것뿐이라 홈 배너와 하는 말이 같았다. 알림을
+    보내던 웹 푸시 자체도 함께 걷어냈다.
+  */
   /** 도움말 / FAQ. */
   helpFaq: '/profile/help',
   blog: '/blog',

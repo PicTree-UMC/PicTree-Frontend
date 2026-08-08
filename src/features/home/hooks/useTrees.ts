@@ -7,25 +7,16 @@ import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
 import { timelineKeys } from '@/features/timeline/hooks/useTimeline';
 import {
   deleteTree,
-  getNearbyTrees,
   getTreeDetail,
   getTrees,
   toggleTreeFavorite,
 } from '../api/treesApi';
-import type { NearbyTreeItem } from '../types/tree';
 import type { MapMarkerData } from './useMapMarkers';
 
 export const treeKeys = {
   all: ['trees'] as const,
   list: () => [...treeKeys.all, 'list'] as const,
   detail: (id: string) => [...treeKeys.all, 'detail', id] as const,
-  /**
-   * 좌표를 소수점 4자리로 깎아 키에 넣는다 — 약 11m 단위다.
-   * 원본 좌표를 그대로 쓰면 GPS 가 미세하게 떨릴 때마다 키가 바뀌어
-   * 가만히 서 있어도 요청이 계속 나간다.
-   */
-  nearby: (lat: number, lng: number) =>
-    [...treeKeys.all, 'nearby', lat.toFixed(4), lng.toFixed(4)] as const,
 };
 
 /** 지도 마커 목록. 토큰 없으면 api 레이어에서 목데이터 폴백. */
@@ -35,34 +26,12 @@ export const useTrees = () =>
     queryFn: getTrees,
   });
 
-/**
- * 현재 위치 반경 100m 안의 나무. `GET /trees/nearby`
- *
- * 좌표가 없으면(위치 권한 거부·측위 전) 부르지 않는다. 반경은 서버 상수라
- * 프론트에서 조절할 수 없다.
- *
- * 근처에 없으면 빈 배열이 오고, 그건 정상이다 — 에러가 아니다.
- *
- * ⚠️ 지금은 다른 사람 나무도 섞여 온다(서버 쿼리에 `userId` 조건 없음).
- * 화면에 붙일 때 이 점을 감안해야 한다. 백엔드 수정 요청해 둔 상태다.
- */
-export const useNearbyTrees = (
-  coords: { lat: number; lng: number } | null,
-) => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
-  return useQuery({
-    queryKey: treeKeys.nearby(coords?.lat ?? 0, coords?.lng ?? 0),
-    queryFn: () => getNearbyTrees(coords!.lat, coords!.lng),
-    enabled: isAuthenticated && coords != null,
-    /**
-     * 걸어서 100m 를 벗어나는 데 1~2분은 걸린다. 그 전에 다시 물어도 답이
-     * 같으므로 1분은 들고 있는다.
-     */
-    staleTime: 1000 * 60,
-    retry: false,
-  });
-};
+/*
+  `GET /trees/nearby` 를 부르던 훅은 지웠다. 이름은 `hooks/useNearbyTrees.ts` 가 이어받아
+  같은 일을 요청 없이 한다 — 위 목록에 대고 거리만 다시 잰다(`findNearbyTrees`). 좌표까지
+  들어 있는 같은 나무를 두 번 받아 오던 셈이었다. 덤으로 그 API 에 섞여 오던 남의 나무
+  (서버 쿼리에 `userId` 조건 없음) 문제도 사라졌다.
+*/
 
 /**
  * 마커 탭 시 상세(코멘트·사진·날짜) 조회.
@@ -87,26 +56,6 @@ const optimisticListUpdate = (
     old ? updater(old) : old,
   );
   return prev;
-};
-
-/**
- * 근처 나무 캐시에서 한 그루를 즉시 빼낸다.
- *
- * 지도 위 "근처 나무 알림" 카드는 목록이 아니라 `treeKeys.nearby` 캐시를 본다
- * (`useNearbyAlertWatcher`). 마커만 지우고 이쪽을 그대로 두면 **방금 지운 장소를
- * 가리키는 알림이 계속 떠 있는다.**
- *
- * 좌표마다 키가 갈리므로(`nearby(lat, lng)`) 한 곳만 고쳐서는 안 되고 접두사로
- * 전부 훑는다.
- */
-const removeFromNearbyCache = (
-  queryClient: ReturnType<typeof useQueryClient>,
-  treeId: string,
-) => {
-  queryClient.setQueriesData<NearbyTreeItem[]>(
-    { queryKey: [...treeKeys.all, 'nearby'] },
-    (old) => old?.filter((tree) => String(tree.treeId) !== treeId),
-  );
 };
 
 /** 즐겨찾기 토글. 비로그인 시 캐시만 낙관적 갱신(로컬 목 데모용). */
@@ -158,26 +107,22 @@ export const useDeleteTree = () => {
     },
     onMutate: async (treeId) => {
       await queryClient.cancelQueries({ queryKey: treeKeys.all });
+      /*
+        지도 위 알림 카드도 이 목록에서 거리를 재므로(`withinAlertRadius`) 여기서
+        빠지면 알림도 같이 사라진다. 예전에는 `nearby` 캐시를 따로 훑어 빼 줘야
+        했다 — 안 하면 방금 지운 장소의 알림이 앱을 다시 켤 때까지 떠 있었다.
+      */
       const prev = optimisticListUpdate(queryClient, (markers) =>
         markers.filter((marker) => marker.id !== treeId),
       );
-      // 알림 카드가 보는 캐시. 여기서 안 빼면 지운 장소의 알림이 그대로 남는다.
-      removeFromNearbyCache(queryClient, treeId);
       return { prev };
     },
     onError: (_error, _treeId, context) => {
       if (context?.prev) queryClient.setQueryData(treeKeys.list(), context.prev);
-      // 되살리기는 서버에 다시 물어 맞춘다 — 지우기 전 좌표가 지금과 다를 수 있어
-      // 낙관적으로 되돌린 값이 오히려 틀릴 수 있다.
-      queryClient.invalidateQueries({ queryKey: [...treeKeys.all, 'nearby'] });
     },
     onSettled: () => {
       if (!isAuthenticated) return;
-      /*
-        list 만 무효화하면 안 된다 — 근처 나무(`nearby`)·상세(`detail`) 캐시가
-        그대로 남는다. 특히 nearby 는 지도 위 알림 카드의 출처라, 지운 장소를
-        가리키는 알림이 앱을 다시 켤 때까지 계속 떠 있었다.
-      */
+      // 상세(`detail`) 캐시도 함께 깬다 — 지운 나무를 열어 둔 채였을 수 있다.
       queryClient.invalidateQueries({ queryKey: treeKeys.all });
       /*
         타임라인은 ['timeline'] 이라는 독립 키다. 여기 안 깨면 지도에서 지운 기록이

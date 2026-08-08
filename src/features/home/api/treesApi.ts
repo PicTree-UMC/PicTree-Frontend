@@ -5,7 +5,6 @@ import type {
   ApiEnvelope,
   CreateTreeData,
   CreateTreeRequest,
-  NearbyTreeItem,
   TreeDetail,
   TreeImage,
   TreeImageUploadData,
@@ -42,34 +41,15 @@ export const getTrees = async (): Promise<MapMarkerData[]> => {
   }
 };
 
-/**
- * 현재 위치 반경 내 나무 조회. `GET /trees/nearby?lat=&lng=`
- *
- * 가까운 순으로 정렬돼 온다. 근처에 없으면 **빈 배열**이다 — 명세서에는 404
- * `NEARBY_TREE_NOT_FOUND` 가 적혀 있지만 서버는 그 경로로 던지지 않는다.
- *
- * ⚠️ `radius` 는 보내지 않는다. 명세서 URI 에는 `?radius=100` 이 있지만 서버
- * `GetNearbyTreesQueryDto` 는 `lat`·`lng` 만 받고, 반경은 상수
- * `NEARBY_TREE_RADIUS_M = 100` 으로 고정돼 있다. `whitelist: true` 라 보내도
- * 조용히 버려지므로 안 보내는 편이 오해가 없다.
- *
- * ⚠️ 지금은 **다른 사람 나무도 섞여 온다.** 서버 `findNearbyTrees` 쿼리에
- * `userId` 조건이 없다(`WHERE deleted_at IS NULL` 뿐). 백엔드에 수정 요청해
- * 둔 상태이고, 고쳐지면 이 주석과 함께 화면 쪽 처리도 정리한다.
- *
- * 목데이터 폴백은 두지 않는다. 위치 기반 알림은 "없으면 없다"가 정보라서,
- * 실패를 가짜 값으로 덮으면 안 뜨는 이유를 못 찾게 된다.
- */
-export const getNearbyTrees = async (
-  lat: number,
-  lng: number,
-): Promise<NearbyTreeItem[]> => {
-  const { data } = await httpClient.get<ApiEnvelope<NearbyTreeItem[]>>(
-    '/trees/nearby',
-    { params: { lat, lng } },
-  );
-  return data.data ?? [];
-};
+/*
+  `getNearbyTrees`(GET /trees/nearby)는 지웠다. 부르는 곳이 지도 위 안내 카드 하나뿐이었는데,
+  그 카드가 위 `getTrees` 목록에서 직접 거리를 재게 되면서(`findNearbyTrees`) 요청이
+  통째로 없어졌다 — 좌표까지 들어 있는 같은 나무를 두 번 받아 오던 셈이었다.
+
+  서버 엔드포인트는 그대로 있다. 되살릴 일이 생기면 반경은 서버 상수
+  `NEARBY_TREE_RADIUS_M = 100` 이고 `radius` 파라미터는 받지 않는다는 것,
+  그리고 그 쿼리에 `userId` 조건이 없어 **남의 나무가 섞여 온다**는 것만 기억하면 된다.
+*/
 
 /** 나무 상세 조회(마커 탭 시 코멘트·사진·날짜 채우기용). */
 export const getTreeDetail = async (treeId: number): Promise<MapMarkerData> => {

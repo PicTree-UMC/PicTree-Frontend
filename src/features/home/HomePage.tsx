@@ -8,7 +8,7 @@ import { useMapMarkers, type MapMarkerData } from './hooks/useMapMarkers';
 import { useDeleteTree, useToggleFavorite, useTreeDetail, useTrees } from './hooks/useTrees';
 import { TopBanner } from './components/TopBanner';
 import { SproutIllustration } from '@/shared/components';
-import { useNearbyAlertWatcher } from '@/features/profile/hooks/useNearbyAlertWatcher';
+import { useNearbyTrees } from './hooks/useNearbyTrees';
 import { MarkerStoryViewer } from './components/MarkerStoryViewer';
 import { TimelineEditModal } from '@/features/timeline/components/TimelineEditModal';
 import { useUpdateTimeline } from '@/features/timeline/hooks/useUpdateTimeline';
@@ -24,13 +24,15 @@ export function HomePage() {
   const { coords, loading: locating, request: refreshLocation } = useGeolocation({ watch: true });
 
   /*
-   * 근처 나무 알림. 위치가 의미 있게 바뀌면 서버에 확인을 요청하고(푸시는 서버가 쏜다),
-   * 반경 50m 안에 내 나무가 있으면 상단 배너가 그 알림으로 갈아탄다.
+   * 반경 50m 안에 내 나무가 있으면 상단 배너가 그 안내로 갈아탄다.
+   *
+   * 요청은 없다 — 아래 `useTrees` 가 마커용으로 받아 둔 목록에 거리만 다시 잰다.
+   * 켜고 끄는 설정도 없다. 화면에 떠 있는 카드 문구가 바뀌는 것뿐이라 물어볼 일이 아니다.
    *
    * ⚠️ 앱이 켜져 있을 때만 동작한다 — 웹은 앱이 꺼진 상태에서 위치를 추적할 수 없다.
    * 지도가 위치를 계속 받는 유일한 화면이라 여기에 둔다.
    */
-  const nearbyAlert = useNearbyAlertWatcher(coords);
+  const nearbyTrees = useNearbyTrees(coords);
 
   /*
    * 현재 위치가 확인될 때까지 지도 생성을 미루고, 확인되면 그 위치에서 연다.
@@ -186,18 +188,18 @@ export function HomePage() {
       )}
 
       {/*
-        상단 안내 카드 — 평소에는 기록한 장소 수를, 반경 50m 안에 내 나무가 있으면 그 알림을
+        상단 안내 카드 — 평소에는 기록한 장소 수를, 반경 50m 안에 내 나무가 있으면 그 안내를
         보여준다. 카드를 하나 더 얹지 않고 자리를 나눠 쓴다(TopBanner 주석 참고).
-        여러 곳이 반경 안에 들어와도 알림은 하나다(가장 가까운 곳 + "외 N곳").
+        여러 곳이 반경 안에 들어와도 카드는 하나다(가장 가까운 거리 + 묶은 이름).
       */}
       <TopBanner
         placeCount={markers.length}
         nearby={
-          nearbyAlert && {
-            placeName: nearbyAlert.label,
-            distanceM: Math.round(nearbyAlert.distanceM),
+          nearbyTrees && {
+            placeName: nearbyTrees.label,
+            distanceM: Math.round(nearbyTrees.distanceM),
             onView: () =>
-              setSelection({ ids: nearbyAlert.trees.map((t) => String(t.treeId)), index: 0 }),
+              setSelection({ ids: nearbyTrees.trees.map((tree) => tree.id), index: 0 }),
           }
         }
       />
