@@ -110,15 +110,21 @@ export const planPriceLabel = (plan: SubscriptionPlanDto): string => {
   return `${cycle} ${formatPrice(plan.price)}`;
 };
 
+/**
+ * '플러스 플랜' → '플러스'. 접미사가 없으면 그대로 둔다.
+ *
+ * 폭이 빠듯한 자리에서 쓴다 — 플랜 카드 한 줄(이름·용량·횟수를 다 담아 390px 에서
+ * 넘쳤다)과 마이페이지 요약 타일이다. 타일 쪽은 폭보다 **겹말** 때문이다:
+ * 라벨이 이미 `요금제` 인데 값까지 `플러스 플랜` 이면 같은 말을 두 번 한다.
+ */
+export const planShortName = (name: string) => name.replace(/\s*플랜$/, '');
+
 /** 플랜 카드·결제 시트가 쓰는 요약 문구 묶음. */
 export const planSummary = (plan: SubscriptionPlanDto) => ({
   /** '플러스 플랜' — 서버 name 그대로 */
   name: plan.name,
-  /**
-   * '플러스' — 카드 한 줄이 이름·용량·횟수를 다 담아야 해서 390px 에서 넘친다.
-   * 뒤의 '플랜' 만 떼고, 접미사가 없으면 name 그대로 둔다.
-   */
-  shortName: plan.name.replace(/\s*플랜$/, ''),
+  /** '플러스' */
+  shortName: planShortName(plan.name),
   /** '1GB' */
   storage: formatStorage(findFeature(plan, FEATURE_CODE.photoStorage)?.limitValue ?? null),
   /** '월 5회' */

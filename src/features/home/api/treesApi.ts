@@ -76,6 +76,26 @@ export async function fetchAllTreeItems(): Promise<TreeListItem[]> {
   return [...byId.values()];
 }
 
+/**
+ * 내 나무 그루 수만.
+ *
+ * **목록을 받지 않는다.** 페이지네이션 응답의 `total` 이 곧 답이라 한 장만 열어 보면
+ * 된다 — 마이페이지 요약이 이것 때문에 나무 전체를 훑던 것을 대신한다.
+ *
+ * ⚠️ `size` 를 1 로 준다. 서버 최대치(100)는 확인됐지만 **최솟값은 확인된 적이 없다** —
+ * 거절당하면 `size` 를 빼고 기본값으로 부르면 된다(요청 수는 어차피 1이다).
+ *
+ * ⚠️ `total` 이 안 오면 `null` 이다. 0 으로 떨어뜨리지 않는다 — 나무가 있는데 0그루라고
+ * 하는 것보다 모른다고 두는 편이 낫다(용량을 모를 때 `-` 로 두는 것과 같은 규칙).
+ */
+export const getTreeCount = async (): Promise<number | null> => {
+  const { data } = await httpClient.get<ApiEnvelope<TreeListData>>('/trees', {
+    params: { page: 1, size: 1 },
+  });
+
+  return data.data?.total ?? null;
+};
+
 /** 지도에 찍을 내 나무 목록 조회. */
 export const getTrees = async (): Promise<MapMarkerData[]> => {
   if (!hasToken()) return USE_MOCK_FALLBACK ? DEMO_MARKERS : [];

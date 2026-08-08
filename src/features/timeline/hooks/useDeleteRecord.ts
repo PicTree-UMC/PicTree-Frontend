@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { treeKeys } from "@/features/home/hooks/useTrees";
 import { routePlaceCandidateKey } from "@/features/route/hooks/useRoutePlaceCandidates";
-import { storageKeys } from "@/features/profile/hooks/useStorageUsage";
+import { storageKeys } from "@/features/profile/hooks/useStorageStats";
 import { calendarKeys } from "@/features/profile/hooks/useTravelCalendar";
 import { useToast } from "@/shared/components";
 import { deleteTimeline } from "../api/timelineApi";

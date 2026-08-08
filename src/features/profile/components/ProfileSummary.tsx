@@ -1,81 +1,162 @@
 import type { ReactNode } from "react";
-import { useInView } from "@/shared/hooks/useInView";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/shared/constants/routes";
+import { useTreeCount } from "@/features/home/hooks/useTrees";
 import { usePictreeToken } from "@/features/premium/hooks/usePictreeToken";
 import { useMySubscription } from "@/features/premium/hooks/useMySubscription";
 import { useSubscriptionPlans } from "@/features/premium/hooks/useSubscriptionPlans";
 import {
   FEATURE_CODE,
   findFeature,
-  planPriceLabel,
+  planShortName,
 } from "@/features/premium/lib/planDisplay";
 import { getPlanLabel, getStorageLimitBytes } from "../lib/plan";
 import { formatBytes } from "../lib/formatBytes";
-import { useStorageUsage } from "../hooks/useStorageUsage";
+import { useStorageStats } from "../hooks/useStorageStats";
 
 /**
- * 요약 한 덩어리 — 제목 + 값 + 부연.
+ * 숫자 한 칸.
  *
- * **카드가 아니다.** 위쪽 목록은 누를 줄이 모여 있어 흰 카드로 묶어야 어디까지가 한
- * 묶음인지 보이지만, 여기는 읽고 마는 값이라 묶을 것이 없다. 테두리를 두르면 누를 수
- * 있다는 신호가 되고(위 카드들이 전부 눌린다), 띠 배경 위에 흰 판이 또 얹혀 층이
- * 하나 더 생긴다. 경계는 여백이 만든다.
+ * **아이콘이 왼쪽, 글이 오른쪽이다.** 위 설정 목록(`SettingsRow`)도 아이콘이 왼쪽이라
+ * 같은 결로 읽히고, 세로로 쌓는 것보다 칸이 22px 낮아진다 — 요약은 스크롤 맨 아래라
+ * 짧을수록 좋다.
+ *
+ * ⚠️ **글자 자리가 103px 뿐이다**(390px 기준: 칸 170 − 안쪽 패딩 26 − 아이콘 30 − 간격 11).
+ * 값이 길어질 수 있는 것은 이 칸에 넣지 않는다 — 사진 저장 용량이 아래 전폭 줄로
+ * 내려가 있는 이유다(`100MB 중 42MB 사용 중` 은 여기 안 들어간다).
+ * `onClick` 을 주면 꺾쇠가 붙어 그 자리가 **83px** 로 줄어든다. 지금 그 칸(요금제)의 값은
+ * 서버 플랜 이름을 줄인 것(무료·플러스·프로·맥스)이라 넉넉히 들어간다.
  */
-function SummaryBlock({
-  title,
+function StatTile({
+  icon,
   value,
-  note,
-  children,
+  label,
+  onClick,
 }: {
-  title: string;
-  /** 큰 값 한 줄. 아직 모르면 `null` — 그 자리는 스켈레톤으로 둔다. */
-  value?: ReactNode;
-  note?: ReactNode;
-  children?: ReactNode;
+  /** 이모지 한 글자. ⚠️ 자리표시다 — 아이콘 자산이 생기면 여기만 갈아끼운다. */
+  icon: string;
+  /** 큰 값. 아직 모르면 `null` — 그 자리는 스켈레톤으로 둔다. */
+  value: ReactNode;
+  label: string;
+  /**
+   * 주면 칸이 **버튼**이 되고 오른쪽에 꺾쇠가 붙는다.
+   *
+   * ⚠️ 네 칸 중 **하나만** 준다(요금제 → `/premium`). 전부 누르게 하면 다섯 개가 같은
+   * 곳으로 가는 문이 되어 서로 다른 곳처럼 읽힌다 — 아래 컴포넌트 주석 참고.
+   */
+  onClick?: () => void;
 }) {
-  return (
-    <section>
-      <h2 className="text-[20px] font-medium text-[#2C3930]">{title}</h2>
+  /* 껍데기는 `SettingsList` 의 카드와 같은 값이다 — 같은 바닥에 놓이는 흰 면이라
+     한쪽만 그림자를 쓰면 두 카드가 다른 높이에 떠 있는 것처럼 보인다. */
+  const className =
+    "flex w-full items-center gap-[11px] rounded-xl border border-[#ECECEC] bg-white p-[13px] text-left";
 
-      {children}
+  const content = (
+    <>
+      <span
+        aria-hidden
+        className="grid size-[30px] flex-none place-items-center rounded-[9px] bg-[#ECF6D8] text-[16px] leading-none"
+      >
+        {icon}
+      </span>
 
-      {value !== undefined &&
-        (value === null ? (
-          <div className="mt-2 h-5 w-24 animate-pulse rounded bg-[#EDE4C4]" />
+      <div className="min-w-0 flex-1">
+        {value === null ? (
+          /* 흰 칸 위라 크림 띠의 #EDE4C4 가 아니라 헤어라인 회색을 쓴다. */
+          <div className="h-[23px] w-12 animate-pulse rounded bg-[#ECECEC]" />
         ) : (
-          <p className="mt-1.5 text-[17px] font-medium text-[#2C3930]">{value}</p>
-        ))}
+          <p className="truncate text-[20px] font-medium leading-tight text-[#2C3930]">
+            {value}
+          </p>
+        )}
+        <p className="mt-px truncate text-[13px] text-[#60655C]">{label}</p>
+      </div>
 
-      {note && <p className="mt-0.5 text-[13px] text-[#60655C]">{note}</p>}
-    </section>
+      {onClick && (
+        // 비활성 회색(§1.1). `SettingsRow`(18px)보다 한 단 작다 — 칸이 좁다.
+        <svg
+          viewBox="0 0 24 24"
+          className="size-4 shrink-0 text-[#B4B4B4]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.25"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      )}
+    </>
+  );
+
+  if (!onClick) return <div className={className}>{content}</div>;
+
+  return (
+    <button type="button" onClick={onClick} className={className}>
+      {content}
+    </button>
   );
 }
 
 /**
- * 마이페이지 맨 아래 요약 — 요금제 · 사진 저장 용량 · PICTREE 토큰.
+ * 메인 탭 첫 덩어리 — 심은 나무 · 사진 · 요금제 · 토큰 + 사진 저장 용량.
  *
- * **띠 하나로 깔린다.** 배경(`#F6F0D7`)이 크림 본문에서 이 영역을 떼어 내는 유일한
- * 장치다 — 위는 눌러서 무언가 하는 곳이고 여기는 상태를 읽는 곳이라, 같은 바닥에
- * 이어 두면 목록이 그냥 길어진 것처럼 읽힌다. 참고한 iCloud 도 이 자리를 카드가 아니라
- * 배경이 다른 띠로 둔다.
+ * 아래로 여행 캘린더·즐겨찾기 미리보기가 이어진다(`MainTab`). 이 다섯은 **세어 준 값**이고
+ * 그 둘은 **실제 기록**이라, 요약이 먼저다.
  *
- * **읽기 전용이다.** 셋 다 누를 곳이 없다. iCloud 는 블록마다 화살표를 달지만 거기는
- * 블록마다 갈 관리 화면이 따로 있고, 우리는 셋 다 `/premium` 한 곳으로 간다 — 같은 곳으로
- * 가는 화살표 세 개는 서로 다른 곳으로 가는 것처럼 읽힌다. 위 목록의 '구독' 줄이 그 문이다.
+ * ⚠️ **#197 의 결정을 두 군데 뒤집었다.**
  *
- * 사용량 계산이 비싸서(나무 수만큼 요청) **화면에 들어와야 시작한다** — `useStorageUsage`
- * 주석 참고.
+ * 1. **흰 카드를 쓴다.** 그때는 "배경 위에 흰 판이 또 얹히면 층이 하나 더 생기고,
+ *    테두리가 있으면 눌리는 것처럼 보인다"는 이유로 카드를 뺐다. 값이 셋일 때는
+ *    그게 맞았는데, 다섯으로 늘면서 **무엇과 무엇이 한 묶음인지**를 여백만으로는
+ *    못 나누게 됐다. 지금은 칸 자체가 경계다.
+ * 2. **배경 띠(`#F6F0D7`)를 걷었다.** 그 색은 "위는 하는 곳, 아래는 읽는 곳" 을
+ *    가르는 장치였다. 이 영역이 목록 **위**로 올라오면서 가를 것이 없어졌고,
+ *    칸 모양(2×2 숫자 격자 vs 한 줄 + 화살표)이 이미 둘을 구분한다.
+ *    **앱에서 크림이 아닌 페이지는 `/premium` 하나** 라는 규칙(§1.2)에도 이쪽이 맞다.
+ *
+ * **다섯 칸 중 눌리는 것은 요금제 하나뿐이다** — `/premium` 으로 간다. 옛 설정 목록의
+ * '구독' 줄이 하던 일이고, 이 화면에서 요금제 화면으로 가는 **유일한** 문이다.
+ *
+ * ⚠️ 한때 다섯 칸을 전부 읽기 전용으로 뒀다. "다 눌러도 결국 `/premium` 한 곳인데, 같은
+ * 곳으로 가는 문 다섯 개는 서로 다른 곳처럼 읽힌다" 는 이유였고 **그 이유는 지금도 맞다** —
+ * 그래서 늘린 게 아니라 **하나만** 열었다. 나무·사진·토큰 칸에 `onClick` 을 달지 말 것.
+ *
+ * 눌리는 칸과 아닌 칸은 **꺾쇠 유무**로 갈린다(`StatTile`). 아래 미리보기 카드 둘도 같은
+ * 규칙이라, 화면 전체에서 "꺾쇠가 있으면 어딘가로 간다" 하나로 읽힌다.
+ *
+ * **타일은 쌓은 것, 줄은 폭이 필요한 것.** 나무·사진·요금제·토큰은 값 하나로 끝나서
+ * 칸에 들어가고, 사진 저장 용량은 막대 + `100MB 중 42MB` 까지 있어야 뜻이 서므로
+ * 전폭 줄이다. **막대가 이 화면에서 유일하게 '한도까지 얼마나 남았나'를 말한다** —
+ * 퍼센트 숫자만 남기면 그 말이 사라진다.
+ *
+ * ⚠️⚠️ **`useInView` 게이트가 사라졌다 — 이 자리로 올라오면서 성립하지 않게 됐다.**
+ * 그 게이트는 "요약은 접힌 화면 아래에 있으니 거기까지 내려온 사람에게만 센다" 는
+ * 것이었는데, 머리글 바로 아래면 열자마자 보인다. 남겨 둬도 즉시 통과하므로
+ * **가리는 척만 하는 코드**가 된다.
+ *
+ * 그래서 지금은 **메인 탭에 들어올 때마다 사진 순회가 돈다**(나무 수만큼 요청).
+ * `staleTime: Infinity` 라 한 세션 안에서는 한 번이지만, 새로고침하거나 사진을
+ * 올리고/지워 캐시가 깨지면 다음 진입에서 또 돈다. 나무 34그루면 35요청이다.
+ *
+ * 줄이려면 **화면이 아니라 서버 쪽에서** 줄여야 한다 — 백엔드에 요청해 둔
+ * `SUM(file_size)` 한 방짜리 API 가 그것이다(`storageApi` 주석). 그게 생기면
+ * 이 계산이 통째로 사라진다. 그 전에 진입이 무겁게 느껴지면, 게이트를 되살리는 게
+ * 아니라 **나무 목록(요청 1~2회)과 사진 순회를 갈라** 그루 수·요금제·토큰을 먼저
+ * 채우는 쪽이 맞다.
  */
 export function ProfileSummary() {
-  /*
-    임계값이 기본 0.3 이 아니라 0.1 이다. 이 띠는 300px 가까이 되는데 30% 를 채우려면
-    거의 다 올라와야 해서 값이 늦게 뜬다. 한 번 재면 그만이라 `once`.
-  */
-  const { ref, inView } = useInView<HTMLElement>({ threshold: 0.1, once: true });
-
+  const navigate = useNavigate();
   const { data: subscription } = useMySubscription();
   const { data: plans, isPending: isPlansPending } = useSubscriptionPlans();
   const { monthlyLimit, remaining, isPending: isTokenPending } = usePictreeToken();
-  const { data: storageUsed } = useStorageUsage(inView);
+  /*
+    그루 수만 별개 쿼리다 — 요청 하나면 오는 값이라 아래 순회를 기다릴 이유가 없다.
+    네 칸이 한꺼번에 회색으로 있다가 한꺼번에 차는 대신, 사진 한 칸만 남는다.
+  */
+  const { data: treeCount } = useTreeCount();
+  const { data: stats } = useStorageStats();
 
   /**
    * ⚠️ `subscription` 이 있다고 유료가 아니다 — 구독한 적 없는 사용자에게도 서버가
@@ -86,15 +167,13 @@ export function ProfileSummary() {
   const planDto = plans?.find((plan) => plan.code === planCode);
 
   /*
-    이름·가격은 서버 요금제가 유일한 출처다. 아직 못 받았으면 이름만 코드에서 뽑고
-    (`getPlanLabel`) 가격은 비운다 — 값을 지어내면 실제와 다른 금액이 뜬다.
+    이름은 서버 요금제가 유일한 출처다. 아직 못 받았으면 코드에서 뽑는다(`getPlanLabel`).
 
-    다음 결제일은 여기 두지 않는다. 그 날짜는 '해지하면 언제까지 쓰는가' 의 답이라
-    해지 버튼 옆(`/premium` 푸터)에 있어야 뜻이 서고, 두 화면에 같은 날짜를 두면
-    한쪽이 낡은 채로 남는다.
+    ⚠️ **가격은 이제 안 보여준다.** 칸에 값 한 줄과 라벨 한 줄뿐이라 자리가 없고,
+    금액은 결제할 수 있는 `/premium` 에 있어야 뜻이 선다 — 마이페이지에서 액수만 봐서는
+    할 수 있는 게 없다. 되살리려면 요금제를 타일에서 빼 전폭 줄로 내려야 한다.
   */
-  const planName = planDto?.name ?? getPlanLabel(planCode);
-  const priceLabel = planDto ? planPriceLabel(planDto) : null;
+  const planName = planShortName(planDto?.name ?? getPlanLabel(planCode));
 
   const storageMb = planDto
     ? findFeature(planDto, FEATURE_CODE.photoStorage)?.limitValue
@@ -108,51 +187,87 @@ export function ProfileSummary() {
     하나도 없는데 절반이 찼다고 하는 화면이 나오면 사용자는 그게 틀렸다는 걸 알 방법이
     없다. (구 StorageCard 에서 그대로 가져온 규칙이다.)
   */
-  const isUsageKnown = storageUsed !== undefined;
+  const isUsageKnown = stats !== undefined;
   const usageRatio =
-    isUsageKnown && storageLimit > 0 ? storageUsed / storageLimit : 0;
+    isUsageKnown && storageLimit > 0 ? stats.usedBytes / storageLimit : 0;
   const usagePercent = Math.max(0, Math.min(100, usageRatio * 100));
 
   return (
     /*
-      본문 컨테이너(px-5)를 벗어나 화면 폭을 다 쓴다 — 띠가 좌우 여백에서 끊기면
-      배경이 바뀐 게 아니라 넓은 카드 하나가 놓인 것처럼 보인다. 그래서 가로 패딩을
-      이 안에서 다시 준다.
+      가로 패딩·배경이 없다. 배경이 크림으로 통일되면서 이 영역은 **본문 컨테이너 안**
+      으로 들어왔고, `px-5` 와 위아래 간격(`gap-6`)은 `MainTab` 이 준다 — 아래 미리보기
+      카드 둘과 같은 값을 나눠 쓴다.
 
-      **가로 패딩이 56px 로 위 카드들(20px)보다 훨씬 넓다.** 글이 안쪽으로 모이면서
-      시선이 가운데로 몰린다 — 참고한 iCloud 가 이 자리에서 쓰는 장치이고, 여백 자체가
-      '여기부터는 훑어보는 자리' 라는 신호가 된다. 좁히면 위 목록과 같은 줄맞춤이 되어
-      배경만 다른 목록처럼 읽힌다.
+      한때는 화면 폭을 다 쓰는 띠였고 가로 패딩이 56px 이었다. 그 넓은 여백은 글만 있을 때
+      '훑어보는 자리' 라는 신호였는데, 칸이 들어오면서 그 일을 칸이 한다 — 그리고 56px 을
+      유지하면 타일 두 칸이 130px 로 좁아져 라벨이 잘린다(위 `StatTile` 주석 참고).
 
-      `flex-1` 은 내용이 짧을 때 띠가 화면 바닥까지 내려가게 하고, `pb-nav` 는 탭바에
-      가리는 것을 막는다. **이 여백은 원래 페이지 루트에 있었다** — 거기 두면 그 자리가
-      크림으로 남아 띠가 탭바 위에서 끊긴다. 배경을 바닥까지 잇는 게 이 패딩의 일이다.
+      `flex-1`·`pb-nav` 도 뺐다. 둘 다 이 영역이 페이지 **마지막** 자식이라 배경을 탭바까지
+      이어야 했을 때의 것이다. 지금은 탭 본문 맨 위라 자기 높이만 차지하고, 탭바 여백은
+      `ProfilePage` 루트가 갖는다.
     */
-    <section
-      ref={ref}
-      className="mt-8 flex flex-1 flex-col gap-8 bg-[#F6F0D7] px-14 pt-9 pb-nav"
-    >
-      <SummaryBlock
-        title="요금제"
-        value={isPlansPending && !planDto ? null : planName}
-        note={priceLabel}
-      />
+    <section className="flex flex-col gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5">
+        <StatTile icon="🌳" value={treeCount ?? null} label="심은 나무" />
+        <StatTile icon="📷" value={stats?.photoCount ?? null} label="사진" />
+        <StatTile
+          icon="✨"
+          value={isPlansPending && !planDto ? null : planName}
+          label="요금제"
+          /*
+            요금제 화면으로 가는 문. 값(플랜 이름)이 아직 안 왔어도 눌리게 둔다 —
+            요금제를 못 받은 것이야말로 저쪽에서 다시 시도할 일이고, 그쪽 화면에
+            로딩·에러·재시도가 이미 있다.
+          */
+          onClick={() => navigate(ROUTES.premium)}
+        />
+        <StatTile
+          icon="✍️"
+          /*
+            잔량을 알면 잔량이 주인공이고, 모르면 한도만 말한다 — "몇 번 남았다" 를
+            지어내지 않는다(`usePictreeToken` 의 `usedThisMonth` 주석에 왜인지 적어 뒀다).
+            사용량 API 가 붙으면 `remaining` 이 차면서 이 자리가 저절로 잔량으로 바뀐다.
+          */
+          value={
+            isTokenPending && monthlyLimit === null
+              ? null
+              : monthlyLimit === null
+                ? "-"
+                : remaining !== null
+                  ? `${remaining}회`
+                  : monthlyLimit === 0
+                    ? "없음"
+                    : `${monthlyLimit}회`
+          }
+          label={remaining !== null ? "남은 토큰" : "이번 달 토큰"}
+        />
+      </div>
 
       {/*
         제목이 '저장 공간' 이 아니라 '사진 저장 용량' 이다. 이 값은 **사진 바이트만** 세고
-        사진 없는 기록은 상한이 없다. 종전엔 그 사정을 아래 한 줄로 적었는데 지웠으므로,
-        이제 제목이 그 말을 혼자 해야 한다 — '저장 공간' 으로 넓히면 상한이 없는 것까지
-        센 값처럼 읽힌다.
+        사진 없는 기록은 상한이 없다 — '저장 공간' 으로 넓히면 상한이 없는 것까지 센
+        값처럼 읽힌다.
       */}
-      <SummaryBlock title="사진 저장 용량">
+      <section className="rounded-xl border border-[#ECECEC] bg-white p-[15px]">
+        <div className="flex items-baseline">
+          <h2 className="text-[15px] font-medium text-[#2C3930]">사진 저장 용량</h2>
+          <span className="ml-auto text-[15px] font-medium text-[#2C3930]">
+            {isUsageKnown ? `${Math.round(usagePercent)}%` : "-"}
+          </span>
+        </div>
+
         <div
           role="progressbar"
           aria-label="사진 저장 용량 사용률"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(usagePercent)}
-          /* 띠(#F6F0D7) 위라 트랙을 한 단 더 진하게 둔다 — 흰 카드 위 #D9D9D9 는 여기서 뜬다. */
-          className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#E0D5AF]"
+          /*
+            ⚠️ 트랙이 #E0D5AF 에서 #D9D9D9 로 바뀌었다. 그 값은 크림 띠(#F6F0D7) 위라
+            한 단 진하게 고른 것이었는데, 막대가 흰 칸 안으로 들어오면서 근거가 뒤집혔다 —
+            띠 기준 색을 흰 바닥에 그대로 두면 필요 이상으로 탁해진다.
+          */
+          className="mt-[11px] h-2 w-full overflow-hidden rounded-full bg-[#D9D9D9]"
         >
           <div
             className="h-full rounded-full bg-[#5B6B38] transition-[width]"
@@ -160,46 +275,11 @@ export function ProfileSummary() {
           />
         </div>
 
-        <p className="mt-2 text-[17px] font-medium text-[#2C3930]">
-          {isUsageKnown ? formatBytes(storageUsed) : "-"} 사용 중
+        <p className="mt-[7px] text-[13px] text-[#60655C]">
+          {formatBytes(storageLimit)} 중{" "}
+          {isUsageKnown ? `${formatBytes(stats.usedBytes)} 사용 중` : "-"}
         </p>
-        <p className="mt-0.5 text-[13px] text-[#60655C]">
-          {formatBytes(storageLimit)} 중{isUsageKnown && ` ${Math.round(usagePercent)}%`}
-        </p>
-      </SummaryBlock>
-
-      <SummaryBlock
-        title="PICTREE 토큰"
-        /*
-          잔량을 알면 잔량이 주인공이고, 모르면 한도만 말한다 — "몇 번 남았다" 를 지어내지
-          않는다(`usePictreeToken` 의 `usedThisMonth` 주석에 왜인지 적어 뒀다). 사용량
-          API 가 붙으면 `remaining` 이 차면서 이 자리가 저절로 잔량으로 바뀐다.
-        */
-        value={
-          isTokenPending && monthlyLimit === null
-            ? null
-            : monthlyLimit === null
-              ? "-"
-              : remaining !== null
-                ? `${remaining}회 남음`
-                : monthlyLimit === 0
-                  ? "이용할 수 없어요"
-                  : `월 ${monthlyLimit}회`
-        }
-        /*
-          부연은 잔량을 알 때만 붙는다. "한 편 만들 때 1회 써요" 같은 설명은 뺐다 — 이 띠는
-          값을 훑는 자리지 기능을 설명하는 자리가 아니고, 세 덩어리 중 하나만 두 줄로
-          길어지면 그 블록이 혼자 무거워진다. 토큰이 무엇인지는 /premium 이 말한다.
-
-          `이번 달 N회 중` 은 설명이 아니라 위 용량 블록의 `20GB 중 0%` 와 같은 자리다 —
-          큰 값이 무엇에 대한 비율인지 받쳐 주는 줄이라 남긴다.
-        */
-        note={
-          remaining !== null && monthlyLimit !== null
-            ? `이번 달 ${monthlyLimit}회 중`
-            : undefined
-        }
-      />
+      </section>
     </section>
   );
 }

@@ -16,10 +16,8 @@ import { RouteViewPage } from '../features/route/RouteViewPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { PaymentMethodsPage } from '../features/premium/PaymentMethodsPage';
 import { PremiumPage } from '../features/premium/PremiumPage';
-import { ProfileEditPage } from '../features/profile/ProfileEditPage';
 import { TravelCalendarPage } from '../features/profile/TravelCalendarPage';
 import { FavoritesPage } from '../features/profile/FavoritesPage';
-import { HelpFaqPage } from '@/features/profile/HelpFaqPage';
 import { PrivacyPolicyPage } from '../features/profile/PrivacyPolicyPage';
 import { TimelinePage } from '../features/timeline/TimelinePage';
 import { Layout } from '../shared/components';
@@ -90,13 +88,28 @@ export const router = createBrowserRouter([
             path: ROUTES.journey,
             element: <RouteListPage />,
           },
+          /*
+            마이페이지 세 탭. 같은 `ProfilePage` 를 세 번 걸고 **어느 탭인지만 박아 넘긴다** —
+            페이지가 `pathname` 을 다시 문자열로 맞춰 보게 두면 경로를 고칠 때 두 곳이
+            어긋난다. 켜짐 표시는 `ProfileTabs` 의 `NavLink` 가 라우터에게 직접 묻는다.
+          */
           {
             path: ROUTES.profile,
-            element: <ProfilePage />,
+            element: <ProfilePage tab="main" />,
           },
           {
+            path: ROUTES.profileMe,
+            element: <ProfilePage tab="account" />,
+          },
+          {
+            path: ROUTES.helpFaq,
+            element: <ProfilePage tab="help" />,
+          },
+          {
+            // 옛 '내 정보' 페이지 자리. 그 내용이 프로필 탭이 됐다 — 북마크·히스토리로
+            // 들어오는 사람이 빈 화면을 보지 않게 `replace` 로 넘긴다.
             path: ROUTES.profileEdit,
-            element: <ProfileEditPage />,
+            element: <Navigate to={ROUTES.profileMe} replace />,
           },
           {
             path: ROUTES.paymentMethods,
@@ -109,10 +122,6 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.favorites,
             element: <FavoritesPage />,
-          },
-          {
-            path: ROUTES.helpFaq,
-            element: <HelpFaqPage />,
           },
           {
             path: ROUTES.privacy,
