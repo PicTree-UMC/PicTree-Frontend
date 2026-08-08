@@ -22,8 +22,8 @@ import type { BillingKeyDto } from './types/payment';
  * 딱 그만큼이다.
  */
 export function PaymentMethodsPage() {
-  // 히스토리가 없을 때 돌아갈 부모는 마이페이지 **프로필 탭**이다 — '결제 수단' 줄이 거기 있다.
-  const goBack = useGoBack(ROUTES.profileMe);
+  // 히스토리가 없을 때 돌아갈 부모는 '내 정보' 다 — 이 화면으로 들어오는 줄이 거기 있다.
+  const goBack = useGoBack(ROUTES.profileEdit);
   const { showToast } = useToast();
   const { data: cards, isPending, isError, refetch } = useBillingKeys();
   const { data: subscription } = useMySubscription();
