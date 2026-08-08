@@ -30,7 +30,12 @@ export interface RoutePlace {
 /** 저장된 동선 1건의 상세(`GET /routes/{routeId}`). */
 export interface RouteDetail {
   id: number;
-  name: string;
+  /**
+   * 동선 이름. 서버는 `routeName` 이지만 **화면 용어는 `title` 이다** — 목록의 `Journey.title`,
+   * 타임라인의 `title → name` 과 같은 규칙이라 서버 이름으로 되돌리지 않는다.
+   * 되돌리면 같은 동선 이름을 받은 훅에 따라 다른 프로퍼티로 읽어야 한다.
+   */
+  title: string;
   /** 저장 날짜. '2026.4.2' 형식. */
   savedAt: string;
   /** 방문 순서대로 정렬된 장소들. */
