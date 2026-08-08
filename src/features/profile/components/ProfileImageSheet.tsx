@@ -13,6 +13,11 @@ interface Props {
  * 문자열로만 받는데 그 URL 을 만들어 줄 업로드 API 가 백엔드에 없다
  * (파일 업로드는 `POST /trees/{treeId}/images` 하나뿐이고 나무에 종속된 것).
  *
+ * ⚠️ 2026-08-09 스웨거 45 path 재확인 — 그대로다. `UpdateUserRequestDto.profileImageUrl`
+ * 은 `maxLength: 500` 짜리 문자열이고, presigned URL 발급도 범용 업로드도 없다.
+ * 나무 사진 업로드로 URL 을 얻어 오는 우회는 쓰지 말 것: 그 나무의 사진을 교체해
+ * 버리고(`이미 있으면 교체됩니다`) 용량 통계에 잡히며, 나무를 지우면 같이 죽는다.
+ *
  * 삭제를 한 번 더 확인받는 이유: 다시 올릴 방법이 없어, 지우면 소셜 계정에서
  * 가져온 사진이 영영 사라진다. 지운 뒤에는 픽트리 나무 아이콘이 기본값이 된다.
  */
@@ -23,6 +28,7 @@ export function ProfileImageSheet({ onRemove, onClose }: Props) {
       onClose={onClose}
       label="프로필 사진 제거"
       handleColor="#D9D9D9"
+      handleSize="grip"
       animateIn={false}
       className="rounded-t-[20px] bg-[#FFFCEF]"
       contentClassName="px-6"
