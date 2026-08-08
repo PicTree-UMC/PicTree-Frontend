@@ -1,11 +1,8 @@
 import { httpClient } from '@/shared/lib/httpClient';
-import type { ApiEnvelope, TreeDetail, TreeListData, TreeListItem } from '@/features/home/types/tree';
+import type { ApiEnvelope, TreeListData, TreeListItem } from '@/features/home/types/tree';
 import type {
-  TimelineDetail,
-  TimelineImage,
   TimelinePage,
   TimelineRecord,
-  TreeImageListData,
   UpdateTimelineRequest,
 } from '../types/timeline.types';
 
@@ -29,6 +26,12 @@ export const TIMELINE_PAGE_SIZE = 20;
  *   사진을 얻으려고 나무 목록을 따로 받아 `treeId` 로 잇던 조인이 필요 없다.
  * - `accessToken` 인자 — `httpClient` 인터셉터가 Bearer 를 붙인다(PR #53).
  *   전부 수동으로 헤더를 싣던 시절의 잔재였다.
+ *
+ * 화면 개편으로 사라진 것:
+ * - `getTimelineDetail`(`GET /trees/{treeId}`)·`getTimelineImages`(`GET /trees/{treeId}/images`)
+ *   — 격자를 즐겨찾기로 옮기며 유일한 호출부이던 상세 시트가 없어졌다. 목록이 카드에
+ *   필요한 값을 다 주므로 지금 화면들은 목록 한 번으로 산다. 상세 화면이 다시 생기면
+ *   되살릴 것(`git log` 에 매핑이 남아 있다).
  */
 
 /**
@@ -77,56 +80,6 @@ export const getTimelines = async ({
     size: body?.size ?? size,
     totalCount: body?.total ?? items.length,
   };
-};
-
-/**
- * 타임라인 상세 조회. `GET /trees/{treeId}`
- *
- * 목록과 달리 상세에는 `description`·`createdAt`·`address`·`images` 가 다 있다.
- * 그래서 **날짜가 실제로 보이는 유일한 자리**이기도 하다(목록 주석 참고).
- *
- * 방문일 자리에는 `createdAt` 을 넣는다 — 촬영이 곧 등록이라 둘을 같은 것으로 본다(#123).
- */
-export const getTimelineDetail = async (treeId: string): Promise<TimelineDetail> => {
-  const { data } = await httpClient.get<ApiEnvelope<TreeDetail>>(`/trees/${treeId}`);
-  const tree = data.data;
-
-  return {
-    id: String(tree.treeId),
-    placeName: tree.name,
-    comment: tree.description ?? '',
-    // 등록 시각이 곧 방문 시각이다(#123).
-    recordedAt: tree.createdAt,
-    createdAt: tree.createdAt,
-    thumbnailUrl: tree.images?.[0]?.imageUrl ?? null,
-    lat: tree.latitude,
-    lng: tree.longitude,
-    treeId: tree.treeId,
-    defaultImage: tree.defaultImage,
-    isFavorite: tree.isFavorite,
-    // 나무와 기록이 같은 것이 됐으므로 장소명과 같은 값이다. 화면 호환을 위해 남긴다.
-    treeName: tree.name,
-  };
-};
-
-/**
- * 기록에 붙은 사진. `GET /trees/{treeId}/images`
- *
- * 통합 전에는 `?timelineRecordId=` 로 기록별 사진을 걸러 받았다. 기록이 곧 나무가 된
- * 지금은 그 나무의 사진 전부가 곧 그 기록의 사진이라 필터가 필요 없다.
- *
- * `imageUrl` 은 24시간짜리 presigned URL 이라 오래 캐시하면 안 된다.
- */
-export const getTimelineImages = async (treeId: number): Promise<TimelineImage[]> => {
-  const { data } = await httpClient.get<ApiEnvelope<TreeImageListData>>(
-    `/trees/${treeId}/images`,
-  );
-
-  return (data.data?.images ?? []).map((image, index) => ({
-    imageId: image.imageId,
-    imageUrl: image.imageUrl,
-    sortOrder: index,
-  }));
 };
 
 /**

@@ -15,12 +15,16 @@ import {
   type TimelineSort,
 } from "../lib/timelineQuery";
 
+/*
+  `thumbnails` 키는 지웠다 — 목록이 사진 URL 을 직접 준다(#123).
+  `detail`·`images` 키도 지웠다 — 상세 시트가 없어지며 상세·사진을 받는 곳이 사라졌다.
+
+  ⚠️ 다른 기능들(home·camera)이 `timelineKeys.all` 로 목록을 무효화한다. 네임스페이스
+  문자열("timeline")을 바꾸면 그쪽이 조용히 안 듣게 된다.
+*/
 export const timelineKeys = {
   all: ["timeline"] as const,
   list: (page: number, size: number) => ["timeline", "list", page, size] as const,
-  detail: (timelineId: string) => ["timeline", "detail", timelineId] as const,
-  // thumbnails 키는 지웠다 — 목록이 사진 URL 을 직접 준다(#123).
-  images: (timelineId: string) => ["timeline", "images", timelineId] as const,
 };
 
 const toDateKey = (d: Date) =>
