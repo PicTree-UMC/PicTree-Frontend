@@ -1,5 +1,5 @@
 import { Sheet } from '@/shared/components';
-import { CALENDAR_LEVELS, CALENDAR_LEVEL_COLORS } from '../lib/calendarLevel';
+import { CALENDAR_LEVELS } from '../lib/calendarLevel';
 import treeIcon from '../assets/icons/tree.svg';
 
 /**
@@ -49,13 +49,9 @@ export function GrassLegendSheet({ onClose }: { onClose: () => void }) {
       */}
       <div className="mt-5 flex items-start justify-center gap-1">
         <span className="mt-[5px] px-1 text-[13px] text-[#2c3930]">적음</span>
-        {/* 격자와 같은 배열을 쓴다 — 범례가 격자보다 진하거나 옅으면 단계를 못 짚는다. */}
-        {CALENDAR_LEVELS.map(({ level, label }) => (
+        {CALENDAR_LEVELS.map(({ shade, label }) => (
           <span key={label} className="flex w-14 flex-col items-center gap-1.5">
-            <span
-              className="h-5 w-5 rounded-full"
-              style={{ backgroundColor: CALENDAR_LEVEL_COLORS[level] }}
-            />
+            <span className="h-5 w-5 rounded-full" style={{ backgroundColor: shade }} />
             <span className="whitespace-nowrap text-[13px] leading-none text-[#2c3930]">
               {label}
             </span>

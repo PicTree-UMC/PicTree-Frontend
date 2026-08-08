@@ -6,28 +6,7 @@ export const ROUTES = {
   authCallback: '/auth/callback',
   home: '/home',
   timeline: '/timeline',
-  /**
-   * 마이페이지 — **탭 세 개짜리 한 화면**이다(메인 · 프로필 · 질문).
-   *
-   * 아래 `profileMe`·`helpFaq` 는 전부 같은 `ProfilePage` 를 그리고, 어느 탭이 열리는지만
-   * 경로가 정한다. 탭을 화면 state 로만 두지 않은 이유는 셋이다 — 딥링크가 되고,
-   * 뒤로가기가 탭을 되짚고, 새로고침해도 보던 탭이 남는다.
-   *
-   * ⚠️ **요금제는 탭이 아니다.** `/premium` 이 앱에서 유일하게 크림이 아닌 바닥을 쓰기
-   * 때문이다(`premium/lib/backdrop.ts`) — 탭 하나만 배경이 다르면 탭 줄이 화면을 가르는
-   * 게 아니라 두 앱을 오가는 것처럼 읽힌다. 대신 메인 탭의 **요금제 타일**이 그리로 간다.
-   *
-   * ⚠️ 하단 탭바(`BottomTabBar`)의 '마이' 는 `end` 없이 `/profile` 을 가리킨다 —
-   * 그래서 이 하위 경로들에서도 '마이' 가 켜진 채로 있다. 새 탭을 더할 때 이 규칙이
-   * 깨지지 않게 반드시 `/profile/` 아래에 둘 것.
-   */
   profile: '/profile',
-  /** 마이페이지 ② 프로필 탭 — 닉네임·이메일·결제수단·로그아웃/탈퇴. */
-  profileMe: '/profile/me',
-  /**
-   * 옛 '내 정보' 페이지. 지금은 `profileMe` 탭으로 **리다이렉트만** 한다 —
-   * 앱 안에서 여기로 보내는 곳은 없지만 북마크·이전 세션 히스토리에 남아 있다.
-   */
   profileEdit: '/profile/edit',
   /*
     `subscription: '/profile/subscription'` 은 지웠다. 프로필의 '구독' 줄이 플랜과 무관하게
@@ -49,12 +28,7 @@ export const ROUTES = {
     거기서 할 수 있는 일이 지도로 가는 것뿐이라 홈 배너와 하는 말이 같았다. 알림을
     보내던 웹 푸시 자체도 함께 걷어냈다.
   */
-  /**
-   * 마이페이지 ③ 질문 탭 — FAQ 아코디언 + 맨 아래 개인정보 처리방침 줄.
-   *
-   * 경로 이름은 그대로 뒀다. 옛 '도움말 / FAQ' 페이지가 있던 자리이고, 탭이 하는 일도
-   * 같아서 리다이렉트를 만들 이유가 없다.
-   */
+  /** 도움말 / FAQ. */
   helpFaq: '/profile/help',
   blog: '/blog',
   blogCreate: '/blog/create',
