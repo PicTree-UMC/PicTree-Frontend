@@ -34,12 +34,18 @@ export interface StorageStats {
  * 훑어도 합계가 맞다.
  *
  * 비용이 크다 — 나무 수만큼 요청이 나가고, 서버는 사진 한 장마다 presigned URL
- * 을 발급한다(우리는 안 쓰는데도). 그래서 이 함수를 **화면을 열 때마다 부르면
- * 안 된다.** `useStorageUsage` 가 캐시를 무기한 유지하고 사진이 늘거나 줄 때만
- * 무효화한다.
+ * 을 발급한다(우리는 안 쓰는데도). `useStorageStats` 가 캐시를 무기한 유지하고
+ * 사진이 늘거나 줄 때만 무효화하는 이유다. ⚠️ 요약이 마이페이지 첫 섹션으로
+ * 올라가면서 **진입할 때마다** 이 함수가 돈다(그 훅 주석 참고).
  *
- * 백엔드에 `SUM(file_size)` 한 방짜리 API 를 요청해 둔 상태다. 생기면 이 함수만
- * 갈아끼우면 된다.
+ * ⚠️⚠️ **백엔드에 요청해 둔 `SUM(file_size)` API 만으로는 이 비용이 안 없어진다.**
+ * `usedBytes` 는 한 방에 오지만 `photoCount` 가 아래 나무별 순회에서 나오기 때문에,
+ * 합계만 받아 오면 나무 수만큼의 요청이 **그대로 남는다.** 요청을 고쳐 보내야 한다:
+ *
+ *   `{ usedBytes, photoCount }` — 같은 쿼리에 `COUNT(*)` 하나 더 붙이는 일이다.
+ *
+ * 그게 오면 `treeCount` 는 목록 응답의 `total` 로 충분하므로(`TreeListData.total`,
+ * `size=1` 한 장이면 온다) 이 함수는 **2요청**이 되고 나무별 순회가 통째로 빠진다.
  */
 export async function getStorageStats(): Promise<StorageStats> {
   const trees = await fetchAllTreeItems();
