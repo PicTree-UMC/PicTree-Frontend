@@ -7,7 +7,6 @@ import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
 import { timelineKeys } from '@/features/timeline/hooks/useTimeline';
 import {
   deleteTree,
-  getTreeCount,
   getTreeDetail,
   getTrees,
   toggleTreeFavorite,
@@ -17,7 +16,6 @@ import type { MapMarkerData } from './useMapMarkers';
 export const treeKeys = {
   all: ['trees'] as const,
   list: () => [...treeKeys.all, 'list'] as const,
-  count: () => [...treeKeys.all, 'count'] as const,
   detail: (id: string) => [...treeKeys.all, 'detail', id] as const,
 };
 
@@ -28,24 +26,12 @@ export const useTrees = () =>
     queryFn: getTrees,
   });
 
-/**
- * 내 나무 그루 수. **목록과 별개 쿼리다.**
- *
- * 마이페이지 요약이 쓴다. 같이 놓인 사진 장수·용량은 나무를 하나씩 열어 봐야 나와서
- * 오래 걸리는데, 그루 수는 요청 하나면 온다 — 한 쿼리로 묶으면 **빨리 올 수 있는 값이
- * 느린 값을 기다리게 된다.** 갈라 두면 그 칸만 먼저 찬다.
- *
- * `treeKeys.all` 밑이라 나무가 늘거나 줄 때 목록과 함께 무효화된다.
- */
-export const useTreeCount = () => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
-  return useQuery({
-    queryKey: treeKeys.count(),
-    queryFn: getTreeCount,
-    enabled: isAuthenticated,
-  });
-};
+/*
+  `useTreeCount`(+ `treeKeys.count`, `getTreeCount`)는 지웠다. 마이페이지 요약 한 곳이
+  쓰던 것인데, 그 값이 이제 `GET /trees/summary` 응답에 사진 장수·용량과 함께 실려 온다
+  (`profile/hooks/useStorageStats`). 갈라 뒀던 이유가 "나머지 둘이 느리다" 였으므로
+  이유째 없어졌다.
+*/
 
 /*
   `GET /trees/nearby` 를 부르던 훅은 지웠다. 이름은 `hooks/useNearbyTrees.ts` 가 이어받아

@@ -47,8 +47,9 @@ async function fetchTreePage(page: number): Promise<TreeListData> {
  * 나무가 수천 그루가 되면 이 방식도 답이 아니다. 그때는 지도 뷰포트(bbox) 조회가
  * 있어야 하고, 생기면 이 함수만 갈아끼우면 된다.
  *
- * 캘린더(`calendarTreesApi`)와 사진 용량(`storageApi`)이 각자 복사해 두었던 같은
- * 순회를 여기로 모았다. 셋이 따로 놀면 이번처럼 한 곳만 상한에 걸린 채 남는다.
+ * 캘린더(`calendarTreesApi`)가 복사해 두었던 같은 순회를 여기로 모았다. 따로 놀면
+ * 이번처럼 한 곳만 상한에 걸린 채 남는다. (사진 용량도 여기 묶여 있었는데, `GET
+ * /trees/summary` 가 생기면서 순회 자체가 필요 없어져 빠졌다.)
  *
  * ⚠️ **`treeId` 로 한 번 거른다.** `/trees` 는 스웨거에 요청 파라미터가 없는데 실제로는
  * `page` 가 먹는 상태라, 서버가 이걸 무시하게 되면 같은 페이지를 여러 번 받는다.
@@ -76,25 +77,12 @@ export async function fetchAllTreeItems(): Promise<TreeListItem[]> {
   return [...byId.values()];
 }
 
-/**
- * 내 나무 그루 수만.
- *
- * **목록을 받지 않는다.** 페이지네이션 응답의 `total` 이 곧 답이라 한 장만 열어 보면
- * 된다 — 마이페이지 요약이 이것 때문에 나무 전체를 훑던 것을 대신한다.
- *
- * ⚠️ `size` 를 1 로 준다. 서버 최대치(100)는 확인됐지만 **최솟값은 확인된 적이 없다** —
- * 거절당하면 `size` 를 빼고 기본값으로 부르면 된다(요청 수는 어차피 1이다).
- *
- * ⚠️ `total` 이 안 오면 `null` 이다. 0 으로 떨어뜨리지 않는다 — 나무가 있는데 0그루라고
- * 하는 것보다 모른다고 두는 편이 낫다(용량을 모를 때 `-` 로 두는 것과 같은 규칙).
- */
-export const getTreeCount = async (): Promise<number | null> => {
-  const { data } = await httpClient.get<ApiEnvelope<TreeListData>>('/trees', {
-    params: { page: 1, size: 1 },
-  });
-
-  return data.data?.total ?? null;
-};
+/*
+  `getTreeCount`(GET /trees?size=1 의 `total`)는 지웠다. 마이페이지 요약 한 곳이 쓰던
+  것인데 그 값이 `GET /trees/summary` 에 사진 장수·용량과 함께 실려 온다
+  (`profile/api/storageApi`). 목록 응답의 `total` 은 그대로 있으니 되살릴 일이 생기면
+  한 줄이다.
+*/
 
 /** 지도에 찍을 내 나무 목록 조회. */
 export const getTrees = async (): Promise<MapMarkerData[]> => {

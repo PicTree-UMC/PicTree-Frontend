@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
-import { useTreeCount } from "@/features/home/hooks/useTrees";
 import { usePictreeToken } from "@/features/premium/hooks/usePictreeToken";
 import { useMySubscription } from "@/features/premium/hooks/useMySubscription";
 import { useSubscriptionPlans } from "@/features/premium/hooks/useSubscriptionPlans";
@@ -131,20 +130,11 @@ function StatTile({
  * 전폭 줄이다. **막대가 이 화면에서 유일하게 '한도까지 얼마나 남았나'를 말한다** —
  * 퍼센트 숫자만 남기면 그 말이 사라진다.
  *
- * ⚠️⚠️ **`useInView` 게이트가 사라졌다 — 이 자리로 올라오면서 성립하지 않게 됐다.**
+ * ⚠️ **`useInView` 게이트는 없다 — 이 자리로 올라오면서 성립하지 않게 됐다.**
  * 그 게이트는 "요약은 접힌 화면 아래에 있으니 거기까지 내려온 사람에게만 센다" 는
  * 것이었는데, 머리글 바로 아래면 열자마자 보인다. 남겨 둬도 즉시 통과하므로
- * **가리는 척만 하는 코드**가 된다.
- *
- * 그래서 지금은 **메인 탭에 들어올 때마다 사진 순회가 돈다**(나무 수만큼 요청).
- * `staleTime: Infinity` 라 한 세션 안에서는 한 번이지만, 새로고침하거나 사진을
- * 올리고/지워 캐시가 깨지면 다음 진입에서 또 돈다. 나무 34그루면 35요청이다.
- *
- * 줄이려면 **화면이 아니라 서버 쪽에서** 줄여야 한다 — 백엔드에 요청해 둔
- * `SUM(file_size)` 한 방짜리 API 가 그것이다(`storageApi` 주석). 그게 생기면
- * 이 계산이 통째로 사라진다. 그 전에 진입이 무겁게 느껴지면, 게이트를 되살리는 게
- * 아니라 **나무 목록(요청 1~2회)과 사진 순회를 갈라** 그루 수·요금제·토큰을 먼저
- * 채우는 쪽이 맞다.
+ * **가리는 척만 하는 코드**가 된다. 되살릴 이유도 없어졌다 — 그 게이트가 막던
+ * 나무별 사진 순회(34그루면 35요청)가 `GET /trees/summary` 한 요청으로 줄었다.
  */
 export function ProfileSummary() {
   const navigate = useNavigate();
@@ -152,10 +142,10 @@ export function ProfileSummary() {
   const { data: plans, isPending: isPlansPending } = useSubscriptionPlans();
   const { monthlyLimit, remaining, isPending: isTokenPending } = usePictreeToken();
   /*
-    그루 수만 별개 쿼리다 — 요청 하나면 오는 값이라 아래 순회를 기다릴 이유가 없다.
-    네 칸이 한꺼번에 회색으로 있다가 한꺼번에 차는 대신, 사진 한 칸만 남는다.
+    그루 수·사진 장수·용량이 한 응답으로 온다(`GET /trees/summary`). 한때 그루 수만
+    별개 쿼리(`useTreeCount`)로 갈라 뒀던 건 나머지 둘이 나무별 순회에서 나와 느렸기
+    때문이다 — 순회가 없어지면서 가를 이유도 없어졌다.
   */
-  const { data: treeCount } = useTreeCount();
   const { data: stats } = useStorageStats();
 
   /**
@@ -187,9 +177,10 @@ export function ProfileSummary() {
     하나도 없는데 절반이 찼다고 하는 화면이 나오면 사용자는 그게 틀렸다는 걸 알 방법이
     없다. (구 StorageCard 에서 그대로 가져온 규칙이다.)
   */
-  const isUsageKnown = stats !== undefined;
+  const usedBytes = stats?.usedBytes ?? null;
+  const isUsageKnown = usedBytes !== null;
   const usageRatio =
-    isUsageKnown && storageLimit > 0 ? stats.usedBytes / storageLimit : 0;
+    isUsageKnown && storageLimit > 0 ? usedBytes / storageLimit : 0;
   const usagePercent = Math.max(0, Math.min(100, usageRatio * 100));
 
   return (
@@ -208,7 +199,7 @@ export function ProfileSummary() {
     */
     <section className="flex flex-col gap-2.5">
       <div className="grid grid-cols-2 gap-2.5">
-        <StatTile icon="🌳" value={treeCount ?? null} label="심은 나무" />
+        <StatTile icon="🌳" value={stats?.treeCount ?? null} label="심은 나무" />
         <StatTile icon="📷" value={stats?.photoCount ?? null} label="사진" />
         <StatTile
           icon="✨"
@@ -277,7 +268,7 @@ export function ProfileSummary() {
 
         <p className="mt-[7px] text-[13px] text-[#60655C]">
           {formatBytes(storageLimit)} 중{" "}
-          {isUsageKnown ? `${formatBytes(stats.usedBytes)} 사용 중` : "-"}
+          {isUsageKnown ? `${formatBytes(usedBytes)} 사용 중` : "-"}
         </p>
       </section>
     </section>
