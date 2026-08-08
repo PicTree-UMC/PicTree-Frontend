@@ -1,6 +1,6 @@
 import { httpClient } from '@/shared/lib/httpClient';
 import type { ApiResponse } from '@/features/auth/types/auth';
-import type { FavoriteList, ToggledFavorite } from '../types/favorite';
+import type { BulkFavoriteResult, FavoriteList, ToggledFavorite } from '../types/favorite';
 
 /**
  * 즐겨찾기 장소 목록·개수 조회. `GET /trees/favorites`
@@ -49,4 +49,23 @@ export async function setFavorite(
   }
 
   return data.data;
+}
+
+/**
+ * 즐겨찾기 여러 곳을 한 번에 해제한다.
+ *
+ * 서버에 일괄 엔드포인트가 없어 건별로 부른다. 한 곳이 실패해도 나머지는 계속
+ * 진행하고 **실제로 해제된 것만** 돌려준다 — 하나 때문에 전부 되돌리면 사용자가
+ * 고른 것 중 무엇이 남았는지 알 수 없다.
+ *
+ * ⚠️ 서버가 지금은 본문을 안 읽고 뒤집기만 한다(`setFavorite` 주석). 이 화면은
+ * 담긴 장소만 다루므로 결과는 항상 해제지만, **이미 해제된 것을 또 부르면
+ * 오히려 다시 담긴다.** 목록에 보이는 것만 넘길 것.
+ */
+export async function removeFavorites(treeIds: number[]): Promise<BulkFavoriteResult> {
+  const results = await Promise.allSettled(treeIds.map((id) => setFavorite(id, false)));
+
+  const removedIds = treeIds.filter((_id, index) => results[index].status === 'fulfilled');
+
+  return { removedIds, failedCount: treeIds.length - removedIds.length };
 }

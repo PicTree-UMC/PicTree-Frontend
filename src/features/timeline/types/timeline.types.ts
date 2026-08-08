@@ -56,31 +56,11 @@ export interface TimelinePage {
   totalCount: number;
 }
 
-export interface TimelineImage {
-  imageId: number;
-  imageUrl: string;
-  /** 정렬 순서. 서버가 안 주면 배열 순서를 그대로 쓴다. */
-  sortOrder: number;
-}
-
-/** `GET /trees/{treeId}/images` 응답의 `data`. */
-export interface TreeImageListData {
-  images?: {
-    imageId: number;
-    /** presigned URL, 24시간 유효. */
-    imageUrl: string;
-    timelineRecordId: number | null;
-  }[];
-}
-
-/** 정규화된 상세 — 화면·훅이 실제로 쓰는 형태 */
-export interface TimelineDetail extends TimelineRecord {
-  /**
-   * 나무 이름. 기록이 곧 나무가 된 뒤로 `placeName` 과 같은 값이다.
-   * 화면 호환을 위해 남겨 뒀고, 화면 정리 때 없앨 수 있다.
-   */
-  treeName: string | null;
-}
+/*
+ * `TimelineImage`·`TreeImageListData`·`TimelineDetail` 은 상세 시트와 함께 지웠다.
+ * 격자 보기를 즐겨찾기로 옮기며 시트가 사라졌고, 그 셋을 쓰던 `getTimelineDetail`·
+ * `getTimelineImages` 도 같이 없어져 남은 호출부가 하나도 없다.
+ */
 
 /**
  * 기록 수정 요청. 화면 용어 기준이며 `timelineApi` 가 서버 필드로 옮긴다

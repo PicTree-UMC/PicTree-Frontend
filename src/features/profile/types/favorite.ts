@@ -29,3 +29,12 @@ export type ToggledFavorite = {
   treeId: number;
   isFavorite: boolean;
 };
+
+/**
+ * 여러 곳을 한 번에 해제한 결과. 일괄 엔드포인트가 없어 건별로 부르므로
+ * 일부만 성공할 수 있다 — 화면 문구가 실제 건수를 말하려면 둘 다 필요하다.
+ */
+export type BulkFavoriteResult = {
+  removedIds: number[];
+  failedCount: number;
+};
