@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useClearSession } from '@/features/auth/hooks/useClearSession';
 import { getApiErrorMessage } from '@/features/auth/lib/apiError';
 import { useToast } from '@/shared/components';
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import { withdrawMe } from '../api/withdrawApi';
 
 /**
@@ -22,12 +23,7 @@ export const useWithdraw = () => {
     mutationFn: async () => {
       const response = await withdrawMe();
 
-      // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-      if (!response.success) {
-        throw new Error(response.message);
-      }
-
-      return response;
+      return unwrapApiResponse(response);
     },
 
     onSuccess: () => {

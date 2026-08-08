@@ -1,3 +1,4 @@
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import { httpClient } from '@/shared/lib/httpClient';
 import type { ApiResponse } from '@/shared/types/api';
 import type {
@@ -26,12 +27,7 @@ export async function registerPushSubscription(
     request,
   );
 
-  // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-  if (!data.success) {
-    throw new Error(data.message);
-  }
-
-  return data.data;
+  return unwrapApiResponse(data);
 }
 
 /**
@@ -51,11 +47,7 @@ export async function getMyPushSubscriptions(): Promise<PushSubscription[]> {
   const { data } =
     await httpClient.get<ApiResponse<PushSubscription[]>>('/push-subscriptions/me');
 
-  if (!data.success) {
-    throw new Error(data.message);
-  }
-
-  return data.data ?? [];
+  return unwrapApiResponse(data) ?? [];
 }
 
 /**
@@ -79,7 +71,5 @@ export async function deactivatePushSubscription(
     `/push-subscriptions/${subscriptionId}/deactivate`,
   );
 
-  if (!data.success) {
-    throw new Error(data.message);
-  }
+  unwrapApiResponse(data);
 }

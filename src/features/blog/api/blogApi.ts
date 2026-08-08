@@ -1,3 +1,4 @@
+import { unwrapApiResponse } from '../../../shared/lib/apiResponse';
 import { httpClient } from '../../../shared/lib/httpClient';
 import type { ApiResponse } from '../../../shared/types/api';
 import type {
@@ -9,13 +10,6 @@ import type {
   SaveAIBlogDraftResponseData,
 } from '../types/blog';
 
-const unwrapBlogResponse = <T>(response: ApiResponse<T>, fallbackMessage: string): T => {
-  if (!response.success) {
-    throw new Error(response.message || fallbackMessage);
-  }
-  return response.data;
-};
-
 /**
  * AI 블로그 초안 목록 조회
  * GET /api/v1/blog-drafts
@@ -23,7 +17,7 @@ const unwrapBlogResponse = <T>(response: ApiResponse<T>, fallbackMessage: string
 export const getAIBlogDrafts = async (): Promise<AIBlogDraftListData> => {
   const { data } = await httpClient.get<ApiResponse<AIBlogDraftListData>>('/blog-drafts');
 
-  return unwrapBlogResponse(data, 'Failed to get AI blog drafts');
+  return unwrapApiResponse(data, 'Failed to get AI blog drafts');
 };
 
 /**
@@ -38,7 +32,7 @@ export const createAIBlogDraft = async (
     payload,
   );
 
-  return unwrapBlogResponse(data, 'Failed to create AI blog draft');
+  return unwrapApiResponse(data, 'Failed to create AI blog draft');
 };
 
 /**
@@ -53,7 +47,7 @@ export const saveAIBlogDraft = async (
     payload,
   );
 
-  return unwrapBlogResponse(data, 'Failed to save AI blog draft');
+  return unwrapApiResponse(data, 'Failed to save AI blog draft');
 };
 
 /**
@@ -65,7 +59,7 @@ export const getAIBlogDraftDetail = async (
 ): Promise<AIBlogDraftDetail> => {
   const { data } = await httpClient.get<ApiResponse<AIBlogDraftDetail>>(`/blog-drafts/${draftId}`);
 
-  return unwrapBlogResponse(data, 'Failed to get AI blog draft detail');
+  return unwrapApiResponse(data, 'Failed to get AI blog draft detail');
 };
 
 /**
@@ -75,5 +69,5 @@ export const getAIBlogDraftDetail = async (
 export const deleteAIBlogDraft = async (draftId: number) => {
   const { data } = await httpClient.delete<ApiResponse<null>>(`/blog-drafts/${draftId}`);
 
-  return unwrapBlogResponse(data, 'Failed to delete AI blog draft');
+  return unwrapApiResponse(data, 'Failed to delete AI blog draft');
 };
