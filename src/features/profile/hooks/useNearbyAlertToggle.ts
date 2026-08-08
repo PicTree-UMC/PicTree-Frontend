@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useToast } from '@/shared/components';
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import { deactivatePushSubscription, registerPushSubscription } from '../api/pushApi';
 import { updateMyProfile } from '../api/userApi';
 import { activeSubscriptionIds } from '../lib/pushSubscription';
@@ -46,10 +47,7 @@ export const useNearbyAlertToggle = () => {
   const setNotificationFlag = async (notification: boolean) => {
     const response = await updateMyProfile(accessToken ?? '', { notification });
 
-    // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-    if (!response.success) {
-      throw new Error(response.message);
-    }
+    unwrapApiResponse(response);
   };
 
   return useMutation({

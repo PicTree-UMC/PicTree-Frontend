@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/shared/components';
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { updateMyProfile } from '../api/userApi';
 import { getApiErrorMessage } from '../lib/profileError';
@@ -25,12 +26,7 @@ export const useUpdateMyProfile = () => {
     mutationFn: async (payload: UpdateMyProfileRequest) => {
       const response = await updateMyProfile(accessToken ?? '', payload);
 
-      // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-      if (!response.success) {
-        throw new Error(response.message);
-      }
-
-      return response.data;
+      return unwrapApiResponse(response);
     },
 
     onMutate: async (payload) => {

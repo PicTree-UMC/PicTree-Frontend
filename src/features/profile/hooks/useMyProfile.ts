@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import { getMyProfile } from '../api/userApi';
 import { isClientError } from '../lib/profileError';
 
@@ -16,11 +17,7 @@ export const useMyProfile = () => {
     queryFn: async () => {
       const response = await getMyProfile(accessToken ?? '');
 
-      if (!response.success) {
-        throw new Error(response.message);
-      }
-
-      return response.data;
+      return unwrapApiResponse(response);
     },
     enabled: Boolean(accessToken),
     /**

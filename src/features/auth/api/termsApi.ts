@@ -1,3 +1,4 @@
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import { httpClient } from '@/shared/lib/httpClient';
 import type { ApiResponse } from '@/shared/types/api';
 import type { Term, TermsAgreementResult } from '../types/terms';
@@ -14,12 +15,7 @@ import type { Term, TermsAgreementResult } from '../types/terms';
 export async function getTerms(): Promise<Term[]> {
   const { data } = await httpClient.get<ApiResponse<Term[]>>('/terms');
 
-  // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-  if (!data.success) {
-    throw new Error(data.message);
-  }
-
-  return data.data;
+  return unwrapApiResponse(data);
 }
 
 /**
@@ -42,9 +38,5 @@ export async function agreeToTerms(
     { agreedTermIds },
   );
 
-  if (!data.success) {
-    throw new Error(data.message);
-  }
-
-  return data.data;
+  return unwrapApiResponse(data);
 }

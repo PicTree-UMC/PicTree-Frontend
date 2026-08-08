@@ -1,3 +1,4 @@
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import { httpClient } from '@/shared/lib/httpClient';
 import type { ApiResponse } from '@/shared/types/api';
 import type {
@@ -40,12 +41,7 @@ export async function checkNearbyAlerts(
     { latitude, longitude },
   );
 
-  // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-  if (!data.success) {
-    throw new Error(data.message);
-  }
-
-  return data.data;
+  return unwrapApiResponse(data);
 }
 
 /**
@@ -69,11 +65,7 @@ export async function getNearbyAlertLogs({
     { params: { page, size } },
   );
 
-  if (!data.success) {
-    throw new Error(data.message);
-  }
-
-  const body = data.data;
+  const body = unwrapApiResponse(data);
 
   return {
     items: body?.items ?? [],
@@ -100,11 +92,7 @@ export async function openNearbyAlertLog(
     `/nearby-alerts/logs/${alertLogId}/open`,
   );
 
-  if (!data.success) {
-    throw new Error(data.message);
-  }
-
-  return data.data;
+  return unwrapApiResponse(data);
 }
 
 /**
@@ -128,9 +116,7 @@ export async function deleteNearbyAlertLog(alertLogId: number): Promise<void> {
     `/nearby-alerts/logs/${alertLogId}`,
   );
 
-  if (!data.success) {
-    throw new Error(data.message);
-  }
+  unwrapApiResponse(data);
 }
 
 /** 여러 건 삭제 결과 — 몇 건이 지워졌고 몇 건이 실패했는지. */
