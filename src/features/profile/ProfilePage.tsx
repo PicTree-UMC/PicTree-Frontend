@@ -42,13 +42,18 @@ export function ProfilePage() {
     */
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       {/*
-        머리글 — 아바타·이름·이메일을 가운데 모은다.
+        머리글 — 아바타와 닉네임을 가운데 모은다.
         종전엔 초록 밴드 전체가 '내 정보' 로 가는 버튼이었는데, 누를 수 있다는 신호가
         밴드 어디에도 없어서 사실상 숨은 진입점이었다. 지금은 머리글을 읽는 자리로 두고
         아래 `개인정보` 줄이 그 일을 맡는다.
       */}
       <header className="flex flex-col items-center px-5 pt-header">
-        <div className="flex size-24 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
+        {/*
+          ⚠️ **96px 에서 64px 로 줄였다.** 이 머리글은 읽는 자리일 뿐인데 아바타가 그중
+          제일 큰 덩어리라, 줄인 만큼 아래 요약·목록이 첫 화면에 더 들어온다.
+          기본 나무 글리프는 지름 대비 비율(약 46%)을 지켜 44px → 28px 로 같이 줄인다.
+        */}
+        <div className="flex size-16 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
           {profile?.profileImageUrl && !isAvatarBroken ? (
             <img
               src={profile.profileImageUrl}
@@ -57,16 +62,13 @@ export function ProfilePage() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <img src={treeIcon} alt="" className="size-11" />
+            <img src={treeIcon} alt="" className="size-7" />
           )}
         </div>
 
         {isPending ? (
-          // 스켈레톤 — 이름·이메일 자리를 그대로 잡아 레이아웃이 튀지 않게 한다
-          <div className="mt-3 flex flex-col items-center gap-2">
-            <div className="h-6 w-28 animate-pulse rounded bg-[#F6F0D7]" />
-            <div className="h-4 w-40 animate-pulse rounded bg-[#F6F0D7]" />
-          </div>
+          // 스켈레톤 — 닉네임 한 줄 자리를 그대로 잡아 레이아웃이 튀지 않게 한다
+          <div className="mt-3 h-6 w-28 animate-pulse rounded bg-[#F6F0D7]" />
         ) : errorKind === 'session-expired' ? (
           // useSessionExpiredRedirect 가 곧 로그인 화면으로 보낸다
           <p className="mt-3 text-[15px] font-medium text-[#2C3930]">
@@ -101,13 +103,12 @@ export function ProfilePage() {
             </button>
           </div>
         ) : (
-          <>
-            <p className="mt-3 text-[20px] font-medium text-[#2C3930]">{profile?.nickname}</p>
-            {/* 이메일은 소셜 계정에 따라 없을 수 있어 있을 때만 그린다 */}
-            {profile?.email && (
-              <p className="mt-0.5 text-[15px] text-[#60655C]">{profile.email}</p>
-            )}
-          </>
+          /*
+            ⚠️ **이메일 줄을 뺐다.** 소셜 계정에 따라 있을 때만 그리던 값이라 계정마다
+            머리글 높이가 달랐고, 여기서 할 수 있는 일이 없는 읽기 전용 값이다.
+            바꾸거나 확인하려면 아래 `개인정보` 줄로 들어가면 된다 — 거기 있다.
+          */
+          <p className="mt-3 text-[20px] font-medium text-[#2C3930]">{profile?.nickname}</p>
         )}
       </header>
 
