@@ -1,4 +1,6 @@
 import { ProfileSummary } from "../components/ProfileSummary";
+import { CalendarPreview } from "../components/CalendarPreview";
+import { FavoritesPreview } from "../components/FavoritesPreview";
 
 /**
  * 마이페이지 ① 메인 탭 — **내가 여기 얼마나 쌓았나**.
@@ -18,6 +20,8 @@ export function MainTab() {
   return (
     <div className="flex flex-col gap-6 px-5 pt-6">
       <ProfileSummary />
+      <CalendarPreview />
+      <FavoritesPreview />
     </div>
   );
 }
