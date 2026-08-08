@@ -1,9 +1,5 @@
-import { httpClient } from '@/shared/lib/httpClient';
-import type { ApiEnvelope, TreeListData, TreeListItem } from '@/features/home/types/tree';
+import { fetchAllTreeItems } from '@/features/home/api/treesApi';
 import { toCalendarDate } from '@/shared/lib/calendar';
-
-/** 서버가 허용하는 최대 페이지 크기(`TreePagination.MAX_SIZE`). */
-const MAX_PAGE_SIZE = 100;
 
 /** 캘린더 아래 그룹 리스트가 쓰는 나무 한 그루. */
 export interface CalendarTree {
@@ -45,48 +41,21 @@ function localTimeLabel(value: string): string {
   return date.toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
 }
 
-async function fetchTreePage(page: number): Promise<TreeListData> {
-  const { data } = await httpClient.get<ApiEnvelope<TreeListData>>('/trees', {
-    params: { page, size: MAX_PAGE_SIZE },
-  });
-
-  return data.data;
-}
-
 /**
- * 내 나무 전체.
+ * 날짜별로 묶은 내 나무들.
  *
  * ⚠️ **`GET /trees` 에 날짜 필터가 없다.** 그래서 달을 넘길 때마다 그 달치를 받는
- * `/calendar` 와 달리 여기는 한 번에 전부 받아 프론트가 날짜로 나눈다 —
- * `storageApi.fetchAllTreeIds` 와 같은 방식이다(첫 페이지의 `totalPages` 로 나머지를
- * 병렬 요청). 날짜별 조회 API 가 생기면 이 함수만 갈아끼우면 된다.
+ * `/calendar` 와 달리 여기는 `fetchAllTreeItems` 로 전부 받아 프론트가 날짜로 나눈다.
+ * 날짜별 조회 API 가 생기면 이 함수의 첫 줄만 갈아끼우면 된다.
  *
  * `/calendar` 로 잔디만 그릴 때는 이 비용을 치를 이유가 없으므로, 호출은 **날짜를 처음
  * 누른 뒤에야** 시작된다(`useCalendarTrees` 의 `enabled`).
- */
-async function fetchAllTrees(): Promise<TreeListItem[]> {
-  const first = await fetchTreePage(1);
-  const items = [...(first.items ?? [])];
-
-  // totalPages 를 못 받으면 첫 페이지만 쓴다 — 지어내는 것보다 적게 세는 편이 낫다.
-  const totalPages = first.totalPages ?? 1;
-  if (totalPages <= 1) return items;
-
-  const rest = await Promise.all(
-    Array.from({ length: totalPages - 1 }, (_, index) => fetchTreePage(index + 2)),
-  );
-
-  return rest.reduce((all, page) => all.concat(page.items ?? []), items);
-}
-
-/**
- * 날짜별로 묶은 내 나무들.
  *
  * 날짜를 못 읽는 나무는 뺀다 — 붙일 칸이 없다. 서버가 `createdAt` 을 빼먹거나 파싱이
  * 실패할 때의 방어이고, 정상 응답에서는 아무것도 빠지지 않는다.
  */
 export async function getTreesByDate(): Promise<TreesByDate> {
-  const trees = await fetchAllTrees();
+  const trees = await fetchAllTreeItems();
   const byDate: TreesByDate = {};
 
   for (const tree of trees) {
