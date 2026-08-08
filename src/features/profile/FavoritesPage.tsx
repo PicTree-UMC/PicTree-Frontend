@@ -94,7 +94,16 @@ export function FavoritesPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
-      <header className="px-5 pb-3 pt-header">
+      {/*
+        칩 줄은 위아래로 24px 씩 띄운다(이슈 #193). 12px 일 때는 칩이 헤더에
+        딸린 줄처럼 붙어 보였다 — 칩은 헤더의 일부가 아니라 제 몫의 띠다.
+        위아래를 같은 값으로 둬야 그렇게 읽힌다. 24px 은 프로필의 카드 묶음
+        간격(§`gap-6`)과 같은 값이라 새 숫자를 만들지 않는다.
+
+        ⚠️ 아래 여백은 헤더가 아니라 **칩 줄이 갖는다**(`pb-6`). 격자는 사진이
+        화면 끝까지 닿아야 해서 자기 여백을 못 가진다.
+      */}
+      <header className="px-5 pb-6 pt-header">
         <NavBar
           /* 선택 모드의 × 는 뒤로가기와 같은 40px 흰 원을 쓴다 — 모드가 바뀔 때
              헤더 첫 칸이 흔들리지 않게. */
@@ -142,18 +151,29 @@ export function FavoritesPage() {
       </header>
 
       {/*
-        정렬은 화면의 주역이 아닌 보조 전환이라 `ghost` 톤 칩이다(§5). 종전의
-        드롭다운은 여는 동작이 한 번 더 있었는데, 고를 것이 둘뿐이라 늘어놓는
-        편이 짧다.
+        동선 만들기 ②(`RouteDateChips`)와 같은 톤이다(이슈 #193) — `outline`
+        에 `gap-2`. 처음엔 정렬이라고 `ghost` 를 썼는데, 요약 카드와 배너가
+        빠지면서 **이 줄이 화면에 남은 유일한 조작부**가 됐다. 그러면 §5
+        기준으로도 보조 전환이 아니라 주 선택기다.
+
+        ⚠️ **높이는 `sm`(32px)로 동선 ②(`md` 40px)와 다르다.** 저쪽은 시트에서
+        날짜를 고르는 주 동작이고 여기는 이미 다 보이는 격자를 줄 세우는 것뿐이라,
+        칩이 격자보다 눈에 먼저 들어오면 안 된다. **글자는 두 크기가 15px 로
+        같다**(§5) — `size` 는 상자만 바꾼다.
+
+        ⚠️ 타임라인의 정렬(`TimelineSortTabs`)은 `ghost` 톤 그대로다. 그쪽은
+        제목·검색과 한 줄을 나눠 쓰는 보조 전환이라 급이 다르다.
+
+        종전의 드롭다운은 여는 동작이 한 번 더 있었는데, 고를 것이 둘뿐이라
+        늘어놓는 편이 짧다.
       */}
       {favorites.length > 0 && (
-        <div role="radiogroup" aria-label="정렬" className="flex gap-1 px-5 pb-3">
+        <div role="radiogroup" aria-label="정렬" className="flex gap-2 px-5 pb-6">
           {SORT_ORDERS.map((opt) => (
             <Chip
               key={opt}
-              tone="ghost"
-              size="sm"
               role="radio"
+              size="sm"
               aria-checked={sortOrder === opt}
               selected={sortOrder === opt}
               onClick={() => setSortOrder(opt)}
