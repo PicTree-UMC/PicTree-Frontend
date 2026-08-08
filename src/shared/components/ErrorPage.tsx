@@ -30,7 +30,7 @@ export function ErrorPage({ title, description, onReset }: ErrorPageProps) {
       </div>
       <div>
         <h1 className="text-lg font-semibold text-neutral-900">{heading}</h1>
-        <p className="mt-1 text-sm text-neutral-500">{detail}</p>
+        <p className="mt-1 text-[15px] text-neutral-500">{detail}</p>
       </div>
       <Button onClick={handleReset}>홈으로 돌아가기</Button>
     </div>
