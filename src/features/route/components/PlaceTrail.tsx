@@ -48,7 +48,7 @@ export function PlaceTrail({ places, className }: PlaceTrailProps) {
             ) : (
               <EmojiFace className="h-6 w-6" />
             )}
-            <p className="truncate text-xs font-medium text-[#111]">{place.name}</p>
+            <p className="truncate text-[13px] font-medium text-[#111]">{place.name}</p>
           </div>
         </Fragment>
       ))}

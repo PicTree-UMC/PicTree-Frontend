@@ -65,7 +65,7 @@ export function RenameModal({ currentTitle, onClose, onConfirm }: RenameModalPro
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
-            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#2c3930] outline-none"
+            className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-[#2c3930] outline-none"
           />
         </div>
 

@@ -24,7 +24,7 @@ export function PremiumUpsellSheet({ onClose, onUpgrade }: PremiumUpsellSheetPro
         <i className="absolute left-1/2 top-2 h-1 w-[132px] -translate-x-1/2 rounded-full bg-black" />
         <div className="flex justify-center text-[#2c3930]"><CrownIcon large /></div>
         <h2 id="premium-upsell-title" className="mt-3 text-center text-xl font-medium">프리미엄 기능이에요</h2>
-        <p className="mt-2 text-center text-[14px] leading-5 text-[#2c3930]">AI 블로그 초안 작성은<br />프리미엄 플랜에서 이용할 수 있어요</p>
+        <p className="mt-2 text-center text-[15px] leading-[21px] text-[#2c3930]">AI 블로그 초안 작성은<br />프리미엄 플랜에서 이용할 수 있어요</p>
 
         <div className="mt-5 rounded-xl border-2 border-pictree-300 bg-white px-5 py-2">
           {BENEFITS.map(({ title, detail, icon: BenefitIcon }) => (

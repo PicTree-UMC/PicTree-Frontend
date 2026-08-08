@@ -64,7 +64,7 @@ export default function Toaster() {
               <button
                 key={toast.id}
                 onClick={() => removeToast(toast.id)} // 클릭 시 즉시 닫기
-                className={`pointer-events-auto max-w-sm rounded-md px-4 py-2 text-sm shadow-lg ${typeClass[toast.type]}`}
+                className={`pointer-events-auto max-w-sm rounded-md px-4 py-2 text-[15px] shadow-lg ${typeClass[toast.type]}`}
               >
                 {toast.message}
               </button>

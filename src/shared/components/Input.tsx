@@ -6,7 +6,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement>;
 export function Input({ className = '', ...props }: InputProps) {
   return (
     <input
-      className={`rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none transition focus:border-pictree-700 ${className}`}
+      className={`rounded-md border border-neutral-300 px-3 py-2 text-[15px] outline-none transition focus:border-pictree-700 ${className}`}
       {...props}
     />
   );

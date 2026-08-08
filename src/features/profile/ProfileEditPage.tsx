@@ -140,7 +140,7 @@ export function ProfileEditPage() {
         */}
         {isError && (
           <div className="rounded-xl border border-[#DC2626] bg-white px-5 py-4 text-center">
-            <p className="text-[14px] text-[#DC2626]">내 정보를 불러오지 못했어요.</p>
+            <p className="text-[15px] text-[#DC2626]">내 정보를 불러오지 못했어요.</p>
             <button
               type="button"
               onClick={() => refetch()}

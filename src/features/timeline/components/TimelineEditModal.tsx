@@ -78,7 +78,7 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={100}
-            className="h-[45px] w-full rounded-[20px] border-2 border-pictree-500 bg-[#FFFDFD] px-4 text-center text-[14px] font-medium text-[#2C3930] outline-none"
+            className="h-[45px] w-full rounded-[20px] border-2 border-pictree-500 bg-[#FFFDFD] px-4 text-center text-[15px] font-medium text-[#2C3930] outline-none"
           />
         </div>
 
@@ -98,7 +98,7 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
             value={content}
             onChange={(e) => setContent(e.target.value)}
             maxLength={500}
-            className="h-[45px] w-full rounded-[20px] border-2 border-pictree-500 bg-[#FFFDFD] px-4 text-center text-[14px] font-medium text-[#2C3930] outline-none"
+            className="h-[45px] w-full rounded-[20px] border-2 border-pictree-500 bg-[#FFFDFD] px-4 text-center text-[15px] font-medium text-[#2C3930] outline-none"
           />
         </div>
 
