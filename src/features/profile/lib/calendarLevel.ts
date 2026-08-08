@@ -19,17 +19,55 @@
   범례만 `곳` 으로 세면 장소 수를 말하는 것처럼 읽힌다. 세는 대상은 하나다 — 나무.
 */
 export const CALENDAR_LEVELS = [
-  { level: 1, shade: "rgba(239,227,177,0.6)", label: "1그루" },
-  { level: 2, shade: "rgba(197,216,157,0.6)", label: "2그루" },
-  { level: 3, shade: "rgba(177,195,141,0.6)", label: "3~4그루" },
-  { level: 4, shade: "rgba(137,152,109,0.6)", label: "5그루+" },
+  { level: 1, shade: "239,227,177", label: "1그루" },
+  { level: 2, shade: "197,216,157", label: "2그루" },
+  { level: 3, shade: "177,195,141", label: "3~4그루" },
+  { level: 4, shade: "137,152,109", label: "5그루+" },
 ] as const;
 
 /**
- * `CalendarGrid` 에 넘길 색 배열. 인덱스가 곧 level 이라 0 번은 비워 둔다
+ * `CalendarGrid` 에 넘길 색 배열 — **알파 0.6**. 인덱스가 곧 level 이라 0 번은 비워 둔다
  * (0 = 방문 없음이라 아무것도 그리지 않는다).
+ *
+ * 투명한 이유는 이 색이 **날짜 숫자 뒤에 깔리기** 때문이다. 원색이면 4단계 중 진한 쪽에서
+ * 숫자가 묻힌다. 범례(`GrassLegendSheet`)도 같은 배열을 써서 격자와 어긋나지 않는다.
  */
 export const CALENDAR_LEVEL_COLORS: string[] = [
   "",
-  ...CALENDAR_LEVELS.map((step) => step.shade),
+  ...CALENDAR_LEVELS.map((step) => `rgba(${step.shade},0.6)`),
 ];
+
+/**
+ * 잔디 **블록**용 원색. 인덱스는 위와 같다.
+ *
+ * ⚠️ 알파를 빼는 자리가 따로 있는 이유: 숫자 없이 색 면만 놓는 곳(메인 탭 미리보기의
+ * 2주 잔디)에서는 0.6 이 성립하지 않는다. 흰 카드 위에서 `rgba(239,227,177,0.6)` 은
+ * #F5F0E4 로 풀려 **빈 칸보다 밝아지고**, 심은 날이 안 심은 날보다 옅어진다.
+ * 묻힐 숫자가 없으니 원색을 그대로 쓰면 단계 순서(밝음→어두움)가 지켜진다.
+ *
+ * 색 자체는 `CALENDAR_LEVELS` 한 곳에서 나오므로 두 배열이 갈라지지 않는다.
+ */
+export const CALENDAR_LEVEL_SOLIDS: string[] = [
+  "",
+  ...CALENDAR_LEVELS.map((step) => `rgb(${step.shade})`),
+];
+
+/**
+ * 잔디 블록의 **빈 칸**. 흰 카드 위에서 격자가 격자로 보일 만큼만 어둡고, level 1
+ * (#EFE3B1, 체감 밝기 225)보다는 밝아야 순서가 선다 — 239 다.
+ */
+export const CALENDAR_EMPTY_COLOR = "#EFEFEF";
+
+/**
+ * level → **그루 수 하한**. 인덱스가 곧 level 이다.
+ *
+ * ⚠️ **되돌린 값이지 받은 값이 아니다.** `GET /calendar` 는 하루치를 `{ date, level }` 로만
+ * 주고 개수를 안 준다. 위 표에서 3 단계는 `3~4개`, 4 단계는 `5개 이상`이라 **아래 끝만**
+ * 알 수 있다 — 그래서 이 배열로 더한 합은 실제 그루 수의 **최소값**이다.
+ * 하루 3그루 이상인 날이 없으면(대부분) 최소값이 곧 정확한 값이다.
+ *
+ * 정확한 수가 필요해지면 길은 둘이다. ① `/calendar` 의 `days[]` 에 `count` 를 얹어 달라고
+ * 한다(서버는 level 을 매기려고 이미 세고 있다 — 요청 수는 그대로다). ② `fetchAllTreeItems`
+ * 로 전부 받아 프론트가 센다 — **PR #203 이 마이페이지에서 걷어낸 그 순회**다. ①이 맞다.
+ */
+export const CALENDAR_LEVEL_MIN_TREES = [0, 1, 2, 3, 5];
