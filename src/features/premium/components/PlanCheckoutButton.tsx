@@ -1,16 +1,20 @@
 import { planSummary } from '../lib/planDisplay';
+import type { PlanAction } from '../lib/planAction';
 import type { SubscriptionPlanDto } from '../types/payment';
 
 type Props = {
-  /** 비교표 칩으로 고른 플랜. 이 버튼이 결제할 대상이기도 하다. */
+  /** 비교표 칩으로 고른 플랜. 이 버튼이 결제하거나 예약할 대상이기도 하다. */
   plan: SubscriptionPlanDto;
-  /** 지금 이용 중인 플랜인가. 맞으면 누를 수 없다. */
-  isCurrent: boolean;
+  /** 이 플랜에 대해 지금 할 수 있는 일. `lib/planAction` 이 정한다. */
+  action: PlanAction;
+  /** 미구독 → 결제 시트를 연다. */
   onStart: () => void;
+  /** 구독 중 다른 플랜 → 변경 예약 확인 모달을 연다. */
+  onChange: () => void;
 };
 
 /**
- * 페이지에서 결제로 들어가는 **유일한** 버튼. 비교표 바로 아래에 붙는다.
+ * 페이지에서 결제·변경으로 들어가는 **유일한** 버튼. 비교표 바로 아래에 붙는다.
  *
  * **왜 여기 하나인가.** 종전엔 소개 카드마다 CTA 가 있었다. 그러면 카드에서 한 번,
  * 비교표 칩에서 또 한 번 플랜을 고르게 되는데 **두 선택이 서로를 모른다** — 비교표에서
@@ -23,35 +27,57 @@ type Props = {
  * 나오면 서로를 확인해 주는 게 아니라 어느 쪽이 진짜인지 되짚게 만든다. 금액은 표가,
  * 행동은 버튼이 맡는다.
  *
- * **이용 중이면 비활성.** 같은 플랜을 또 결제할 수 있게 두면 중복 결제가 된다 — 요금제
- * 변경 엔드포인트가 없어서 서버가 막아 줄 거라고 기대할 수도 없다(`paymentApi.ts` 에는
- * 시작·해지·재개·빌링키뿐이다). `disabled` 만으로는 왜 못 누르는지 모르므로 문구도 바꾼다.
+ * ⚠️ **종전에는 갈래가 둘뿐이었다** — '이용 중' 이면 비활성, 아니면 무조건 '시작하기'.
+ * 그래서 플러스 구독자가 맥스를 고르면 `POST /subscriptions`(구독 **시작**)가 나갔고,
+ * 서버가 409 로 막았다. 이중결제는 안 났지만 화면에는 "카드 상태를 확인해 주세요" 가
+ * 떴다 — 카드를 바꿔도 안 되는 길이었다. 지금은 `plan-change` 로 간다.
  *
  * ⚠️ 비활성 상태에도 대비 4.5:1 을 지킨다. `opacity-60` 으로 흐리면 회색 면 위 회색
  * 글자가 3:1 아래로 떨어진다 — 색을 직접 지정한다(#ECECEC 면 위 #60655C = 4.6:1).
  */
-export function PlanCheckoutButton({ plan, isCurrent, onStart }: Props) {
+export function PlanCheckoutButton({ plan, action, onStart, onChange }: Props) {
   const { shortName } = planSummary(plan);
 
-  if (isCurrent) {
+  const enabledClass =
+    'mt-4 h-12 w-full rounded-xl bg-pictree-700 text-[15px] font-medium text-white';
+  const disabledClass =
+    'mt-4 h-12 w-full rounded-xl bg-[#ECECEC] text-[15px] font-medium text-[#60655C]';
+
+  if (action === 'start') {
     return (
-      <button
-        type="button"
-        disabled
-        className="mt-4 h-12 w-full rounded-xl bg-[#ECECEC] text-[15px] font-medium text-[#60655C]"
-      >
-        이용 중인 플랜입니다
+      <button type="button" onClick={onStart} className={enabledClass}>
+        {shortName} 시작하기
       </button>
     );
   }
 
+  if (action === 'change') {
+    /*
+      '시작하기' 가 아니라 '변경' 이다. 돈이 지금 나가지 않으므로 결제 낱말을 쓰면 안 된다 —
+      실제로 일어나는 일은 다음 결제일에 적용될 요금제를 바꿔 두는 것뿐이다. 그 시점은
+      바로 아래 확인 모달이 날짜로 못 박는다.
+    */
+    return (
+      <button type="button" onClick={onChange} className={enabledClass}>
+        {shortName}(으)로 변경
+      </button>
+    );
+  }
+
+  /*
+    비활성 넷. `disabled` 만으로는 왜 못 누르는지 모르므로 문구가 사유를 말한다 —
+    특히 `blocked-*` 둘은 **다음에 뭘 하면 되는지**까지 말해야 막다른 길이 아니게 된다.
+  */
+  const disabledLabel: Record<Exclude<PlanAction, 'start' | 'change'>, string> = {
+    current: '이용 중인 플랜입니다',
+    pending: '변경이 예약된 플랜입니다',
+    'blocked-canceled': '자동갱신을 먼저 켜주세요',
+    'blocked-pending': '예약된 변경을 먼저 취소해주세요',
+  };
+
   return (
-    <button
-      type="button"
-      onClick={onStart}
-      className="mt-4 h-12 w-full rounded-xl bg-pictree-700 text-[15px] font-medium text-white"
-    >
-      {shortName} 시작하기
+    <button type="button" disabled className={disabledClass}>
+      {disabledLabel[action]}
     </button>
   );
 }
