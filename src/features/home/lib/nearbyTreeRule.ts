@@ -41,8 +41,8 @@ export interface TreeInRange {
  * 그 API 에 남의 나무가 섞여 오던 문제(서버 쿼리에 `userId` 조건 없음)도 이걸로
  * 사라졌다 — 이 목록은 처음부터 내 것뿐이다.
  *
- * ⚠️ **지도 목록은 100개까지다**(`MAP_PAGE_SIZE`). 나무가 그보다 많으면 뒤쪽은
- * 배너에 안 잡힌다. 지도 마커도 같은 100개라 화면상 새로 생긴 제약은 아니다.
+ * 한때 이 목록이 **첫 100그루에서 잘려** 101번째부터는 반경 안에 서 있어도 배너가
+ * 못 알아봤다(이슈 #200). 지금은 `fetchAllTreeItems` 가 페이지를 끝까지 받는다.
  */
 export const findNearbyTrees = (
   coords: GeoCoords | null,
