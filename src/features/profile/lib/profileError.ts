@@ -44,13 +44,13 @@ export function isClientError(error: unknown): boolean {
  *
  * axios 는 2xx 가 아니면 예외를 던지므로 응답 본문은 `error.response.data` 에 있다.
  *
- * ⚠️ 명세서와 서버 구현의 래퍼 형식이 다르다.
- *   - 명세서: `{ resultType: 'FAIL', error: { code, message }, ... }`
- *   - 서버(main): `{ success: false, code, message }`
- * 어느 쪽이 확정되든 화면이 깨지지 않도록 두 형태를 모두 읽는다.
+ * 종전엔 명세서 형태(`{ resultType, error: { message } }`)와 서버 형태를 둘 다 읽었다.
+ * 2026-08-08 스웨거 대조에서 **서버는 아래 한 형태뿐**임이 확인돼 명세서 쪽 갈래를 지웠다.
+ *   `{ success: false, code, message }`
  *
- * ⚠️ PR #45(로그아웃)의 `features/auth/lib/apiError.ts` 에 같은 함수가 있다.
- *    #45 가 머지되면 그쪽으로 합치고 이 함수는 지운다.
+ * ⚠️ `features/auth/lib/apiError.ts` 에 거의 같은 함수가 있다. 합치지 않은 이유는 이쪽만
+ *    비-axios 예외(2xx 인데 `success: false` 라 훅이 직접 던진 경우)를 함께 처리하기
+ *    때문이다 — 그 갈래를 auth 쪽으로 옮기면 로그인 화면이 안 쓰는 분기를 떠안는다.
  */
 export function getApiErrorMessage(error: unknown, fallback: string): string {
   if (!isAxiosError(error)) {
@@ -58,9 +58,7 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
     return error instanceof Error && error.message ? error.message : fallback;
   }
 
-  const body = error.response?.data as
-    | { message?: string; error?: { message?: string } }
-    | undefined;
+  const body = error.response?.data as { message?: string } | undefined;
 
-  return body?.error?.message ?? body?.message ?? fallback;
+  return body?.message ?? fallback;
 }

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLogout } from "@/features/auth/hooks/useLogout";
 import { ROUTES } from "@/shared/constants/routes";
 import { useSessionExpiredRedirect } from "@/features/auth/hooks/useSessionExpiredRedirect";
 import { SettingsFooter, SettingsList, SettingsRow } from "@/shared/components";
@@ -9,8 +8,8 @@ import { useNearbyAlertOpenListener } from "./hooks/useNearbyAlertOpenListener";
 import { useNearbyAlertToggle } from "./hooks/useNearbyAlertToggle";
 import { useMyPushSubscriptions } from "./hooks/usePushSubscription";
 import { getPushUnavailableReason } from "./lib/webPush";
-import { getPlanLabel } from "./lib/plan";
 import { getApiErrorMessage, getProfileErrorKind } from "./lib/profileError";
+import { ProfileSummary } from "./components/ProfileSummary";
 import treeIcon from "./assets/icons/tree.svg";
 import accountImage from "./assets/icons/account3d.jpg";
 import cardImage from "./assets/icons/card3d.jpg";
@@ -19,12 +18,9 @@ import calendarImage from "./assets/icons/calendar3d.png";
 import favoriteImage from "./assets/icons/favorite3d.png";
 import alertImage from "./assets/icons/alert3d.jpg";
 import alertLogImage from "./assets/icons/alertLog3d.jpg";
-import { useWithdraw } from "./hooks/useWithdraw";
-import { WithdrawModal } from "./components/WithdrawModal";
 
 export function ProfilePage() {
   const navigate = useNavigate();
-  const { mutate: requestLogout, isPending: isLoggingOut } = useLogout();
   /**
    * `isLoading` 대신 `isPending` 을 쓴다. react-query v5 의 `isLoading` 은
    * `isPending && isFetching` 이라, 토큰이 없어 쿼리가 꺼진 동안 false 가 된다.
@@ -67,14 +63,16 @@ export function ProfilePage() {
   /** 이 브라우저에서 아예 푸시를 못 쓰는 경우(예: iOS 를 홈 화면에 추가 안 함). */
   const pushUnavailable = getPushUnavailableReason();
 
-  const planLabel = profile ? getPlanLabel(profile.currentPlan) : null;
-
-  const { mutate: requestWithdraw, isPending: isWithdrawing } = useWithdraw();
-  // 되돌릴 수 없는 동작이라 한 번 더 확인받는다
-  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
-
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
+    /*
+      `pb-nav` 가 여기 없다. 탭바를 피하는 그 여백은 맨 아래 `ProfileSummary` 가 자기
+      패딩으로 갖는다 — 루트에 두면 그 자리가 페이지 배경(크림)으로 남아, 배경이 다른
+      요약 띠가 탭바 위에서 끊기고 그 아래로 크림 띠가 한 줄 되살아난다.
+
+      ⚠️ 그래서 이 페이지의 마지막 자식은 **항상 `ProfileSummary` 여야 한다.** 뒤에 무언가
+      더 붙이면 그것이 탭바에 가린다.
+    */
+    <div className="flex min-h-full flex-col bg-[#FFFCEF]">
       {/*
         머리글 — 아바타·이름·이메일을 가운데 모은다.
         종전엔 초록 밴드 전체가 '내 정보' 로 가는 버튼이었는데, 누를 수 있다는 신호가
@@ -165,17 +163,17 @@ export function ProfilePage() {
           <SettingsRow
             image={cardImage}
             title="구독"
-            // 플랜은 종전에 헤더의 골드 배지였다. 값이 하나뿐인 상태 표시라
-            // 배지보다 줄 오른쪽 값이 제자리다(`iCloud 50GB` 와 같은 꼴).
-            value={planLabel}
+            /*
+              오른쪽에 플랜 이름을 달지 않는다. 한때 달았는데(`iCloud 50GB` 꼴), 페이지
+              맨 아래 요약이 같은 이름을 가격까지 붙여 다시 말하게 되면서 한 화면에서
+              같은 값을 두 번 읽히는 자리가 됐다. 상태는 아래 요약이 맡고 이 줄은 문만
+              연다 (프리미엄 페이지가 PlanIntroCard 를 지운 것과 같은 이유).
+            */
             /*
               플랜과 무관하게 /premium 으로 보낸다. 한때 구독자만 구 관리 화면
               (/profile/subscription)으로 갈랐는데, /premium 이 요금제·비교표·해지·
-              현재 플랜 표시를 모두 갖게 되면서 갈라 보낼 이유가 없어졌다.
-
-              ⚠️ 이 분기가 사라지면서 `/profile/subscription` 은 앱에서 갈 수 있는
-              길이 없어졌다 — 지우기 전에 저장 용량 사용량(StorageCard·useStorageUsage)을
-              먼저 옮겨야 한다. 그 화면에만 있다.
+              현재 플랜 표시를 모두 갖게 되면서 갈라 보낼 이유가 없어졌다. 그 화면은
+              길이 끊긴 채 남아 있다가 용량 카드를 이 페이지로 옮기면서 지웠다.
             */
             onClick={() => navigate(ROUTES.premium)}
           />
@@ -249,38 +247,25 @@ export function ProfilePage() {
           <SettingsRow title="개인정보 처리방침" onClick={() => navigate(ROUTES.privacy)} />
           <SettingsRow title="도움말 / FAQ" onClick={() => navigate(ROUTES.helpFaq)} />
         </SettingsList>
-
-        {/*
-          계정에서 빠져나가는 동작 둘을 한 카드에 묶는다.
-
-          위계는 카드를 나누는 대신 **색으로** 남긴다 — 로그아웃은 되돌릴 수 있고 탈퇴는 못
-          되돌리므로, 나란히 같은 빨강으로 두면 동급으로 읽히고 오탭 위험이 생긴다. 탈퇴는
-          INK-muted 로 낮춰서 찾는 사람은 찾되 눈에 먼저 걸리지는 않게 한다.
-          되돌릴 수 없는 쪽이라 누른 뒤에도 모달로 한 번 더 확인받는다.
-        */}
-        <SettingsList>
-          <SettingsRow
-            title={isLoggingOut ? "로그아웃 중..." : "로그아웃"}
-            action="danger"
-            // 요청 중에는 중복 클릭 방지
-            disabled={isLoggingOut}
-            onClick={() => requestLogout()}
-          />
-          <SettingsRow
-            title="회원탈퇴"
-            action="quiet"
-            onClick={() => setIsWithdrawModalOpen(true)}
-          />
-        </SettingsList>
       </div>
 
-      {isWithdrawModalOpen && (
-        <WithdrawModal
-          isWithdrawing={isWithdrawing}
-          onCancel={() => setIsWithdrawModalOpen(false)}
-          onConfirm={() => requestWithdraw()}
-        />
-      )}
+      {/*
+        맨 아래 요약 — 내 계정이 지금 어떤 상태인가(요금제·쓴 용량·남은 토큰).
+
+        **목록 위가 아니라 아래인 이유**: 이 페이지에 온 사람은 대개 무언가를 하러 온다
+        (설정을 바꾸거나 다른 화면으로 간다). 요약을 맨 위에 얹으면 그 목록이 한 화면
+        아래로 밀린다. 값은 확인하러 오는 것이지 찾아오는 게 아니라서, 스크롤 끝에서
+        만나는 편이 맞다 — 참고한 iCloud 도 같은 자리에 둔다.
+
+        **본문 컨테이너 밖이다.** 배경이 다른 띠라 화면 폭을 다 써야 한다 — 위 카드들과
+        같은 `px-5` 안에 두면 좌우가 잘려 넓은 카드 하나로 보인다. 가로 여백은 그쪽에서
+        따로 준다.
+
+        로그아웃·회원탈퇴가 있던 자리다. 둘은 '내 정보'(/profile/edit) 로 옮겼다 —
+        계정 자체를 끝내는 동작이라 계정을 여는 화면에 있는 게 맞고, 여기 두면 값을
+        보러 스크롤을 내린 손 끝에 탈퇴 버튼이 놓인다.
+      */}
+      <ProfileSummary />
     </div>
   );
 }

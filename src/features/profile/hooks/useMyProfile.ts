@@ -16,8 +16,8 @@ export const useMyProfile = () => {
     queryFn: async () => {
       const response = await getMyProfile(accessToken ?? '');
 
-      if (response.resultType === 'FAIL') {
-        throw new Error(response.error.message);
+      if (!response.success) {
+        throw new Error(response.message);
       }
 
       return response.data;

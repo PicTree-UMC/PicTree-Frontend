@@ -14,22 +14,6 @@ const PLAN_LABEL: Record<string, string> = {
 export const getPlanLabel = (currentPlan: string): string =>
   PLAN_LABEL[currentPlan] ?? '프리미엄';
 
-export const isFreePlan = (currentPlan: string): boolean => currentPlan === 'FREE';
-
-/**
- * 구독 관리 화면의 플랜 배지에 쓰는 짧은 이름 ("무료" / "맥스").
- *
- * ⚠️ 폴백 전용이다. 유료 플랜을 전부 '맥스'로 뭉개므로(플러스 구독자에게도 '맥스'가
- * 뜬다) 요금제 목록을 받았으면 `premium/lib/planDisplay` 의 `planSummary().shortName`
- * 을 쓴다. 여기는 `GET /subscription-plans` 응답이 오기 전 잠깐만 쓰인다.
- */
-const SHORT_PLAN_NAME: Record<string, string> = {
-  FREE: '무료',
-};
-
-export const getShortPlanName = (currentPlan: string): string =>
-  SHORT_PLAN_NAME[currentPlan] ?? '맥스';
-
 const MB = 1024 ** 2;
 const GB = 1024 ** 3;
 
@@ -37,8 +21,16 @@ const GB = 1024 ** 3;
  * 플랜별 사진 저장 상한.
  *
  * ⚠️ 폴백 전용이다. 실제 용량은 `GET /subscription-plans` 의 `PHOTO_STORAGE`
- * 혜택(MB)에 있고 구독 관리 화면은 그쪽을 먼저 쓴다. `GET /subscriptions/me` 의
- * `plan` 에는 여전히 용량 필드가 없어서, 요금제 목록을 받기 전까지만 이 값이 쓰인다.
+ * 혜택(MB)에 있고 마이페이지 요약(`ProfileSummary`)은 그쪽을 먼저 쓴다. `GET
+ * /subscriptions/me` 의 `plan` 에는 여전히 용량 필드가 없어서, 요금제 목록을 받기
+ * 전까지만 이 값이 쓰인다.
  */
 export const getStorageLimitBytes = (currentPlan: string): number =>
-  isFreePlan(currentPlan) ? 100 * MB : 20 * GB;
+  currentPlan === 'FREE' ? 100 * MB : 20 * GB;
+
+/*
+  `isFreePlan` · `getShortPlanName` 은 지웠다. 둘 다 구 구독 관리 화면
+  (`SubscriptionPage`)과 그 플랜 배지에서만 쓰였고, 화면이 사라지면서 남은 사용처가
+  없어졌다. 유·무료 판정이 다시 필요해지면 `GET /subscriptions/me` 의 `subscriptionId`
+  유무로 보는 쪽이 맞다 — 무료 사용자에게도 서버가 `plan` 을 채워 주기 때문이다.
+*/

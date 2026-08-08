@@ -17,7 +17,6 @@ import { ProfilePage } from '../features/profile/ProfilePage';
 import { PaymentMethodsPage } from '../features/premium/PaymentMethodsPage';
 import { PremiumPage } from '../features/premium/PremiumPage';
 import { ProfileEditPage } from '../features/profile/ProfileEditPage';
-import { SubscriptionPage } from '../features/profile/SubscriptionPage';
 import { TravelCalendarPage } from '../features/profile/TravelCalendarPage';
 import { FavoritesPage } from '../features/profile/FavoritesPage';
 import { HelpFaqPage } from '@/features/profile/HelpFaqPage';
@@ -99,10 +98,6 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.profileEdit,
             element: <ProfileEditPage />,
-          },
-          {
-            path: ROUTES.subscription,
-            element: <SubscriptionPage />,
           },
           {
             path: ROUTES.paymentMethods,

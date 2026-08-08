@@ -1,5 +1,5 @@
 import { httpClient } from '@/shared/lib/httpClient';
-import type { ApiResponse } from '@/features/auth/types/auth';
+import type { ApiResponse } from '@/shared/types/api';
 import type {
   NearbyAlertCheckResult,
   NearbyAlertLog,
@@ -41,8 +41,8 @@ export async function checkNearbyAlerts(
   );
 
   // 2xx 로 내려온 실패 응답 (공통 래퍼 규약상 가능)
-  if (data.resultType === 'FAIL') {
-    throw new Error(data.error.message);
+  if (!data.success) {
+    throw new Error(data.message);
   }
 
   return data.data;
@@ -69,8 +69,8 @@ export async function getNearbyAlertLogs({
     { params: { page, size } },
   );
 
-  if (data.resultType === 'FAIL') {
-    throw new Error(data.error.message);
+  if (!data.success) {
+    throw new Error(data.message);
   }
 
   const body = data.data;
@@ -100,8 +100,8 @@ export async function openNearbyAlertLog(
     `/nearby-alerts/logs/${alertLogId}/open`,
   );
 
-  if (data.resultType === 'FAIL') {
-    throw new Error(data.error.message);
+  if (!data.success) {
+    throw new Error(data.message);
   }
 
   return data.data;
@@ -128,8 +128,8 @@ export async function deleteNearbyAlertLog(alertLogId: number): Promise<void> {
     `/nearby-alerts/logs/${alertLogId}`,
   );
 
-  if (data.resultType === 'FAIL') {
-    throw new Error(data.error.message);
+  if (!data.success) {
+    throw new Error(data.message);
   }
 }
 

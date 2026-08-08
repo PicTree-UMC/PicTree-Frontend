@@ -1,5 +1,5 @@
 import { httpClient } from '@/shared/lib/httpClient';
-import type { ApiResponse } from '@/features/auth/types/auth';
+import type { ApiResponse } from '@/shared/types/api';
 import type {
   MyProfile,
   UpdateMyProfileRequest,

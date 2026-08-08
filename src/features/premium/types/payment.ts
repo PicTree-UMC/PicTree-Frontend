@@ -4,9 +4,14 @@
  * 공통 래퍼 { success, code, message, data } 확인됨 → api/paymentApi.ts 에서 data 언랩.
  * 날짜는 ISO 8601 확인됨.
  *
- * 확정: customer-key, POST /billing-keys(요청·응답), POST /subscriptions(응답),
- *   /subscription-plans (2026-07-31 요금제 DB 등록 완료 → 실응답으로 검증).
- * 미확정(? 표시): POST /subscriptions 요청 바디, GET /subscriptions/me 응답.
+ * **2026-08-08 스웨거(`/swagger-json`, 서버 생성 문서) 대조로 전부 확정됐다.** 종전에
+ * '추정' 으로 남겨 뒀던 `GET /subscriptions/me` 응답도 `POST /subscriptions` 와 같은
+ * 형태임이 확인됐고, 그때 빠져 있던 `pendingPlanChange` 를 채웠다.
+ *
+ * 실제 요금제 값(같은 날 `GET /subscription-plans` 실응답):
+ *   FREE 0원 / 100MB / AI 1회 · PLUS 2,900원 / 1GB / 5회
+ *   PRO 6,900원 / 5GB / 20회 · MAX 12,900원 / 20GB / 50회
+ * ⚠️ 이 값들은 **참고용 기록이다.** 화면은 서버 응답에서 파생한다(`lib/planDisplay`).
  */
 
 /**
@@ -87,7 +92,25 @@ export interface SubscriptionPlanSummary {
   billingCycle: 'MONTHLY' | 'YEARLY' | 'NONE';
 }
 
-/** 구독 상태. POST /subscriptions 응답 확정. GET /subscriptions/me 도 이 형태로 추정. */
+/**
+ * 예약된 요금제 변경.
+ *
+ * 플랜을 바꾸면 즉시 바뀌지 않고 **다음 결제일(`effectiveAt`)에 적용**된다 — 이미 낸
+ * 이번 주기 요금이 있어서다. 그때까지는 `plan` 이 지금 요금제고 이쪽이 바뀔 요금제다.
+ *
+ * ⚠️ 프론트는 아직 이 값을 쓰지 않는다. 예약을 걸고 취소하는 화면이 없어서
+ * (`POST /subscriptions/{id}/plan-change`·`/plan-change/cancel` 미사용), 예약이 걸린
+ * 사용자에게 구독 화면은 **지금 요금제만** 보여준다. 화면을 만들 때 이 필드가 출처다.
+ */
+export interface PendingPlanChangeDto {
+  plan: SubscriptionPlanSummary;
+  /** 변경이 실제로 적용되는 시각. 보통 `nextBillingAt` 과 같다. ISO 8601 */
+  effectiveAt: string;
+  /** 사용자가 변경을 요청한 시각. ISO 8601 */
+  requestedAt: string;
+}
+
+/** 구독 상태. `POST /subscriptions`·`GET /subscriptions/me` 및 취소·재개·플랜변경 응답 공통. */
 export interface SubscriptionDto {
   subscriptionId: number;
   status: string; // 'ACTIVE' 확인, 그 외 값 미확인
@@ -96,6 +119,8 @@ export interface SubscriptionDto {
   expiresAt: string; // ISO 8601
   autoRenew: boolean;
   nextBillingAt: string | null; // ISO 8601. 해지(자동갱신 off) 시 null
+  /** 예약된 요금제 변경. 없으면 null — 위 `PendingPlanChangeDto` 주석 참고. */
+  pendingPlanChange: PendingPlanChangeDto | null;
 }
 
 /**

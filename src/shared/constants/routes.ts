@@ -8,7 +8,12 @@ export const ROUTES = {
   timeline: '/timeline',
   profile: '/profile',
   profileEdit: '/profile/edit',
-  subscription: '/profile/subscription',
+  /*
+    `subscription: '/profile/subscription'` 은 지웠다. 프로필의 '구독' 줄이 플랜과 무관하게
+    /premium 으로 가게 되면서 앱에서 갈 길이 끊겼고, 그 화면에만 있던 저장 용량 사용량은
+    마이페이지 요약(`ProfileSummary`)으로 내려왔다. 나머지(혜택 목록·결제 정보·해지)는
+    /premium 과 /profile/payment-methods 가 이미 갖고 있다.
+  */
   /**
    * 자동결제 카드(빌링키) 관리. 구독 관리와 **따로** 둔다 — 카드는 구독보다 오래 살고
    * (해지해도 남는다) 만료·교체는 구독과 무관하게 일어난다. 한 화면에 섞으면 카드를

@@ -1,5 +1,11 @@
 import alertIcon from "../assets/icons/alert.svg";
 
+/*
+  구 구독 관리 화면(`profile/SubscriptionPage`)과 함께 쓰던 모달이라 profile 밑에 있었다.
+  그 화면이 지워지면서 해지 입구가 `SubscriptionCancelSection` 하나만 남아 premium 으로
+  옮겼다 — 그쪽 주석에 예고돼 있던 이동이다.
+*/
+
 /** 취소하면 잃는 혜택. 시안(WF-017)의 문구를 그대로 쓴다. */
 const LOSING_BENEFITS = ["용량 업그레이드", "AI 블로그 자동 생성", "광고 제거"];
 

@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useToast } from '@/shared/components';
 import { formatKoreanDate } from '@/shared/lib/date';
-// 구독 취소 확인 모달은 아직 profile 쪽에 있다(구독 관리 화면이 같이 쓴다). 이 페이지가
-// 해지의 유일한 자리가 되면 모달과 alert.svg 를 premium 으로 옮긴다.
-import { CancelSubscriptionModal } from '@/features/profile/components/CancelSubscriptionModal';
+import { CancelSubscriptionModal } from './CancelSubscriptionModal';
 import { useMySubscription } from '../hooks/useMySubscription';
 import {
   useCancelSubscription,
