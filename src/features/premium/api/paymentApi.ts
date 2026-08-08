@@ -8,6 +8,10 @@
  *
  * ⚠️ 아직 미확정: /subscription-plans, /subscriptions/me, POST 본문들의 필드명.
  *    (`? 확인` 표시) 스펙 나오면 types/payment.ts 와 이 파일만 고친다.
+ *
+ * 구독에 서버가 주는 동작은 넷이다 — 시작(`POST /subscriptions`) · 해지(`/cancel`) ·
+ * 재개(`/resume`) · **요금제 변경 예약(`/plan-change`, `/plan-change/cancel`)**.
+ * 마지막 둘은 한동안 없는 줄 알고 안 붙여 뒀었다(2026-08-09 스웨거로 확인해 추가).
  */
 
 import axios from 'axios';
@@ -16,6 +20,7 @@ import type { ApiResponse } from '@/shared/types/api';
 import type {
   BillingKeyDeactivateResult,
   BillingKeyDto,
+  ChangeSubscriptionPlanRequest,
   CustomerKeyResponse,
   MySubscription,
   RegisterBillingKeyRequest,
@@ -115,6 +120,44 @@ export const resumeSubscription = async (
 ): Promise<SubscriptionDto> => {
   const { data } = await httpClient.post<ApiResponse<SubscriptionDto>>(
     `/subscriptions/${subscriptionId}/resume`,
+  );
+  return data.data;
+};
+
+/**
+ * POST /subscriptions/{id}/plan-change — 요금제 변경 **예약**.
+ *
+ * ⚠️ **즉시 바뀌지 않는다.** 응답 `pendingPlanChange.effectiveAt` 이 다음 결제일이고,
+ * 그때까지 `plan` 은 지금 요금제 그대로다(스웨거: "구독 플랜 변경이 예약되었습니다").
+ * 이번 주기 요금을 이미 냈기 때문이라, 프론트가 바꿀 수 있는 정책이 아니다 —
+ * 화면 문구가 "다음 결제일부터" 로 말해야 한다.
+ *
+ * 이 함수가 없던 동안 업그레이드는 `startSubscription`(구독 **시작**)으로 나가고 있었고,
+ * 서버가 409 `이미 이용 중인 구독이 있습니다` 로 막았다. 이중결제는 안 났지만 화면에는
+ * "카드 상태를 확인해 주세요" 가 떠서, 카드를 바꿔도 안 되는 길이 돼 있었다.
+ *
+ * 실패 코드: 400 변경 불가 요금제 · 404 구독/요금제 없음 · 409 변경 불가 구독.
+ */
+export const schedulePlanChange = async (
+  subscriptionId: number,
+  body: ChangeSubscriptionPlanRequest,
+): Promise<SubscriptionDto> => {
+  const { data } = await httpClient.post<ApiResponse<SubscriptionDto>>(
+    `/subscriptions/${subscriptionId}/plan-change`,
+    body,
+  );
+  return data.data;
+};
+
+/**
+ * POST /subscriptions/{id}/plan-change/cancel — 예약된 요금제 변경 취소.
+ * 본문 없음. 성공하면 응답의 `pendingPlanChange` 가 `null` 이 되고 지금 요금제가 유지된다.
+ */
+export const cancelPlanChange = async (
+  subscriptionId: number,
+): Promise<SubscriptionDto> => {
+  const { data } = await httpClient.post<ApiResponse<SubscriptionDto>>(
+    `/subscriptions/${subscriptionId}/plan-change/cancel`,
   );
   return data.data;
 };
