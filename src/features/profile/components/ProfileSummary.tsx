@@ -11,7 +11,7 @@ import {
 } from "@/features/premium/lib/planDisplay";
 import { getPlanLabel, getStorageLimitBytes } from "../lib/plan";
 import { formatBytes } from "../lib/formatBytes";
-import { useStorageStats } from "../hooks/useStorageStats";
+import { useTreeStats } from "../hooks/useTreeStats";
 
 /**
  * 숫자 한 칸.
@@ -146,7 +146,7 @@ export function ProfileSummary() {
     별개 쿼리(`useTreeCount`)로 갈라 뒀던 건 나머지 둘이 나무별 순회에서 나와 느렸기
     때문이다 — 순회가 없어지면서 가를 이유도 없어졌다.
   */
-  const { data: stats } = useStorageStats();
+  const { data: stats } = useTreeStats();
 
   /**
    * ⚠️ `subscription` 이 있다고 유료가 아니다 — 구독한 적 없는 사용자에게도 서버가

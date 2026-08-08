@@ -12,7 +12,7 @@ import type { ApiEnvelope } from '@/features/home/types/tree';
  * 나무가 있는데 0그루라고 하는 것보다 모른다고 두는 편이 낫다. 화면은 `null` 을
  * 스켈레톤이나 `-` 로 받는다.
  */
-export interface StorageStats {
+export interface TreeStats {
   /** 심은 나무 그루 수. */
   treeCount: number | null;
   /** 사진 장수. */
@@ -47,7 +47,7 @@ interface TreeSummaryData {
  * 남았을 것이다. 삭제된 나무와 그 사진은 서버가 제외한다(나무는 소프트 삭제, 사진은
  * 하드 삭제라 종전 계산도 살아 있는 것만 훑으면 맞았다 — 두 방식의 결과가 같다).
  */
-export async function getStorageStats(): Promise<StorageStats> {
+export async function getTreeStats(): Promise<TreeStats> {
   const { data } = await httpClient.get<ApiEnvelope<TreeSummaryData>>('/trees/summary');
   const summary = data.data;
 

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
-import { storageKeys } from '@/features/profile/hooks/useStorageStats';
+import { treeStatsKeys } from '@/features/profile/hooks/useTreeStats';
 import { routePlaceCandidateKey } from '@/features/route/hooks/useRoutePlaceCandidates';
 import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
 import { timelineKeys } from '@/features/timeline/hooks/useTimeline';
@@ -29,7 +29,7 @@ export const useTrees = () =>
 /*
   `useTreeCount`(+ `treeKeys.count`, `getTreeCount`)는 지웠다. 마이페이지 요약 한 곳이
   쓰던 것인데, 그 값이 이제 `GET /trees/summary` 응답에 사진 장수·용량과 함께 실려 온다
-  (`profile/hooks/useStorageStats`). 갈라 뒀던 이유가 "나머지 둘이 느리다" 였으므로
+  (`profile/hooks/useTreeStats`). 갈라 뒀던 이유가 "나머지 둘이 느리다" 였으므로
   이유째 없어졌다.
 */
 
@@ -142,7 +142,7 @@ export const useDeleteTree = () => {
       // 잔디는 나무 개수로 그려지므로 장소가 사라지면 같이 옅어져야 한다.
       queryClient.invalidateQueries({ queryKey: calendarKeys.all });
       // 나무를 지우면 사진도 함께 지워진다 — 용량도 다시 센다.
-      queryClient.invalidateQueries({ queryKey: storageKeys.usage });
+      queryClient.invalidateQueries({ queryKey: treeStatsKeys.summary });
     },
   });
 };

@@ -80,7 +80,7 @@ export async function fetchAllTreeItems(): Promise<TreeListItem[]> {
 /*
   `getTreeCount`(GET /trees?size=1 의 `total`)는 지웠다. 마이페이지 요약 한 곳이 쓰던
   것인데 그 값이 `GET /trees/summary` 에 사진 장수·용량과 함께 실려 온다
-  (`profile/api/storageApi`). 목록 응답의 `total` 은 그대로 있으니 되살릴 일이 생기면
+  (`profile/api/treeStatsApi`). 목록 응답의 `total` 은 그대로 있으니 되살릴 일이 생기면
   한 줄이다.
 */
 
