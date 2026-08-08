@@ -37,7 +37,7 @@ export function PhotoAlbumSheet({ route, onClose }: PhotoAlbumSheetProps) {
           onBack={onClose}
           title={route.title}
           action={
-            <span className="text-xs font-medium tracking-[0.12px] text-[#2c3930]">
+            <span className="text-[13px] font-medium tracking-[0.12px] text-[#2c3930]">
               {route.date}
             </span>
           }

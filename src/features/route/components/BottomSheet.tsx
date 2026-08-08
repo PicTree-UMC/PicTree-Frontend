@@ -113,7 +113,7 @@ export function BottomSheet({
       {/* 헤더: 제목 + 날짜, 미니 동선 */}
       <div className="flex items-baseline gap-2.5">
         <h2 className="truncate text-xl font-bold text-[#111]">{route.title}</h2>
-        <span className="shrink-0 text-xs font-medium text-[#2c3930]">{route.date}</span>
+        <span className="shrink-0 text-[13px] font-medium text-[#2c3930]">{route.date}</span>
       </div>
       <PlaceTrail places={route.places} className="mt-4" />
 
