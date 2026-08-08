@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/shared/constants/routes";
 import { useTreeCount } from "@/features/home/hooks/useTrees";
 import { usePictreeToken } from "@/features/premium/hooks/usePictreeToken";
 import { useMySubscription } from "@/features/premium/hooks/useMySubscription";
@@ -22,22 +24,35 @@ import { useStorageStats } from "../hooks/useStorageStats";
  * ⚠️ **글자 자리가 103px 뿐이다**(390px 기준: 칸 170 − 안쪽 패딩 26 − 아이콘 30 − 간격 11).
  * 값이 길어질 수 있는 것은 이 칸에 넣지 않는다 — 사진 저장 용량이 아래 전폭 줄로
  * 내려가 있는 이유다(`100MB 중 42MB 사용 중` 은 여기 안 들어간다).
+ * `onClick` 을 주면 꺾쇠가 붙어 그 자리가 **83px** 로 줄어든다. 지금 그 칸(요금제)의 값은
+ * 서버 플랜 이름을 줄인 것(무료·플러스·프로·맥스)이라 넉넉히 들어간다.
  */
 function StatTile({
   icon,
   value,
   label,
+  onClick,
 }: {
   /** 이모지 한 글자. ⚠️ 자리표시다 — 아이콘 자산이 생기면 여기만 갈아끼운다. */
   icon: string;
   /** 큰 값. 아직 모르면 `null` — 그 자리는 스켈레톤으로 둔다. */
   value: ReactNode;
   label: string;
+  /**
+   * 주면 칸이 **버튼**이 되고 오른쪽에 꺾쇠가 붙는다.
+   *
+   * ⚠️ 네 칸 중 **하나만** 준다(요금제 → `/premium`). 전부 누르게 하면 다섯 개가 같은
+   * 곳으로 가는 문이 되어 서로 다른 곳처럼 읽힌다 — 아래 컴포넌트 주석 참고.
+   */
+  onClick?: () => void;
 }) {
-  return (
-    /* 껍데기는 `SettingsList` 의 카드와 같은 값이다 — 같은 바닥에 놓이는 흰 면이라
-       한쪽만 그림자를 쓰면 두 카드가 다른 높이에 떠 있는 것처럼 보인다. */
-    <div className="flex items-center gap-[11px] rounded-xl border border-[#ECECEC] bg-white p-[13px]">
+  /* 껍데기는 `SettingsList` 의 카드와 같은 값이다 — 같은 바닥에 놓이는 흰 면이라
+     한쪽만 그림자를 쓰면 두 카드가 다른 높이에 떠 있는 것처럼 보인다. */
+  const className =
+    "flex w-full items-center gap-[11px] rounded-xl border border-[#ECECEC] bg-white p-[13px] text-left";
+
+  const content = (
+    <>
       <span
         aria-hidden
         className="grid size-[30px] flex-none place-items-center rounded-[9px] bg-[#ECF6D8] text-[16px] leading-none"
@@ -45,21 +60,50 @@ function StatTile({
         {icon}
       </span>
 
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         {value === null ? (
           /* 흰 칸 위라 크림 띠의 #EDE4C4 가 아니라 헤어라인 회색을 쓴다. */
           <div className="h-[23px] w-12 animate-pulse rounded bg-[#ECECEC]" />
         ) : (
-          <p className="text-[20px] font-medium leading-tight text-[#2C3930]">{value}</p>
+          <p className="truncate text-[20px] font-medium leading-tight text-[#2C3930]">
+            {value}
+          </p>
         )}
         <p className="mt-px truncate text-[13px] text-[#60655C]">{label}</p>
       </div>
-    </div>
+
+      {onClick && (
+        // 비활성 회색(§1.1). `SettingsRow`(18px)보다 한 단 작다 — 칸이 좁다.
+        <svg
+          viewBox="0 0 24 24"
+          className="size-4 shrink-0 text-[#B4B4B4]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.25"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      )}
+    </>
+  );
+
+  if (!onClick) return <div className={className}>{content}</div>;
+
+  return (
+    <button type="button" onClick={onClick} className={className}>
+      {content}
+    </button>
   );
 }
 
 /**
- * 마이페이지 첫 섹션 — 심은 나무 · 사진 · 요금제 · 토큰 + 사진 저장 용량.
+ * 메인 탭 첫 덩어리 — 심은 나무 · 사진 · 요금제 · 토큰 + 사진 저장 용량.
+ *
+ * 아래로 여행 캘린더·즐겨찾기 미리보기가 이어진다(`MainTab`). 이 다섯은 **세어 준 값**이고
+ * 그 둘은 **실제 기록**이라, 요약이 먼저다.
  *
  * ⚠️ **#197 의 결정을 두 군데 뒤집었다.**
  *
@@ -72,9 +116,15 @@ function StatTile({
  *    칸 모양(2×2 숫자 격자 vs 한 줄 + 화살표)이 이미 둘을 구분한다.
  *    **앱에서 크림이 아닌 페이지는 `/premium` 하나** 라는 규칙(§1.2)에도 이쪽이 맞다.
  *
- * **여전히 읽기 전용이다.** 카드가 됐다고 눌리지 않는다 — 다섯 칸이 전부 `/premium`
- * 한 곳으로 갈 텐데, 같은 곳으로 가는 문 다섯 개는 서로 다른 곳처럼 읽힌다.
- * 아래 목록의 '구독' 줄이 그 문이다.
+ * **다섯 칸 중 눌리는 것은 요금제 하나뿐이다** — `/premium` 으로 간다. 옛 설정 목록의
+ * '구독' 줄이 하던 일이고, 이 화면에서 요금제 화면으로 가는 **유일한** 문이다.
+ *
+ * ⚠️ 한때 다섯 칸을 전부 읽기 전용으로 뒀다. "다 눌러도 결국 `/premium` 한 곳인데, 같은
+ * 곳으로 가는 문 다섯 개는 서로 다른 곳처럼 읽힌다" 는 이유였고 **그 이유는 지금도 맞다** —
+ * 그래서 늘린 게 아니라 **하나만** 열었다. 나무·사진·토큰 칸에 `onClick` 을 달지 말 것.
+ *
+ * 눌리는 칸과 아닌 칸은 **꺾쇠 유무**로 갈린다(`StatTile`). 아래 미리보기 카드 둘도 같은
+ * 규칙이라, 화면 전체에서 "꺾쇠가 있으면 어딘가로 간다" 하나로 읽힌다.
  *
  * **타일은 쌓은 것, 줄은 폭이 필요한 것.** 나무·사진·요금제·토큰은 값 하나로 끝나서
  * 칸에 들어가고, 사진 저장 용량은 막대 + `100MB 중 42MB` 까지 있어야 뜻이 서므로
@@ -86,7 +136,7 @@ function StatTile({
  * 것이었는데, 머리글 바로 아래면 열자마자 보인다. 남겨 둬도 즉시 통과하므로
  * **가리는 척만 하는 코드**가 된다.
  *
- * 그래서 지금은 **마이페이지에 들어올 때마다 사진 순회가 돈다**(나무 수만큼 요청).
+ * 그래서 지금은 **메인 탭에 들어올 때마다 사진 순회가 돈다**(나무 수만큼 요청).
  * `staleTime: Infinity` 라 한 세션 안에서는 한 번이지만, 새로고침하거나 사진을
  * 올리고/지워 캐시가 깨지면 다음 진입에서 또 돈다. 나무 34그루면 35요청이다.
  *
@@ -97,6 +147,7 @@ function StatTile({
  * 채우는 쪽이 맞다.
  */
 export function ProfileSummary() {
+  const navigate = useNavigate();
   const { data: subscription } = useMySubscription();
   const { data: plans, isPending: isPlansPending } = useSubscriptionPlans();
   const { monthlyLimit, remaining, isPending: isTokenPending } = usePictreeToken();
@@ -144,15 +195,16 @@ export function ProfileSummary() {
   return (
     /*
       가로 패딩·배경이 없다. 배경이 크림으로 통일되면서 이 영역은 **본문 컨테이너 안**
-      으로 들어왔고, `px-5` 와 위아래 간격(`gap-6`)은 `ProfilePage` 가 준다.
+      으로 들어왔고, `px-5` 와 위아래 간격(`gap-6`)은 `MainTab` 이 준다 — 아래 미리보기
+      카드 둘과 같은 값을 나눠 쓴다.
 
       한때는 화면 폭을 다 쓰는 띠였고 가로 패딩이 56px 이었다. 그 넓은 여백은 글만 있을 때
       '훑어보는 자리' 라는 신호였는데, 칸이 들어오면서 그 일을 칸이 한다 — 그리고 56px 을
       유지하면 타일 두 칸이 130px 로 좁아져 라벨이 잘린다(위 `StatTile` 주석 참고).
 
       `flex-1`·`pb-nav` 도 뺐다. 둘 다 이 영역이 페이지 **마지막** 자식이라 배경을 탭바까지
-      이어야 했을 때의 것이다. 지금은 머리글과 목록 사이에 끼므로 자기 높이만 차지하고,
-      탭바 여백은 페이지 루트가 갖는다.
+      이어야 했을 때의 것이다. 지금은 탭 본문 맨 위라 자기 높이만 차지하고, 탭바 여백은
+      `ProfilePage` 루트가 갖는다.
     */
     <section className="flex flex-col gap-2.5">
       <div className="grid grid-cols-2 gap-2.5">
@@ -162,6 +214,12 @@ export function ProfileSummary() {
           icon="✨"
           value={isPlansPending && !planDto ? null : planName}
           label="요금제"
+          /*
+            요금제 화면으로 가는 문. 값(플랜 이름)이 아직 안 왔어도 눌리게 둔다 —
+            요금제를 못 받은 것이야말로 저쪽에서 다시 시도할 일이고, 그쪽 화면에
+            로딩·에러·재시도가 이미 있다.
+          */
+          onClick={() => navigate(ROUTES.premium)}
         />
         <StatTile
           icon="✍️"
