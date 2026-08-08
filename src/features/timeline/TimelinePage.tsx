@@ -8,13 +8,12 @@ import type { TimelineRecord } from "./types/timeline.types";
 import { TimelineSearchBar } from "./components/TimelineSearchBar";
 import { TimelineSortTabs } from "./components/TimelineSortTabs";
 import { TimelinePhotoGroup } from "./components/TimelinePhotoGroup";
-import { RecordDetailSheet } from "./components/RecordDetailSheet";
 import { TimelineEditModal } from "./components/TimelineEditModal";
 import { DeleteRecordModal } from "./components/DeleteRecordModal";
 import { EmptyTimeline } from "./components/EmptyTimeline";
 import { useToast } from "@/shared/components";
 
-/** 상단 버튼 그룹에 쓰는 돋보기 아이콘. */
+/** 헤더 오른쪽 검색 버튼의 돋보기 아이콘. */
 function SearchIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -24,33 +23,18 @@ function SearchIcon() {
   );
 }
 
-/** 격자(3열 그리드) 아이콘 — 피드 상태에서 그리드로 되돌아갈 때 보여 준다. */
-function GridIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
-      <rect x="3" y="3" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.6" />
-      <rect x="11.5" y="3" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.6" />
-      <rect x="3" y="11.5" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.6" />
-      <rect x="11.5" y="11.5" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
-  );
-}
-
-/** 피드(게시물처럼 한 칸씩 크게) 아이콘 — 그리드 상태에서 피드로 갈 때 보여 준다. */
-function FeedIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
-      <rect x="3" y="3" width="14" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
-      <rect x="3" y="11" width="14" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
-  );
-}
-
+/**
+ * 기록을 게시물로 읽는 화면.
+ *
+ * ⚠️ **격자(3열 그리드)로 보는 모드는 즐겨찾기 장소로 옮겼다.** 사진을 격자로
+ * 훑는 건 저장해 둔 장소를 다시 찾는 일이라 즐겨찾기 쪽이 맞고, 타임라인은
+ * 게시물 형태로 읽는 데 집중한다. 보기 전환 버튼과, 격자에서만 열리던 상세
+ * 시트(`RecordDetailSheet`)도 같이 없앴다.
+ */
 export function TimelinePage() {
   const [keyword, setKeyword] = useState("");
   const [sort, setSort] = useState<TimelineSort>("recent");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [view, setView] = useState<"grid" | "feed">("grid");
 
   const { groups, isLoading, isError, refetch } = useTimeline({ keyword, sort });
   const deleteMutation = useDeleteRecord();
@@ -58,7 +42,6 @@ export function TimelinePage() {
   const favoriteMutation = useToggleTimelineFavorite();
   const { showToast } = useToast();
 
-  const [detailTarget, setDetailTarget] = useState<TimelineRecord | null>(null);
   const [editTarget, setEditTarget] = useState<TimelineRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<TimelineRecord | null>(null);
 
@@ -117,7 +100,7 @@ export function TimelinePage() {
     <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
       <div className="flex flex-col gap-4 px-5 pb-5 pt-header">
         {/*
-          평소엔 좌측 타이틀 + 우측 버튼 그룹(검색·레이아웃)을 둔다. 돋보기를 누르면
+          평소엔 좌측 타이틀 + 우측 검색 버튼을 둔다. 돋보기를 누르면
           이 헤더 자리를 통째로 검색바가 차지하고, 우측 취소로 다시 헤더로 돌아온다.
 
           두 상태를 같은 고정 높이(h-11 = 검색바 높이) 안에 두어야 전환할 때 헤더가
@@ -141,12 +124,10 @@ export function TimelinePage() {
             <div className="flex w-full items-center justify-between">
               <h1 className="text-[20px] font-medium text-[#2C3930]">타임라인</h1>
               {/*
-                기록이 하나도 없으면 검색·보기 전환을 숨긴다. 걸러 줄 것도, 다르게
-                보여 줄 것도 없어서 눌러도 아무 일이 일어나지 않는 버튼이다.
-                기록이 하나라도 생기면 그대로 돌아온다.
+                기록이 하나도 없으면 검색을 숨긴다. 걸러 줄 것이 없어서 눌러도
+                아무 일이 일어나지 않는 버튼이다. 기록이 하나라도 생기면 돌아온다.
               */}
               {!isEmpty && (
-              <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={toggleSearch}
@@ -155,15 +136,6 @@ export function TimelinePage() {
                 >
                   <SearchIcon />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setView((v) => (v === "grid" ? "feed" : "grid"))}
-                  aria-label={view === "grid" ? "피드로 보기" : "그리드로 보기"}
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-[#2C3930] transition-colors hover:bg-[#EDE7D2]"
-                >
-                  {view === "grid" ? <FeedIcon /> : <GridIcon />}
-                </button>
-              </div>
               )}
             </div>
           )}
@@ -202,36 +174,18 @@ export function TimelinePage() {
       {/* 헤더 아래 남은 높이를 새싹이 차지한다 — 위로 붙으면 화면이 비어 보인다. */}
       {isEmpty && <EmptyTimeline />}
 
-      {/* 사진 그리드는 인스타 돋보기 탭처럼 좌우 여백 없이 화면 끝까지 채운다. */}
+      {/* 게시물은 인스타 피드처럼 좌우 여백 없이 화면 끝까지 채운다. */}
       <div className="flex flex-col gap-5 pb-4">
         {groups.map((group) => (
           <TimelinePhotoGroup
             key={group.dateKey}
             group={group}
-            view={view}
-            onOpenDetail={setDetailTarget}
             onToggleFavorite={handleToggleFavorite}
             onEdit={setEditTarget}
             onDelete={setDeleteTarget}
           />
         ))}
       </div>
-
-      {detailTarget && (
-        <RecordDetailSheet
-          record={detailTarget}
-          onClose={() => setDetailTarget(null)}
-          onEdit={() => {
-            // 상세 시트는 닫고 수정 모달로 넘긴다. 두 시트가 겹쳐 뜨지 않게.
-            setEditTarget(detailTarget);
-            setDetailTarget(null);
-          }}
-          onDelete={() => {
-            setDeleteTarget(detailTarget);
-            setDetailTarget(null);
-          }}
-        />
-      )}
 
       {editTarget && (
         <TimelineEditModal
