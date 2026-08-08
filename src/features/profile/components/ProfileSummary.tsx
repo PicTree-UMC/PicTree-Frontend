@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTreeCount } from "@/features/home/hooks/useTrees";
 import { usePictreeToken } from "@/features/premium/hooks/usePictreeToken";
 import { useMySubscription } from "@/features/premium/hooks/useMySubscription";
 import { useSubscriptionPlans } from "@/features/premium/hooks/useSubscriptionPlans";
@@ -99,6 +100,11 @@ export function ProfileSummary() {
   const { data: subscription } = useMySubscription();
   const { data: plans, isPending: isPlansPending } = useSubscriptionPlans();
   const { monthlyLimit, remaining, isPending: isTokenPending } = usePictreeToken();
+  /*
+    그루 수만 별개 쿼리다 — 요청 하나면 오는 값이라 아래 순회를 기다릴 이유가 없다.
+    네 칸이 한꺼번에 회색으로 있다가 한꺼번에 차는 대신, 사진 한 칸만 남는다.
+  */
+  const { data: treeCount } = useTreeCount();
   const { data: stats } = useStorageStats();
 
   /**
@@ -150,11 +156,7 @@ export function ProfileSummary() {
     */
     <section className="flex flex-col gap-2.5">
       <div className="grid grid-cols-2 gap-2.5">
-        <StatTile
-          icon="🌳"
-          value={stats?.treeCount ?? null}
-          label="심은 나무"
-        />
+        <StatTile icon="🌳" value={treeCount ?? null} label="심은 나무" />
         <StatTile icon="📷" value={stats?.photoCount ?? null} label="사진" />
         <StatTile
           icon="✨"

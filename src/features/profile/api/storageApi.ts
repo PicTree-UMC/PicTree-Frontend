@@ -8,17 +8,19 @@ interface TreeImagesData {
 }
 
 /**
- * 요약 띠가 쓰는 통계 한 묶음.
+ * 마이페이지 요약이 쓰는 사진 통계.
  *
- * **셋이 한 함수에서 나오는 게 핵심이다.** 나무 목록과 나무별 사진 목록은 용량을 재려고
- * 어차피 다 받아 오는데, 그루 수와 장수는 그걸 세기만 하면 된다 — **요청이 늘지 않는다.**
- * 따로 훅을 파면 같은 순회를 한 번 더 돌게 된다.
+ * **둘 다 나무를 하나씩 열어 봐야 나오는 값이다** — 그래서 한 묶음이다. 장수만 따로
+ * 구하려 해도 같은 순회를 한 번 더 돌게 된다.
+ *
+ * 그루 수는 여기 없다. 목록 응답의 `total` 로 요청 하나면 나오는 값이라, 이 느린
+ * 순회에 묶어 두면 빨리 올 수 있는 값이 늦게 온다 — `useTreeCount` 로 갈랐다.
+ *
+ * ⚠️ **이 두 값이 곧 백엔드에 요청할 응답 모양이다.** 아래 주석 참고.
  */
 export interface StorageStats {
   /** 사진 바이트 합. */
   usedBytes: number;
-  /** 살아 있는 나무 수(소프트 삭제된 것은 목록에 안 온다). */
-  treeCount: number;
   /** 사진 장수. */
   photoCount: number;
 }
@@ -42,10 +44,9 @@ export interface StorageStats {
  * `usedBytes` 는 한 방에 오지만 `photoCount` 가 아래 나무별 순회에서 나오기 때문에,
  * 합계만 받아 오면 나무 수만큼의 요청이 **그대로 남는다.** 요청을 고쳐 보내야 한다:
  *
- *   `{ usedBytes, photoCount }` — 같은 쿼리에 `COUNT(*)` 하나 더 붙이는 일이다.
- *
- * 그게 오면 `treeCount` 는 목록 응답의 `total` 로 충분하므로(`TreeListData.total`,
- * `size=1` 한 장이면 온다) 이 함수는 **2요청**이 되고 나무별 순회가 통째로 빠진다.
+ *   `{ usedBytes, photoCount }` — 같은 쿼리에 `COUNT(*)` 하나 더 붙이는 일이고,
+ *   위 `StorageStats` 와 모양이 같다. **그게 오면 이 함수 전체가 한 요청으로 줄고**
+ *   아래 나무별 순회가 통째로 빠진다.
  */
 export async function getStorageStats(): Promise<StorageStats> {
   const trees = await fetchAllTreeItems();
@@ -54,7 +55,6 @@ export async function getStorageStats(): Promise<StorageStats> {
 
   return {
     usedBytes: photos.reduce((sum, tree) => sum + tree.bytes, 0),
-    treeCount: trees.length,
     photoCount: photos.reduce((sum, tree) => sum + tree.count, 0),
   };
 }

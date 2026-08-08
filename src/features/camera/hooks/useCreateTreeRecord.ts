@@ -67,7 +67,9 @@ export function useCreateTreeRecord() {
       return { treeId };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: treeKeys.list() });
+      // `list()` 가 아니라 `all` 이다 — 마이페이지 요약의 그루 수(`treeKeys.count()`)도
+      // 같이 깨야 한다. 안 그러면 방금 심은 나무가 지도에는 뜨는데 개수는 그대로다.
+      queryClient.invalidateQueries({ queryKey: treeKeys.all });
       queryClient.invalidateQueries({ queryKey: timelineKeys.all });
       // 동선 후보는 /routes 와 무관한 독립 키라 위 두 무효화가 닿지 않는다.
       // 안 지우면 staleTime(60s) 동안 방금 찍은 장소가 빠진 목록이 그대로 보인다.
