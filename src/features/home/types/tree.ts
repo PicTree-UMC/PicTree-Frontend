@@ -45,26 +45,11 @@ export interface TreeListData {
   totalPages: number;
 }
 
-/**
- * `GET /trees/nearby` 의 개별 아이템.
- *
- * ⚠️ 명세서와 서버(`develop`)가 다르다. 아래는 **서버 `NearbyTreeResponseDto`
- * 기준**이다. 명세서에 적힌 `description`·`address`·`isFavorite` 은 서버가 주지
- * 않고, 대신 `mood` 를 준다. 명세서의 `defaultImage: "HAPPY"` 예시는 mood 값과
- * 뒤바뀐 것으로 보인다 — 실제 값은 `"DEFAULT_1"` 형태다.
- */
-export interface NearbyTreeItem {
-  treeId: number;
-  name: string;
-  latitude: number;
-  longitude: number;
-  /** 유저가 고른 이모지 문자. */
-  mood: string;
-  /** 기본 이미지 **식별자**(`"DEFAULT_1"`). URL 이 아니라 `<img src>` 에 못 쓴다. */
-  defaultImage: string;
-  /** 현재 위치로부터의 거리(미터). 서버가 가까운 순으로 정렬해 준다. */
-  distanceM: number;
-}
+/*
+  `NearbyTreeItem`(GET /trees/nearby 응답)은 지웠다 — 그 API 를 부르는 곳이 없어졌다.
+  근처 나무 판정은 위 목록에서 프론트가 직접 재고, 결과 모양은
+  `lib/nearbyTreeRule.ts` 의 `TreeInRange` 다.
+*/
 
 /** 나무 사진. */
 export interface TreeImage {

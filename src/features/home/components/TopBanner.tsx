@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+
 /** 반경 안에 내 나무가 있을 때 배너가 대신 알릴 내용. */
 type NearbyContent = {
   placeName: string;
@@ -12,36 +14,76 @@ type TopBannerProps = {
 
 /**
  * 홈 상단에 뜨는 안내 카드. 평소에는 "나의 여행 발자국"으로 기록한 장소 수를 보여주고,
- * 반경 50m 안에 내 나무가 있으면(`nearby`) **같은 자리에서 그 알림으로 갈아탄다.**
+ * 반경 50m 안에 내 나무가 있으면(`nearby`) **같은 자리에서 그 안내로 갈아탄다.**
  *
- * 카드를 하나 더 얹지 않는 이유: 알림 카드를 따로 띄우면 이 배너 바로 아래에 놓여 지도를
+ * 카드를 하나 더 얹지 않는 이유: 안내 카드를 따로 띄우면 이 배너 바로 아래에 놓여 지도를
  * 두 겹으로 가린다. 둘은 동시에 급하지 않으니 자리를 나눠 쓰는 편이 낫다 — 근처에 나무가
  * 있는 동안은 장소 수보다 그쪽이 할 말이 있다.
  *
- * 알림 쪽 문안은 원래 세 줄("지난 기록을 열어볼까요?"가 마지막)이었는데, 이 배너가 두 줄짜리
- * 높이라 마지막 줄은 뺐다. 그 줄이 하던 행동 유도는 오른쪽 "보기" 버튼이 대신한다.
+ * 근처 나무 쪽 문안은 원래 세 줄("지난 기록을 열어볼까요?"가 마지막)이었는데, 이 배너가
+ * 두 줄짜리 높이라 마지막 줄은 뺐다. 그 줄이 하던 행동 유도는 오른쪽 "보기" 버튼이 대신한다.
  *
  * ⚠️ 두 상태의 **높이가 같아야 한다**(--banner-height = 60px). 위치는 `.top-banner`
  * (styles.css)이고 이 카드 아래에 놓이는 것들이 같은 변수를 보고 있어서, 한쪽만 키우면
  * 그것들이 카드 밑에 깔린다. 버튼은 h-8(32px)이라 아이콘 h-9(36px) 줄 안에 들어온다.
  */
 export function TopBanner({ placeCount, nearby }: TopBannerProps) {
+  /*
+    사라지는 중에도 읽을 문구가 있어야 해서 마지막 안내를 붙들어 둔다.
+    `nearby` 가 null 이 되는 순간 문구까지 같이 사라지면 페이드아웃할 것이 없어
+    글자가 툭 없어진다(= 애니메이션이 한쪽 방향으로만 걸린다).
+  */
+  const lastNearby = useRef<NearbyContent | null>(null);
+  if (nearby) lastNearby.current = nearby;
+  const nearbyText = nearby ?? lastNearby.current;
+
   return (
     <div className="top-banner absolute inset-x-4 z-30 flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pictree-100 text-lg">
         🌳
       </span>
-      {/* 장소명이 길어도 버튼을 밀어내지 않게 min-w-0 + truncate 로 묶는다. */}
-      <div className="flex min-w-0 flex-1 flex-col leading-tight">
-        <span className="truncate text-[15px] font-medium text-neutral-900">
-          {nearby ? '근처에 심어둔 나무가 있어요' : '나의 여행 발자국'}
-        </span>
-        <span className="truncate text-[13px] text-neutral-500">
-          {nearby
-            ? `${nearby.placeName} · 약 ${nearby.distanceM}m`
-            : `${placeCount}개의 장소를 기록했어요.`}
-        </span>
+      {/*
+        두 문구를 같은 칸에 겹쳐 두고 투명도로 바꿔 넣는다(banner-line, styles.css).
+
+        조건부로 문구만 갈아끼우면 전환할 대상이 없어 애니메이션을 걸 수 없다. 겹쳐 두면
+        나가는 쪽과 들어오는 쪽이 동시에 존재해 서로 넘어간다 — 나가는 쪽은 4px 내려앉으며
+        흐려지고, 들어오는 쪽은 그 자리에서 4px 올라오며 또렷해진다.
+        칸 높이는 둘 중 큰 쪽인데 둘 다 같은 두 줄이라 배너 높이(60px)는 그대로다.
+
+        장소명이 길어도 버튼을 밀어내지 않게 min-w-0 + truncate 로 묶는다.
+      */}
+      <div className="grid min-w-0 flex-1">
+        <div
+          className={`banner-line col-start-1 row-start-1 flex min-w-0 flex-col leading-tight ${
+            nearby ? 'banner-line-out' : ''
+          }`}
+          aria-hidden={Boolean(nearby)}
+        >
+          <span className="truncate text-[15px] font-medium text-neutral-900">
+            나의 여행 발자국
+          </span>
+          <span className="truncate text-[13px] text-neutral-500">
+            {placeCount}개의 장소를 기록했어요.
+          </span>
+        </div>
+
+        {nearbyText && (
+          <div
+            className={`banner-line col-start-1 row-start-1 flex min-w-0 flex-col leading-tight ${
+              nearby ? '' : 'banner-line-out'
+            }`}
+            aria-hidden={!nearby}
+          >
+            <span className="truncate text-[15px] font-medium text-neutral-900">
+              근처에 심어둔 나무가 있어요
+            </span>
+            <span className="truncate text-[13px] text-neutral-500">
+              {nearbyText.placeName} · 약 {nearbyText.distanceM}m
+            </span>
+          </div>
+        )}
       </div>
+
       {nearby && (
         <button
           type="button"
@@ -51,8 +93,11 @@ export function TopBanner({ placeCount, nearby }: TopBannerProps) {
             글자는 13px — 가이드 §2 의 두 기본값(13/15) 중 아래쪽이다. 흡수한 카드는 14px
             이었지만 그 중간값을 뒷받침하는 시안 근거가 없었고, 15px 로 올리면 보조 액션이
             제목 줄과 같은 무게가 된다.
+
+            문구가 바뀔 때 같이 나타나는 버튼이라 페이드를 맞춰 준다. 사라질 때는 그냥
+            빠진다 — 누를 수 없게 된 버튼이 반투명하게 남아 있는 편이 더 이상하다.
           */
-          className="h-8 shrink-0 rounded-xl bg-pictree-300 px-3 text-[13px] font-medium text-neutral-900"
+          className="animate-fade-in h-8 shrink-0 rounded-xl bg-pictree-300 px-3 text-[13px] font-medium text-neutral-900"
         >
           보기
         </button>
