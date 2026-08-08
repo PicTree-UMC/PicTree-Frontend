@@ -2,10 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar, SettingsList, SettingsRow, useToast } from "@/shared/components";
 import { ROUTES } from "@/shared/constants/routes";
+import { useLogout } from "@/features/auth/hooks/useLogout";
 import { useMyProfile } from "./hooks/useMyProfile";
 import { useUpdateMyProfile } from "./hooks/useUpdateMyProfile";
+import { useWithdraw } from "./hooks/useWithdraw";
 import { getPlanLabel } from "./lib/plan";
 import { ProfileImageSheet } from "./components/ProfileImageSheet";
+import { WithdrawModal } from "./components/WithdrawModal";
 import treeIcon from "./assets/icons/tree.svg";
 import cardImage from "./assets/icons/card3d.jpg";
 
@@ -35,8 +38,12 @@ export function ProfileEditPage() {
   const { showToast } = useToast();
   const { data: profile, isPending, isError, refetch } = useMyProfile();
   const { mutate: updateProfile, isPending: isSaving } = useUpdateMyProfile();
+  const { mutate: requestLogout, isPending: isLoggingOut } = useLogout();
+  const { mutate: requestWithdraw, isPending: isWithdrawing } = useWithdraw();
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  // 되돌릴 수 없는 동작이라 한 번 더 확인받는다
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isAvatarBroken, setIsAvatarBroken] = useState(false);
   /**
    * 입력 중인 닉네임. `null` 이면 아직 손대지 않은 상태로, 서버 값을 그대로 보여준다.
@@ -216,12 +223,45 @@ export function ProfileEditPage() {
             onClick={() => navigate(ROUTES.paymentMethods)}
           />
         </SettingsList>
+
+        {/*
+          계정에서 빠져나가는 동작 둘. 프로필 최상위 목록 맨 아래에 있던 것을 여기로
+          옮겼다 — 계정을 끝내는 동작이라 계정을 여는 화면에 딸리는 게 맞고, 최상위에
+          두면 요금제·용량을 보러 스크롤을 내린 손 끝에 탈퇴가 놓인다.
+
+          위계는 카드를 나누는 대신 **색으로** 남긴다 — 로그아웃은 되돌릴 수 있고 탈퇴는 못
+          되돌리므로, 나란히 같은 빨강으로 두면 동급으로 읽히고 오탭 위험이 생긴다. 탈퇴는
+          INK-muted 로 낮춰서 찾는 사람은 찾되 눈에 먼저 걸리지는 않게 한다.
+          되돌릴 수 없는 쪽이라 누른 뒤에도 모달로 한 번 더 확인받는다.
+        */}
+        <SettingsList>
+          <SettingsRow
+            title={isLoggingOut ? "로그아웃 중..." : "로그아웃"}
+            action="danger"
+            // 요청 중에는 중복 클릭 방지
+            disabled={isLoggingOut}
+            onClick={() => requestLogout()}
+          />
+          <SettingsRow
+            title="회원탈퇴"
+            action="quiet"
+            onClick={() => setIsWithdrawModalOpen(true)}
+          />
+        </SettingsList>
       </div>
 
       {isSheetOpen && (
         <ProfileImageSheet
           onRemove={handleRemoveImage}
           onClose={() => setIsSheetOpen(false)}
+        />
+      )}
+
+      {isWithdrawModalOpen && (
+        <WithdrawModal
+          isWithdrawing={isWithdrawing}
+          onCancel={() => setIsWithdrawModalOpen(false)}
+          onConfirm={() => requestWithdraw()}
         />
       )}
     </div>
