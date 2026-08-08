@@ -45,7 +45,7 @@ export function Modal({
         onClick={(e) => e.stopPropagation()}
       >
         {title && <h2 className="mb-2 text-base font-semibold text-neutral-900">{title}</h2>}
-        {children && <div className="text-sm text-neutral-600">{children}</div>}
+        {children && <div className="text-[15px] text-neutral-600">{children}</div>}
         {footer && <div className="mt-4 flex justify-end gap-2">{footer}</div>}
       </div>
     </div>,
