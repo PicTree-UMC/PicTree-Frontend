@@ -220,7 +220,7 @@ export function RouteListPage() {
                 {/* 선택 동선 메타 + 액션(더보기 / 삭제) */}
                 <div className="mt-5 flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-[#2c3930]">{selectedRoute.date}</p>
+                    <p className="text-[13px] font-medium text-[#2c3930]">{selectedRoute.date}</p>
                     <p className="text-[11px] font-light text-[#60655c]">
                       {selectedRoute.placeCount}개 장소
                     </p>
