@@ -9,6 +9,7 @@ import type {
   TreeImage,
   TreeImageUploadData,
   TreeListData,
+  TreeListItem,
 } from '../types/tree';
 import { detailToMarker, listItemToMarker } from '../lib/treeMapping';
 import { DEMO_MARKERS } from '../mocks/markers';
@@ -23,18 +24,64 @@ import { DEMO_MARKERS } from '../mocks/markers';
 const hasToken = () => Boolean(useAuthStore.getState().accessToken);
 const USE_MOCK_FALLBACK = import.meta.env.DEV;
 
-/** 지도는 전체 마커를 한 번에 찍어야 하므로 서버 허용 최대치(100)로 요청한다. */
-const MAP_PAGE_SIZE = 100;
+/** 서버가 허용하는 최대 페이지 크기(`TreePagination.MAX_SIZE`). */
+const MAX_PAGE_SIZE = 100;
+
+/** `GET /trees` 한 페이지. ⚠️ `page` 는 **1-based** 다 — 0 을 넣으면 서버가 첫 장을 안 준다. */
+async function fetchTreePage(page: number): Promise<TreeListData> {
+  const { data } = await httpClient.get<ApiEnvelope<TreeListData>>('/trees', {
+    params: { page, size: MAX_PAGE_SIZE },
+  });
+
+  return data.data;
+}
+
+/**
+ * 내 나무 전체.
+ *
+ * ⚠️ **`GET /trees` 에는 전체 조회도 날짜 필터도 없다.** 한 장이 최대 100개라, 한 번만
+ * 부르면 101번째부터 조용히 빠진다 — 지도 마커도 근처 나무 배너도 그렇게 잘려 있었다
+ * (이슈 #200). 그래서 첫 응답의 `totalPages` 를 보고 남은 페이지를 **한 번에 병렬로**
+ * 받는다. 왕복은 나무 수와 무관하게 2회이고, 100그루 이하면 1회로 예전과 같다.
+ *
+ * 나무가 수천 그루가 되면 이 방식도 답이 아니다. 그때는 지도 뷰포트(bbox) 조회가
+ * 있어야 하고, 생기면 이 함수만 갈아끼우면 된다.
+ *
+ * 캘린더(`calendarTreesApi`)와 사진 용량(`storageApi`)이 각자 복사해 두었던 같은
+ * 순회를 여기로 모았다. 셋이 따로 놀면 이번처럼 한 곳만 상한에 걸린 채 남는다.
+ *
+ * ⚠️ **`treeId` 로 한 번 거른다.** `/trees` 는 스웨거에 요청 파라미터가 없는데 실제로는
+ * `page` 가 먹는 상태라, 서버가 이걸 무시하게 되면 같은 페이지를 여러 번 받는다.
+ * 순차 순회라면 무한 루프가 되겠지만 여기는 `totalPages` 만큼만 병렬로 부르므로
+ * 멈추기는 한다 — 대신 **마커가 겹쳐 찍힌다.** 거르는 값이 싸서 그냥 막아 둔다.
+ * (`blogPlacesApi`·`routeCandidatesApi` 도 같은 이유로 각자 `seen` 을 들고 있다.)
+ */
+export async function fetchAllTreeItems(): Promise<TreeListItem[]> {
+  const first = await fetchTreePage(1);
+
+  // totalPages 를 못 받으면 첫 페이지만 쓴다 — 지어내는 것보다 적게 세는 편이 낫다.
+  const totalPages = first.totalPages ?? 1;
+  const rest =
+    totalPages > 1
+      ? await Promise.all(
+          Array.from({ length: totalPages - 1 }, (_, index) => fetchTreePage(index + 2)),
+        )
+      : [];
+
+  const byId = new Map<number, TreeListItem>();
+  for (const item of [first, ...rest].flatMap((page) => page.items ?? [])) {
+    if (!byId.has(item.treeId)) byId.set(item.treeId, item);
+  }
+
+  return [...byId.values()];
+}
 
 /** 지도에 찍을 내 나무 목록 조회. */
 export const getTrees = async (): Promise<MapMarkerData[]> => {
   if (!hasToken()) return USE_MOCK_FALLBACK ? DEMO_MARKERS : [];
 
   try {
-    const { data } = await httpClient.get<ApiEnvelope<TreeListData>>('/trees', {
-      params: { size: MAP_PAGE_SIZE },
-    });
-    return data.data.items.map(listItemToMarker);
+    return (await fetchAllTreeItems()).map(listItemToMarker);
   } catch (error) {
     if (USE_MOCK_FALLBACK) return DEMO_MARKERS;
     throw error;

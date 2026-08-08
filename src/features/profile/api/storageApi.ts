@@ -1,8 +1,6 @@
 import { httpClient } from '@/shared/lib/httpClient';
-import type { ApiEnvelope, TreeListData } from '@/features/home/types/tree';
-
-/** 서버가 허용하는 최대 페이지 크기(`TreePagination.MAX_SIZE`). */
-const MAX_PAGE_SIZE = 100;
+import type { ApiEnvelope } from '@/features/home/types/tree';
+import { fetchAllTreeItems } from '@/features/home/api/treesApi';
 
 /** `GET /trees/{treeId}/images` 응답 중 용량 계산에 필요한 부분만. */
 interface TreeImagesData {
@@ -28,41 +26,11 @@ interface TreeImagesData {
  * 갈아끼우면 된다.
  */
 export async function getStorageUsedBytes(): Promise<number> {
-  const treeIds = await fetchAllTreeIds();
+  const trees = await fetchAllTreeItems();
 
-  const sizes = await Promise.all(treeIds.map(fetchTreeImageBytes));
+  const sizes = await Promise.all(trees.map((tree) => fetchTreeImageBytes(tree.treeId)));
 
   return sizes.reduce((sum, bytes) => sum + bytes, 0);
-}
-
-/**
- * 내 나무 id 전체.
- *
- * `GET /trees` 에 날짜·전체 조회 옵션이 없어 페이지를 끝까지 넘긴다. 첫 응답의
- * `totalPages` 로 남은 페이지를 한 번에 병렬 요청한다 — 순차로 돌면 페이지 수만큼
- * 왕복 시간이 쌓인다.
- */
-async function fetchAllTreeIds(): Promise<number[]> {
-  const first = await fetchTreePage(1);
-  const ids = first.items.map((item) => item.treeId);
-
-  // totalPages 를 못 받으면 첫 페이지만 센다 — 지어내는 것보다 적게 세는 편이 낫다.
-  const totalPages = first.totalPages ?? 1;
-  if (totalPages <= 1) return ids;
-
-  const rest = await Promise.all(
-    Array.from({ length: totalPages - 1 }, (_, index) => fetchTreePage(index + 2)),
-  );
-
-  return rest.reduce((all, page) => all.concat(page.items.map((i) => i.treeId)), ids);
-}
-
-async function fetchTreePage(page: number): Promise<TreeListData> {
-  const { data } = await httpClient.get<ApiEnvelope<TreeListData>>('/trees', {
-    params: { page, size: MAX_PAGE_SIZE },
-  });
-
-  return data.data;
 }
 
 /**
