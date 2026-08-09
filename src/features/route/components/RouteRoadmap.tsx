@@ -132,7 +132,7 @@ export function RouteRoadmap({ places }: RouteRoadmapProps) {
                   />
                 </div>
                 {/* 순번 배지 */}
-                <span className="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full border-2 border-white bg-pictree-700 text-[10px] font-bold text-white">
+                <span className="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full border-2 border-white bg-pictree-700 text-[13px] font-medium text-white">
                   {index + 1}
                 </span>
               </div>
@@ -144,7 +144,7 @@ export function RouteRoadmap({ places }: RouteRoadmapProps) {
               style={{ top: y, ...labelStyle }}
             >
               <div className="animate-roadmap-pop" style={{ animationDelay: labelDelay }}>
-                <p className="line-clamp-2 text-base font-bold text-[#111]">{place.name}</p>
+                <p className="line-clamp-2 text-base font-medium text-[#111]">{place.name}</p>
                 <p className="mt-0.5 text-[13px] font-medium text-[#60655c]">
                   {index + 1}번째 장소
                 </p>

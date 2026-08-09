@@ -135,7 +135,10 @@ export function Sheet({
             type="button"
             aria-label="닫기"
             {...handleProps}
-            className="flex w-full shrink-0 justify-center pb-2 pt-3"
+            className={`flex w-full shrink-0 justify-center pb-2 ${
+              // grip 은 동선 만들기 ②(RoutePlaceStrip) 기준값(18px = 컨테이너 pt-2.5 + 버튼 py-2)에 맞춘다.
+              handleSize === 'grip' ? 'pt-[18px]' : 'pt-3'
+            }`}
           >
             <span
               className={`rounded-full ${handleSize === 'grip' ? 'h-1 w-10' : 'h-[5px] w-[134px]'}`}
