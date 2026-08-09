@@ -7,7 +7,7 @@ import { useSavedRoutes } from './hooks/useSavedRoutes';
 import { useDeleteRoute } from './hooks/useDeleteRoute';
 import { useRenameRoute } from './hooks/useRenameRoute';
 import { RouteChips } from './components/RouteChips';
-import { RouteRoadmap } from './components/RouteRoadmap';
+import { SavedRouteRoadmap } from './components/RouteRoadmap';
 import { ROUTES, journeyViewPath } from '../../shared/constants/routes';
 import { DeleteConfirmModal, DeleteIconButton } from '../../shared/components/DeleteConfirmModal';
 
@@ -247,7 +247,7 @@ export function RouteListPage() {
                 {/* 로드맵: 장소 이동을 사진 노드 + 점선으로 표현.
                     key 로 동선이 바뀔 때마다 등장 애니메이션을 다시 재생한다. */}
                 <div className="mt-6">
-                  <RouteRoadmap key={selectedRoute.id} route={selectedRoute} />
+                  <SavedRouteRoadmap key={selectedRoute.id} route={selectedRoute} />
                 </div>
               </>
             )}

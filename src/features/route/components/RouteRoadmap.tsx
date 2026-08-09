@@ -25,23 +25,29 @@ const INSET = 46; // 컨테이너 가장자리 ~ 노드 중심
 const NODE_EDGE = INSET - R; // 가장자리 ~ 노드 상자 바깥면
 const LABEL_EDGE = INSET + R + 12; // 가장자리 ~ 라벨 시작(노드 반대편)
 
+/** 로드맵이 노드 하나를 그리는 데 필요한 전부. 저장 전/후 어느 쪽에서 왔는지는 모른다. */
+export interface RoadmapPlace {
+  name: string;
+  /** 노드에 넣을 사진. 없거나 아직 안 왔으면 나무 폴백. */
+  photoUrl?: string | null;
+}
+
 interface RouteRoadmapProps {
-  route: Route;
+  places: RoadmapPlace[];
 }
 
 /**
- * 선택된 동선의 장소 이동을 곡선 로드맵으로 그린다.
+ * 동선의 장소 이동을 곡선 로드맵으로 그린다.
  * - 노드: 그 장소에서 찍은 사진을 원형 아이콘으로. 없거나 못 불러오면 나무 폴백.
  * - 간선: 노드 사이를 점선 곡선(SVG path)으로 연결.
  * - 라벨: 노드 바깥쪽에 장소명 + 순번.
  *
- * 사진은 목록 응답에 없어 동선별로 따로 받아온다(`GET /routes/{id}/images`).
- * 로드맵은 사진을 기다리지 않고 먼저 그리고, 도착하면 플레이스홀더가 사진으로 바뀐다 —
- * 장소·순서는 목록 응답만으로 알 수 있으므로 뼈대를 붙잡아 둘 이유가 없다.
+ * **사진을 자기가 받아오지 않는다.** 저장된 동선(`GET /routes/{id}/images`)과 저장 전 미리보기
+ * (후보 목록에 실려 오는 `imageUrl`)가 사진을 다른 데서 얻기 때문이다. 저장 화면이 목록에서
+ * 볼 그림을 **똑같이** 보여주려면 이 컴포넌트가 출처를 몰라야 한다.
+ * 저장된 동선 쪽은 아래 `SavedRouteRoadmap` 이 감싼다.
  */
-export function RouteRoadmap({ route }: RouteRoadmapProps) {
-  const { places } = route;
-  const { data: photos = [] } = useRoutePhotos(route.id);
+export function RouteRoadmap({ places }: RouteRoadmapProps) {
   const listRef = useRef<HTMLOListElement>(null);
   // path 를 그리려면 실제 폭이 필요하다. useLayoutEffect 라 첫 페인트 전에 보정돼 깜빡임이 없다.
   const [width, setWidth] = useState(MAX_W);
@@ -59,15 +65,6 @@ export function RouteRoadmap({ route }: RouteRoadmapProps) {
 
     return () => observer.disconnect();
   }, []);
-
-  /**
-   * 노드 썸네일. 사진 API 가 **장소당 한 장을 방문 순서로** 주므로 순번으로 짝지운다.
-   *
-   * 예전엔 장소명으로 찾았는데(목 시절), 실 데이터에서는 같은 이름의 장소가 여러 번
-   * 나올 수 있어 첫 번째 사진이 뒤쪽 노드까지 따라붙는다. 순서는 서버가 보장한다.
-   * 아직 안 도착했거나 사진이 없는 장소는 undefined → 플레이스홀더.
-   */
-  const photoFor = (index: number) => photos[index]?.url ?? undefined;
 
   const nodes = places.map((place, index) => ({
     place,
@@ -108,7 +105,6 @@ export function RouteRoadmap({ route }: RouteRoadmapProps) {
       </svg>
 
       {nodes.map(({ place, index, y, isLeft }) => {
-        const photoUrl = photoFor(index);
         // 노드·라벨은 가까운 쪽 가장자리에 붙인다 — 폭을 몰라도 되고, 컨테이너가 좁아져도
         // 반대쪽으로 밀려나 잘리지 않는다.
         const nodeStyle = isLeft ? { left: NODE_EDGE } : { right: NODE_EDGE };
@@ -129,7 +125,11 @@ export function RouteRoadmap({ route }: RouteRoadmapProps) {
                 style={{ animationDelay: nodeDelay }}
               >
                 <div className="relative size-full overflow-hidden rounded-full border-2 border-pictree-500 bg-pictree-100">
-                  <Photo src={photoUrl} className="size-full object-cover" iconClassName="size-7" />
+                  <Photo
+                    src={place.photoUrl}
+                    className="size-full object-cover"
+                    iconClassName="size-7"
+                  />
                 </div>
                 {/* 순번 배지 */}
                 <span className="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full border-2 border-white bg-pictree-700 text-[10px] font-bold text-white">
@@ -155,4 +155,26 @@ export function RouteRoadmap({ route }: RouteRoadmapProps) {
       })}
     </ol>
   );
+}
+
+/**
+ * 저장된 동선용 로드맵 — 사진만 받아다 위 컴포넌트에 넘긴다.
+ *
+ * 사진은 목록 응답에 없어 동선별로 따로 받아온다(`GET /routes/{id}/images`).
+ * 로드맵은 사진을 기다리지 않고 먼저 그리고, 도착하면 플레이스홀더가 사진으로 바뀐다 —
+ * 장소·순서는 목록 응답만으로 알 수 있으므로 뼈대를 붙잡아 둘 이유가 없다.
+ *
+ * 사진 API 가 **장소당 한 장을 방문 순서로** 주므로 순번으로 짝지운다. 예전엔 장소명으로
+ * 찾았는데(목 시절), 실 데이터에서는 같은 이름의 장소가 여러 번 나올 수 있어 첫 번째 사진이
+ * 뒤쪽 노드까지 따라붙는다. 순서는 서버가 보장한다.
+ */
+export function SavedRouteRoadmap({ route }: { route: Route }) {
+  const { data: photos = [] } = useRoutePhotos(route.id);
+
+  const places = route.places.map((place, index) => ({
+    name: place.name,
+    photoUrl: photos[index]?.url,
+  }));
+
+  return <RouteRoadmap places={places} />;
 }
