@@ -1,4 +1,5 @@
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { Photo } from '@/shared/components';
 import { RoutePlace } from '../types/route';
 import { formatDateLabel } from '../lib/formatDate';
 import { buildSequenceMap } from '../lib/sequence';
@@ -64,9 +65,6 @@ interface RoutePlaceStripProps {
    */
   stepper?: ReactNode;
 }
-
-/** 사진을 안 올린 장소. 홈 마커·`RoutePlacePreview` 와 같은 기본 아이콘을 쓴다. */
-const FALLBACK_ICON = '/markers/tree.svg';
 
 /**
  * 펼친 시트가 차지하는 화면 높이(50dvh).
@@ -435,21 +433,11 @@ export function RoutePlaceStrip({
                       {/* 꺼진 장소는 사진을 흑백으로 죽인다. 이름은 그대로 읽히게 두고(여전히
                           눌러서 되살릴 수 있는 버튼이다) 사진·번호·`제외됨` 으로만 구분한다 —
                           글자를 흐리게 하면 초록 배경 위에서 대비가 무너진다. */}
-                      {place.imageUrl ? (
-                        <img
-                          src={place.imageUrl}
-                          alt=""
-                          className={`h-full w-full object-cover ${disabled ? 'opacity-40 grayscale' : ''}`}
-                        />
-                      ) : (
-                        <span className="flex h-full w-full items-center justify-center">
-                          <img
-                            src={FALLBACK_ICON}
-                            alt=""
-                            className={`h-7 w-7 ${disabled ? 'opacity-40' : ''}`}
-                          />
-                        </span>
-                      )}
+                      <Photo
+                        src={place.imageUrl}
+                        className={`h-full w-full object-cover ${disabled ? 'opacity-40 grayscale' : ''}`}
+                        iconClassName="h-7 w-7"
+                      />
                     </div>
 
                     <div className="min-w-0 flex-1">
