@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { BlogDay, BlogDraftPreview, BlogStatus, ToneId, CreateAIBlogDraftRequest } from '../types/blog';
 import { getLocalDateString } from '../../../shared/lib/date';
 import { DEFAULT_TONE_ID } from '../constants/blogTones';
 import { suggestToneFromMoods } from '../lib/moodTone';
 import { createAIBlogDraft } from '../api/blogApi';
 import { useBlogTrees } from './useBlogTrees';
+import { blogDraftUsageKey } from './useBlogDraftUsage';
 
 export type CreateStep = 1 | 2 | 3;
 
@@ -30,6 +32,7 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
   const [toneId, setToneId] = useState<ToneId>(DEFAULT_TONE_ID);
   const [status, setStatus] = useState<BlogStatus>('idle');
   const [draft, setDraft] = useState<BlogDraftPreview | null>(null);
+  const queryClient = useQueryClient();
 
   // 목록 화면과 같은 query key를 사용해 나무 전체 조회 결과를 재사용한다.
   const { data: allPlaces = [] } = useBlogTrees();
@@ -80,6 +83,13 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
 
         const resp = await createAIBlogDraft(payload);
 
+        /*
+          토큰이 한 장 소모됐다. `cancelled` 앞에 둔다 — 화면을 벗어나 결과를 안 그리게
+          됐어도 서버에서는 이미 차감됐으므로, 무효화까지 건너뛰면 마이페이지 잔량이
+          다음 staleTime 까지 옛 값으로 남는다.
+        */
+        queryClient.invalidateQueries({ queryKey: blogDraftUsageKey });
+
         if (cancelled) return;
 
         const days: BlogDay[] = (resp.days ?? []).map((day) => ({
@@ -106,7 +116,7 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
     })();
 
     return () => { cancelled = true; };
-  }, [status, selectedTreeIds, toneId, startDate, endDate, trees]);
+  }, [status, selectedTreeIds, toneId, startDate, endDate, trees, queryClient]);
 
   return {
     step,
