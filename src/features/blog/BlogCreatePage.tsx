@@ -85,7 +85,14 @@ function BlogCreateContent() {
           <ToneStep toneId={flow.toneId} onSelect={flow.setToneId} onNext={flow.goToResult} />
         )}
         {flow.step === 3 && (
-          <ResultStep status={flow.status} draft={flow.draft} onSave={handleSave} />
+          <ResultStep
+            status={flow.status}
+            errorMessage={flow.errorMessage}
+            draft={flow.draft}
+            onSave={handleSave}
+            onRetry={flow.retryGenerate}
+            onBack={flow.back}
+          />
         )}
       </div>
     </main>

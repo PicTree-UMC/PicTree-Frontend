@@ -4,6 +4,7 @@ import type { ApiResponse } from '../../../shared/types/api';
 import type {
   AIBlogDraftDetail,
   AIBlogDraftListData,
+  BlogDraftUsage,
   CreateAIBlogDraftRequest,
   CreateAIBlogDraftResponseData,
   SaveAIBlogDraftRequest,
@@ -18,6 +19,22 @@ export const getAIBlogDrafts = async (): Promise<AIBlogDraftListData> => {
   const { data } = await httpClient.get<ApiResponse<AIBlogDraftListData>>('/blog-drafts');
 
   return unwrapApiResponse(data, 'Failed to get AI blog drafts');
+};
+
+/**
+ * AI 블로그 초안 사용량 조회
+ * GET /api/v1/blog-drafts/usage
+ *
+ * 목록(`GET /blog-drafts`)을 세는 것과 다르다 — 왜 다른지는 `BlogDraftUsage` 주석 참고.
+ * 경로가 `/blog-drafts/{draftId}` 와 겹쳐 보이지만 서버 컨트롤러가 `@Get('usage')` 를
+ * `@Get(':draftId')` 보다 위에 두고 있어 `usage` 가 먼저 잡힌다.
+ */
+export const getBlogDraftUsage = async (): Promise<BlogDraftUsage> => {
+  const { data } = await httpClient.get<ApiResponse<BlogDraftUsage>>(
+    '/blog-drafts/usage',
+  );
+
+  return unwrapApiResponse(data, 'Failed to get AI blog draft usage');
 };
 
 /**

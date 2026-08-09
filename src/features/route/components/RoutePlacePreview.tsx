@@ -1,10 +1,7 @@
 import { useState, type CSSProperties } from 'react';
-import { Sheet } from '@/shared/components';
+import { Photo, Sheet } from '@/shared/components';
 import { RoutePlace } from '../types/route';
 import { formatDateLabel } from '../lib/formatDate';
-
-/** 사진을 안 올린 장소. 홈 마커·스토리 뷰어와 같은 기본 아이콘을 쓴다. */
-const FALLBACK_ICON = '/markers/tree.svg';
 
 /**
  * 줄에 늘어놓는 최대 개수. 한 번에 최대 20곳까지 딸려 올 수 있는데, 전부 그리면 가로 스크롤이
@@ -22,19 +19,15 @@ function PlaceAvatar({
   className?: string;
   style?: CSSProperties;
 }) {
-  const base = `h-11 w-11 shrink-0 rounded-full border border-pictree-300 ${className}`;
-
-  return place.imageUrl ? (
-    <img src={place.imageUrl} alt={place.name} style={style} className={`${base} object-cover`} />
-  ) : (
-    <span
-      role="img"
-      aria-label={place.name}
+  // 폴백일 때 드러나는 흰 바닥을 항상 깔아 둔다 — 사진이 있으면 그 위를 덮는다.
+  return (
+    <Photo
+      src={place.imageUrl}
+      alt={place.name}
       style={style}
-      className={`${base} flex items-center justify-center bg-white`}
-    >
-      <img src={FALLBACK_ICON} alt="" className="h-6 w-6" />
-    </span>
+      className={`h-11 w-11 shrink-0 rounded-full border border-pictree-300 bg-white object-cover ${className}`}
+      iconClassName="h-6 w-6"
+    />
   );
 }
 

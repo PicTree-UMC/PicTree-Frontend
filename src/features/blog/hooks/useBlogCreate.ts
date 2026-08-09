@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouteDetail } from '@/features/route/hooks/useRouteDetail';
 import { useRoutePhotos } from '@/features/route/hooks/useRoutePhotos';
 import { useSavedRoutes } from '@/features/route/hooks/useSavedRoutes';
 
 import type { BlogDay, BlogDraftPreview, BlogStatus, ToneId, CreateAIBlogDraftRequest } from '../types/blog';
 import { getLocalDateString } from '../../../shared/lib/date';
+import { getApiErrorMessage } from '../../../shared/lib/apiError';
 import { DEFAULT_TONE_ID } from '../constants/blogTones';
 import { suggestToneFromMoods } from '../lib/moodTone';
 import { createAIBlogDraft } from '../api/blogApi';
+import { blogDraftUsageKey } from './useBlogDraftUsage';
 
 export type CreateStep = 1 | 2 | 3;
 
@@ -47,6 +49,9 @@ export function useBlogCreate({ initialRouteId }: UseBlogCreateOptions = {}) {
   const [toneId, setToneId] = useState<ToneId>(DEFAULT_TONE_ID);
   const [status, setStatus] = useState<BlogStatus>('idle');
   const [draft, setDraft] = useState<BlogDraftPreview | null>(null);
+  const queryClient = useQueryClient();
+  /** 실패 사유. 서버가 준 문구를 그대로 든다 — `status === 'error'` 일 때만 의미가 있다. */
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const routesQuery = useSavedRoutes();
   const detailQuery = useRouteDetail(selectedRouteId ?? undefined);
@@ -105,6 +110,13 @@ export function useBlogCreate({ initialRouteId }: UseBlogCreateOptions = {}) {
 
         const resp = await createAIBlogDraft(payload);
 
+        /*
+          토큰이 한 장 소모됐다. `cancelled` 앞에 둔다 — 화면을 벗어나 결과를 안 그리게
+          됐어도 서버에서는 이미 차감됐으므로, 무효화까지 건너뛰면 마이페이지 잔량이
+          다음 staleTime 까지 옛 값으로 남는다.
+        */
+        queryClient.invalidateQueries({ queryKey: blogDraftUsageKey });
+
         if (cancelled) return;
 
         const days: BlogDay[] = (resp.days ?? []).map((day) => ({
@@ -123,15 +135,18 @@ export function useBlogCreate({ initialRouteId }: UseBlogCreateOptions = {}) {
         setDraft({ title: resp.title, days });
         setStatus('ready');
       } catch (err) {
-        // 실패하면 상태를 idle로 돌리고 로그를 남긴다.
-        // TODO: 사용자-facing 에러 처리(toast 등)
+        if (cancelled) return;
+
+        // 서버 문구를 그대로 든다. `BLOG400-1` 처럼 조건이 아직 안 밝혀진 실패가 있어
+        // 우리가 지어낸 문구로 덮으면 사용자도 우리도 원인을 못 본다.
         console.error('create draft failed', err);
-        setStatus('idle');
+        setErrorMessage(getApiErrorMessage(err, '초안을 만들지 못했어요. 잠시 후 다시 시도해 주세요.'));
+        setStatus('error');
       }
     })();
 
     return () => { cancelled = true; };
-  }, [status, treeIds, toneId, startDate, endDate, photosQuery.data]);
+  }, [status, treeIds, toneId, startDate, endDate, photosQuery.data, queryClient]);
 
   return {
     step,
@@ -139,6 +154,7 @@ export function useBlogCreate({ initialRouteId }: UseBlogCreateOptions = {}) {
     endDate,
     toneId,
     status,
+    errorMessage,
     draft,
 
     /** 1단계가 그리는 목록. 로딩·실패도 그대로 넘겨 화면이 갈라 그린다. */
@@ -168,7 +184,16 @@ export function useBlogCreate({ initialRouteId }: UseBlogCreateOptions = {}) {
       setStep(2);
     },
     goToResult: () => {
+      setErrorMessage(null);
       setStep(3);
+      setStatus('generating');
+    },
+    /**
+     * 실패한 초안 생성을 다시 건다. `generating` 으로 되돌리면 생성 `useEffect` 가
+     * `status` 를 보고 다시 돈다 — 재요청 경로를 따로 두지 않는 이유다.
+     */
+    retryGenerate: () => {
+      setErrorMessage(null);
       setStatus('generating');
     },
     back: () => setStep((current) => (current > 1 ? ((current - 1) as CreateStep) : current)),

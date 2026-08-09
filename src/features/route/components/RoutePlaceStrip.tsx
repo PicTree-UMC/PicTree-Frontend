@@ -1,23 +1,21 @@
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { Photo } from '@/shared/components';
 import { RoutePlace } from '../types/route';
 import { formatDateLabel } from '../lib/formatDate';
 import { buildSequenceMap } from '../lib/sequence';
-import { RouteDateChips } from './RouteDateChips';
 
 interface RoutePlaceStripProps {
   places: RoutePlace[];
   /** 사용자가 꺼둔 장소. 목록에는 남되 번호·개수·지도에서 빠진다(화면설계서 7번). */
   disabledPlaceIds: ReadonlySet<number>;
-  /** 이 동선이 걸친 날짜. 필터 칩 줄로 그려진다(화면설계서 6번). */
-  dates: string[];
   /**
-   * 들여다볼 날짜. `null` 이면 전부. **지도도 같은 범위로 좁혀진다.**
+   * 들여다볼 날짜. `null` 이면 전부. **거르는 칩 줄은 이 시트에 없다** — 시트 바로 위에
+   * 얹혀 있고, 여기서는 어느 범위를 그릴지 알기 위해 값만 받는다.
    *
    * **보기만 거른다 — 동선에서 빼는 게 아니다.** 걸러진 날짜의 장소도 동선에 그대로 남고
    * 번호도 유지된다. 빼고 넣는 건 `onToggleAllVisible` 과 줄 탭이 맡는다.
    */
   dateFilter: string | null;
-  onChangeDateFilter: (date: string | null) => void;
   /** 지금 보이는 장소가 전부 켜져 있는가. 버튼 문구를 정한다. */
   allVisibleSelected: boolean;
   /** 지금 보이는 장소를 통째로 켜거나 끈다. */
@@ -63,10 +61,20 @@ interface RoutePlaceStripProps {
    * **훑을 게 없으면 부모가 아예 안 넘긴다**(그때는 제목이 그대로 뜬다).
    */
   stepper?: ReactNode;
+  /**
+   * 동선 이름 입력 줄(`RouteNameField`). 주면 **머리 줄이 따라가기 대신 이 줄이 되고,
+   * 맨 아래 `동선저장` 이 빠진다**(저장은 네비바 오른쪽으로 간다).
+   *
+   * 그 밖에는 아무것도 안 바뀐다 — 날짜 필터도 장소 목록도 그대로다. 이름 짓기는 화면을
+   * 갈아끼우는 단계가 아니라 **줄 하나가 바뀌는 일**이고, 저장 직전이야말로 무엇이
+   * 저장되는지 보이는 게 맞다. 빠지는 줄과 들어오는 줄이 높이가 엇비슷해 목록 자리도
+   * 사실상 그대로다.
+   *
+   * 예전에는 이 위로 두 번째 바텀시트(`SaveRouteSheet`)가 올라왔다 — 손잡이 둘이 겹쳐
+   * 무엇을 내리면 무엇이 닫히는지 알 수 없었다. **시트가 이미 있으면 새로 띄우지 않는다.**
+   */
+  nameField?: ReactNode;
 }
-
-/** 사진을 안 올린 장소. 홈 마커·`RoutePlacePreview` 와 같은 기본 아이콘을 쓴다. */
-const FALLBACK_ICON = '/markers/tree.svg';
 
 /**
  * 펼친 시트가 차지하는 화면 높이(50dvh).
@@ -76,14 +84,15 @@ const FALLBACK_ICON = '/markers/tree.svg';
  * 얼마나 가리는지를 알 수 없었다.** 지도는 마커가 전부 담기게 화면을 맞추면서 시트 높이만큼
  * 아래를 비워둬야 하는데, 그 값이 매번 달라지면 재는 수밖에 없다. 고정해 두면 계산으로 안다.
  *
- * 390×844 기준 422px — 손잡이·따라가기 줄·필터·개수줄·저장 버튼을 뺀 목록 자리가 160px
- * 안팎으로, 줄 하나(72px)로 치면 **2.2줄**이다. 반 줄이 걸쳐 보여야 목록이 더 있다는 게
- * 읽히므로(딱 떨어지게 잘리면 거기서 끝난 줄 알고 아무도 안 굴린다) 그 여유가 남게 잡았다.
+ * 390×844 기준 422px — 손잡이·머리 줄·개수줄·저장 버튼을 뺀 목록 자리가 200px 남짓으로,
+ * 줄 하나(72px)로 치면 **2.8줄**이다. 반 줄이 걸쳐 보여야 목록이 더 있다는 게 읽히므로
+ * (딱 떨어지게 잘리면 거기서 끝난 줄 알고 아무도 안 굴린다) 그 여유가 남게 잡았다.
  *
  * 45dvh 였는데 필터와 개수줄 사이 간격을 넓히면서 그만큼 목록에서 빠져 올렸다.
- * 따라가기 줄이 지도 위 알약에서 시트 안으로 들어오면서 목록이 2.8 → 2.2줄이 됐지만
- * **높이는 그대로 둔다** — 시트를 키우면 알약을 없애며 되찾은 지도를 도로 내주는 셈이다.
- * 작은 기기(667px)에선 한 줄 남짓, 큰 기기에선 세 줄 가까이.
+ * 따라가기 줄이 지도 위 알약에서 시트 안으로 들어오면서 목록이 2.8 → 2.2줄로 줄었다가,
+ * **날짜 칩이 반대로 지도 위로 올라가면서 2.8줄로 돌아왔다.** 그래도 높이는 그대로 둔다 —
+ * 시트를 키우면 칩을 내보내며 되찾은 지도를 도로 내주는 셈이다.
+ * 작은 기기(667px)에선 한 줄 남짓, 큰 기기에선 세 줄 넘게.
  */
 export const SHEET_EXPANDED_RATIO = 0.5;
 
@@ -149,21 +158,23 @@ function useCollapseDrag(setCollapsed: (collapsed: boolean) => void) {
 }
 
 /**
- * 화면 하단의 동선 시트. **이 화면의 조작이 전부 여기 모여 있다** — 날짜 켜고 끄기,
- * 장소 켜고 끄기, 동선 저장. 지도 위에 남는 건 뒤로가기(와 저장된 동선의 제목)뿐이다.
+ * 화면 하단의 동선 시트. **이 시트가 다루는 건 하나다 — 동선에 무엇을 넣을지.**
+ * 장소를 켜고 끄고, 몇 곳인지 세고, 이름을 지어 저장한다.
  *
- * 위에서부터 **따라가기 줄**(한 곳씩 짚어가기) → **날짜 필터**(볼 범위 좁히기) →
- * **개수·전체 선택 줄** → **장소 목록**(하나씩 다루기) → **저장 버튼**. 가운데 셋만 여닫히고,
- * 따라가기 줄과 저장 버튼은 위아래에 붙박이다 — 접을 때 버튼이 위아래로 뛰어다니면 어디를
+ * 날짜 필터 칩은 여기 없다. **시트 바로 위**에 얹혀 있다(`RouteViewPage`). 칩은 지도와 목록의
+ * **보기 범위**를 정하는 것이라 화면에 걸친 조작이고, 이 시트 안에 있는 동안에는 시트를 접으면
+ * 칩이 같이 숨는 반면 지도는 계속 걸러진 채여서 왜 하루치만 보이는지 화면에 남는 게 없었다.
+ * **어디에 두느냐는 '무엇에 작용하느냐'를 따른다** — 저장 버튼이 헤더에서 이리로 내려온
+ * 것도 같은 기준이다(저장되는 건 이 목록이라 `n/20` 옆에 있어야 한다).
+ *
+ * 위에서부터 **따라가기 줄**(한 곳씩 짚어가기 / 이름 짓기 중엔 이름 입력) →
+ * **개수·전체 선택 줄** → **장소 목록**(하나씩 다루기) → **저장 버튼**. 가운데만 여닫히고,
+ * 머리 줄과 저장 버튼은 위아래에 붙박이다 — 접을 때 버튼이 위아래로 뛰어다니면 어디를
  * 누르려던 건지 놓친다.
  *
- * **접으면 따라가기 줄과 `동선저장` 만 남는다.** 접기는 지도를 넓게 보려는 것이지 작업을
+ * **접으면 머리 줄과 `동선저장` 만 남는다.** 접기는 지도를 넓게 보려는 것이지 작업을
  * 멈추는 게 아니라서 저장은 손에 닿아야 하고, 따라가기는 접어 놓고 지도만 볼 때 오히려
  * 더 쓰인다. 그 밖의 것은 지도에 자리를 내준다.
- *
- * 날짜 칩은 **거르기지 고르기가 아니다.** 누르면 그 날짜의 장소만 목록과 지도에 남는데,
- * **번호는 그대로고 동선에서 빠지지도 않는다** — 저장되는 건 켜져 있는 장소 전부다.
- * 동선에서 빼고 넣는 건 옆의 `전체 선택`/`전체 해제` 와 각 줄의 탭이 맡는다.
  *
  * **장소는 세로 목록이고 시트 안에서 스크롤한다.** 가로로 늘어놓던 시절엔 20곳이면 오른쪽
  * 끝까지 밀어야 했고, 화면 폭이 정한 칸에 이름을 욱여넣느라 사진과 날짜를 같이 못 보여줬다.
@@ -183,13 +194,16 @@ function useCollapseDrag(setCollapsed: (collapsed: boolean) => void) {
  *
  * **접을 수 있다**(손잡이 탭, 또는 손잡이·저장 줄에서 끌기). 지도가 이 화면의 본체인데
  * 시트가 아래를 계속 물고 있으면 남쪽 마커가 가려진다.
+ *
+ * **`동선저장` 을 누르면 머리 줄이 이름 입력으로 갈리고 저장은 네비바로 간다**(`nameField`).
+ * 예전에는 그 위로 두 번째 바텀시트가 올라왔다 — 손잡이 두 개가 겹쳐 무엇을 내리면 무엇이
+ * 닫히는지 알 수 없었다. 시트가 이미 있으면 새로 띄우지 않고, 이 시트도 화면을 갈아끼우지
+ * 않는다: **줄 하나가 바뀔 뿐 날짜 필터도 목록도 높이도 그대로다.**
  */
 export function RoutePlaceStrip({
   places,
   disabledPlaceIds,
-  dates,
   dateFilter,
-  onChangeDateFilter,
   allVisibleSelected,
   onToggleAllVisible,
   maxPlaces,
@@ -200,8 +214,19 @@ export function RoutePlaceStrip({
   collapsed,
   onCollapsedChange,
   stepper,
+  nameField,
 }: RoutePlaceStripProps) {
   const activeCount = places.filter((place) => !disabledPlaceIds.has(place.id)).length;
+
+  /**
+   * 켠 장소가 저장 한도를 넘었는가. **넘은 채로는 저장할 수 없다** — 개수 줄을 ERROR 로
+   * 물들이고 `동선저장` 을 잠근다.
+   *
+   * 예전에는 눌러야 토스트로 알려줬다. 그런데 `100/20개` 는 이미 화면에 떠 있는 사실이라,
+   * 눌러 보기 전까지 그게 막힌 상태인 줄 몰랐다 — **문제를 들고 있는 줄이 직접 말하는 게 맞다.**
+   * (한도가 없는 ② 저장된 동선 보기에서는 `maxPlaces` 자체가 안 온다.)
+   */
+  const overLimit = maxPlaces !== undefined && activeCount > maxPlaces;
   const drag = useCollapseDrag(onCollapsedChange);
   const listRef = useRef<HTMLUListElement>(null);
   const highlighted = new Set(highlightedPlaceIds ?? []);
@@ -263,13 +288,17 @@ export function RoutePlaceStrip({
         가지면 접히는 영역(`overflow-hidden`)이 그 여백선에서 잘라내서, 목록이 `-mx-5` 로
         밖으로 나가려 해도 소용이 없다. 그래서 줄에 깔린 배경색이 좌우 20px 를 못 덮고
         흰 띠가 남았다. 시트를 끝까지 열어 두고 여백은 줄이 padding 으로 갖는다.
+
+        ⚠️ **이름 짓기로 넘어가도 높이는 그대로다.** 한때 폼 높이에 맡겼더니 시트가 그 순간
+        훅 줄어들면서, 없애려던 바로 그 인상(딴 시트가 떴다)이 되돌아왔다. 지금은 목록을
+        치우지 않으므로 아예 조건이 없다 — 머리 줄이 갈리고 저장 버튼이 네비바로 갈 뿐이다.
       */
       className={`flex flex-col rounded-t-[20px] bg-white pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] ${
         collapsed ? '' : 'h-[50dvh]'
       }`}
     >
       {/* touch-none: 세로 끌기를 브라우저 기본 제스처에 뺏기지 않게.
-          손잡이와 맨 아래 줄에만 건다 — 가운데(날짜 칩·목록)는 저희끼리 굴러가야 한다. */}
+          손잡이와 맨 아래 줄에만 건다 — 가운데 목록은 저희끼리 굴러가야 한다. */}
       <div className="shrink-0 touch-none px-5" {...drag.handlers}>
         <button
           type="button"
@@ -286,20 +315,25 @@ export function RoutePlaceStrip({
           <span className="h-1 w-10 rounded-full bg-[#d9d9d9]" />
         </button>
 
-        {/* 접혔을 때만. 그때는 시트가 무엇인지 말해줄 게 이 한 줄뿐이다 — 펼치면 날짜
-            필터와 목록이 이미 그 말을 하고 있어서 자리만 먹는다.
-            따라가기 줄이 있으면 그쪽이 이 말을 대신한다(`stepper` 참고). */}
-        {collapsed && !stepper && (
+        {/* 접혔을 때만. 그때는 시트가 무엇인지 말해줄 게 이 한 줄뿐이다 — 펼치면 목록이
+            이미 그 말을 하고 있어서 자리만 먹는다.
+            머리 줄(따라가기 / 이름 입력)이 있으면 그쪽이 이 말을 대신한다. */}
+        {collapsed && !stepper && !nameField && (
           <h2 className="truncate pb-1 pt-1 text-[15px] font-medium tracking-tight text-[#2c3930]">
             전체 동선
           </h2>
         )}
       </div>
 
-      {/* 동선 따라가기. 접히는 영역 **밖**이라 접어도 남는다.
-          ⚠️ 끌기 영역(`drag.handlers`) 안에 넣지 않는다 — 화살표를 누르려다 손가락이 조금
-          밀리면 시트가 접히면서 장소까지 넘어간다. 시트를 잡는 자리는 손잡이와 저장 줄이다. */}
-      {stepper}
+      {/* 머리 줄 — 이름 짓기 중이면 입력 한 줄, 아니면 동선 따라가기. **둘은 같은 자리를
+          나눠 쓴다**: 이름을 짓는 동안 한 곳씩 짚어갈 일이 없고, 자리를 겹쳐 두면 줄이
+          늘지 않아 아래 목록이 그대로 남는다.
+
+          접히는 영역 **밖**이라 접어도 남는다 — 접어 놓고 지도만 보며 따라가는 것도,
+          접어 놓고 이름만 짓는 것도 멀쩡한 사용법이다.
+          ⚠️ 끌기 영역(`drag.handlers`) 안에 넣지 않는다 — 화살표나 입력을 누르려다 손가락이
+          조금 밀리면 시트가 접힌다. 시트를 잡는 자리는 손잡이와 저장 줄이다. */}
+      {nameField ?? stepper}
 
       {/* 접히는 영역. 펼쳤을 때 시트에 남는 자리를 전부 차지하고(`flex-1`), 그 안에서 목록이
           다시 남는 자리를 갖는다 — 시트 높이가 `SHEET_EXPANDED_RATIO` 로 고정이라 목록에 따로
@@ -310,31 +344,29 @@ export function RoutePlaceStrip({
         className={`flex min-h-0 flex-1 flex-col overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
           collapsed ? 'max-h-0 opacity-0' : 'max-h-[50dvh] opacity-100'
         }`}
-        // 접힌 동안 칩·목록이 보이지 않는데도 탭 순서·스크린리더에 남는 걸 막는다.
+        // 접힌 동안 개수 줄·목록이 보이지 않는데도 탭 순서·스크린리더에 남는 걸 막는다.
         // (`overflow:hidden` 은 시각만 자르지 초점은 그대로 들어간다.)
         inert={collapsed}
       >
-        {/* 펼친 시트의 머리 — 날짜 필터. 목록보다 위에 있고 목록과 함께 굴러가지 않는다:
-            무엇을 보고 있는지 정하는 줄이라 보는 내내 제자리에 있어야 한다.
-            음수 마진: 칩 그림자가 좌우 스크롤 끝에서 잘리지 않게 패딩만큼 밖으로 뺐다가
-            같은 값으로 되돌린다. 날짜가 없으면 `pt-4` 만 남아 빈 틈이 되므로 감싼 채로 뺀다. */}
-        {dates.length > 0 && (
-          <div className="shrink-0 px-5 pt-2">
-            <RouteDateChips dates={dates} filter={dateFilter} onChangeFilter={onChangeDateFilter} />
-          </div>
-        )}
+        {/* 목록 위에 붙는 줄: 지금 몇 곳이고, 한 번에 넣거나 뺄 수 있다.
+            문구는 지금 상태가 아니라 **누르면 무슨 일이 일어나는지**를 말한다.
 
-        {/* 필터 바로 밑에 붙는 줄: 지금 몇 곳이고, 한 번에 넣거나 뺄 수 있다.
-            칩 줄과 목록 사이에 두는 이유는 **둘 다에 걸쳐 있어서**다 — 개수는 목록이 만든
-            결과이고, `전체 선택`/`전체 해제` 는 위에서 고른 필터 범위에 적용된다.
-            문구는 지금 상태가 아니라 **누르면 무슨 일이 일어나는지**를 말한다. */}
-        {/* 칩 줄과 사이를 넉넉히 벌린다(pt-5). 붙여 두면 칩을 누르려던 손가락이 바로 아래
-            `전체 선택` 에 닿는다 — 둘은 하는 일이 다르다(보기 좁히기 vs 동선에서 빼기).
-            좁은 간격은 눈에도 한 덩어리로 읽혀서, 칩을 누르면 선택까지 바뀌는 줄 알게 된다. */}
-        <div className="flex shrink-0 items-center gap-3 px-5 pt-5">
+            **날짜 필터 칩이 이 위에 있었고 지금은 시트 바로 위로 나갔다.** 칩은 지도와 목록의
+            보기 범위를 정하는 것이라 시트 안일 이유가 없다 — 시트를 접으면 칩이 같이 숨는데
+            지도는 계속 걸러진 채라, 왜 하루치만 보이는지 화면에 남는 게 없었다.
+            이제 이 시트는 **동선에 무엇을 넣을지** 하나만 다룬다.
+            `전체 선택`/`전체 해제` 는 여전히 걸린 필터 범위에 적용된다(그 범위가 곧 아래
+            목록이라, 칩이 멀어져도 무엇에 걸리는지는 목록이 말해 준다). */}
+        <div className="flex shrink-0 items-center gap-3 px-5 pt-3">
           {/* 색이 GREEN-500 이었다 — 연초록 바닥 위 2.35:1 로, 가이드라인이 결함이라고
-              집어둔 조합이다. 보조 텍스트 자리이므로 INK-muted(흰 위 5.98:1). */}
-          <p className="min-w-0 flex-1 truncate text-[13px] text-[#60655c]">
+              집어둔 조합이다. 보조 텍스트 자리이므로 INK-muted(흰 위 5.98:1).
+              한도를 넘으면 ERROR 로 갈아입고 medium 을 얹는다 — 이 줄이 지금 화면에서
+              유일하게 잘못된 것이라 옆의 `전체 해제` 와 무게가 같으면 안 된다. */}
+          <p
+            className={`min-w-0 flex-1 truncate text-[13px] ${
+              overLimit ? 'font-medium text-[#dc2626]' : 'text-[#60655c]'
+            }`}
+          >
             장소 {maxPlaces === undefined ? activeCount : `${activeCount}/${maxPlaces}`}개
           </p>
 
@@ -348,6 +380,17 @@ export function RoutePlaceStrip({
             {allVisibleSelected ? '전체 해제' : '전체 선택'}
           </button>
         </div>
+
+        {/* 빨간 숫자만으로는 '많다'는 것만 읽히고 **어떻게 하라는 건지**가 없다. 개수 줄은
+            `전체 해제` 와 폭을 나눠 갖느라 문구가 안 들어가서 아래에 한 줄로 붙인다 —
+            날짜 칩이 지도 위로 올라가며 비운 자리가 여기다(칩 줄보다 얇아 목록은 오히려 늘었다).
+            넘쳤을 때만 나타난다. ① 날짜 고르기의 안내와 짝이다: 거기서 '다음 화면에서 뺄 수
+            있어요'로 끝나고, 뺄 수 있는 화면이 여기다. */}
+        {overLimit && (
+          <p className="shrink-0 px-5 pt-1.5 text-[13px] text-[#dc2626]">
+            {maxPlaces}개까지 저장할 수 있어요. 줄을 눌러 빼주세요
+          </p>
+        )}
 
         {places.length === 0 ? (
           <p className="mt-4 px-5 text-[13px] text-[#60655c]">표시할 동선이 없어요</p>
@@ -435,21 +478,11 @@ export function RoutePlaceStrip({
                       {/* 꺼진 장소는 사진을 흑백으로 죽인다. 이름은 그대로 읽히게 두고(여전히
                           눌러서 되살릴 수 있는 버튼이다) 사진·번호·`제외됨` 으로만 구분한다 —
                           글자를 흐리게 하면 초록 배경 위에서 대비가 무너진다. */}
-                      {place.imageUrl ? (
-                        <img
-                          src={place.imageUrl}
-                          alt=""
-                          className={`h-full w-full object-cover ${disabled ? 'opacity-40 grayscale' : ''}`}
-                        />
-                      ) : (
-                        <span className="flex h-full w-full items-center justify-center">
-                          <img
-                            src={FALLBACK_ICON}
-                            alt=""
-                            className={`h-7 w-7 ${disabled ? 'opacity-40' : ''}`}
-                          />
-                        </span>
-                      )}
+                      <Photo
+                        src={place.imageUrl}
+                        className={`h-full w-full object-cover ${disabled ? 'opacity-40 grayscale' : ''}`}
+                        iconClassName="h-7 w-7"
+                      />
                     </div>
 
                     <div className="min-w-0 flex-1">
@@ -503,8 +536,11 @@ export function RoutePlaceStrip({
 
         저장에 성공하면 동선 탭으로 넘어가므로 '저장됨' 같은 완료 상태가 필요 없다 —
         이 화면에 남아 있다는 건 아직 저장 전이라는 뜻이다.
+
+        이름 짓기로 넘어가면 이 줄이 통째로 빠지고 저장은 네비바 오른쪽이 맡는다 — 그 단계에서
+        시트는 '무엇을 저장할지'를 보여주고, 화면 머리가 '저장할지 말지'를 묻는다.
       */}
-      {onSave && (
+      {!nameField && onSave && (
         <div className="shrink-0 touch-none px-5 pt-3" {...drag.handlers}>
           <button
             type="button"
@@ -514,7 +550,12 @@ export function RoutePlaceStrip({
               if (drag.consumeDrag()) return;
               onSave();
             }}
-            className="h-12 w-full rounded-[12px] bg-[#2c3930] text-[15px] font-medium tracking-wide text-[#fffcef]"
+            /* 한도를 넘으면 잠근다 — 왜 잠겼는지는 바로 위 ERROR 줄이 이미 말하고 있다.
+               ⚠️ 켠 장소가 0개인 경우는 여기서 잠그지 않는다. 그건 장소를 빼다 지나가는
+               한때이지 잘못이 아니라, 시작하자마자 잠긴 버튼을 보여줄 이유가 없다 —
+               그때는 눌렀을 때 토스트가 이유를 말한다(`RouteViewPage.handleSave`). */
+            disabled={overLimit}
+            className="h-12 w-full rounded-[12px] bg-[#2c3930] text-[15px] font-medium tracking-wide text-[#fffcef] disabled:bg-[#d9d9d9] disabled:text-[#60655c]"
           >
             동선저장
           </button>

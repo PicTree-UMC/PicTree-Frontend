@@ -195,7 +195,7 @@ export function RouteListPage() {
             </p>
             <button
               onClick={() => navigate(ROUTES.journeyCreate)}
-              className="animate-fade-in-up mt-8 h-[52px] w-full max-w-[320px] rounded-[24px] bg-pictree-700 text-[15px] font-medium text-white"
+              className="animate-fade-in-up mt-8 h-[46px] rounded-[24px] bg-pictree-700 px-7 text-[15px] font-medium text-white"
               style={{ animationDelay: '750ms' }}
             >
               동선 생성하기

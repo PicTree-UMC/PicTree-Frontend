@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { IconFrame } from './IconFrame';
+import { Photo } from './Photo';
 
 /** 프로필 아이콘 느낌으로 장소명 앞에 두는 나무 아바타(지도 마커와 같은 에셋). */
 const TREE_AVATAR = '/markers/tree.svg';
@@ -10,7 +11,11 @@ interface PhotoPostProps {
   title: string;
   /** 머리글 오른쪽 — 날짜. 폭을 안 줄이므로 짧게 넘길 것. */
   meta?: ReactNode;
-  imageUrl: string;
+  /**
+   * 대표 사진. 없거나 못 불러오면 `Photo` 가 나무 폴백으로 받는다 —
+   * 부르는 쪽에서 대체 이미지를 만들어 넘기지 않는다.
+   */
+  imageUrl?: string | null;
   /**
    * 사진 아래 액션 줄. `flex items-center` 한 줄 안에 그대로 놓인다 —
    * 오른쪽 끝으로 밀 것은 스스로 `ml-auto` 를 갖는다. 없으면 줄을 안 그린다.
@@ -43,11 +48,11 @@ export function PhotoPost({ title, meta, imageUrl, actions, caption }: PhotoPost
       </div>
 
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#EDE7D2]">
-        <img
+        <Photo
           src={imageUrl}
-          alt=""
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover"
+          iconClassName="h-14 w-14"
         />
       </div>
 
