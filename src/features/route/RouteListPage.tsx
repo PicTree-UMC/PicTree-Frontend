@@ -265,18 +265,12 @@ export function RouteListPage() {
             setShowBottomSheet(false);
             setShowPhotoAlbum(true);
           }}
-          // AI 블로그 작성 플로우로 이동. 이 동선의 방문 기간을 미리 채워 넘긴다
-          // (기록이 없으면 recordDates 가 빈 배열 — 그때는 작성 화면 기본값을 쓴다).
+          // AI 블로그 작성 플로우로 이동. **이 동선 자체**를 넘긴다 — 초안 입력 단위가
+          // 기간에서 동선으로 바뀌면서(이슈 #212) 작성 화면 1단계가 이미 정해진 셈이 된다.
+          // 기간은 거기서 동선 상세로 도로 뽑으므로 여기서 계산해 넘길 것이 없다.
           onAIBlog={() => {
             setShowBottomSheet(false);
-            const dates = [...selectedRoute.recordDates].sort();
-            const initialStartDate = dates[0];
-            const initialEndDate = dates[dates.length - 1];
-            navigate(ROUTES.blogCreate, {
-              state: initialStartDate && initialEndDate
-                ? { startDate: initialStartDate, endDate: initialEndDate }
-                : undefined,
-            });
+            navigate(ROUTES.blogCreate, { state: { routeId: selectedRoute.id } });
           }}
           onRename={() => {
             setShowBottomSheet(false);

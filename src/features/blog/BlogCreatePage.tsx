@@ -4,13 +4,19 @@ import { useToast } from '../../shared/components/toast/toastStore';
 import { useBlogCreate } from './hooks/useBlogCreate';
 import { useBlogDraftStore } from './store/blogDraftStore';
 import { CreateStepHeader } from './components/CreateStepHeader';
-import { DateStep } from './components/steps/DateStep';
+import { RouteStep } from './components/steps/RouteStep';
 import { ToneStep } from './components/steps/ToneStep';
 import { ResultStep } from './components/steps/ResultStep';
 import { useMySubscription } from '../premium/hooks/useMySubscription';
 
-/** 동선 페이지의 "AI 블로그 작성"에서 넘어올 때 전달되는 기간 프리필. */
-type BlogCreateLocationState = { startDate?: string; endDate?: string } | null | undefined;
+/**
+ * 동선 페이지의 "AI 블로그 작성"에서 넘어올 때 전달되는 프리필.
+ *
+ * ⚠️ 전에는 그 동선의 방문 기간(`startDate`·`endDate`)을 넘겼다. 초안 입력이 기간이었기
+ * 때문인데, 이제 입력 단위가 동선 자체라 **동선 id 하나면 된다**(이슈 #212). 기간은 작성
+ * 화면이 동선 상세에서 도로 뽑는다 — 넘겨받은 기간과 동선의 실제 날짜가 어긋날 일이 없어진다.
+ */
+type BlogCreateLocationState = { routeId?: number } | null | undefined;
 
 function BlogCreateContent() {
   const navigate = useNavigate();
@@ -18,10 +24,7 @@ function BlogCreateContent() {
   const { showToast } = useToast();
   const saveDraft = useBlogDraftStore((state) => state.saveDraft);
   const locationState = location.state as BlogCreateLocationState;
-  const flow = useBlogCreate({
-    initialStartDate: locationState?.startDate,
-    initialEndDate: locationState?.endDate,
-  });
+  const flow = useBlogCreate({ initialRouteId: locationState?.routeId });
 
   const handleBack = () => {
     if (flow.step === 1) {
@@ -63,15 +66,19 @@ function BlogCreateContent() {
       <CreateStepHeader step={flow.step} onBack={handleBack} />
       <div className="flex flex-1 flex-col">
         {flow.step === 1 && (
-          <DateStep
-            startDate={flow.startDate}
-            endDate={flow.endDate}
-            trees={flow.trees}
-            selectedTreeIds={flow.selectedTreeIds}
-            onToggleTree={flow.toggleTree}
-            activityByDate={flow.activityByDate}
-            onDateRangeChange={flow.setDateRange}
+          <RouteStep
+            routes={flow.routes}
+            isPending={flow.isRoutesPending}
+            isError={flow.isRoutesError}
+            onRetry={flow.refetchRoutes}
+            selectedRouteId={flow.selectedRouteId}
+            onSelect={flow.selectRoute}
+            isDetailPending={flow.isRouteDetailPending}
+            isDetailError={flow.isRouteDetailError}
+            treeCount={flow.treeIds.length}
+            canGoNext={flow.canGoToTone}
             onNext={flow.goToTone}
+            onCreateRoute={() => navigate(ROUTES.journey)}
           />
         )}
         {flow.step === 2 && (

@@ -1,20 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouteDetail } from '@/features/route/hooks/useRouteDetail';
+import { useRoutePhotos } from '@/features/route/hooks/useRoutePhotos';
+import { useSavedRoutes } from '@/features/route/hooks/useSavedRoutes';
+
 import type { BlogDay, BlogDraftPreview, BlogStatus, ToneId, CreateAIBlogDraftRequest } from '../types/blog';
 import { getLocalDateString } from '../../../shared/lib/date';
 import { getApiErrorMessage } from '../../../shared/lib/apiError';
 import { DEFAULT_TONE_ID } from '../constants/blogTones';
 import { suggestToneFromMoods } from '../lib/moodTone';
 import { createAIBlogDraft } from '../api/blogApi';
-import { useBlogTrees } from './useBlogTrees';
 import { blogDraftUsageKey } from './useBlogDraftUsage';
 
 export type CreateStep = 1 | 2 | 3;
 
 export interface UseBlogCreateOptions {
-  /** 동선 페이지 등에서 넘어올 때 미리 채울 기간(YYYY-MM-DD). 없으면 기본값을 쓴다. */
-  initialStartDate?: string;
-  initialEndDate?: string;
+  /** 동선 목록에서 "AI 블로그 작성"으로 넘어올 때 이미 정해진 동선. 있으면 1단계가 그것으로 채워진다. */
+  initialRouteId?: number;
 }
 
 const API_TONE_BY_ID: Record<ToneId, CreateAIBlogDraftRequest['tone']> = {
@@ -24,12 +26,26 @@ const API_TONE_BY_ID: Record<ToneId, CreateAIBlogDraftRequest['tone']> = {
   polite: 'CALM',
 };
 
-/** 작성 플로우(3스텝)의 상태 기계. 날짜·어체 선택과 목 초안 생성을 관리한다. */
-export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreateOptions = {}) {
+/**
+ * 작성 플로우(3스텝)의 상태 기계.
+ *
+ * ⚠️ **초안의 입력 단위가 '기간' 에서 '저장한 동선' 으로 바뀌었다**(이슈 #212).
+ *
+ * 종전에는 기간을 고르면 그 안의 나무가 **전부 자동 선택**돼 그대로 `treeIds` 에 실렸다.
+ * 기록이 쌓인 계정일수록 한 번에 들어가는 양을 아무도 통제하지 못했고, 초안 품질도 요청
+ * 크기도 거기서 무너졌다. 동선은 이미 "한 여행" 이라는 뜻을 갖고 장소가 20개로 묶여 있어,
+ * **사용자가 의도한 범위가 그대로 초안의 범위**가 된다.
+ *
+ * 그래서 기간·나무 선택은 여기서 정하지 않는다 — 고른 동선의 상세(`GET /routes/{id}`)에서
+ * 파생될 뿐이다. 화면이 날짜를 만지던 `setDateRange`·`toggleTree`·`activityByDate` 도 함께
+ * 사라졌다(그 셋을 쓰던 `DateStep`·`BlogDateRangePicker`·`BlogRoadmap` 도).
+ *
+ * 부수 효과로 **나무 전체 조회(`useBlogTrees`, 1+N 페이지)가 이 흐름에서 빠졌다.** 필요한 건
+ * 동선 하나에 속한 것뿐이라 동선 상세·사진 두 요청으로 끝난다.
+ */
+export function useBlogCreate({ initialRouteId }: UseBlogCreateOptions = {}) {
   const [step, setStep] = useState<CreateStep>(1);
-  const today = getLocalDateString(new Date());
-  const [startDate, setStartDate] = useState(initialStartDate ?? today);
-  const [endDate, setEndDate] = useState(initialEndDate ?? today);
+  const [selectedRouteId, setSelectedRouteId] = useState<number | null>(initialRouteId ?? null);
   const [toneId, setToneId] = useState<ToneId>(DEFAULT_TONE_ID);
   const [status, setStatus] = useState<BlogStatus>('idle');
   const [draft, setDraft] = useState<BlogDraftPreview | null>(null);
@@ -37,50 +53,58 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
   /** 실패 사유. 서버가 준 문구를 그대로 든다 — `status === 'error'` 일 때만 의미가 있다. */
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // 목록 화면과 같은 query key를 사용해 나무 전체 조회 결과를 재사용한다.
-  const { data: allPlaces = [] } = useBlogTrees();
+  const routesQuery = useSavedRoutes();
+  const detailQuery = useRouteDetail(selectedRouteId ?? undefined);
+  /*
+    결과 화면의 사진 폴백용. 초안 응답이 `imageUrl` 을 안 채워 준 칸을 그 장소의 대표
+    사진으로 메운다 — 종전에 나무 전체 목록에서 하던 일을 동선 범위로 좁힌 것이다.
+  */
+  const photosQuery = useRoutePhotos(selectedRouteId ?? undefined);
 
-  const trees = useMemo(
-    () => allPlaces.filter((tree) => {
-      const date = getLocalDateString(new Date(tree.createdAt));
-      return date >= startDate && date <= endDate;
-    }),
-    [allPlaces, startDate, endDate],
+  const places = detailQuery.data?.places;
+
+  /**
+   * 초안에 넣을 나무들.
+   *
+   * ⚠️ **중복을 걷어낸다.** 한 동선에서 같은 장소를 다시 들르면 노드가 두 개지만 나무는
+   * 하나다(`RoutePlace.id` 가 `treeId` 가 아니라 방문 순서인 이유와 같다). 그대로 보내면
+   * 서버가 같은 기록을 두 번 받아 초안에 같은 문단이 겹쳐 나온다.
+   */
+  const treeIds = useMemo(
+    () => [...new Set((places ?? []).map((place) => place.treeId).filter((id): id is number => id != null))],
+    [places],
   );
 
-
-  // 초안에 포함할 기록 선택. 기본은 전체 선택이며, 기간(=trees)이 바뀌면 다시 전체로 맞춘다.
-  const [selectedTreeIds, setSelectedTreeIds] = useState<number[]>([]);
-  useEffect(() => {
-    setSelectedTreeIds(trees.map((tree) => tree.treeId));
-  }, [trees]);
-
-  const selectedTrees = useMemo(
-    () => trees.filter((tree) => selectedTreeIds.includes(tree.treeId)),
-    [trees, selectedTreeIds],
+  /**
+   * 기간은 **동선이 정한다** — 노드 날짜의 최소·최대다.
+   *
+   * 저장할 때(`POST /blog-drafts`) 쓰는 값이라 비워 둘 수 없다. 날짜가 하나도 없는 동선은
+   * 있을 수 없지만(노드가 곧 기록이다), 서버가 빈 값을 주면 오늘로 버틴다.
+   */
+  const today = getLocalDateString(new Date());
+  const sortedDates = useMemo(
+    () => (places ?? []).map((place) => place.date).filter(Boolean).sort(),
+    [places],
   );
+  const startDate = sortedDates[0] ?? today;
+  const endDate = sortedDates[sortedDates.length - 1] ?? today;
 
-  const activityByDate = useMemo(
-    () => allPlaces.reduce<Record<string, number>>((activity, tree) => {
-      const date = getLocalDateString(new Date(tree.createdAt));
-      activity[date] = (activity[date] ?? 0) + 1;
-      return activity;
-    }, {}),
-    [allPlaces],
-  );
+  const selectedRoute = routesQuery.data?.find((route) => route.id === selectedRouteId) ?? null;
 
-  // 초안 생성: 결과 스텝 진입 시 목 딜레이 후 완성. 선택된 기록만 사용한다.
+  /** 고른 동선의 내용까지 받아 와야 다음으로 갈 수 있다 — `treeIds` 없이는 요청을 못 만든다. */
+  const canGoToTone = selectedRouteId !== null && treeIds.length > 0;
+
+  // 초안 생성: 결과 스텝 진입 시 서버에 요청한다.
   useEffect(() => {
     if (status !== 'generating') return;
 
     let cancelled = false;
     (async () => {
       try {
-        // 서버에 초안 생성을 요청한다.
         const payload: CreateAIBlogDraftRequest = {
           startDate,
           endDate,
-          treeIds: selectedTreeIds,
+          treeIds,
           tone: API_TONE_BY_ID[toneId],
         };
 
@@ -98,12 +122,12 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
         const days: BlogDay[] = (resp.days ?? []).map((day) => ({
           date: day.date,
           sections: day.items.map((item) => {
-            const tree = trees.find((candidate) => candidate.treeId === item.treeId);
+            const photo = photosQuery.data?.find((candidate) => candidate.treeId === item.treeId);
             return {
               treeId: item.treeId,
               heading: item.placeName,
               body: item.content,
-              image: item.imageUrl ?? tree?.imageUrl ?? '',
+              image: item.imageUrl ?? photo?.url ?? '',
             };
           }),
         }));
@@ -122,7 +146,7 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
     })();
 
     return () => { cancelled = true; };
-  }, [status, selectedTreeIds, toneId, startDate, endDate, trees, queryClient]);
+  }, [status, treeIds, toneId, startDate, endDate, photosQuery.data, queryClient]);
 
   return {
     step,
@@ -132,23 +156,31 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
     status,
     errorMessage,
     draft,
-    trees,
-    selectedTreeIds,
-    toggleTree: (treeId: number) =>
-      setSelectedTreeIds((current) =>
-        current.includes(treeId)
-          ? current.filter((id) => id !== treeId)
-          : [...current, treeId],
-      ),
-    activityByDate,
-    setDateRange: (start: string, end: string) => {
-      setStartDate(start);
-      setEndDate(end);
-    },
+
+    /** 1단계가 그리는 목록. 로딩·실패도 그대로 넘겨 화면이 갈라 그린다. */
+    routes: routesQuery.data ?? [],
+    isRoutesPending: routesQuery.isPending,
+    isRoutesError: routesQuery.isError,
+    refetchRoutes: routesQuery.refetch,
+
+    selectedRouteId,
+    selectedRoute,
+    selectRoute: setSelectedRouteId,
+    /** 고른 동선의 내용을 받는 중. 이 동안 '다음' 을 눌러도 보낼 `treeIds` 가 없다. */
+    isRouteDetailPending: selectedRouteId !== null && detailQuery.isPending,
+    isRouteDetailError: detailQuery.isError,
+    treeIds,
+    canGoToTone,
+
     setToneId,
     goToTone: () => {
-      // 선택한 기록의 기분 이모지 분포로 어체 기본값을 추천.
-      setToneId(suggestToneFromMoods(selectedTrees.map((tree) => tree.mood)));
+      if (!canGoToTone) return;
+      // 고른 동선의 기분 분포로 어체 기본값을 추천한다.
+      setToneId(
+        suggestToneFromMoods(
+          (places ?? []).map((place) => place.mood).filter((mood): mood is string => !!mood),
+        ),
+      );
       setStep(2);
     },
     goToResult: () => {
