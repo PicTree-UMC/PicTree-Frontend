@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { BlogDraftPreview, BlogStatus } from '../../types/blog';
 import { GeneratingCard } from '../GeneratingCard';
 import { useToast } from '../../../../shared/components/toast/toastStore';
+import { Photo } from '@/shared/components';
 import { formatLongDate } from '../../lib/formatBlogDate';
 
 type ResultStepProps = {
@@ -71,12 +72,19 @@ export function ResultStep({ status, draft, onSave }: ResultStepProps) {
               <div className="mt-7">
                 {day.sections.map((section, sectionIndex) => (
                   <article key={`${section.treeId}-${sectionIndex}`} className={sectionIndex > 0 ? 'mt-10' : undefined}>
+                    {/*
+                      못 불러온 사진은 아무것도 안 그린다(`fallback={null}`) — 글에는
+                      아이콘보다 없는 편이 낫다. `figure` 는 높이 0 이 되지만 아래 `mt-5`
+                      는 남아 20px 빈틈이 생기는데, 그건 그대로 둔다: 실패 여부를 바깥
+                      JSX 로 끌어올리지 않으려고 받아들인 값이다(#214).
+                    */}
                     {section.image && (
                       <figure className="overflow-hidden rounded-lg bg-pictree-100">
-                        <img
+                        <Photo
                           src={section.image}
                           alt={`${section.heading}에서 촬영한 사진`}
                           className="max-h-[440px] w-full object-cover"
+                          fallback={null}
                         />
                       </figure>
                     )}
