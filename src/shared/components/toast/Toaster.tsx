@@ -1,4 +1,4 @@
-import { useToastStore, ToastType, ToastPlacement } from './toastStore';
+import { useToastStore, ToastType, ToastPlacement, type ToastItem } from './toastStore';
 
 /** 토스트 렌더러. 앱 최상단에 한 번만 <Toaster /> 로 마운트. */
 
@@ -9,21 +9,24 @@ const typeClass: Record<ToastType, string> = {
 };
 
 // 상단은 헤더/탭 아래로, 하단은 탭바 위로 오도록 위치를 잡는다.
-// top 은 현재 동선 보기 화면만 쓴다. 값은 그 화면 **날짜 칩 줄 아래**에 맞춘 것이다
-// (실측: safe + 134.5px 가 칩 바닥, 여기에 여백을 더해 9rem). 예전 값 7rem 은 세이지
-// 밴드 시절 기준이라, 밴드가 없어지고 날짜 칩이 생긴 지금은 칩 위에 겹쳐 앉는다.
-// 헤더 높이가 다른 화면이 top 을 쓰게 되면 페이지가 오프셋을 넘기는 방식으로 바꿔야 한다.
+// top 기본값은 **동선 보기 화면** 기준이다. 그 화면 날짜 칩 줄 아래에 맞춘 실측값이고
+// (safe + 134.5px 가 칩 바닥, 여기에 여백을 더해 9rem), 예전 값 7rem 은 세이지 밴드
+// 시절 기준이라 밴드가 없어진 지금은 칩 위에 겹쳐 앉는다.
 //
-// TODO(PR #20 리뷰 합의): 두 번째 top 사용처가 생기거나 레이아웃 정리 작업을 할 때
-//   showToast(message, type, { placement: 'top', offsetTop }) 처럼 호출부가 오프셋을
-//   넘기고, 여기서는 기본값만 두는 per-call 방식으로 옮긴다.
-//   지금은 사용처가 하나뿐이라 이대로 두는 것으로 합의됐다.
+// ⚠️ **그래서 이 값은 다른 화면에서 근거가 없다.** 로그인 화면이 이 값을 쓰다가
+// 토스트가 새싹 일러스트 위에 앉았다 — 그 화면엔 헤더도 칩도 없다.
+// 화면마다 여백이 다르므로, 안 맞으면 여기 값을 늘리지 말고 호출부가 `offset` 을 넘긴다
+// (PR #20 리뷰에서 "두 번째 top 사용처가 생기면 per-call 로 옮긴다"고 합의한 그 방식).
 const placementClass: Record<ToastPlacement, string> = {
   top: 'top-[calc(env(safe-area-inset-top,0px)+9rem)]',
   bottom: 'bottom-20',
 };
 
-const PLACEMENTS: ToastPlacement[] = ['top', 'bottom'];
+/** `offset` 은 모서리에서 **중앙**까지의 거리다 — 토스트 높이를 호출부가 몰라도 되도록. */
+const offsetCenterClass: Record<ToastPlacement, string> = {
+  top: '-translate-y-1/2',
+  bottom: 'translate-y-1/2',
+};
 
 /**
  * 토스트는 **앱에서 가장 위**다. 이 값을 내리지 말 것.
@@ -49,16 +52,32 @@ export default function Toaster() {
 
   if (toasts.length === 0) return null;
 
+  /*
+    자리가 같은 것끼리 한 컨테이너에 쌓는다. `placement` 만으로 묶으면 안 된다 —
+    같은 `bottom` 이라도 `offset` 이 다르면 다른 자리이고, 한 컨테이너에 넣으면
+    나중 것이 앞의 자리로 끌려간다.
+  */
+  const groups = new Map<string, ToastItem[]>();
+  for (const toast of toasts) {
+    const key = `${toast.placement}|${toast.offset ?? ''}`;
+    const group = groups.get(key);
+
+    if (group) group.push(toast);
+    else groups.set(key, [toast]);
+  }
+
   return (
     <>
-      {PLACEMENTS.map((placement) => {
-        const items = toasts.filter((t) => t.placement === placement);
-        if (items.length === 0) return null;
+      {[...groups].map(([key, items]) => {
+        const { placement, offset } = items[0];
 
         return (
           <div
-            key={placement}
-            className={`pointer-events-none fixed inset-x-0 ${TOAST_Z} flex flex-col items-center gap-2 px-4 ${placementClass[placement]}`}
+            key={key}
+            style={offset ? { [placement]: offset } : undefined}
+            className={`pointer-events-none fixed inset-x-0 ${TOAST_Z} flex flex-col items-center gap-2 px-4 ${
+              offset ? offsetCenterClass[placement] : placementClass[placement]
+            }`}
           >
             {items.map((toast) => (
               <button

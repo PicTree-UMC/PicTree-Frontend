@@ -15,11 +15,20 @@ export interface ToastItem {
   message: string;
   type: ToastType;
   placement: ToastPlacement;
+  offset?: string;
 }
 
 interface ToastOptions {
   duration?: number;
   placement?: ToastPlacement; // 기본 하단. 화면에 따라 상단으로 띄우고 싶을 때 'top'.
+  /**
+   * 기준 모서리(`placement`)에서 토스트 **중앙**까지의 거리. CSS 길이면 뭐든 된다.
+   *
+   * 기본 위치는 탭바·헤더가 있는 화면에 맞춰 둔 값이라, 그 둘이 없는 화면(로그인 등)에서는
+   * 엉뚱한 데 앉는다. **그 화면의 여백을 아는 건 그 화면이므로** 값을 여기서 늘리지 말고
+   * 호출부가 넘긴다 (Toaster 의 TODO 에 적힌 합의).
+   */
+  offset?: string;
 }
 
 interface ToastState {
@@ -31,9 +40,9 @@ interface ToastState {
 export const useToastStore = create<ToastState>((set, get) => ({
   toasts: [],
   addToast: (message, type = 'info', options = {}) => {
-    const { duration = 2500, placement = 'bottom' } = options;
+    const { duration = 2500, placement = 'bottom', offset } = options;
     const id = crypto.randomUUID();
-    set((state) => ({ toasts: [...state.toasts, { id, message, type, placement }] }));
+    set((state) => ({ toasts: [...state.toasts, { id, message, type, placement, offset }] }));
     window.setTimeout(() => get().removeToast(id), duration); // duration 뒤 자동 제거
   },
   removeToast: (id) =>
