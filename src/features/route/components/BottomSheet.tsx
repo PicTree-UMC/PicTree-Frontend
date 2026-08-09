@@ -84,7 +84,7 @@ function SheetMenuItem({ icon, title, desc, onClick }: SheetMenuItemProps) {
     >
       <span className="shrink-0">{icon}</span>
       <span className="min-w-0">
-        <span className="block text-sm font-bold text-[#111]">{title}</span>
+        <span className="block text-[15px] font-medium text-[#111]">{title}</span>
         <span className="block text-[11px] font-medium text-[#2c3930]">{desc}</span>
       </span>
     </button>

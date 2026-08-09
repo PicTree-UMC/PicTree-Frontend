@@ -101,7 +101,7 @@ export function BlogCreatePage() {
     return (
       <main className="flex min-h-full flex-col items-center justify-center bg-[#fffcef] px-5 text-center">
         <p className="text-[15px] text-[#60655c]">구독 정보를 확인하지 못했어요.</p>
-        <button type="button" onClick={() => refetch()} className="mt-4 rounded-xl bg-pictree-700 px-5 py-3 text-[14px] font-medium text-white">
+        <button type="button" onClick={() => refetch()} className="mt-4 rounded-xl bg-pictree-700 px-5 py-3 text-[15px] font-medium text-white">
           다시 시도
         </button>
       </main>

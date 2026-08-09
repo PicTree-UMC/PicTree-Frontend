@@ -149,11 +149,11 @@ export function TimelinePage() {
         )}
 
         {isLoading && (
-          <p className="py-10 text-center text-sm text-[#60655C]">불러오는 중...</p>
+          <p className="py-10 text-center text-[15px] text-[#60655C]">불러오는 중...</p>
         )}
         {isError && (
           <div className="py-10 text-center">
-            <p className="text-sm text-[#DC2626]">기록을 불러오지 못했어요.</p>
+            <p className="text-[15px] text-[#DC2626]">기록을 불러오지 못했어요.</p>
             <button
               type="button"
               onClick={() => refetch()}
@@ -164,7 +164,7 @@ export function TimelinePage() {
           </div>
         )}
         {!isLoading && !isError && isSearching && groups.length === 0 && (
-          <p className="py-10 text-center text-sm text-[#60655C]">
+          <p className="py-10 text-center text-[15px] text-[#60655C]">
             검색과 일치하는 기록이 없어요.
           </p>
         )}

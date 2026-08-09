@@ -58,16 +58,16 @@ export function PhotoAlbumSheet({ route, onClose }: PhotoAlbumSheetProps) {
           </div>
         ) : isError ? (
           <div className="mt-[22px] flex flex-col items-center gap-4">
-            <p className="text-sm font-semibold text-[#2c3930]">사진을 불러오지 못했어요</p>
+            <p className="text-[15px] font-medium text-[#2c3930]">사진을 불러오지 못했어요</p>
             <button
               onClick={() => refetch()}
-              className="h-[38px] rounded-[19px] bg-pictree-700 px-6 text-sm font-bold text-white"
+              className="h-[38px] rounded-[19px] bg-pictree-700 px-6 text-[15px] font-medium text-white"
             >
               다시 시도
             </button>
           </div>
         ) : photos.length === 0 ? (
-          <p className="mt-[22px] text-sm font-medium text-[#2c3930]">
+          <p className="mt-[22px] text-[15px] font-medium text-[#2c3930]">
             이 동선에는 아직 사진이 없어요
           </p>
         ) : (
