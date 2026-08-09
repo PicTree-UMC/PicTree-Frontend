@@ -49,8 +49,13 @@ export const ROUTES = {
   journey: '/journey',
   /** 새 동선 만들기 ①단계 — 날짜 고르기. 여기서 고른 날짜를 `?dates=` 로 ② 에 넘긴다. */
   journeyCreate: '/journey/create',
-  /** 새 동선 만들기 ②단계 — 지도에서 장소를 다듬고 저장한다(`?dates=` 필수). */
+  /** 새 동선 만들기 ②단계 — 지도에서 장소를 다듬는다(`?dates=` 필수). */
   journeyView: '/journey/view',
+  /**
+   * 새 동선 만들기 ③단계 — 미리보고 이름 짓고 저장한다(`?dates=` · `?places=` 둘 다 필수).
+   * 저장될 내용이 전부 쿼리에 있어 새로고침·딥링크로 들어와도 같은 화면이 선다.
+   */
+  journeySave: '/journey/save',
   /** 저장된 동선 보기. **패턴**이라 이동할 땐 아래 `journeyViewPath` 를 쓴다. */
   journeyViewDetail: '/journey/view/:routeId',
   camera: '/camera',

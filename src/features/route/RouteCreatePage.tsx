@@ -11,7 +11,7 @@ import {
   parseDatesParam,
   toDatesParam,
 } from './lib/routeParams';
-import { Chip, NavBar } from '@/shared/components';
+import { Chip, NavBar, PrimaryCta } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { ROUTES } from '@/shared/constants/routes';
 
@@ -205,14 +205,9 @@ export function RouteCreatePage() {
           </p>
         )}
 
-        <button
-          type="button"
-          onClick={goToMap}
-          disabled={pickedDates.length === 0}
-          className="mt-3 h-[52px] w-full rounded-[24px] bg-pictree-700 text-[15px] font-medium text-white disabled:bg-[#b4b4b4]"
-        >
+        <PrimaryCta onClick={goToMap} disabled={pickedDates.length === 0} className="mt-3">
           {pickedDates.length === 0 ? '날짜를 선택해주세요' : '다음'}
-        </button>
+        </PrimaryCta>
       </div>
     </div>
   );
