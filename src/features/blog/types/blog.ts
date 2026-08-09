@@ -57,6 +57,40 @@ export interface AIBlogDraftDetail {
   endDate: string;
   createdAt: string;
 }
+/**
+ * GET /api/v1/blog-drafts/usage — 이번 주기 AI 초안 생성 사용량.
+ *
+ * ⚠️ **`limit` 은 요금제 혜택(`AI_BLOG_MONTHLY`)이 아니라 서버 상수에서 온다.**
+ * 백엔드 `blog-drafts.constant.ts` 의 `BLOG_DRAFT_LIMIT`(FREE 1 · PLUS 5 · PRO 20 ·
+ * MAX 50)이고, 생성을 막는 판정(`validateMonthlyLimit`)도 이 값을 쓴다. `GET
+ * /subscription-plans` 의 혜택값과 어긋날 수 있으므로 **실제로 몇 번 쓸 수 있는지는
+ * 이쪽이 정답**이다.
+ *
+ * ⚠️ `periodStartAt`·`periodEndAt` 에는 **타임존이 안 붙어 있다**(`formatKstDateTime`
+ * 이 `2026-08-01T00:00:00` 형태로 만든다). `new Date()` 에 그대로 넣으면 브라우저
+ * 로컬시각으로 읽히니, 화면에 날짜를 쓸 일이 생기면 KST 로 보정할 것.
+ */
+export interface BlogDraftUsage {
+  /** 사용량을 판정한 요금제 코드. 'FREE' | 'PLUS' | 'PRO' | 'MAX' */
+  plan: string;
+  /** 이번 주기 한도(회). */
+  limit: number;
+  /**
+   * 이번 주기에 쓴 횟수.
+   *
+   * **초안 목록 길이와 다르다.** 서버는 별도 사용 원장(`blogDraftUsage`)을 세므로,
+   * 생성만 하고 저장하지 않아도 올라가고 초안을 지워도 안 내려간다 — 실제로 소모된
+   * 횟수다.
+   */
+  usedCount: number;
+  /** 남은 횟수. 서버가 `max(limit - usedCount, 0)` 로 계산해 준다. */
+  remainingCount: number;
+  /** 주기 시작. 무료는 매월 1일, 유료는 결제 승인일 기준. 타임존 없음(위 주석). */
+  periodStartAt: string;
+  /** 주기 끝(미포함). 타임존 없음(위 주석). */
+  periodEndAt: string;
+}
+
 /** AI 초안 생성 단계 상태 (작성 플로우 3번째 스텝 내부에서만 사용). */
 export type BlogStatus = 'idle' | 'generating' | 'ready';
 
