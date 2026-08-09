@@ -1,6 +1,7 @@
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PrimaryCta } from '@/shared/components';
 import { ROUTES } from '@/shared/constants/routes';
+import { RouteIllustration } from './components/RouteIllustration';
 import { useBlogDraftUsage } from '@/features/blog/hooks/useBlogDraftUsage';
 import { useMySubscription } from '@/features/premium/hooks/useMySubscription';
 import { PREMIUM_GRADIENT_CLASS } from '@/features/premium/lib/backdrop';
@@ -65,21 +66,58 @@ export function RouteSavedPage() {
     navigate(ROUTES.journey, { replace: true, state: { selectedRouteId: routeId } });
 
   return (
-    <main className="flex min-h-full w-full flex-col items-center justify-center px-5 text-center">
-      <p className="text-xl font-medium text-[#2c3930]">동선을 저장했어요</p>
+    <main className="flex min-h-full w-full flex-col">
+      {/* 알림은 남는 자리 한가운데. 아래 버튼이 자리를 먼저 가져가고 남는 만큼을 쓴다. */}
+      <div className="flex flex-1 flex-col items-center justify-center px-5 text-center">
+        {/*
+          동선이 그려지는 그림이 먼저 돈다(약 1.3초). 빈 화면에서는 앞으로 만들 것을 예고하는
+          그림인데, 여기서는 **방금 만든 그것**이라 같은 그림이 확인이 된다.
 
-      {/* 이름이 없으면 줄째로 뺀다 — 빈 줄은 이름을 못 받은 게 아니라 이름이 없는 것처럼 읽힌다. */}
-      {routeName && (
-        <p className="mt-2 max-w-full truncate text-[15px] text-[#60655c]">{routeName}</p>
-      )}
+          문구는 그림이 끝날 즈음 떠오른다 — 먼저 뜨면 "다 됐다"를 글이 말해 버려서 그림이
+          뒷북이 된다(`RouteListPage` 빈 화면과 같은 지연값).
+        */}
+        <RouteIllustration className="w-[200px]" />
 
-      <p className="mt-6 text-[15px] leading-[22px] text-[#2c3930]">
-        이 동선으로 블로그 초안을
-        <br />
-        바로 만들어 볼 수 있어요
-      </p>
+        <p
+          className="animate-fade-in-up mt-6 text-xl font-medium text-[#2c3930]"
+          style={{ animationDelay: '600ms' }}
+        >
+          동선을 저장했어요
+        </p>
 
-      <div className="mt-6 w-full">
+        {/* 이름이 없으면 줄째로 뺀다 — 빈 줄은 이름을 못 받은 게 아니라 이름이 없는 것처럼 읽힌다. */}
+        {routeName && (
+          <p
+            className="animate-fade-in-up mt-2 max-w-full truncate text-[15px] text-[#60655c]"
+            style={{ animationDelay: '600ms' }}
+          >
+            {routeName}
+          </p>
+        )}
+
+        <p
+          className="animate-fade-in-up mt-6 text-[15px] leading-[22px] text-[#2c3930]"
+          style={{ animationDelay: '750ms' }}
+        >
+          이 동선으로 블로그 초안을
+          <br />
+          바로 만들어 볼 수 있어요
+        </p>
+      </div>
+
+      {/*
+        버튼은 바닥에 앉힌다 — ①②③ 단계가 전부 하단 CTA 라, 흐름의 꼬리인 이 화면만 버튼이
+        가운데 떠 있으면 방금까지 손가락이 있던 자리가 아니다. 여백은 그 화면들과 같은 값.
+
+        구분선(`border-t`)은 두지 않는다 — 위가 스크롤되는 내용이 아니라 문장 세 줄이라,
+        선을 그으면 나눌 것이 없는 화면을 둘로 가른다.
+
+        ⚠️ **버튼에는 등장 지연을 걸지 않는다.** 위 문구는 순서대로 떠오르지만 버튼까지
+        그 줄에 세우면 저장을 막 끝낸 사람이 1초 가까이 아무것도 못 누른다. 이 화면의 목적이
+        그 버튼이라, 연출이 그걸 늦추면 순서가 뒤집힌 것이다. 바닥에 떨어져 있어 위 문구와
+        같이 움직이지 않아도 어긋나 보이지 않는다.
+      */}
+      <div className="px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-3">
         {needsUpgrade ? (
           /*
             ⚠️ `PrimaryCta` 에 className 으로 얹지 않는다 — 그 컴포넌트 주석대로 배경·라운드가
