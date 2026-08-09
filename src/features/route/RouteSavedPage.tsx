@@ -3,7 +3,6 @@ import { PrimaryCta } from '@/shared/components';
 import { ROUTES } from '@/shared/constants/routes';
 import { RouteIllustration } from './components/RouteIllustration';
 import { useBlogDraftUsage } from '@/features/blog/hooks/useBlogDraftUsage';
-import { useMySubscription } from '@/features/premium/hooks/useMySubscription';
 import { PREMIUM_GRADIENT_CLASS } from '@/features/premium/lib/backdrop';
 
 /** ③단계에서 실어 보내는 이름. 없어도 화면은 선다(새로고침·딥링크). */
@@ -25,19 +24,21 @@ export function RouteSavedPage() {
   const { routeId: routeIdParam } = useParams();
   const routeId = Number(routeIdParam);
 
-  const { data: subscription, isPending: isSubscriptionPending } = useMySubscription();
   const { data: usage, isPending: isUsagePending } = useBlogDraftUsage();
 
   const routeName = (location.state as RouteSavedState)?.routeName;
 
   /*
+    ⚠️ **구독 여부는 보지 않는다.** 한때 `!subscription` 도 업그레이드 사유로 쳤는데 틀렸다 —
+    무료 플랜도 PICTREE 토큰을 월 1개 받는다(`/premium` 비교표에 그렇게 적혀 있고, 서버
+    `BLOG_DRAFT_LIMIT` 도 FREE 1 이다). 구독이 없다는 게 초안을 못 만든다는 뜻이 아니므로,
+    막을 사유는 **잔량이 0 인 것** 하나뿐이다.
+
     잔량을 **모르는 것과 0 인 것은 다르다.** 사용량 조회가 실패하면 `usage` 가 없는데, 그걸
-    소진으로 읽으면 멀쩡한 구독자를 결제 화면으로 보낸다. 모를 때는 열어 두고 판정은 서버에
-    맡긴다 — `useBlogDraftUsage` 주석이 잡아 둔 태도와 같다.
+    소진으로 읽으면 아직 쓸 수 있는 사람을 결제 화면으로 보낸다. 모를 때는 열어 두고 판정은
+    서버에 맡긴다 — `useBlogDraftUsage` 주석이 잡아 둔 태도와 같다.
   */
   const isOutOfDrafts = usage !== undefined && usage.remainingCount === 0;
-  const needsUpgrade = !isSubscriptionPending && (!subscription || isOutOfDrafts);
-  const isGateLoading = isSubscriptionPending || isUsagePending;
 
   // 주소를 손으로 치거나 옛 링크를 눌렀을 때. 무엇을 저장했는지 모르는 화면을 세울 수 없다.
   if (!Number.isFinite(routeId)) {
@@ -95,13 +96,33 @@ export function RouteSavedPage() {
           </p>
         )}
 
+        {/*
+          ⚠️ **이 줄은 상태를 따라간다.** 초안을 못 만드는 사람에게 "바로 만들어 볼 수 있어요"
+          는 그냥 틀린 말이고, 그 상태를 버튼 글자에 밀어 넣으면 이번엔 버튼이 눌렀을 때 무슨
+          일이 나는지를 말하지 못한다(`이번 주기 초안을 다 썼어요` 는 상태지 동작이 아니다).
+          **사유는 문장이 말하고 버튼은 다음 수를 말한다.**
+        */}
         <p
           className="animate-fade-in-up mt-6 text-[15px] leading-[22px] text-[#2c3930]"
           style={{ animationDelay: '750ms' }}
         >
-          이 동선으로 블로그 초안을
-          <br />
-          바로 만들어 볼 수 있어요
+          {isOutOfDrafts ? (
+            /*
+              다음 주기에 채워진다는 걸 숨기지 않는다 — 업그레이드만 말하면 기다리면 되는
+              사람에게 결제가 유일한 길인 것처럼 읽힌다. `지금` 이 그 차이를 진다.
+            */
+            <>
+              이번 주기 PICTREE 토큰을 다 썼어요
+              <br />
+              플랜을 올리면 지금 더 쓸 수 있어요
+            </>
+          ) : (
+            <>
+              이 동선으로 블로그 초안을
+              <br />
+              바로 만들어 볼 수 있어요
+            </>
+          )}
         </p>
       </div>
 
@@ -118,7 +139,7 @@ export function RouteSavedPage() {
         같이 움직이지 않아도 어긋나 보이지 않는다.
       */}
       <div className="px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-3">
-        {needsUpgrade ? (
+        {isOutOfDrafts ? (
           /*
             ⚠️ `PrimaryCta` 에 className 으로 얹지 않는다 — 그 컴포넌트 주석대로 배경·라운드가
             서로 이기려 들어 결과가 CSS 파일 순서에 달린다. 치수만 같게 맞춘 별도 버튼이다.
@@ -132,12 +153,10 @@ export function RouteSavedPage() {
             onClick={goToPremium}
             className={`h-[52px] w-full rounded-[24px] text-[15px] font-medium text-[#2c3930] ${PREMIUM_GRADIENT_CLASS}`}
           >
-            {/* 미구독과 한도 소진은 다음에 할 일이 같아도 사유가 다르다. 사유를 안 밝히면
-                이미 결제한 사람이 결제 화면으로 다시 불려 온 것으로 읽힌다. */}
-            {isOutOfDrafts ? '이번 주기 초안을 다 썼어요' : '프리미엄으로 초안 만들기'}
+            플랜 업그레이드
           </button>
         ) : (
-          <PrimaryCta onClick={goToBlogCreate} disabled={isGateLoading}>
+          <PrimaryCta onClick={goToBlogCreate} disabled={isUsagePending}>
             블로그 초안 만들기
           </PrimaryCta>
         )}
