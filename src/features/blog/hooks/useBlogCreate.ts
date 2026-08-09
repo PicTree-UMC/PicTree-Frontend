@@ -90,7 +90,7 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
               treeId: item.treeId,
               heading: item.placeName,
               body: item.content,
-              image: item.imageUrl ?? tree?.defaultImage ?? '',
+              image: item.imageUrl ?? tree?.imageUrl ?? '',
             };
           }),
         }));

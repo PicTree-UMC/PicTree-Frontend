@@ -1,24 +1,6 @@
-import type { BlogTreeRecord } from '../types/blog';
+import { Photo } from '@/shared/components';
 
-/** 사진이 없는 노드를 채우는 플레이스홀더(사진 아이콘). */
-function PhotoPlaceholder({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="3" y="4" width="18" height="16" rx="3" />
-      <circle cx="8.5" cy="9" r="1.3" />
-      <path d="m3 17 5-4 4 3 3-2 6 5" />
-    </svg>
-  );
-}
+import type { BlogTreeRecord } from '../types/blog';
 
 /** 선택된 노드의 상태 배지에 들어가는 체크 아이콘. */
 function CheckIcon({ className }: { className?: string }) {
@@ -60,7 +42,7 @@ interface BlogRoadmapProps {
 
 /**
  * 선택한 기간의 기록(나무)을 곡선 로드맵으로 그린다.
- * - 노드: 기록 사진(defaultImage)을 원형 썸네일로. 없으면 플레이스홀더. 클릭으로 선택/해제.
+ * - 노드: 기록 사진을 원형 썸네일로. 없거나 못 불러오면 나무 폴백. 클릭으로 선택/해제.
  * - 간선: 노드 사이를 점선 곡선(SVG path)으로 연결.
  * - 라벨: 노드 바깥쪽에 장소명.
  * - 선택 상태: 컬러 + 체크 배지 / 해제 상태: 흑백 + 빈 배지로 구분한다.
@@ -133,23 +115,13 @@ export function BlogRoadmap({ trees, selectedIds, onToggle }: BlogRoadmapProps) 
                     selected ? 'border-pictree-700 bg-pictree-300' : 'border-[#d4d4d4] bg-[#f0f0f0]'
                   }`}
                 >
-                  {tree.defaultImage ? (
-                    <img
-                      src={tree.defaultImage}
-                      alt=""
-                      className={`size-full object-cover transition ${
-                        selected ? '' : 'grayscale opacity-45'
-                      }`}
-                    />
-                  ) : (
-                    <span
-                      className={`flex size-full items-center justify-center ${
-                        selected ? 'text-pictree-700' : 'text-[#b4b4b4]'
-                      }`}
-                    >
-                      <PhotoPlaceholder className="size-7" />
-                    </span>
-                  )}
+                  <Photo
+                    src={tree.imageUrl}
+                    className={`size-full object-cover transition ${
+                      selected ? '' : 'grayscale opacity-45'
+                    }`}
+                    iconClassName="size-7"
+                  />
                 </span>
                 {/* 상태 배지: 선택=체크 / 해제=빈 원 */}
                 <span

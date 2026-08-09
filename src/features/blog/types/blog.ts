@@ -83,7 +83,15 @@ export interface BlogTreeRecord {
   address: string;
   /** 기록 당시 기분 이모지 (예: "😍"). */
   mood: string;
-  defaultImage: string;
+  /**
+   * 대표 사진 URL. 없으면 빈 문자열이다.
+   *
+   * ⚠️ 예전 이름은 `defaultImage` 였는데, 서버의 같은 이름 필드는 `"DEFAULT_1"` 같은
+   * **식별자**(`VarChar(20)`)라 URL 이 아니다. 이름이 같으니 그 값을 채워도 어색하지 않아
+   * 실제로 그렇게 들어갔고 `<img src="DEFAULT_1">` 요청이 나갔다(#209). 이름을 값과
+   * 맞춰 다시는 그 값을 담을 자리로 보이지 않게 한다.
+   */
+  imageUrl: string;
   createdAt: string;
 }
 
