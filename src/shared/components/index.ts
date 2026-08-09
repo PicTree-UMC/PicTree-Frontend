@@ -1,5 +1,6 @@
 // 공용 컴포넌트 배럴 export — import { Button, Modal } from '@/shared/components';
 export { Button } from './Button';
+export { PrimaryCta } from './PrimaryCta';
 export { BackButton } from './BackButton';
 export { NavBar } from './NavBar';
 export { Chip } from './Chip';
