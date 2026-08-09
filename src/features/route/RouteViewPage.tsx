@@ -10,12 +10,13 @@ import {
   SHEET_COLLAPSED_PX,
   SHEET_EXPANDED_RATIO,
 } from './components/RoutePlaceStrip';
-import { SaveRouteSheet } from './components/SaveRouteSheet';
 import { RouteDateChips } from './components/RouteDateChips';
+import { RouteNameField } from './components/RouteNameField';
 import { RouteNodeStepper } from './components/RouteNodeStepper';
 import { DATES_PARAM, MAX_PLACES, parseDatesParam, toDatesParam } from './lib/routeParams';
 import { buildSequenceMap } from './lib/sequence';
 import { useGoBack } from '@/shared/hooks/useGoBack';
+import { useKeyboardOffset } from '@/shared/hooks/useKeyboardOffset';
 import { NavBar } from '@/shared/components';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
@@ -35,9 +36,8 @@ import { ROUTES } from '@/shared/constants/routes';
  * 쿼리로 받아 지도를 그리는 일만 한다. 날짜를 바꾸려면 뒤로 가면 되므로 상단에 캘린더를
  * 여는 버튼이 없다.
  *
- * **화면 위에는 뒤로가기(② 는 제목까지)만 띄운다.** 아래는 두 층이다: 지금 걸린 보기 범위를
- * 정하는 **날짜 칩 줄**, 그리고 동선에 무엇을 넣을지 다루는 **하단 시트**. 시트만 접어
- * 지도를 넓게 볼 수 있고, 그때도 칩은 남아 지금 무엇이 걸러져 있는지 말해 준다.
+ * **화면 위에는 뒤로가기(② 는 제목까지)만 띄우고, 조작은 전부 하단 시트에 모았다** —
+ * 날짜 칩·장소 칩·동선저장이 한 덩어리로 있고 시트째 접어 지도를 넓게 볼 수 있다.
  */
 /**
  * 겹친 장소를 시트에서 짚어주는 시간. 펼쳐지고 스크롤이 멎기까지가 0.5초 남짓이라
@@ -98,7 +98,15 @@ export function RouteViewPage() {
 
   // 하단바에서 꺼둔 장소(설계서 7번). 목록에는 남기고 번호·개수·동선에서만 뺀다.
   const [disabledPlaceIds, setDisabledPlaceIds] = useState<number[]>([]);
-  const [showSaveSheet, setShowSaveSheet] = useState(false);
+
+  /**
+   * 이름 짓기 중인가. **화면이 갈리지 않는다** — 시트의 머리 줄이 따라가기에서 이름 입력으로
+   * 바뀌고(`RoutePlaceStrip` 의 `nameField`), 하단 `동선저장` 이 네비바 오른쪽으로 옮겨갈 뿐
+   * 날짜 필터도 장소 목록도 시트 높이도 그대로다. 저장 직전이야말로 무엇이 저장되는지
+   * 보여야 할 자리라서다. 예전처럼 두 번째 바텀시트를 띄우지 않는다.
+   */
+  const [isNaming, setIsNaming] = useState(false);
+  const [routeName, setRouteName] = useState('');
 
   /** ① 에서 고를 수 있는 장소 전부(방문 기록이 있는 것만). ② 에서는 비어 있다. */
   const candidates = useMemo(() => candidatesQuery.data ?? [], [candidatesQuery.data]);
@@ -223,8 +231,16 @@ export function RouteViewPage() {
   const [sheetCollapsed, setSheetCollapsed] = useState(false);
 
   /*
-    비워둘 높이 = 시트 + **그 위에 얹힌 날짜 칩 줄**. 칩 줄도 지도 위에 떠 있어서 안 더하면
-    맨 아래 마커가 칩 뒤로 들어간다. 날짜가 없으면 줄 자체가 안 그려지므로 0 이다.
+    소프트 키보드가 가리는 높이. **이름 짓기 중에만 쓴다** — 시트가 `bottom-0` 이라 그냥 두면
+    방금 포커스한 입력이 키보드 뒤로 들어간다. 공용 `Sheet` 의 `avoidKeyboard` 와 같은 처리인데,
+    이 시트는 그 셸을 안 쓰고 페이지가 직접 띄우는 패널이라 여기서 잰다.
+  */
+  const keyboardOffset = useKeyboardOffset();
+
+  /*
+    지도가 아래에 비워둘 높이 = 시트 + **그 위에 얹힌 날짜 칩 줄**. 칩 줄도 지도 위에 떠 있어서
+    안 더하면 맨 아래 마커가 칩 뒤로 들어간다. 시트 높이와 같은 이유로 어림값이면 충분하다
+    (칩 h-10 40 + `pb-3` 12 = 52). 날짜가 없으면 줄 자체가 안 그려지므로 0 이다.
   */
   const sheetHeightPx =
     (sheetCollapsed ? SHEET_COLLAPSED_PX : Math.round(window.innerHeight * SHEET_EXPANDED_RATIO)) +
@@ -274,10 +290,19 @@ export function RouteViewPage() {
     // 그걸 믿고 저장까지 내보내면 한쪽만 어긋나도 조용히 넘어간다.
     if (activePlaces.length > MAX_PLACES) return;
 
-    setShowSaveSheet(true);
+    // 접어 둔 채로 눌렀을 수 있다(`동선저장` 은 접혀도 남는 줄이다). 이름 입력이 접힌 시트
+    // 안에서 열리면 아무것도 안 보이므로 펴 놓고 넘어간다.
+    setSheetCollapsed(false);
+    setIsNaming(true);
   };
 
-  const handleConfirmSave = (name: string) => {
+  /** 이름이 있어야 저장할 수 있다. 저장이 도는 동안은 같은 동선이 두 번 나가지 않게 잠근다. */
+  const trimmedName = routeName.trim();
+  const canConfirmSave = isNaming && trimmedName.length > 0 && !createRoute.isPending;
+
+  const handleConfirmSave = () => {
+    if (!canConfirmSave) return;
+
     // 서버는 treeId 만 받는다. 방문 기록에서 온 장소라 항상 있지만, 없으면 그 장소를 빼고
     // 저장하는 게 아니라 통째로 막는다 — 순서가 조용히 어긋난 동선이 저장되면 더 나쁘다.
     const treeIds = activePlaces.map((place) => place.treeId);
@@ -287,10 +312,10 @@ export function RouteViewPage() {
     }
 
     createRoute.mutate(
-      { routeName: name, treeIds: treeIds as number[] },
+      { routeName: trimmedName, treeIds: treeIds as number[] },
       {
         onSuccess: (newRouteId) => {
-          setShowSaveSheet(false);
+          setIsNaming(false);
           showToast('동선이 저장되었어요!', 'success', { placement: 'top' });
           // 저장한 동선을 바로 보여준다(설계서 8번의 '동선 페이지에 저장').
           // id 를 실어 보내야 동선 탭이 방금 만든 걸 고른다 — 목록 순서는 서버가 정하는 거라
@@ -299,7 +324,7 @@ export function RouteViewPage() {
           // 토스트는 main.tsx 의 <Toaster /> 가 라우터 밖에 있어 이동해도 살아남는다.
           navigate(ROUTES.journey, { replace: true, state: { selectedRouteId: newRouteId } });
         },
-        // 시트를 닫지 않는다 — 입력한 이름을 살려두고 그대로 다시 누를 수 있게.
+        // 이름 짓기에서 빠져나오지 않는다 — 입력한 이름을 살려두고 그대로 다시 누를 수 있게.
         onError: () => showToast('동선을 저장하지 못했어요', 'error', { placement: 'top' }),
       },
     );
@@ -319,7 +344,7 @@ export function RouteViewPage() {
           헤더·하단 strip 등 위로 뜬 UI 를 덮지 않게 한다. */}
       <div ref={containerRef} className="isolate fixed inset-0 z-0 mx-auto sm:max-w-[390px]" />
 
-      {/* 헤더와 날짜 관리 바는 지도 위에 떠 있다. 지도 영역을 깎지 않도록 absolute. */}
+      {/* 헤더는 지도 위에 떠 있다. 지도 영역을 깎지 않도록 absolute. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 pt-header">
         {/* 스크림이 없다 — 예전엔 상단 전체에 크림 그라데이션을 깔아 제목·뒤로가기가 지도
             라벨에 묻히는 걸 막았다(#103). 지금은 **요소마다 자기 방어책을 갖는다**: 뒤로가기는
@@ -336,12 +361,40 @@ export function RouteViewPage() {
             위 여백은 바깥 pt-header 가 준다 — 여기서 또 주면 스텝 1 보다 내려앉는다. */}
         <NavBar
           className="pointer-events-auto px-5"
-          onBack={goBack}
+          /* 이름 짓기 중에는 뒤로가기가 **화면을 떠나는 게 아니라 그 단계를 무르는** 버튼이다.
+             오른쪽 저장과 짝을 이뤄 취소/저장이 한 줄에 놓인다. */
+          onBack={isNaming ? () => setIsNaming(false) : goBack}
+          backLabel={isNaming ? '이름 짓기 취소' : undefined}
           /* ② 는 어느 동선을 보고 있는지가 제목이다. 아직 안 불러왔으면 비워 둬서
              제목이 깜빡이지 않게 한다. */
-          title={isSavedView ? routeDetail?.title : '장소 선택'}
+          title={isNaming ? '동선 이름 설정' : isSavedView ? routeDetail?.title : '장소 선택'}
           titleOnMap
+          /*
+            이름 짓기 단계의 저장. **시트가 아니라 여기 있는 이유**는 그 단계에서 시트가
+            '무엇을 저장할지'(목록)를 그대로 보여주고 있어서다 — 목록 아래에 버튼을 또 두면
+            시트가 두 가지를 겸하게 되고, 그러자고 목록을 치우면 결국 딴 화면이 뜬 꼴이 된다.
+
+            `동선저장` 은 그대로 시트에 있다. 그건 `3/20개` 바로 위에서 무엇이 몇 개
+            저장되는지와 한 덩어리로 읽혀야 하는 버튼이라 성격이 다르다.
+
+            지도 위에 떠 있으므로 알약 배경을 갖는다 — 제목과 달리 눌러야 하는 것이라
+            외곽선(`.text-halo`)만으로는 누를 자리가 안 보인다. 시트의 `동선저장` 과 같은
+            INK 라 두 단계의 마무리 버튼이 같은 색을 쓴다.
+          */
+          action={
+            isNaming ? (
+              <button
+                type="button"
+                onClick={handleConfirmSave}
+                disabled={!canConfirmSave}
+                className="h-9 rounded-full bg-[#2c3930] px-4 text-[15px] font-medium text-[#fffcef] disabled:bg-[#d9d9d9] disabled:text-[#60655c]"
+              >
+                {createRoute.isPending ? '저장 중' : '저장'}
+              </button>
+            ) : undefined
+          }
         />
+
       </div>
 
       {/* 불러오는 동안·실패했을 때 지도 위에 얹는다. 하단 strip 을 가리지 않아서
@@ -368,8 +421,14 @@ export function RouteViewPage() {
       )}
 
       {/* 하단 동선 strip — 지도가 fixed 배경이 되면서 흐름에서 빠졌으므로,
-          바텀 패널로 지도 위에 띄운다(내부에서 pb-safe 로 홈 인디케이터를 피한다). */}
-      <div className="absolute inset-x-0 bottom-0 z-10">
+          바텀 패널로 지도 위에 띄운다(내부에서 pb-safe 로 홈 인디케이터를 피한다).
+
+          이름 짓기 중에는 키보드 높이만큼 띄운다. 지도와 헤더는 그대로 두고 시트만 움직인다 —
+          `bottom` 만 건드리므로 시트 안 전환(max-height)과 다투지 않는다. */}
+      <div
+        style={{ bottom: isNaming ? keyboardOffset : undefined }}
+        className="absolute inset-x-0 bottom-0 z-10 transition-[bottom] duration-300 ease-out"
+      >
         {/*
           날짜 필터 칩 — **시트 안이 아니라 시트 바로 위**다.
 
@@ -379,8 +438,8 @@ export function RouteViewPage() {
           지금 걸린 범위가 화면에 떠 있고, 시트는 **동선에 무엇을 넣을지** 하나만 다루게 됐다
           (칩 줄이 비운 자리는 장소 목록이 가져갔다 — 2.2 → 2.8줄).
 
-          위(네비바 아래)가 아니라 여기 붙이는 이유는 **거르는 대상이 바로 아래 목록**이라서다.
-          `전체 선택` 도 걸린 범위에만 적용되므로 둘이 멀어지면 무엇에 걸리는지 읽기 어렵다.
+          위가 아니라 여기 붙이는 이유는 **거르는 대상이 바로 아래 목록**이라서다. `전체 선택`
+          도 걸린 범위에만 적용되므로 둘이 멀어지면 무엇에 걸리는지 읽기 어렵다.
           ⚠️ 대신 시트에 매인 자리라 접으면 칩도 같이 내려온다. 예전 따라가기 알약이 이 자리에
           있다가 시트 안으로 들어간 적이 있다 — 그때는 알약이 지도를 가리기만 했지만, 칩은
           지도에 무엇이 그려질지를 정하는 줄이라 지도 곁에 있는 값이 더 크다.
@@ -400,7 +459,7 @@ export function RouteViewPage() {
         <RoutePlaceStrip
           places={places}
           disabledPlaceIds={disabledIds}
-          // 값만 넘긴다 — 거르는 칩 줄은 이 시트 위에 있다(바로 위 블록).
+          // 값만 넘긴다 — 거르는 칩 줄은 지도 위에 있다(위 헤더 블록 참고).
           dateFilter={dateFilter}
           allVisibleSelected={allVisibleSelected}
           onToggleAllVisible={toggleAllVisible}
@@ -430,16 +489,19 @@ export function RouteViewPage() {
               />
             ) : undefined
           }
+          // 이름 입력은 따라가기 줄과 **같은 자리를 나눠 쓴다** — 줄이 늘지 않으니 목록도
+          // 시트 높이도 그대로다. 저장 버튼만 위 네비바로 옮겨간다.
+          nameField={
+            isNaming ? (
+              <RouteNameField
+                value={routeName}
+                onChange={setRouteName}
+                onSubmit={handleConfirmSave}
+              />
+            ) : undefined
+          }
         />
       </div>
-
-      {showSaveSheet && (
-        <SaveRouteSheet
-          isSaving={createRoute.isPending}
-          onClose={() => setShowSaveSheet(false)}
-          onConfirm={handleConfirmSave}
-        />
-      )}
     </div>
   );
 }
