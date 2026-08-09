@@ -1,3 +1,5 @@
+import { Photo } from "@/shared/components";
+
 import type { FavoritePlace } from "../types/favorite";
 
 interface Props {
@@ -50,24 +52,23 @@ export function FavoriteGrid({ places, selecting, checked, onOpen, onToggle }: P
               aria-pressed={selecting ? isChecked : undefined}
               className="relative block aspect-[3/4] w-full overflow-hidden bg-[#EDE7D2]"
             >
-              {place.imageUrl ? (
-                <img
-                  src={place.imageUrl}
-                  alt=""
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                /*
-                  사진이 없는 장소. 빈 칸으로 두면 어디였는지 알 길이 없어서
-                  이름을 대신 채운다 — 사진이 있는 타일에는 이름을 얹지 않는다.
-                */
-                <span className="flex h-full w-full items-center justify-center px-2">
-                  <span className="line-clamp-3 text-[13px] text-[#60655C]">
-                    {place.name}
+              {/*
+                사진이 없거나 **못 불러와도** 이름을 대신 채운다. 빈 칸으로 두면 어디였는지
+                알 길이 없어서다 — 사진이 있는 타일에는 이름을 얹지 않는다.
+                폴백이 나무가 아닌 이유: 격자에 나무만 여러 개 뜨면 서로 구분이 안 된다.
+              */}
+              <Photo
+                src={place.imageUrl}
+                loading="lazy"
+                className="h-full w-full object-cover"
+                fallback={
+                  <span className="flex h-full w-full items-center justify-center px-2">
+                    <span className="line-clamp-3 text-[13px] text-[#60655C]">
+                      {place.name}
+                    </span>
                   </span>
-                </span>
-              )}
+                }
+              />
 
               {selecting && (
                 <>

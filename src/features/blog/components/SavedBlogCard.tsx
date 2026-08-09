@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import type { AIBlogDraft } from '../types/blog';
 import { formatDateRange } from '../lib/formatBlogDate';
 import { blogDetailPath } from '@/shared/constants/routes';
+import { Photo } from '@/shared/components';
 
 type SavedBlogCardProps = {
   blog: AIBlogDraft;
@@ -19,20 +20,19 @@ export function SavedBlogCard({ blog, treeCount }: SavedBlogCardProps) {
         onClick={() => navigate(blogDetailPath(blog.draftId))}
         aria-label={`${blog.title} 상세 보기`}
       >
-        {blog.thumbnailUrl ? (
-          <img
-            src={blog.thumbnailUrl}
-            alt=""
-            className="h-[88px] w-[88px] shrink-0 rounded-xl bg-pictree-100 object-cover"
-          />
-        ) : (
-          <span className="grid h-[88px] w-[88px] shrink-0 place-items-center rounded-xl bg-pictree-100 text-pictree-500" aria-hidden>
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
-            </svg>
-          </span>
-        )}
+        {/* 썸네일이 없거나 못 불러오면 책 아이콘으로 — 여기 나무를 세우면 '기록' 으로 읽힌다. */}
+        <Photo
+          src={blog.thumbnailUrl}
+          className="h-[88px] w-[88px] shrink-0 rounded-xl bg-pictree-100 object-cover"
+          fallback={
+            <span className="grid h-[88px] w-[88px] shrink-0 place-items-center rounded-xl bg-pictree-100 text-pictree-500" aria-hidden>
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
+              </svg>
+            </span>
+          }
+        />
 
         <span className="flex min-w-0 flex-1 flex-col self-stretch py-1">
           <span className="overflow-hidden text-base font-medium leading-[1.45] text-[#2c3930] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">

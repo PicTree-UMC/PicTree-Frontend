@@ -1,3 +1,5 @@
+import { Photo } from '@/shared/components';
+
 import type { CalendarTree } from '../api/calendarTreesApi';
 
 /** 카드 안쪽 가로 패딩(16) + 썸네일(44) + 사이 간격(12). 구분선을 이름 시작점에 맞춘다. */
@@ -71,16 +73,12 @@ export function DayTreeList({ date, trees, isPending, isError, onRetry }: DayTre
               )}
 
               <div className="flex items-center gap-3 px-4 py-3">
-                {/* 사진이 없는 나무는 회색 자리로 둔다 — 즐겨찾기 목록과 같은 처리다. */}
-                {tree.imageUrl ? (
-                  <img
-                    src={tree.imageUrl}
-                    alt=""
-                    className="size-11 shrink-0 rounded-lg object-cover"
-                  />
-                ) : (
-                  <span className="size-11 shrink-0 rounded-lg bg-[#D9D9D9]" />
-                )}
+                {/* 사진이 없거나 못 불러오면 회색 자리로 둔다 — 즐겨찾기 목록과 같은 처리다. */}
+                <Photo
+                  src={tree.imageUrl}
+                  className="size-11 shrink-0 rounded-lg object-cover"
+                  fallback={<span className="size-11 shrink-0 rounded-lg bg-[#D9D9D9]" />}
+                />
 
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[15px] font-medium text-[#2c3930]">

@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getAIBlogDraftDetail } from './api/blogApi';
 import { formatDateRange, formatLongDate } from './lib/formatBlogDate';
 import { useBlogDraftStore } from './store/blogDraftStore';
-import { NavBar } from '@/shared/components';
+import { NavBar, Photo } from '@/shared/components';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
 import { DeleteConfirmModal, DeleteIconButton } from '@/shared/components/DeleteConfirmModal';
@@ -99,9 +99,10 @@ export function BlogDetailPage() {
                 <div className="mt-8">
                   {day.items.map((item, itemIndex) => (
                     <article key={`${item.treeId}-${itemIndex}`} className={itemIndex > 0 ? 'mt-14' : undefined}>
+                      {/* 못 불러온 사진은 안 그린다 — 근거는 `ResultStep` 의 같은 자리 주석(#214). */}
                       {item.imageUrl && (
                         <figure>
-                          <img src={item.imageUrl} alt={`${item.placeName}에서 촬영한 사진`} className="max-h-[560px] w-full bg-[#f1f3eb] object-cover" />
+                          <Photo src={item.imageUrl} alt={`${item.placeName}에서 촬영한 사진`} className="max-h-[560px] w-full bg-[#f1f3eb] object-cover" fallback={null} />
                         </figure>
                       )}
                       <h3 className={`${item.imageUrl ? 'mt-5' : ''} text-[19px] font-bold leading-[1.5] text-[#202520]`}>
