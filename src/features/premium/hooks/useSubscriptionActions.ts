@@ -1,5 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { cancelSubscription, resumeSubscription, startSubscription } from '../api/paymentApi';
+import {
+  cancelPlanChange,
+  cancelSubscription,
+  resumeSubscription,
+  schedulePlanChange,
+  startSubscription,
+} from '../api/paymentApi';
 import { paymentKeys } from './useMySubscription';
 
 /**
@@ -51,6 +57,45 @@ export const useResumeSubscription = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (subscriptionId: number) => resumeSubscription(subscriptionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: paymentKeys.me });
+    },
+  });
+};
+
+/**
+ * 요금제 변경 **예약** 훅.
+ *
+ * `useSubscribeWithCard` 와 갈라지는 지점: 저쪽은 그 자리에서 청구가 일어나고, 이쪽은
+ * 돈이 안 나간다 — 다음 결제일에 적용될 요금제를 바꿔 둘 뿐이다. 그래서 결제 시트를
+ * 거치지 않고 확인 모달 하나로 끝난다.
+ *
+ * 무효화가 특히 중요하다. 응답에 새 `pendingPlanChange` 가 들어 있는데 캐시를 그대로
+ * 두면(staleTime 60초) 방금 예약을 걸고도 버튼이 여전히 '변경하기' 로 남아 같은 예약을
+ * 두 번 걸려 든다.
+ */
+export const useSchedulePlanChange = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (params: { subscriptionId: number; subscriptionPlanId: number }) =>
+      schedulePlanChange(params.subscriptionId, {
+        subscriptionPlanId: params.subscriptionPlanId,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: paymentKeys.me });
+    },
+    onError: (error) => {
+      // 화면엔 토스트 한 줄만 뜨므로 서버가 뭐라 했는지는 이 로그가 유일한 단서다.
+      console.error('[plan-change] 요금제 변경 예약 실패:', error);
+    },
+  });
+};
+
+/** 예약된 요금제 변경 취소 훅. 성공하면 `pendingPlanChange` 가 null 로 돌아온다. */
+export const useCancelPlanChange = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (subscriptionId: number) => cancelPlanChange(subscriptionId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: paymentKeys.me });
     },

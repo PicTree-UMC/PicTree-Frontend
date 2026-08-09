@@ -3,6 +3,38 @@ import type { Config } from 'tailwindcss';
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
+    /*
+      ⚠️ `extend` 가 아니라 통째로 대체한다 — 이게 요점이다.
+      `extend` 로는 값을 덮어쓸 수만 있고 **키를 없앨 수는 없어서** `text-sm` 이
+      계속 유효한 클래스로 남는다.
+
+      없애는 게 목적인 이유(이슈 #184): Tailwind 기본 스케일은 12/14/16 이라
+      design-guidelines §2 의 13/15 기준과 애초에 어긋난다. 그런데 `text-sm` 은
+      클래스 이름에 숫자가 안 적혀 있어서, 이 자리가 14px 이라는 걸 리뷰에서
+      아무도 못 봤다 — profile 은 타이포 정합을 세 번 거치고도 14px 이 20건
+      남아 있었다. 값이 안 보이는 이름은 규칙을 못 지킨다.
+
+      이제 `text-sm`/`text-xs` 는 CSS 를 아예 안 만든다. 잘못 쓰면 글자 크기가
+      상속되어 눈에 띄고, 에디터에서도 미지정 클래스로 뜬다.
+
+      2xl 이상도 뺐다. 지금 쓰는 곳이 없고, §2 가 "더 큰 값은 시안 근거가 있을
+      때만" 이라 새로 필요해지면 여기에 근거와 함께 추가하는 편이 맞다.
+      base/lg/xl/4xl 은 쓰는 곳이 있어 남기되 **Tailwind 기본값 그대로** 적었다
+      (특히 lg 의 행간은 1.75rem 이다 — 눈대중으로 줄이면 5곳이 조용히 움직인다).
+
+      13/15 는 이름을 만들어 두기만 했다. 코드 252곳은 여전히 `text-[13px]`·
+      `text-[15px]` 를 쓰고 있고 그게 지금의 정본이다. 두 표기를 하나로 합치는
+      건 M4 타이포 정리에서 한다 — 여기서 같이 하면 이 커밋의 요점이 252줄
+      치환에 묻힌다.
+    */
+    fontSize: {
+      13: ['13px', { lineHeight: '18px' }], // 최소값. 캡션·메타·보조 액션
+      15: ['15px', { lineHeight: '22px' }], // 본문
+      base: ['1rem', { lineHeight: '1.5rem' }], // 16px
+      lg: ['1.125rem', { lineHeight: '1.75rem' }], // 18px
+      xl: ['1.25rem', { lineHeight: '1.75rem' }], // 20px
+      '4xl': ['2.25rem', { lineHeight: '2.5rem' }], // 36px
+    },
     extend: {
       colors: {
         /*

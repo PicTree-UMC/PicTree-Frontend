@@ -27,7 +27,7 @@ export function PremiumBanner({ onUpgrade }: PremiumBannerProps) {
       </div>
       <button
         onClick={onUpgrade}
-        className="shrink-0 rounded-[12px] bg-pictree-700 px-3.5 py-1.5 text-sm font-semibold text-white"
+        className="shrink-0 rounded-[12px] bg-pictree-700 px-3.5 py-1.5 text-[13px] font-medium text-white"
       >
         업그레이드
       </button>
