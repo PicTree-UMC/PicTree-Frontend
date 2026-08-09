@@ -1,8 +1,9 @@
 import { NavBar } from '@/shared/components';
 import type { CreateStep } from '../hooks/useBlogCreate';
 
+// 1단계는 기간이 아니라 **저장한 동선**을 고른다(이슈 #212) — 기간은 그 동선에서 파생된다.
 const STEP_LABELS: Record<CreateStep, string> = {
-  1: '날짜 선택',
+  1: '동선 선택',
   2: '어체 선택',
   3: '결과 확인',
 };
