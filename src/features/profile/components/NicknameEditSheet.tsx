@@ -43,18 +43,13 @@ export function NicknameEditSheet({ currentNickname, isSaving, onClose, onSubmit
   const handleSubmit = () => canSave && onSubmit(trimmed);
 
   return (
-    /*
-      바닥이 크림인 이유: 같은 화면의 `ProfileImageSheet` 이 크림이다. 시트 공통 규격은 흰
-      바닥으로 옮겨 가는 중이지만, 한 화면에서 시트 둘이 다른 바닥을 쓰는 게 더 나쁘다.
-      둘을 같이 옮길 때 여기도 같이 바꾼다. 손잡이는 먼저 `grip` 으로 맞춰 뒀다.
-    */
     <Sheet
       onClose={onClose}
       label="닉네임 수정"
       handleColor="#D9D9D9"
       handleSize="grip"
       avoidKeyboard
-      className="rounded-t-[20px] bg-[#FFFCEF]"
+      className="rounded-t-[20px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.12)]"
       contentClassName="px-6"
       bottomPadding="2rem"
     >
