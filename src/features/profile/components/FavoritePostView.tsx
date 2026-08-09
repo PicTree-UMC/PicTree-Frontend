@@ -46,8 +46,8 @@ export function FavoritePostView({ place, onClose, onRemove }: Props) {
         <PhotoPost
           title={place.name}
           meta={formatDate(place.createdAt)}
-          // 사진이 없는 장소는 타임라인과 같은 대체 이미지로 떨어진다.
-          imageUrl={place.imageUrl ?? "/apple-touch-icon.jpg"}
+          // 사진이 없거나 못 불러오면 타임라인과 같은 나무 폴백으로 떨어진다(PhotoPost 안).
+          imageUrl={place.imageUrl}
           caption={place.description}
           actions={
             <button

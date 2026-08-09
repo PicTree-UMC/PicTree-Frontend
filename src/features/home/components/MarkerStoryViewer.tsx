@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
-import { IconFrame } from '@/shared/components';
+import { IconFrame, Photo } from '@/shared/components';
 import { DeleteMarkerModal } from './DeleteMarkerModal';
 import type { MapMarkerData } from '../hooks/useMapMarkers';
 
@@ -17,9 +17,6 @@ interface MarkerStoryViewerProps {
   onEdit: () => void;
   onDelete: () => void;
 }
-
-/** 프로필 이미지가 없을 때 캡션 아바타로 쓰는 기본 나무 아이콘(마커와 동일 에셋). */
-const FALLBACK_AVATAR = '/markers/tree.svg';
 
 /**
  * 지도 마커를 탭했을 때 뜨는 상세 뷰어. 예전 하단 바텀시트(MarkerDetailSheet)를 대체하며,
@@ -43,7 +40,6 @@ export function MarkerStoryViewer({
   onDelete,
 }: MarkerStoryViewerProps) {
   const { data: profile } = useMyProfile();
-  const avatarSrc = profile?.profileImageUrl || FALLBACK_AVATAR;
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [favBump, setFavBump] = useState(false);
 
@@ -107,10 +103,18 @@ export function MarkerStoryViewer({
           {markers.map((item) => (
             <div key={item.id} className="relative h-full w-full shrink-0 snap-center">
               {item.photo ? (
-                <img
+                /*
+                  사진이 화면의 전부인 자리라 폴백에 문구를 함께 세운다 — 나무 아이콘만
+                  덩그러니 두면 **사진 없이 저장한 기록(아래 이모지 자리)과 구별이 안 된다.**
+                  그래서 `src` 가 없는 경우는 여기 안 태우고 이모지 분기로 그대로 둔다.
+                */
+                <Photo
                   src={item.photo}
                   alt={item.label}
                   className="absolute inset-0 h-full w-full object-cover"
+                  iconClassName="h-16 w-16"
+                  message="사진을 불러오지 못했어요"
+                  messageClassName="text-[13px] text-white/70"
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -149,11 +153,12 @@ export function MarkerStoryViewer({
             // items-end 로 아바타를 바닥에 고정 → 말풍선 mb-2 는 말풍선만 위로 올려 말풍선처럼 띄운다
             // (items-center 면 mb 가 행 높이를 키워 아바타까지 재정렬되며 딸려 올라감)
             <div className="mb-5 flex items-end gap-2">
-              {/* 프로필 아이콘은 정적, 캡슐형 말풍선만 둥둥 뜬다 */}
-              <img
-                src={avatarSrc}
-                alt=""
+              {/* 프로필 아이콘은 정적, 캡슐형 말풍선만 둥둥 뜬다.
+                  프로필 사진이 없거나 못 불러오면 나무로 떨어진다. */}
+              <Photo
+                src={profile?.profileImageUrl}
                 className="h-8 w-8 shrink-0 rounded-full bg-white/15 object-cover"
+                iconClassName="h-5 w-5"
               />
               <p className="animate-bubble-float mb-2 rounded-full bg-white px-4 py-2.5 text-[13px] font-medium leading-snug text-neutral-900">
                 {marker.comment}

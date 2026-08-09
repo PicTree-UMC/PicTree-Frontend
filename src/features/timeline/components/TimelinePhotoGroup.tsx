@@ -32,16 +32,6 @@ function TrashIcon() {
 }
 
 /**
- * 사진이 없는 기록에 쓸 대체 이미지.
- *
- * ⚠️ `record.defaultImage` 는 여기 쓰면 안 된다. `"DEFAULT_1"` 같은
- * **식별자**(서버 `VarChar(20)`)라 URL 이 아니고, `<img src>` 에 넣으면
- * 그대로 깨진 이미지가 된다 — 사진이 안 뜨던 원인이었다.
- */
-const getThumbnail = (record: TimelineRecord) =>
-  record.thumbnailUrl ?? "/apple-touch-icon.jpg";
-
-/**
  * 날짜 한 덩어리를 게시물로 — 인스타 피드처럼 한 칸씩 크게 본다.
  *
  * 얼개(아바타 + 장소명 / 날짜 · 사진 · 액션 줄 · 한줄평)는 공용 `PhotoPost` 가
@@ -53,6 +43,10 @@ const getThumbnail = (record: TimelineRecord) =>
  * 여는 상세 시트도 함께 없앴다 — 수정·삭제·즐겨찾기가 이미 이 줄에 다 있다.
  *
  * 날짜 머리글은 게시물마다 날짜가 있어서 두지 않는다.
+ *
+ * 사진이 없거나 못 불러온 기록은 `PhotoPost` 안의 `Photo` 가 나무 폴백으로 받는다.
+ * 예전엔 여기서 앱 아이콘(`/apple-touch-icon.jpg`)을 넘겨 **픽트리 로고가 4:5 게시물로
+ * 깔렸다** — 기록이 아니라 광고처럼 보였다(#209).
  */
 export function TimelinePhotoGroup({
   group,
@@ -67,7 +61,7 @@ export function TimelinePhotoGroup({
           <PhotoPost
             title={record.placeName}
             meta={group.label}
-            imageUrl={getThumbnail(record)}
+            imageUrl={record.thumbnailUrl}
             caption={record.comment}
             actions={
               <>
