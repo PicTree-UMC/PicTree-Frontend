@@ -7,13 +7,83 @@ import { formatLongDate } from '../../lib/formatBlogDate';
 
 type ResultStepProps = {
   status: BlogStatus;
+  /** 실패 사유(서버 문구). `status === 'error'` 일 때만 쓴다. */
+  errorMessage: string | null;
   draft: BlogDraftPreview | null;
   onSave: () => Promise<void>;
+  /** 같은 조건으로 초안 생성을 다시 건다. */
+  onRetry: () => void;
+  /** 어체 선택(2단계)으로 돌아간다. 조건을 바꿔 보려는 사람의 길이다. */
+  onBack: () => void;
 };
 
-export function ResultStep({ status, draft, onSave }: ResultStepProps) {
+export function ResultStep({
+  status,
+  errorMessage,
+  draft,
+  onSave,
+  onRetry,
+  onBack,
+}: ResultStepProps) {
   const { showToast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+
+  /*
+    실패를 먼저 가른다. 아래 스켈레톤 분기가 `ready` 가 아닌 것을 전부 삼키고 있어서,
+    실패해도 "AI가 여행 글을 쓰고 있어요" 가 영원히 돌았다 — 이 이슈(#210)의 증상이다.
+  */
+  if (status === 'error') {
+    return (
+      <div className="flex flex-1 flex-col px-5 pb-6 pt-2">
+        <div
+          role="alert"
+          className="mt-5 rounded-2xl border border-[#e7e8dc] bg-white px-5 py-7 text-center shadow-[0_5px_18px_rgba(45,51,34,0.06)]"
+        >
+          <span
+            aria-hidden
+            className="mx-auto grid size-10 place-items-center rounded-full bg-[#fdeaea] text-[#dc2626]"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="size-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <path d="M12 8v5M12 16.5v.01" />
+              <circle cx="12" cy="12" r="9" />
+            </svg>
+          </span>
+
+          <p className="mt-4 text-[15px] font-medium text-[#2c3930]">초안을 만들지 못했어요</p>
+
+          {/* 서버 문구를 그대로 보인다 — 다음부터는 콘솔을 열지 않아도 원인이 보인다. */}
+          {errorMessage && (
+            <p className="mt-2 text-[13px] leading-[1.7] text-[#60655c]">{errorMessage}</p>
+          )}
+        </div>
+
+        {/* 비율은 아래 `복사하기 / 저장하기` 줄과 같게 둔다 — 같은 자리의 같은 문법이다. */}
+        <div className="mt-auto flex gap-3 pt-5">
+          <button
+            type="button"
+            onClick={onBack}
+            className="h-[54px] flex-1 rounded-xl bg-[#e4e5e6] text-[15px] font-medium text-[#60655c]"
+          >
+            이전 단계로
+          </button>
+          <button
+            type="button"
+            onClick={onRetry}
+            className="h-[54px] flex-[2] rounded-xl bg-pictree-700 text-[15px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)]"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (status !== 'ready' || !draft) {
     return (

@@ -91,8 +91,15 @@ export interface BlogDraftUsage {
   periodEndAt: string;
 }
 
-/** AI 초안 생성 단계 상태 (작성 플로우 3번째 스텝 내부에서만 사용). */
-export type BlogStatus = 'idle' | 'generating' | 'ready';
+/**
+ * AI 초안 생성 단계 상태 (작성 플로우 3번째 스텝 내부에서만 사용).
+ *
+ * ⚠️ **실패는 `idle` 이 아니라 `error` 다.** 예전엔 catch 가 `idle` 로 되돌렸는데,
+ * 화면은 이미 3단계에 들어와 있고 `ResultStep` 은 `ready` 가 아니면 전부 스켈레톤을
+ * 그렸다 — 실패가 곧 **무한 로딩**이었다. `idle`(아직 시작 안 함)과 `error`(시작했다가
+ * 실패)는 같은 화면을 그릴 수 없으므로 상태를 갈랐다.
+ */
+export type BlogStatus = 'idle' | 'generating' | 'ready' | 'error';
 
 /** 화면에서 사용하는 어체 프리셋 식별자. */
 export type ToneId = 'emotional' | 'plain' | 'playful' | 'polite';
