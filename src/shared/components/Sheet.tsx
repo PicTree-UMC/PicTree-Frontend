@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { useKeyboardOffset } from '@/shared/hooks/useKeyboardOffset';
 import { useLockBodyScroll } from '@/shared/hooks/useLockBodyScroll';
 import { useSheetDrag } from '@/shared/hooks/useSheetDrag';
 
@@ -54,6 +55,15 @@ interface SheetProps {
    * `'0'` 을 주면 셸이 손대지 않는다 — 안쪽 스크롤 영역이 여백을 갖는 전체 높이 시트용.
    */
   bottomPadding?: string;
+  /**
+   * **입력이 있는 시트에만** 준다. 소프트 키보드가 올라온 높이만큼 시트를 띄워, 방금 포커스한
+   * 입력이 키보드 뒤로 들어가지 않게 한다(딤과 배경은 그대로 둔다 — 시트만 움직인다).
+   *
+   * 기본값을 켜지 않은 이유: 이 셸을 쓰는 시트가 아홉인데 대부분 입력이 없어 키보드가
+   * 열릴 일이 없고, `visualViewport` 구독을 전부에 달아 둘 이유가 없다. 위치는 셸의 몫이라
+   * (§ 아래 doc) 화면마다 `bottom` 을 다시 계산하는 것보다 여기 프롭 하나가 낫다.
+   */
+  avoidKeyboard?: boolean;
 }
 
 /**
@@ -83,9 +93,12 @@ export function Sheet({
   contentClassName = '',
   z = 50,
   bottomPadding = '1.25rem',
+  avoidKeyboard = false,
 }: SheetProps) {
   useLockBodyScroll();
   const { sheetRef, handleProps } = useSheetDrag({ onClose, animateIn });
+  const keyboardOffset = useKeyboardOffset();
+  const bottom = avoidKeyboard ? keyboardOffset : undefined;
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
@@ -109,8 +122,11 @@ export function Sheet({
         role="dialog"
         aria-modal="true"
         aria-label={label}
-        style={{ top, zIndex: z }}
-        className={`fixed inset-x-0 bottom-0 mx-auto flex flex-col sm:max-w-[390px] ${className}`}
+        style={{ top, bottom, zIndex: z }}
+        className={`fixed inset-x-0 bottom-0 mx-auto flex flex-col sm:max-w-[390px] ${
+          // 키보드가 튀어 오르지 않고 따라 올라오게. `bottom` 만 다루므로 끌어 닫기(transform)와 안 다툰다.
+          avoidKeyboard ? 'transition-[bottom] duration-300 ease-out' : ''
+        } ${className}`}
       >
         {handle && (
           // 끌어 내려도 닫히고 탭해도 닫힌다 — 끌 수 없는 입력(키보드·보조기술)에는

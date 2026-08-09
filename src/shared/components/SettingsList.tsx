@@ -20,7 +20,13 @@ interface SettingsRowProps {
    */
   image?: string;
   title: string;
-  /** 오른쪽 끝 회색 값 (`iCloud 50GB` 꼴). 화살표 앞에 붙는다. */
+  /**
+   * 오른쪽 끝 회색 값 (`iCloud 50GB` 꼴). 화살표 앞에 붙는다.
+   *
+   * **길면 제목이 아니라 이 값이 잘린다.** 제목은 `flex-1 basis-0` 이라 수축 가중치가 0 이고,
+   * 이 칸이 남는 폭을 다 내놓는다. 반대로 두면 50자 닉네임 하나에 `닉네임` 세 글자가 먼저
+   * 사라진다 — 무슨 값인지 모르는 채로 값만 남는다.
+   */
   value?: ReactNode;
   /** 오른쪽 끝 커스텀 슬롯(토글 등). 주면 화살표를 그리지 않는다. */
   trailing?: ReactNode;
@@ -72,7 +78,7 @@ export function SettingsRow({
       </span>
 
       {value !== undefined && value !== null && (
-        <span className="shrink-0 text-[15px] text-[#60655C]">{value}</span>
+        <span className="min-w-0 truncate text-[15px] text-[#60655C]">{value}</span>
       )}
 
       {trailing}
