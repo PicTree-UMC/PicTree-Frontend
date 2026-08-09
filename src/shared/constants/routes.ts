@@ -56,6 +56,11 @@ export const ROUTES = {
    * 저장될 내용이 전부 쿼리에 있어 새로고침·딥링크로 들어와도 같은 화면이 선다.
    */
   journeySave: '/journey/save',
+  /**
+   * 새 동선 만들기 ④단계 — 저장 직후. 방금 만든 동선으로 다음 수(블로그 초안)를 권한다.
+   * **패턴**이라 이동할 땐 아래 `journeySavedPath` 를 쓴다.
+   */
+  journeySaved: '/journey/saved/:routeId',
   /** 저장된 동선 보기. **패턴**이라 이동할 땐 아래 `journeyViewPath` 를 쓴다. */
   journeyViewDetail: '/journey/view/:routeId',
   camera: '/camera',
@@ -68,6 +73,15 @@ export const ROUTES = {
  * URL 만 보고 어느 화면인지 알 수 없어서 하위 경로로 갈랐다.
  */
 export const journeyViewPath = (routeId: number) => `/journey/view/${routeId}`;
+
+/**
+ * `/journey/saved/:routeId` 의 실제 경로.
+ *
+ * id 를 navigate state 가 아니라 URL 에 싣는 이유: 새로고침해도 화면이 선다. 저장은 이미
+ * 끝난 뒤라 되돌아갈 데가 없는데, state 로만 들고 있으면 새로고침 한 번에 무엇을 저장했는지
+ * 모르는 빈 화면이 된다.
+ */
+export const journeySavedPath = (routeId: number) => `/journey/saved/${routeId}`;
 
 /** 저장된 AI 블로그 초안의 상세 경로. */
 export const blogDetailPath = (draftId: number | string) => `/blog/${draftId}`;
