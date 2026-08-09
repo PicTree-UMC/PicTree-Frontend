@@ -86,6 +86,41 @@ export const formatFeatureValue = (feature: PlanFeatureDto | undefined): string 
   비교표가 이제 피커로 고른 플랜 하나만 열로 보여준다(그쪽 주석에 이유를 적어 뒀다).
 */
 
+/**
+ * 유료 플랜들의 혜택값을 한 칸에 늘어놓는다 — `1GB/5GB/20GB` · `월 5/20/50회`.
+ *
+ * **되살린 `formatFeatureRange` 가 아니다.** 그건 양 끝만 물결로 이어(`1GB~20GB`) 가운데
+ * 플랜을 지웠고, 고를 화면(비교표)에서 쓰였다. 이건 **고르지 않는 자리**에 쓴다 — 업셀
+ * 시트는 "올리면 이만큼 는다" 만 말하고 고르는 일은 `/premium` 이 맡으므로, 플랜 이름 없이
+ * 값만 늘어놓는 편이 맞다.
+ *
+ * ⚠️ 값은 서버에서만 온다(이 파일 맨 위 "되돌리지 말 것"). 시트가 `월 5회/20회/50회` 를
+ * 문자열로 박아 두고 있었는데, 그 표엔 **무료 플랜의 월 1회가 아예 없었다.**
+ *
+ * 같은 값이 겹치면 접는다 — 두 플랜이 광고 제거를 똑같이 주는데 `제공/제공` 으로 보일 이유가 없다.
+ * 아무 플랜도 이 혜택을 안 켰으면 `null` 을 준다(줄째로 빼라는 뜻).
+ */
+export const featureValuesLabel = (
+  plans: SubscriptionPlanDto[],
+  code: string,
+): string | null => {
+  const features = plans
+    .map((plan) => findFeature(plan, code))
+    .filter((feature): feature is PlanFeatureDto => Boolean(feature?.isEnabled));
+
+  if (features.length === 0) return null;
+
+  // BOOLEAN 은 '있다/없다' 라 늘어놓을 값이 없다 — 한 칸으로 접는다.
+  if (features[0].valueType === 'BOOLEAN') return formatFeatureValue(features[0]);
+
+  const values = [...new Set(features.map((f) => f.limitValue).filter((v) => v != null))];
+  if (values.length === 0) return null;
+
+  // 단위는 앞이나 뒤에 한 번만 — `월 5회/월 20회` 는 같은 말을 세 번 한다.
+  if (features[0].unit === 'MB') return values.map(formatStorage).join('/');
+  return `월 ${values.join('/')}회`;
+};
+
 /*
   featureLine / planBenefitLines('사진 저장 1GB' 처럼 혜택을 문장 한 줄로 잇던 함수들)는
   지웠다. 유일한 사용처인 PlanIntroCard 가 사라졌다 — 카드에 적던 이름·가격·혜택이
