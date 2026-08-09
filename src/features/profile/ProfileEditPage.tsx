@@ -13,7 +13,6 @@ import { useMyProfile } from "./hooks/useMyProfile";
 import { useUpdateMyProfile } from "./hooks/useUpdateMyProfile";
 import { useWithdraw } from "./hooks/useWithdraw";
 import { NicknameEditSheet } from "./components/NicknameEditSheet";
-import { ProfileImageSheet } from "./components/ProfileImageSheet";
 import { WithdrawModal } from "./components/WithdrawModal";
 import treeIcon from "./assets/icons/tree.svg";
 import cardImage from "./assets/icons/card3d.jpg";
@@ -31,7 +30,6 @@ export function ProfileEditPage() {
   const { mutate: requestLogout, isPending: isLoggingOut } = useLogout();
   const { mutate: requestWithdraw, isPending: isWithdrawing } = useWithdraw();
 
-  const [isImageSheetOpen, setIsImageSheetOpen] = useState(false);
   const [isNicknameSheetOpen, setIsNicknameSheetOpen] = useState(false);
   // 되돌릴 수 없는 동작이라 한 번 더 확인받는다
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
@@ -50,20 +48,6 @@ export function ProfileEditPage() {
         onSuccess: () => {
           setIsNicknameSheetOpen(false);
           showToast("닉네임을 바꿨어요.", "success");
-        },
-      },
-    );
-  };
-
-  const handleRemoveImage = () => {
-    setIsImageSheetOpen(false);
-    // null 이 곧 "이미지 제거" 다 (서버 DTO 주석에 명시)
-    updateProfile(
-      { profileImageUrl: null },
-      {
-        onSuccess: () => {
-          setIsAvatarBroken(false);
-          showToast("기본 이미지로 바꿨어요.", "success");
         },
       },
     );
@@ -98,23 +82,6 @@ export function ProfileEditPage() {
           )}
         </div>
 
-        {/*
-          ⚠️ **종전엔 아바타 오른쪽 아래에 ✎ 배지가 붙어 있었다.** 연필인데 눌러서 할 수 있는
-          일은 '제거' 뿐이었다 — 사진을 바꾸려면 업로드 API 가 있어야 하는데 없다
-          (`ProfileImageSheet` 주석). 하는 일을 그대로 쓴 글자 버튼으로 바꾼다.
-
-          사진이 없으면 아예 띄우지 않는 건 종전과 같다. 지울 것이 없다.
-          업로드 API 가 생기면 이 조건을 풀고 '사진 변경' 으로 바꾸면 된다.
-        */}
-        {hasImage && (
-          <button
-            type="button"
-            onClick={() => setIsImageSheetOpen(true)}
-            className="mt-2 px-2 py-1 text-[13px] text-[#60655C]"
-          >
-            기본 이미지로 변경
-          </button>
-        )}
       </div>
 
       <div className="flex flex-col gap-6 px-5 pt-6">
@@ -226,13 +193,6 @@ export function ProfileEditPage() {
           isSaving={isSaving}
           onClose={() => setIsNicknameSheetOpen(false)}
           onSubmit={handleSaveNickname}
-        />
-      )}
-
-      {isImageSheetOpen && (
-        <ProfileImageSheet
-          onRemove={handleRemoveImage}
-          onClose={() => setIsImageSheetOpen(false)}
         />
       )}
 
