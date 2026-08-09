@@ -170,7 +170,7 @@ export function RouteRoadmap({ route }: RouteRoadmapProps) {
             >
               <div className="animate-roadmap-pop" style={{ animationDelay: labelDelay }}>
                 <p className="line-clamp-2 text-base font-bold text-[#111]">{place.name}</p>
-                <p className="mt-0.5 text-xs font-medium text-[#60655c]">
+                <p className="mt-0.5 text-[13px] font-medium text-[#60655c]">
                   {index + 1}번째 장소
                 </p>
               </div>

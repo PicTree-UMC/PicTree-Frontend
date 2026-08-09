@@ -18,7 +18,7 @@ export function Button({
   // (옛 값에서는 1.88:1). 500 은 흰 글자를 못 얹는 색이라 새 값으로도 3.5:1 이라 여전히 미달.
   // 초록을 하나 더 만드는 대신 같은 700 을 옅게 눌러 상태 변화만 준다.
   const baseClass =
-    'rounded-md bg-pictree-700 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50';
+    'rounded-md bg-pictree-700 px-4 py-2 text-[15px] font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50';
 
   return (
     <button
