@@ -6,6 +6,8 @@ import { ROUTES } from '../../shared/constants/routes';
 import { BenefitShowcase } from './components/BenefitShowcase';
 import { PaymentCheckoutView } from './components/PaymentCheckoutView';
 import { PaymentCompleteModal } from './components/PaymentCompleteModal';
+import { PendingPlanChangeNotice } from './components/PendingPlanChangeNotice';
+import { PlanChangeModal } from './components/PlanChangeModal';
 import { PlanCheckoutButton } from './components/PlanCheckoutButton';
 import { PlanComparison } from './components/PlanComparison';
 import { PremiumFaq } from './components/PremiumFaq';
@@ -14,10 +16,14 @@ import { SubscriptionCancelSection } from './components/SubscriptionCancelSectio
 import { useBillingCheckout } from './hooks/useBillingCheckout';
 import { useBillingKeys } from './hooks/useBillingKeys';
 import { useMySubscription } from './hooks/useMySubscription';
-import { useSubscribeWithCard } from './hooks/useSubscriptionActions';
+import {
+  useSchedulePlanChange,
+  useSubscribeWithCard,
+} from './hooks/useSubscriptionActions';
 import { useSubscriptionPlans } from './hooks/useSubscriptionPlans';
 import { PREMIUM_BACKDROP_CLASS } from './lib/backdrop';
 import { isActiveCard } from './lib/billingKey';
+import { resolvePlanAction } from './lib/planAction';
 import type { PaymentStep } from './types/premium';
 
 /**
@@ -60,8 +66,18 @@ export function PremiumPage() {
   */
   const { data: billingKeys } = useBillingKeys();
   const subscribeWithCard = useSubscribeWithCard();
+  const schedulePlanChange = useSchedulePlanChange();
   const payableCards = (billingKeys ?? []).filter(isActiveCard);
   const [step, setStep] = useState<PaymentStep>('plan');
+  /**
+   * 요금제 변경 예약 확인 모달.
+   *
+   * `PaymentStep` 에 값을 하나 더 넣지 않고 따로 둔다 — 저 흐름은 결제
+   * (`plan → confirm → complete`) 한 줄기고, 변경 예약은 돈이 안 나가서
+   * `complete`(결제 완료 모달·블로그로 보내기)로 이어지지 않는다. 한 유니온에 섞으면
+   * 어느 스텝이 결제 흐름이고 어느 것이 아닌지 이름만으로는 못 가른다.
+   */
+  const [isPlanChangeOpen, setIsPlanChangeOpen] = useState(false);
   /**
    * 고른 플랜 — **비교표의 칩 하나가 정한다.**
    *
@@ -80,14 +96,14 @@ export function PremiumPage() {
     paidPlans.find((p) => p.id === selectedId) ?? paidPlans[paidPlans.length - 1];
 
   /**
-   * 지금 이용 중인 플랜의 id. 없으면 `null`.
+   * 고른 플랜에 대해 지금 할 수 있는 일 — 결제냐 변경 예약이냐, 아니면 왜 막혔나.
    *
-   * ⚠️ `subscription.plan` 만 보면 안 된다 — 구독한 적 없는 사용자에게도 서버가
-   * `plan` 을 채워 준다(무료). `subscriptionId` 가 있어야 실제 구독이다.
-   * 해지했어도 만료일까지는 이용 중이라 여기 잡히는 게 맞다 — 그동안 재결제를 막고,
-   * 되돌리려면 맨 아래 '자동갱신 다시 켜기' 를 쓰게 한다.
+   * ⚠️ 종전엔 `currentPlanId` 하나로 '이용 중인가' 만 봤다. 그러면 구독자가 다른 플랜을
+   * 고를 때 `isCurrent` 가 false 라 결제(`POST /subscriptions`)로 떨어졌고, 서버가 409
+   * `이미 이용 중인 구독이 있습니다` 로 막았다 — 업그레이드할 길이 없었다.
+   * 여섯 갈래를 세는 일은 `lib/planAction` 이 맡는다.
    */
-  const currentPlanId = subscription?.subscriptionId ? subscription.plan.id : null;
+  const planAction = resolvePlanAction(subscription, selectedPlan?.id ?? -1);
 
   /**
    * 등록된 카드로 결제. 앱을 떠나지 않고 `POST /subscriptions` 하나로 끝나므로,
@@ -123,6 +139,34 @@ export function PremiumPage() {
       onError: () =>
         showToast('결제 창을 열지 못했어요. 잠시 후 다시 시도해 주세요.', 'error'),
     });
+  };
+
+  /**
+   * 요금제 변경 예약. **결제가 아니다** — 카드도 고르지 않고 돈도 안 나간다.
+   * 그래서 `PaymentCheckoutView` 를 거치지 않고 확인 모달에서 곧장 서버로 간다.
+   *
+   * 성공해도 `complete` 스텝(결제 완료 모달 → 블로그)으로 보내지 않는다. 방금 산 것을
+   * 바로 써 보게 하는 흐름인데, 여기서는 다음 결제일까지 바뀌는 게 없다.
+   * 대신 푸터의 `PendingPlanChangeNotice` 가 예약을 이어받아 말한다.
+   */
+  const handleConfirmPlanChange = () => {
+    if (!selectedPlan || !subscription?.subscriptionId) return;
+    schedulePlanChange.mutate(
+      {
+        subscriptionId: subscription.subscriptionId,
+        subscriptionPlanId: selectedPlan.id,
+      },
+      {
+        onSuccess: () => {
+          setIsPlanChangeOpen(false);
+          showToast('요금제 변경을 예약했어요.', 'success');
+        },
+        onError: () => {
+          setIsPlanChangeOpen(false);
+          showToast('요금제를 변경하지 못했어요. 잠시 후 다시 시도해 주세요.', 'error');
+        },
+      },
+    );
   };
 
   const handleComplete = () => {
@@ -222,8 +266,9 @@ export function PremiumPage() {
           >
             <PlanCheckoutButton
               plan={selectedPlan}
-              isCurrent={selectedPlan.id === currentPlanId}
+              action={planAction}
               onStart={() => setStep('confirm')}
+              onChange={() => setIsPlanChangeOpen(true)}
             />
           </PlanComparison>
         </div>
@@ -251,6 +296,11 @@ export function PremiumPage() {
             매월 자동으로 갱신되고, 다음 결제일 전까지 언제든 해지할 수 있어요.
           </p>
 
+          {/*
+            예약된 변경이 해지 위에 온다 — 다가올 일이 먼저고 끝내는 일이 맨 아래다.
+            예약이 없으면 아무것도 안 그린다.
+          */}
+          <PendingPlanChangeNotice />
           <SubscriptionCancelSection />
         </footer>
       </div>
@@ -267,6 +317,18 @@ export function PremiumPage() {
       )}
       {step === 'complete' && (
         <PaymentCompleteModal plan={selectedPlan} onConfirm={handleComplete} />
+      )}
+      {isPlanChangeOpen && subscription?.subscriptionId && (
+        <PlanChangeModal
+          currentPlanName={subscription.plan.name}
+          nextPlan={selectedPlan}
+          // 적용 시점은 다음 결제일이다. 서버 응답의 `effectiveAt` 과 같은 값이지만,
+          // 예약을 걸기 **전**이라 아직 그 응답이 없어 `nextBillingAt` 에서 읽는다.
+          effectiveAt={subscription.nextBillingAt}
+          isPending={schedulePlanChange.isPending}
+          onKeep={() => setIsPlanChangeOpen(false)}
+          onConfirm={handleConfirmPlanChange}
+        />
       )}
     </main>
   );

@@ -83,6 +83,17 @@ export interface StartSubscriptionRequest {
   billingKeyId: number; // ✓ POST /billing-keys 응답의 billingKeyId
 }
 
+/**
+ * POST /subscriptions/{id}/plan-change 요청 — 요금제 변경 **예약**.
+ *
+ * ⚠️ `billingKeyId` 를 안 받는다(스웨거 `ChangeSubscriptionPlanRequestDto` 는 이 한 필드가
+ * 전부다). 지금 청구하는 게 아니라 다음 결제일에 적용될 요금제를 바꿔 두는 것이라,
+ * 결제 수단은 구독에 이미 붙어 있는 것을 그대로 쓴다.
+ */
+export interface ChangeSubscriptionPlanRequest {
+  subscriptionPlanId: number;
+}
+
 /** 구독에 붙은 요금제 요약 (POST /subscriptions·GET /me 응답 내부) */
 export interface SubscriptionPlanSummary {
   id: number;
@@ -98,9 +109,9 @@ export interface SubscriptionPlanSummary {
  * 플랜을 바꾸면 즉시 바뀌지 않고 **다음 결제일(`effectiveAt`)에 적용**된다 — 이미 낸
  * 이번 주기 요금이 있어서다. 그때까지는 `plan` 이 지금 요금제고 이쪽이 바뀔 요금제다.
  *
- * ⚠️ 프론트는 아직 이 값을 쓰지 않는다. 예약을 걸고 취소하는 화면이 없어서
- * (`POST /subscriptions/{id}/plan-change`·`/plan-change/cancel` 미사용), 예약이 걸린
- * 사용자에게 구독 화면은 **지금 요금제만** 보여준다. 화면을 만들 때 이 필드가 출처다.
+ * `POST /subscriptions/{id}/plan-change` 가 이 값을 채우고 `/plan-change/cancel` 이
+ * 다시 `null` 로 만든다. 화면에서는 `PendingPlanChangeNotice` 와 `resolvePlanAction`
+ * 두 곳이 읽는다 — 예약이 걸린 플랜을 다시 결제하려 드는 길을 막는 것도 이 값이다.
  */
 export interface PendingPlanChangeDto {
   plan: SubscriptionPlanSummary;
