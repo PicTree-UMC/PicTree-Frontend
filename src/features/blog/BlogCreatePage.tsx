@@ -7,7 +7,7 @@ import { CreateStepHeader } from './components/CreateStepHeader';
 import { RouteStep } from './components/steps/RouteStep';
 import { ToneStep } from './components/steps/ToneStep';
 import { ResultStep } from './components/steps/ResultStep';
-import { useMySubscription } from '../premium/hooks/useMySubscription';
+import { useBlogDraftUsage } from './hooks/useBlogDraftUsage';
 
 /**
  * 동선 페이지의 "AI 블로그 작성"에서 넘어올 때 전달되는 프리필.
@@ -99,30 +99,33 @@ function BlogCreateContent() {
   );
 }
 
-/** 무료 사용자의 URL 직접 진입까지 막는 AI 블로그 작성 권한 경계. */
+/**
+ * URL 직접 진입까지 막는 AI 블로그 작성 권한 경계.
+ *
+ * ⚠️ **구독 여부로 막지 않는다.** 종전엔 `!subscription` 이면 `/premium` 으로 돌려보냈는데,
+ * 무료 플랜도 PICTREE 토큰을 월 1개 받으므로(`/premium` 비교표 · 서버 `BLOG_DRAFT_LIMIT`
+ * 의 FREE 1) 구독이 없다는 게 못 쓴다는 뜻이 아니었다. 무료 사용자는 받은 1개를 쓸 길이
+ * 아예 없었다.
+ *
+ * 막을 사유는 **이번 주기 잔량이 0 인 것** 하나다.
+ */
 export function BlogCreatePage() {
-  const { data: subscription, isPending, isError, refetch } = useMySubscription();
+  const { data: usage, isPending } = useBlogDraftUsage();
 
   if (isPending) {
     return (
-      <main className="grid min-h-full place-items-center bg-[#fffcef]" role="status" aria-label="구독 정보를 확인하는 중">
+      <main className="grid min-h-full place-items-center bg-[#fffcef]" role="status" aria-label="PICTREE 토큰 잔량을 확인하는 중">
         <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#788f4a]" />
       </main>
     );
   }
 
-  if (isError) {
-    return (
-      <main className="flex min-h-full flex-col items-center justify-center bg-[#fffcef] px-5 text-center">
-        <p className="text-[15px] text-[#60655c]">구독 정보를 확인하지 못했어요.</p>
-        <button type="button" onClick={() => refetch()} className="mt-4 rounded-xl bg-pictree-700 px-5 py-3 text-[15px] font-medium text-white">
-          다시 시도
-        </button>
-      </main>
-    );
-  }
-
-  if (!subscription) {
+  /*
+    ⚠️ 조회 실패(`usage === undefined`)는 통과시킨다 — 잔량을 **모르는 것**이지 0 이 아니다.
+    여기서 막으면 아직 쓸 수 있는 사람이 재시도 화면에 갇히는데, 정작 한도 판정은 생성 요청
+    시점에 서버가 다시 한다. 종전의 '구독 정보를 확인하지 못했어요' 재시도 화면을 뺀 이유다.
+  */
+  if (usage?.remainingCount === 0) {
     return <Navigate to={ROUTES.premium} replace />;
   }
 

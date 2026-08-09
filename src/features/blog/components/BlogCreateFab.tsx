@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../../shared/constants/routes';
 import { PencilIcon } from './icons';
-import { useMySubscription } from '../../premium/hooks/useMySubscription';
+import { useBlogDraftUsage } from '../hooks/useBlogDraftUsage';
 import { PremiumUpsellSheet } from './PremiumUpsellSheet';
-import { useToast } from '../../../shared/components/toast/toastStore';
 
 /**
  * 작성 진입 플로팅 버튼. 하단 탭바 위 우하단에 고정.
@@ -14,17 +13,18 @@ import { useToast } from '../../../shared/components/toast/toastStore';
  */
 export function BlogCreateFab() {
   const navigate = useNavigate();
-  const { data: subscription, isPending, isError } = useMySubscription();
+  const { data: usage, isPending } = useBlogDraftUsage();
   const [showPremiumSheet, setShowPremiumSheet] = useState(false);
-  const { showToast } = useToast();
 
   const handleCreate = () => {
     if (isPending) return;
-    if (isError) {
-      showToast('구독 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.', 'error');
-      return;
-    }
-    if (!subscription) {
+    /*
+      ⚠️ 잔량을 **모르는 것과 0 인 것은 다르다.** 조회가 실패하면 `usage` 가 없는데, 그걸
+      소진으로 읽으면 아직 쓸 수 있는 사람 앞에 결제 시트를 세운다. 모를 때는 들여보내고
+      판정은 서버에 맡긴다 — 종전엔 여기서 토스트로 길을 막았지만, 막아 봐야 사용자가
+      할 수 있는 일이 없고 정작 쓸 수 있는 사람만 못 들어간다.
+    */
+    if (usage?.remainingCount === 0) {
       setShowPremiumSheet(true);
       return;
     }
