@@ -27,7 +27,9 @@ interface RoutePlaceStripProps {
   maxPlaces?: number;
   /**
    * 동선 저장. **저장된 동선을 볼 때는 넘기지 않는다** — 이미 저장된 것이라 버튼째 사라진다.
-   * 켜진 장소가 없거나 한도를 넘었는지는 부모가 눌린 뒤에 검사한다(막지 않고 이유를 알려준다).
+   *
+   * 한도를 넘었으면 이 시트가 버튼을 잠근다(`maxPlaces` 로 스스로 계산한다). 켜진 장소가
+   * 0개인지는 부모가 눌린 뒤에 검사한다 — 아래 `disabled` 주석에 이유가 있다.
    */
   onSave?: () => void;
   onTogglePlace: (placeId: number) => void;
@@ -197,6 +199,16 @@ export function RoutePlaceStrip({
   stepper,
 }: RoutePlaceStripProps) {
   const activeCount = places.filter((place) => !disabledPlaceIds.has(place.id)).length;
+
+  /**
+   * 켠 장소가 저장 한도를 넘었는가. **넘은 채로는 저장할 수 없다** — 개수 줄을 ERROR 로
+   * 물들이고 `동선저장` 을 잠근다.
+   *
+   * 예전에는 눌러야 토스트로 알려줬다. 그런데 `24/20개` 는 이미 화면에 떠 있는 사실이라,
+   * 눌러 보기 전까지 그게 막힌 상태인 줄 몰랐다 — **문제를 들고 있는 줄이 직접 말하는 게 맞다.**
+   * (한도가 없는 ② 저장된 동선 보기에서는 `maxPlaces` 자체가 안 온다.)
+   */
+  const overLimit = maxPlaces !== undefined && activeCount > maxPlaces;
   const drag = useCollapseDrag(onCollapsedChange);
   const listRef = useRef<HTMLUListElement>(null);
   const highlighted = new Set(highlightedPlaceIds ?? []);
@@ -319,8 +331,14 @@ export function RoutePlaceStrip({
             목록이라, 칩이 멀어져도 무엇에 걸리는지는 목록이 말해 준다). */}
         <div className="flex shrink-0 items-center gap-3 px-5 pt-3">
           {/* 색이 GREEN-500 이었다 — 연초록 바닥 위 2.35:1 로, 가이드라인이 결함이라고
-              집어둔 조합이다. 보조 텍스트 자리이므로 INK-muted(흰 위 5.98:1). */}
-          <p className="min-w-0 flex-1 truncate text-[13px] text-[#60655c]">
+              집어둔 조합이다. 보조 텍스트 자리이므로 INK-muted(흰 위 5.98:1).
+              한도를 넘으면 ERROR 로 갈아입고 medium 을 얹는다 — 이 줄이 지금 화면에서
+              유일하게 잘못된 것이라 옆의 `전체 해제` 와 무게가 같으면 안 된다. */}
+          <p
+            className={`min-w-0 flex-1 truncate text-[13px] ${
+              overLimit ? 'font-medium text-[#dc2626]' : 'text-[#60655c]'
+            }`}
+          >
             장소 {maxPlaces === undefined ? activeCount : `${activeCount}/${maxPlaces}`}개
           </p>
 
@@ -334,6 +352,17 @@ export function RoutePlaceStrip({
             {allVisibleSelected ? '전체 해제' : '전체 선택'}
           </button>
         </div>
+
+        {/* 빨간 숫자만으로는 '많다'는 것만 읽히고 **어떻게 하라는 건지**가 없다. 개수 줄은
+            `전체 해제` 와 폭을 나눠 갖느라 문구가 안 들어가서 아래에 한 줄로 붙인다 —
+            날짜 칩이 시트 밖으로 나가며 비운 자리가 여기다(칩 줄보다 얇아 목록은 오히려 늘었다).
+            넘쳤을 때만 나타난다. ① 날짜 고르기의 안내와 짝이다: 거기서 '다음 화면에서 뺄 수
+            있어요'로 끝나고, 뺄 수 있는 화면이 여기다. */}
+        {overLimit && (
+          <p className="shrink-0 px-5 pt-1.5 text-[13px] text-[#dc2626]">
+            {maxPlaces}개까지 저장할 수 있어요. 줄을 눌러 빼주세요
+          </p>
+        )}
 
         {places.length === 0 ? (
           <p className="mt-4 px-5 text-[13px] text-[#60655c]">표시할 동선이 없어요</p>
@@ -490,7 +519,12 @@ export function RoutePlaceStrip({
               if (drag.consumeDrag()) return;
               onSave();
             }}
-            className="h-12 w-full rounded-[12px] bg-[#2c3930] text-[15px] font-medium tracking-wide text-[#fffcef]"
+            /* 한도를 넘으면 잠근다 — 왜 잠겼는지는 바로 위 ERROR 줄이 이미 말하고 있다.
+               ⚠️ 켠 장소가 0개인 경우는 여기서 잠그지 않는다. 그건 장소를 빼다 지나가는
+               한때이지 잘못이 아니라, 시작하자마자 잠긴 버튼을 보여줄 이유가 없다 —
+               그때는 눌렀을 때 토스트가 이유를 말한다(`RouteViewPage.handleSave`). */
+            disabled={overLimit}
+            className="h-12 w-full rounded-[12px] bg-[#2c3930] text-[15px] font-medium tracking-wide text-[#fffcef] disabled:bg-[#d9d9d9] disabled:text-[#60655c]"
           >
             동선저장
           </button>

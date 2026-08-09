@@ -269,10 +269,11 @@ export function RouteViewPage() {
       showToast('장소를 하나 이상 켜야 동선을 저장할 수 있어요', 'error', { placement: 'top' });
       return;
     }
-    if (activePlaces.length > MAX_PLACES) {
-      showToast(`장소는 ${MAX_PLACES}개까지 저장할 수 있어요`, 'error', { placement: 'top' });
-      return;
-    }
+    // 한도 초과는 시트가 이미 막아 둔다(개수 줄이 ERROR 로 바뀌고 버튼이 잠긴다).
+    // 여기 남겨 둔 건 마지막 빗장이다 — 잠금은 시트가 스스로 계산하는 값이라, 페이지가
+    // 그걸 믿고 저장까지 내보내면 한쪽만 어긋나도 조용히 넘어간다.
+    if (activePlaces.length > MAX_PLACES) return;
+
     setShowSaveSheet(true);
   };
 
