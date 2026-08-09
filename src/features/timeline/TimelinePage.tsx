@@ -143,7 +143,7 @@ export function TimelinePage() {
 
         {/* 못 불러온 상태·기록이 없는 상태에서는 정렬을 숨긴다 — 줄 세울 목록이 없다. */}
         {!isError && !isEmpty && (
-          <div className="flex justify-end">
+          <div className="flex">
             <TimelineSortTabs value={sort} onChange={setSort} />
           </div>
         )}
