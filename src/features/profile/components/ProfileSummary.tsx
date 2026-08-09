@@ -161,8 +161,9 @@ export function ProfileSummary() {
           icon="✍️"
           /*
             잔량을 알면 잔량이 주인공이고, 모르면 한도만 말한다 — "몇 번 남았다" 를
-            지어내지 않는다(`usePictreeToken` 의 `usedThisMonth` 주석에 왜인지 적어 뒀다).
-            사용량 API 가 붙으면 `remaining` 이 차면서 이 자리가 저절로 잔량으로 바뀐다.
+            지어내지 않는다. 평소에는 `GET /blog-drafts/usage` 가 잔량을 채우므로 이
+            자리는 '남은 토큰' 이고, 그 요청이 실패했을 때만 요금제 혜택에서 뽑은
+            한도로 물러난다(`usePictreeToken` 주석).
           */
           value={
             isTokenPending && monthlyLimit === null
