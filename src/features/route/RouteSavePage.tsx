@@ -17,7 +17,7 @@ import { NavBar, PrimaryCta } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { useKeyboardOffset } from '@/shared/hooks/useKeyboardOffset';
 import { useToast } from '@/shared/components/toast/toastStore';
-import { ROUTES } from '@/shared/constants/routes';
+import { ROUTES, journeySavedPath } from '@/shared/constants/routes';
 
 /**
  * 새 동선 만들기 ③단계 — 이름 짓고 저장하기.
@@ -110,13 +110,13 @@ export function RouteSavePage() {
       { routeName: name.trim(), treeIds: treeIds as number[] },
       {
         onSuccess: (newRouteId) => {
-          showToast('동선이 저장되었어요!', 'success');
-          // 저장한 동선을 바로 보여준다(설계서 8번의 '동선 페이지에 저장').
-          // id 를 실어 보내야 동선 탭이 방금 만든 걸 고른다 — 목록 순서는 서버가 정하는 거라
-          // '첫 번째가 최신'이라고 기대할 수 없다.
+          // 성공 토스트는 없다 — ④단계가 같은 말을 더 크게 하고 있어 두 번 말할 이유가 없다.
+          // 이름을 실어 보내는 건 거기서 무엇을 저장했는지 되짚어 주기 위해서다(없어도 선다).
           // replace: 뒤로가기가 방금 끝낸 작성 화면으로 되돌아가지 않게 한다.
-          // 토스트는 main.tsx 의 <Toaster /> 가 라우터 밖에 있어 이동해도 살아남는다.
-          navigate(ROUTES.journey, { replace: true, state: { selectedRouteId: newRouteId } });
+          navigate(journeySavedPath(newRouteId), {
+            replace: true,
+            state: { routeName: name.trim() },
+          });
         },
         // 화면을 떠나지 않는다 — 입력한 이름을 살려두고 그대로 다시 누를 수 있게.
         onError: () => showToast('동선을 저장하지 못했어요', 'error'),

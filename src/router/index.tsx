@@ -14,6 +14,7 @@ import { RouteListPage } from '../features/route/RouteListPage';
 import { RouteCreatePage } from '../features/route/RouteCreatePage';
 import { RouteViewPage } from '../features/route/RouteViewPage';
 import { RouteSavePage } from '../features/route/RouteSavePage';
+import { RouteSavedPage } from '../features/route/RouteSavedPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { PaymentMethodsPage } from '../features/premium/PaymentMethodsPage';
 import { PremiumPage } from '../features/premium/PremiumPage';
@@ -156,6 +157,11 @@ export const router = createBrowserRouter([
             // ③단계. ①·② 와 같은 층 — 지도도 탭바도 없이 저장할 내용만 보여주는 화면이다.
             path: ROUTES.journeySave,
             element: <RouteSavePage />,
+          },
+          {
+            // ④단계. 저장이 끝난 뒤 다음 수를 권하는 화면이라 여기도 탭바 밖이다.
+            path: ROUTES.journeySaved,
+            element: <RouteSavedPage />,
           },
           {
             // 같은 페이지가 '저장된 동선 보기' 모드로 뜬다. 데이터 출처와 헤더만 갈린다.
