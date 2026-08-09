@@ -5,6 +5,7 @@ import { AuthShell } from './components/AuthShell';
 import { DevicePermissionModal } from './components/DevicePermissionModal';
 import { TermsAgreementView } from './components/TermsAgreementView';
 import { WelcomeView } from './components/WelcomeView';
+import { WELCOME_TOAST_OPTIONS } from './lib/authToast';
 import { redirectToOAuth } from './lib/oauth';
 import { useToast } from '../../shared/components';
 import { ROUTES } from '../../shared/constants/routes';
@@ -22,9 +23,11 @@ export function AuthPage() {
     try {
       redirectToOAuth(nextProvider);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : '소셜 로그인 설정을 확인해 주세요.', 'error', {
-        placement: 'top',
-      });
+      showToast(
+        error instanceof Error ? error.message : '소셜 로그인 설정을 확인해 주세요.',
+        'error',
+        WELCOME_TOAST_OPTIONS,
+      );
     }
   };
 

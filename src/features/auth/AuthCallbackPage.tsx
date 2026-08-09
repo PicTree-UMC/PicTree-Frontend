@@ -5,6 +5,7 @@ import { ROUTES } from '../../shared/constants/routes';
 import { useToast } from '../../shared/components';
 import { socialLogin } from './api/authApi';
 import { getApiErrorMessage } from './lib/apiError';
+import { WELCOME_TOAST_OPTIONS } from './lib/authToast';
 import { clearLogoutRequested } from './lib/logoutFlag';
 import {
   clearSavedOAuthProvider,
@@ -38,7 +39,7 @@ export function AuthCallbackPage() {
     const provider = getSavedOAuthProvider();
 
     if (!provider) {
-      showToast('소셜 로그인 정보를 찾을 수 없습니다.', 'error', { placement: 'top' });
+      showToast('소셜 로그인 정보를 찾을 수 없습니다.', 'error', WELCOME_TOAST_OPTIONS);
       navigate(ROUTES.auth, { replace: true });
       return;
     }
@@ -53,7 +54,7 @@ export function AuthCallbackPage() {
       .then((response) => {
         if (!response.success) {
           // 200 에 실려 온 실패. 서버 문구가 비어 있을 때만 우리 문구로 메운다.
-          showToast(response.message || SOCIAL_LOGIN_FALLBACK, 'error', { placement: 'top' });
+          showToast(response.message || SOCIAL_LOGIN_FALLBACK, 'error', WELCOME_TOAST_OPTIONS);
           navigate(ROUTES.auth, { replace: true });
           return;
         }
@@ -79,9 +80,11 @@ export function AuthCallbackPage() {
           이다. 이유를 못 들으니 사용자는 될 때까지 다시 누르는 수밖에 없었다.
           같은 기능의 로그아웃·탈퇴는 이미 이 헬퍼를 쓰고 있었고 로그인만 빠져 있었다.
         */
-        showToast(getApiErrorMessage(requestError, SOCIAL_LOGIN_FALLBACK), 'error', {
-          placement: 'top',
-        });
+        showToast(
+          getApiErrorMessage(requestError, SOCIAL_LOGIN_FALLBACK),
+          'error',
+          WELCOME_TOAST_OPTIONS,
+        );
         navigate(ROUTES.auth, { replace: true });
       });
   }, [authorizationCode, navigate, setAuth, showToast]);
@@ -106,7 +109,7 @@ export function AuthCallbackPage() {
 
     // provider 원문은 화면에 안 쓰지만(영문·설정 노출) 원인 추적에는 이게 유일한 단서다.
     console.error('[oauth] provider 인가 실패:', error, errorDescription);
-    showToast(getOAuthErrorMessage(error), 'error', { placement: 'top' });
+    showToast(getOAuthErrorMessage(error), 'error', WELCOME_TOAST_OPTIONS);
     navigate(ROUTES.auth, { replace: true });
   }, [error, errorDescription, navigate, showToast]);
 
