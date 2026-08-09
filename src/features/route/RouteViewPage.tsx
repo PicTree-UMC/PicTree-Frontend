@@ -11,6 +11,7 @@ import {
   SHEET_EXPANDED_RATIO,
 } from './components/RoutePlaceStrip';
 import { SaveRouteSheet } from './components/SaveRouteSheet';
+import { RouteDateChips } from './components/RouteDateChips';
 import { RouteNodeStepper } from './components/RouteNodeStepper';
 import { DATES_PARAM, MAX_PLACES, parseDatesParam, toDatesParam } from './lib/routeParams';
 import { buildSequenceMap } from './lib/sequence';
@@ -34,14 +35,23 @@ import { ROUTES } from '@/shared/constants/routes';
  * 쿼리로 받아 지도를 그리는 일만 한다. 날짜를 바꾸려면 뒤로 가면 되므로 상단에 캘린더를
  * 여는 버튼이 없다.
  *
- * **화면 위에는 뒤로가기(② 는 제목까지)만 띄우고, 조작은 전부 하단 시트에 모았다** —
- * 날짜 칩·장소 칩·동선저장이 한 덩어리로 있고 시트째 접어 지도를 넓게 볼 수 있다.
+ * **화면 위에는 뒤로가기(② 는 제목까지)만 띄운다.** 아래는 두 층이다: 지금 걸린 보기 범위를
+ * 정하는 **날짜 칩 줄**, 그리고 동선에 무엇을 넣을지 다루는 **하단 시트**. 시트만 접어
+ * 지도를 넓게 볼 수 있고, 그때도 칩은 남아 지금 무엇이 걸러져 있는지 말해 준다.
  */
 /**
  * 겹친 장소를 시트에서 짚어주는 시간. 펼쳐지고 스크롤이 멎기까지가 0.5초 남짓이라
  * 그보다 넉넉해야 하고, 다음 조작을 방해할 만큼 오래 남아 있어도 안 된다.
  */
 const HIGHLIGHT_MS = 3000;
+
+/**
+ * 시트 위에 얹힌 날짜 칩 줄의 높이(칩 `h-10` 40 + `pb-3` 12).
+ *
+ * **지도 아래 여백에만 쓰는 어림값이라 재지 않는다** — `SHEET_COLLAPSED_PX` 와 같은 이유로,
+ * 몇 px 어긋나도 마커가 가려지지 않는다. 레이아웃은 여전히 내용이 정한다.
+ */
+const DATE_CHIPS_ROW_PX = 52;
 
 export function RouteViewPage() {
   const navigate = useNavigate();
@@ -211,9 +221,14 @@ export function RouteViewPage() {
     바꾸거나 장소가 갱신될 때 제 값으로 다시 맞춰진다.
   */
   const [sheetCollapsed, setSheetCollapsed] = useState(false);
-  const sheetHeightPx = sheetCollapsed
-    ? SHEET_COLLAPSED_PX
-    : Math.round(window.innerHeight * SHEET_EXPANDED_RATIO);
+
+  /*
+    비워둘 높이 = 시트 + **그 위에 얹힌 날짜 칩 줄**. 칩 줄도 지도 위에 떠 있어서 안 더하면
+    맨 아래 마커가 칩 뒤로 들어간다. 날짜가 없으면 줄 자체가 안 그려지므로 0 이다.
+  */
+  const sheetHeightPx =
+    (sheetCollapsed ? SHEET_COLLAPSED_PX : Math.round(window.innerHeight * SHEET_EXPANDED_RATIO)) +
+    (dates.length > 0 ? DATE_CHIPS_ROW_PX : 0);
 
   useRoutePath(map, places, disabledIds, {
     dateFilter,
@@ -354,14 +369,38 @@ export function RouteViewPage() {
       {/* 하단 동선 strip — 지도가 fixed 배경이 되면서 흐름에서 빠졌으므로,
           바텀 패널로 지도 위에 띄운다(내부에서 pb-safe 로 홈 인디케이터를 피한다). */}
       <div className="absolute inset-x-0 bottom-0 z-10">
+        {/*
+          날짜 필터 칩 — **시트 안이 아니라 시트 바로 위**다.
+
+          칩은 고르는 게 아니라 거르는 것이고, 거르면 목록만이 아니라 **지도가 같이 좁혀진다**.
+          시트 안에 있을 때는 시트를 접으면 칩이 같이 숨는데 지도는 계속 걸러진 채여서,
+          왜 하루치만 보이는지 알려주는 게 화면에 하나도 안 남았다. 밖으로 나오면서 접든 말든
+          지금 걸린 범위가 화면에 떠 있고, 시트는 **동선에 무엇을 넣을지** 하나만 다루게 됐다
+          (칩 줄이 비운 자리는 장소 목록이 가져갔다 — 2.2 → 2.8줄).
+
+          위(네비바 아래)가 아니라 여기 붙이는 이유는 **거르는 대상이 바로 아래 목록**이라서다.
+          `전체 선택` 도 걸린 범위에만 적용되므로 둘이 멀어지면 무엇에 걸리는지 읽기 어렵다.
+          ⚠️ 대신 시트에 매인 자리라 접으면 칩도 같이 내려온다. 예전 따라가기 알약이 이 자리에
+          있다가 시트 안으로 들어간 적이 있다 — 그때는 알약이 지도를 가리기만 했지만, 칩은
+          지도에 무엇이 그려질지를 정하는 줄이라 지도 곁에 있는 값이 더 크다.
+
+          흰 채움 `outline` 칩이라 지도 위에서 그대로 읽힌다 — 누를 자리는 면이 있어야 보인다.
+        */}
+        {dates.length > 0 && (
+          <div className="px-5 pb-3">
+            <RouteDateChips
+              dates={dates}
+              filter={dateFilter}
+              onChangeFilter={setPickedDateFilter}
+            />
+          </div>
+        )}
+
         <RoutePlaceStrip
           places={places}
           disabledPlaceIds={disabledIds}
-          // 날짜 칩이 헤더에서 여기로 내려왔다 — 날짜 켜고 끄기와 장소 켜고 끄기는 같은 성격의
-          // 조작인데 화면 위아래 끝으로 갈라져 있었다. 이제 조작은 전부 이 시트 안에 있다.
-          dates={dates}
+          // 값만 넘긴다 — 거르는 칩 줄은 이 시트 위에 있다(바로 위 블록).
           dateFilter={dateFilter}
-          onChangeDateFilter={setPickedDateFilter}
           allVisibleSelected={allVisibleSelected}
           onToggleAllVisible={toggleAllVisible}
           // ② 는 저장 한도가 의미 없다 — `3/20개` 는 더 담을 수 있다는 오해를 준다.
