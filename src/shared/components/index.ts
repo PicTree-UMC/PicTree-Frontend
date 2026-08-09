@@ -17,6 +17,7 @@ export { CalendarGrid } from './CalendarGrid';
 export { SettingsList, SettingsRow, SettingsFooter } from './SettingsList';
 export { GrassIcon } from './GrassIcon';
 export { IconFrame } from './IconFrame';
+export { Photo } from './Photo';
 export { PhotoPost, PostHeartIcon } from './PhotoPost';
 export { SproutIllustration } from './SproutIllustration';
 export { CalendarMonthNav } from './CalendarMonthNav';

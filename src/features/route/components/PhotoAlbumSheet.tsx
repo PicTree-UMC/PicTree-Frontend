@@ -1,4 +1,4 @@
-import { NavBar, Sheet } from '@/shared/components';
+import { NavBar, Photo, Sheet } from '@/shared/components';
 import { Route } from '../types/route';
 import { useRoutePhotos } from '../hooks/useRoutePhotos';
 
@@ -75,14 +75,15 @@ export function PhotoAlbumSheet({ route, onClose }: PhotoAlbumSheetProps) {
             {photos.map((photo) => (
               <li key={photo.treeId} className="aspect-square overflow-hidden bg-[#d9d9d9]">
                 {/*
-                    사진 없는 장소는 앱 아이콘으로 대체한다(백엔드가 url=null 로 내려주는 자리).
-                    아이콘 이미지에 둥근 모서리가 그려져 있어 scale 로 살짝 키워 잘라낸다 —
-                    타임라인 썸네일과 같은 처리(TimelineCard).
+                    사진이 없거나(url=null) 못 불러오면 나무 폴백으로 떨어진다.
+                    예전엔 앱 아이콘을 깔았는데, 아이콘에 둥근 모서리가 그려져 있어
+                    `scale-[1.12]` 로 잘라내는 땜질이 딸려 있었다 — 폴백을 바꾸면서 함께 없앴다.
                   */}
-                <img
-                  src={photo.url ?? '/apple-touch-icon.jpg'}
+                <Photo
+                  src={photo.url}
                   alt={photo.placeName}
-                  className={`size-full object-cover ${photo.url ? '' : 'scale-[1.12]'}`}
+                  className="size-full object-cover"
+                  iconClassName="h-10 w-10"
                 />
               </li>
             ))}

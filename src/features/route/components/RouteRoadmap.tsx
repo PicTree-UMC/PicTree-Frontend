@@ -1,27 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 
+import { Photo } from '@/shared/components';
 import { Route } from '../types/route';
 import { useRoutePhotos } from '../hooks/useRoutePhotos';
-
-/** 사진이 없는 노드를 채우는 플레이스홀더(사진 아이콘, tabler:photo 계열). */
-function PhotoPlaceholder({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="3" y="4" width="18" height="16" rx="3" />
-      <circle cx="8.5" cy="9" r="1.3" />
-      <path d="m3 17 5-4 4 3 3-2 6 5" />
-    </svg>
-  );
-}
 
 /**
  * 곡선 로드맵의 좌표 상수. 노드를 좌우로 번갈아 놓고, 세로로 STEP 간격으로 내려가며,
@@ -50,7 +31,7 @@ interface RouteRoadmapProps {
 
 /**
  * 선택된 동선의 장소 이동을 곡선 로드맵으로 그린다.
- * - 노드: 그 장소에서 찍은 사진을 원형 아이콘으로. 없으면 플레이스홀더.
+ * - 노드: 그 장소에서 찍은 사진을 원형 아이콘으로. 없거나 못 불러오면 나무 폴백.
  * - 간선: 노드 사이를 점선 곡선(SVG path)으로 연결.
  * - 라벨: 노드 바깥쪽에 장소명 + 순번.
  *
@@ -148,13 +129,7 @@ export function RouteRoadmap({ route }: RouteRoadmapProps) {
                 style={{ animationDelay: nodeDelay }}
               >
                 <div className="relative size-full overflow-hidden rounded-full border-2 border-pictree-500 bg-pictree-100">
-                  {photoUrl ? (
-                    <img src={photoUrl} alt="" className="size-full object-cover" />
-                  ) : (
-                    <span className="flex size-full items-center justify-center text-pictree-500">
-                      <PhotoPlaceholder className="size-7" />
-                    </span>
-                  )}
+                  <Photo src={photoUrl} className="size-full object-cover" iconClassName="size-7" />
                 </div>
                 {/* 순번 배지 */}
                 <span className="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full border-2 border-white bg-pictree-700 text-[10px] font-bold text-white">

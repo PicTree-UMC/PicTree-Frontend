@@ -23,7 +23,8 @@ interface TreeItem {
   latitude: number;
   longitude: number;
   mood: string | null;
-  defaultImage?: string | null;
+  // 응답의 `defaultImage` 는 여기 안 적는다 — 식별자라 화면에서 쓸 데가 없는데,
+  // 타입에 있으면 사진 자리에 채우게 된다(#209 가 그렇게 났다).
   imageUrl?: string | null;
   description?: string | null;
   address?: string | null;
@@ -77,7 +78,8 @@ export const getMyBlogPlaces = async (): Promise<BlogTreeRecord[]> => {
       longitude: tree.longitude,
       address: tree.address ?? '',
       mood: tree.mood ?? '😌',
-      defaultImage: tree.imageUrl || tree.defaultImage || '',
+      // `tree.defaultImage` 로 폴백하지 않는다 — URL 이 아니라 식별자다(BlogTreeRecord 주석).
+      imageUrl: tree.imageUrl || '',
       createdAt: tree.createdAt ?? today,
     } satisfies BlogTreeRecord))
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
