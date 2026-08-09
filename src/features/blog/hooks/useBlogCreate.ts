@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { BlogDay, BlogDraftPreview, BlogStatus, ToneId, CreateAIBlogDraftRequest } from '../types/blog';
 import { getLocalDateString } from '../../../shared/lib/date';
+import { getApiErrorMessage } from '../../../shared/lib/apiError';
 import { DEFAULT_TONE_ID } from '../constants/blogTones';
 import { suggestToneFromMoods } from '../lib/moodTone';
 import { createAIBlogDraft } from '../api/blogApi';
@@ -33,6 +34,8 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
   const [status, setStatus] = useState<BlogStatus>('idle');
   const [draft, setDraft] = useState<BlogDraftPreview | null>(null);
   const queryClient = useQueryClient();
+  /** 실패 사유. 서버가 준 문구를 그대로 든다 — `status === 'error'` 일 때만 의미가 있다. */
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // 목록 화면과 같은 query key를 사용해 나무 전체 조회 결과를 재사용한다.
   const { data: allPlaces = [] } = useBlogTrees();
@@ -108,10 +111,13 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
         setDraft({ title: resp.title, days });
         setStatus('ready');
       } catch (err) {
-        // 실패하면 상태를 idle로 돌리고 로그를 남긴다.
-        // TODO: 사용자-facing 에러 처리(toast 등)
+        if (cancelled) return;
+
+        // 서버 문구를 그대로 든다. `BLOG400-1` 처럼 조건이 아직 안 밝혀진 실패가 있어
+        // 우리가 지어낸 문구로 덮으면 사용자도 우리도 원인을 못 본다.
         console.error('create draft failed', err);
-        setStatus('idle');
+        setErrorMessage(getApiErrorMessage(err, '초안을 만들지 못했어요. 잠시 후 다시 시도해 주세요.'));
+        setStatus('error');
       }
     })();
 
@@ -124,6 +130,7 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
     endDate,
     toneId,
     status,
+    errorMessage,
     draft,
     trees,
     selectedTreeIds,
@@ -145,7 +152,16 @@ export function useBlogCreate({ initialStartDate, initialEndDate }: UseBlogCreat
       setStep(2);
     },
     goToResult: () => {
+      setErrorMessage(null);
       setStep(3);
+      setStatus('generating');
+    },
+    /**
+     * 실패한 초안 생성을 다시 건다. `generating` 으로 되돌리면 생성 `useEffect` 가
+     * `status` 를 보고 다시 돈다 — 재요청 경로를 따로 두지 않는 이유다.
+     */
+    retryGenerate: () => {
+      setErrorMessage(null);
       setStatus('generating');
     },
     back: () => setStep((current) => (current > 1 ? ((current - 1) as CreateStep) : current)),
