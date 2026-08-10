@@ -125,7 +125,7 @@ export function ResultStep({
       <article className="mx-5 overflow-hidden rounded-2xl border border-[#e7e8dc] bg-white shadow-[0_5px_18px_rgba(45,51,34,0.06)]">
         <header className="px-5 pb-5 pt-6">
           <span className="text-[12px] font-medium text-pictree-700">여행 기록</span>
-          <h2 className="mt-2 text-[23px] font-bold leading-[1.4] tracking-[-0.02em] text-[#20251f]">
+          <h2 className="mt-2 text-[23px] font-bold leading-[1.4] tracking-[-0.02em] text-[#2c3930]">
             {draft.title}
           </h2>
           <p className="mt-3 text-[12px] text-[#9a9e96]">AI가 여행 기록과 사진으로 작성한 초안이에요.</p>
