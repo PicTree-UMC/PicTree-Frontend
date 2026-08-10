@@ -2,9 +2,11 @@ import { useBlogDraftStore } from './store/blogDraftStore';
 import { BlogCreateFab } from './components/BlogCreateFab';
 import { BlogEmptyState } from './components/BlogEmptyState';
 import { SavedBlogCard } from './components/SavedBlogCard';
+import { BlogListSkeleton } from './components/BlogListSkeleton';
 import { useEffect } from 'react';
 import { useBlogTrees } from './hooks/useBlogTrees';
 import { getLocalDateString } from '@/shared/lib/date';
+import { Skeleton } from '@/shared/components';
 
 export function BlogPage() {
   const savedBlogs = useBlogDraftStore((state) => state.savedBlogs);
@@ -25,15 +27,21 @@ export function BlogPage() {
       {/* 제목 밑 구분선은 뺐다 — 다른 탭(타임라인·동선) 머리글엔 선이 없다. */}
       <header className="px-5 pb-3 pt-header">
         <h1 className="text-[20px] font-medium">블로그</h1>
-        {savedBlogs.length > 0 && (
-          <p className="mt-0.5 text-[13px] text-[#8b9086]">전체 {savedBlogs.length}개</p>
+        {/*
+          개수 줄은 목록이 와야 쓸 수 있다. 불러오는 동안 자리를 비워 두면 도착하는 순간
+          아래 목록이 통째로 한 줄만큼 밀리므로, 같은 높이의 막대로 잡아 둔다.
+        */}
+        {isLoading ? (
+          <Skeleton className="mt-0.5 h-[19px] w-16 rounded" />
+        ) : (
+          savedBlogs.length > 0 && (
+            <p className="mt-0.5 text-[13px] text-[#8b9086]">전체 {savedBlogs.length}개</p>
+          )
         )}
       </header>
 
       {isLoading ? (
-        <div className="grid min-h-[55vh] place-items-center" role="status" aria-label="블로그 목록을 불러오는 중">
-          <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
-        </div>
+        <BlogListSkeleton />
       ) : fetchError ? (
         <div className="flex min-h-[55vh] flex-col items-center justify-center px-5 text-center">
           <p className="text-[15px] text-ink-muted">블로그 목록을 불러오지 못했어요.</p>

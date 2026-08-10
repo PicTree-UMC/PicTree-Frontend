@@ -8,6 +8,7 @@ import type { TimelineRecord } from "./types/timeline.types";
 import { TimelineSearchBar } from "./components/TimelineSearchBar";
 import { TimelineSortTabs } from "./components/TimelineSortTabs";
 import { TimelinePhotoGroup } from "./components/TimelinePhotoGroup";
+import { TimelineSkeleton } from "./components/TimelineSkeleton";
 import { TimelineEditModal } from "./components/TimelineEditModal";
 import { DeleteRecordModal } from "./components/DeleteRecordModal";
 import { EmptyTimeline } from "./components/EmptyTimeline";
@@ -148,9 +149,10 @@ export function TimelinePage() {
           </div>
         )}
 
-        {isLoading && (
-          <p className="py-10 text-center text-[15px] text-ink-muted">불러오는 중...</p>
-        )}
+        {/*
+          로딩 자리는 여기가 아니라 피드 쪽이다 — 골격이 사진 폭을 그대로 써야 해서
+          가로 여백이 있는 이 머리글 블록 안에 둘 수 없다.
+        */}
         {isError && (
           <div className="py-10 text-center">
             <p className="text-[15px] text-error">기록을 불러오지 못했어요.</p>
@@ -175,17 +177,21 @@ export function TimelinePage() {
       {isEmpty && <EmptyTimeline />}
 
       {/* 게시물은 인스타 피드처럼 좌우 여백 없이 화면 끝까지 채운다. */}
-      <div className="flex flex-col gap-5 pb-4">
-        {groups.map((group) => (
-          <TimelinePhotoGroup
-            key={group.dateKey}
-            group={group}
-            onToggleFavorite={handleToggleFavorite}
-            onEdit={setEditTarget}
-            onDelete={setDeleteTarget}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <TimelineSkeleton />
+      ) : (
+        <div className="flex flex-col gap-5 pb-4">
+          {groups.map((group) => (
+            <TimelinePhotoGroup
+              key={group.dateKey}
+              group={group}
+              onToggleFavorite={handleToggleFavorite}
+              onEdit={setEditTarget}
+              onDelete={setDeleteTarget}
+            />
+          ))}
+        </div>
+      )}
 
       {editTarget && (
         <TimelineEditModal
