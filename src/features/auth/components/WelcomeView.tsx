@@ -51,7 +51,15 @@ function SocialLoginButton({
   onClick: () => void;
 }) {
   const isKakao = provider === 'KAKAO';
-  const iconSrc = isKakao ? '/assets/social/kakao-talk.svg' : '/assets/social/google.svg';
+  /*
+    ⚠️ **확장자가 `.svg` 였지만 벡터가 아니었다.** Figma 가 뽑은 파일이 `<rect>` 하나에
+    `<pattern>` 으로 base64 PNG 를 박아 둔 것이라, google 은 28.7KB · kakao 는 11.4KB 였다
+    (base64 는 원본보다 약 4/3 로 부푼다). 24px 로 그리면서 360×360 원본을 싣고 있었다.
+
+    로그인 화면은 **첫 진입에 반드시 실리는 화면**이라 그 40KB 가 그대로 첫 전송량이다.
+    같은 그림을 3배 크기(72px)로만 줄여 담았다 — 디자인이 승인한 그림 그대로고 8.4KB 다.
+  */
+  const iconSrc = isKakao ? '/assets/social/kakao-talk.png' : '/assets/social/google.png';
   const iconAlt = isKakao ? '카카오톡' : 'Google';
 
   return (

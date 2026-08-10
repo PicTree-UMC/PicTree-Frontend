@@ -48,6 +48,14 @@ interface PhotoProps {
    */
   message?: string;
   messageClassName?: string;
+  /**
+   * ⚠️ **기본이 `lazy` 다.** 이 앱의 사진은 대부분 목록·격자·피드에 있어서 첫 화면에
+   * 안 보이는 것이 훨씬 많다. 종전에는 기본값이 없어 두 곳만 `lazy` 를 넘기고 나머지는
+   * 전부 즉시 받았다.
+   *
+   * **사진이 그 화면의 전부인 자리만 `eager` 로 연다** — 열자마자 봐야 하는 것을
+   * 게으르게 두면 빈 칸을 먼저 보게 된다(스토리 뷰어가 그 자리다).
+   */
   loading?: 'lazy' | 'eager';
   style?: CSSProperties;
 }
@@ -67,7 +75,7 @@ export function Photo({
   fallback,
   message,
   messageClassName = 'text-[13px] text-ink-muted',
-  loading,
+  loading = 'lazy',
   style,
 }: PhotoProps) {
   // 실패한 사실이 아니라 **실패한 URL** 을 기억한다. 목록에서 컴포넌트가 재사용될 때
@@ -83,6 +91,12 @@ export function Photo({
         src={src}
         alt={alt}
         loading={loading}
+        /*
+          디코딩을 메인 스레드 밖으로 뺀다. 큰 사진이 여러 장 들어오는 격자·피드에서
+          이게 없으면 디코딩이 렌더를 막아 스크롤이 걸린다. 값을 바꿀 이유가 있는
+          자리가 없어서 prop 으로 열지 않았다.
+        */
+        decoding="async"
         style={style}
         className={className}
         onError={() => setFailedSrc(src)}

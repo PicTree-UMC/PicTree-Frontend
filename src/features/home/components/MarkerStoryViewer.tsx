@@ -111,6 +111,8 @@ export function MarkerStoryViewer({
                 <Photo
                   src={item.photo}
                   alt={item.label}
+                  /* 열자마자 이 사진이 화면의 전부다 — 유일하게 lazy 를 벗는 자리. */
+                  loading="eager"
                   className="absolute inset-0 h-full w-full object-cover"
                   iconClassName="h-16 w-16"
                   message="사진을 불러오지 못했어요"
