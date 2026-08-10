@@ -4,7 +4,6 @@ import { treeKeys } from "@/features/home/hooks/useTrees";
 import { useToast } from "@/shared/components";
 import { updateTimeline } from "../api/timelineApi";
 import { getTimelineErrorMessage } from "../lib/timelineError";
-import { timelineKeys } from "./useTimeline";
 import type { UpdateTimelineRequest } from "../types/timeline.types";
 
 interface UpdateTimelineVariables {
@@ -28,7 +27,7 @@ export const useUpdateTimeline = () => {
       updateTimeline(timelineId, payload),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: timelineKeys.all });
+      // `['trees']` 가 원본을 덮으므로 타임라인·지도가 함께 갱신된다(이슈 #237).
       queryClient.invalidateQueries({ queryKey: treeKeys.all });
     },
 

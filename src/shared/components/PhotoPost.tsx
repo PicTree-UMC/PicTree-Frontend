@@ -50,7 +50,6 @@ export function PhotoPost({ title, meta, imageUrl, actions, caption }: PhotoPost
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#EDE7D2]">
         <Photo
           src={imageUrl}
-          loading="lazy"
           className="absolute inset-0 h-full w-full object-cover"
           iconClassName="h-14 w-14"
         />

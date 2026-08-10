@@ -2,29 +2,55 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { treeStatsKeys } from '@/features/profile/hooks/useTreeStats';
-import { routePlaceCandidateKey } from '@/features/route/hooks/useRoutePlaceCandidates';
 import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
-import { timelineKeys } from '@/features/timeline/hooks/useTimeline';
-import {
-  deleteTree,
-  getTreeDetail,
-  getTrees,
-  toggleTreeFavorite,
-} from '../api/treesApi';
+import { deleteTree, getTreeDetail, toggleTreeFavorite } from '../api/treesApi';
+import { listItemToMarker } from '../lib/treeMapping';
+import { DEMO_MARKERS } from '../mocks/markers';
+import type { TreeListItem } from '../types/tree';
+import { treeSourceKey, useAllTrees } from './useAllTrees';
 import type { MapMarkerData } from './useMapMarkers';
 
+/*
+  `treeKeys.list()` 는 지웠다 — 지도 몫의 `/trees` 순회를 담던 키인데, 지금은 원본
+  (`treeSourceKey` = `['trees','all']`)을 `select` 로 가공한다(이슈 #237).
+
+  ⚠️ `treeKeys.all` 은 그대로 둔다. `['trees']` 라 **원본과 상세를 한 번에 덮는
+  접두사**이고, 무효화 나열이 이 하나로 접힌 것이 이 작업의 요지다.
+*/
 export const treeKeys = {
   all: ['trees'] as const,
-  list: () => [...treeKeys.all, 'list'] as const,
   detail: (id: string) => [...treeKeys.all, 'detail', id] as const,
 };
 
-/** 지도 마커 목록. 토큰 없으면 api 레이어에서 목데이터 폴백. */
-export const useTrees = () =>
-  useQuery({
-    queryKey: treeKeys.list(),
-    queryFn: getTrees,
-  });
+/** 원본 → 지도 마커. 모듈 최상위 참조여야 렌더마다 다시 안 돈다(`useAllTrees` 주석). */
+const toMarkers = (trees: TreeListItem[]): MapMarkerData[] => trees.map(listItemToMarker);
+
+/** 개발 중에 백엔드·로그인 없이도 지도가 비지 않게 하는 폴백. */
+const USE_MOCK_FALLBACK = import.meta.env.DEV;
+
+/**
+ * 지도 마커 목록.
+ *
+ * ⚠️ **목 폴백이 지도에만 남는다.** 예전에는 `getTrees()` 안에 있어서 그 함수를 쓰는
+ * 곳이면 어디든 가짜 `treeId` 가 흘러들었다 — 동선 후보가 `home/treesApi` 재사용을
+ * 일부러 피한 이유가 그것이었다(가짜 id 가 `POST /routes` 로 새면 400). 원본
+ * (`fetchAllTreeItems`)은 깨끗하므로, 폴백은 화면 하나가 자기 사정으로 갖는다.
+ */
+export const useTrees = () => {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  // 토큰이 없으면 부르지 않는다 — `GET /trees` 는 인증이 걸려 있어 401 이 뻔하다.
+  const query = useAllTrees({ select: toMarkers, enabled: isAuthenticated });
+
+  if (!isAuthenticated || query.isError) {
+    const fallback = USE_MOCK_FALLBACK ? DEMO_MARKERS : [];
+    // 폴백을 쓸 때는 로딩·실패 상태를 끈다 — 그릴 것이 이미 있다.
+    if (!isAuthenticated || USE_MOCK_FALLBACK) {
+      return { ...query, data: fallback, isPending: false, isError: false };
+    }
+  }
+
+  return query;
+};
 
 /*
   `useTreeCount`(+ `treeKeys.count`, `getTreeCount`)는 지웠다. 마이페이지 요약 한 곳이
@@ -53,13 +79,19 @@ export const useTreeDetail = (treeId: string | null) => {
   });
 };
 
-/** 목록 캐시를 즉시 갱신하는 낙관적 업데이트 유틸. */
-const optimisticListUpdate = (
+/**
+ * 원본 캐시를 즉시 갱신하는 낙관적 업데이트 유틸.
+ *
+ * ⚠️ **마커가 아니라 원본(`TreeListItem`)을 고친다.** 캐시에 든 것이 원본이고 마커는
+ * `select` 가 만들어 낸 사본이라, 사본을 고쳐 봐야 다음 계산에서 덮인다. 대신 여기
+ * 한 번 고치면 지도·타임라인·동선·블로그·캘린더가 **동시에** 따라온다.
+ */
+const optimisticSourceUpdate = (
   queryClient: ReturnType<typeof useQueryClient>,
-  updater: (markers: MapMarkerData[]) => MapMarkerData[],
+  updater: (trees: TreeListItem[]) => TreeListItem[],
 ) => {
-  const prev = queryClient.getQueryData<MapMarkerData[]>(treeKeys.list());
-  queryClient.setQueryData<MapMarkerData[]>(treeKeys.list(), (old) =>
+  const prev = queryClient.getQueryData<TreeListItem[]>(treeSourceKey);
+  queryClient.setQueryData<TreeListItem[]>(treeSourceKey, (old) =>
     old ? updater(old) : old,
   );
   return prev;
@@ -74,31 +106,33 @@ export const useToggleFavorite = () => {
     mutationFn: async (treeId: string) => {
       // 지금 값의 반대가 목표 상태다 (명세서가 본문으로 상태를 지정하게 돼 있다)
       const current = queryClient
-        .getQueryData<MapMarkerData[]>(treeKeys.list())
-        ?.find((marker) => marker.id === treeId);
+        .getQueryData<TreeListItem[]>(treeSourceKey)
+        ?.find((tree) => String(tree.treeId) === treeId);
 
       if (isAuthenticated) {
         await toggleTreeFavorite(Number(treeId), !current?.isFavorite);
       }
     },
     onMutate: async (treeId) => {
-      await queryClient.cancelQueries({ queryKey: treeKeys.list() });
-      const prev = optimisticListUpdate(queryClient, (markers) =>
-        markers.map((marker) =>
-          marker.id === treeId ? { ...marker, isFavorite: !marker.isFavorite } : marker,
+      await queryClient.cancelQueries({ queryKey: treeSourceKey });
+      const prev = optimisticSourceUpdate(queryClient, (trees) =>
+        trees.map((tree) =>
+          String(tree.treeId) === treeId ? { ...tree, isFavorite: !tree.isFavorite } : tree,
         ),
       );
       return { prev };
     },
     onError: (_error, _treeId, context) => {
-      if (context?.prev) queryClient.setQueryData(treeKeys.list(), context.prev);
+      if (context?.prev) queryClient.setQueryData(treeSourceKey, context.prev);
     },
     onSettled: () => {
       if (!isAuthenticated) return;
-      queryClient.invalidateQueries({ queryKey: treeKeys.list() });
-      // 타임라인 피드의 하트도 같은 나무를 본다. 안 깨면 지도에서 켠 하트가
-      // 타임라인에서는 staleTime(60s) 동안 꺼진 채로 남는다.
-      queryClient.invalidateQueries({ queryKey: timelineKeys.all });
+      /*
+        타임라인 피드의 하트도 같은 나무를 본다. 예전에는 `['timeline']` 을 따로 깨야
+        했는데 — 안 깨면 지도에서 켠 하트가 타임라인에서 60초 꺼진 채 남았다 — 이제
+        같은 원본을 보므로 이 한 줄이 둘 다 덮는다.
+      */
+      queryClient.invalidateQueries({ queryKey: treeSourceKey });
     },
   });
 };
@@ -119,27 +153,26 @@ export const useDeleteTree = () => {
         빠지면 알림도 같이 사라진다. 예전에는 `nearby` 캐시를 따로 훑어 빼 줘야
         했다 — 안 하면 방금 지운 장소의 알림이 앱을 다시 켤 때까지 떠 있었다.
       */
-      const prev = optimisticListUpdate(queryClient, (markers) =>
-        markers.filter((marker) => marker.id !== treeId),
+      const prev = optimisticSourceUpdate(queryClient, (trees) =>
+        trees.filter((tree) => String(tree.treeId) !== treeId),
       );
       return { prev };
     },
     onError: (_error, _treeId, context) => {
-      if (context?.prev) queryClient.setQueryData(treeKeys.list(), context.prev);
+      if (context?.prev) queryClient.setQueryData(treeSourceKey, context.prev);
     },
     onSettled: () => {
       if (!isAuthenticated) return;
-      // 상세(`detail`) 캐시도 함께 깬다 — 지운 나무를 열어 둔 채였을 수 있다.
-      queryClient.invalidateQueries({ queryKey: treeKeys.all });
       /*
-        타임라인은 ['timeline'] 이라는 독립 키다. 여기 안 깨면 지도에서 지운 기록이
-        staleTime(60s) 동안 타임라인에 그대로 남는다 — 탭을 옮겨도 사라지지 않다가
-        한참 뒤에야 빠지는 증상이 이거였다. 동선 후보도 /trees 를 가공한 독립 키라
-        같이 깨야 한다(만들 때는 이미 그렇게 하고 있다 — useCreateTreeRecord).
+        `['trees']` 하나가 원본과 상세를 함께 덮는다.
+
+        ⚠️ 예전에는 여기에 `timelineKeys.all`·`routePlaceCandidateKey` 를 더 나열해야
+        했다. 같은 `/trees` 를 가공한 독립 키들이라 하나라도 빠뜨리면 조용히 낡은
+        화면이 남았고, 실제로 지도에서 지운 기록이 타임라인에 60초 남는 증상으로
+        데였다. 그 키들이 원본으로 접히면서 나열도 사라졌다(이슈 #237).
       */
-      queryClient.invalidateQueries({ queryKey: timelineKeys.all });
-      queryClient.invalidateQueries({ queryKey: routePlaceCandidateKey });
-      // 잔디는 나무 개수로 그려지므로 장소가 사라지면 같이 옅어져야 한다.
+      queryClient.invalidateQueries({ queryKey: treeKeys.all });
+      // 잔디는 `/calendar` 라는 **다른 엔드포인트**다 — 여기 접히지 않으니 따로 깬다.
       queryClient.invalidateQueries({ queryKey: calendarKeys.all });
       // 나무를 지우면 사진도 함께 지워진다 — 용량도 다시 센다.
       queryClient.invalidateQueries({ queryKey: treeStatsKeys.summary });

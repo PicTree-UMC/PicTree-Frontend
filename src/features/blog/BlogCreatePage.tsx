@@ -2,7 +2,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../shared/constants/routes';
 import { useToast } from '../../shared/components/toast/toastStore';
 import { useBlogCreate } from './hooks/useBlogCreate';
-import { useBlogDraftStore } from './store/blogDraftStore';
+import { useSaveBlogDraft } from './hooks/useBlogDrafts';
 import { CreateStepHeader } from './components/CreateStepHeader';
 import { RouteStep } from './components/steps/RouteStep';
 import { ToneStep } from './components/steps/ToneStep';
@@ -22,7 +22,7 @@ function BlogCreateContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
-  const saveDraft = useBlogDraftStore((state) => state.saveDraft);
+  const { mutateAsync: saveDraft } = useSaveBlogDraft();
   const locationState = location.state as BlogCreateLocationState;
   const flow = useBlogCreate({ initialRouteId: locationState?.routeId });
 

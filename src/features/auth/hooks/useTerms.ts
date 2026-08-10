@@ -15,14 +15,14 @@ export const termsKeys = {
  *
  * 인증이 필요 없어 토큰 여부와 무관하게 돈다 — 가입 전 동의 화면에서 부른다.
  *
- * 약관은 자주 바뀌지 않으므로 한 번 받으면 오래 들고 있는다. 동의 화면을 오갈
- * 때마다 다시 받을 이유가 없다.
+ * 약관은 세션 중에 바뀌지 않는다 — 한 번 받으면 그대로 쓴다. 동의 화면을 오갈 때마다
+ * 다시 받을 이유가 없다. (30분이었는데, 그 값에 근거가 있던 게 아니라 "길게" 의 어림이었다.)
  */
 export const useTerms = () => {
   const query = useQuery({
     queryKey: termsKeys.all,
     queryFn: getTerms,
-    staleTime: 1000 * 60 * 30,
+    staleTime: Infinity,
     retry: (failureCount, error) => {
       const status = isAxiosError(error) ? error.response?.status : undefined;
 

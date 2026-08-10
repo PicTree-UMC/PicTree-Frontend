@@ -59,7 +59,6 @@ export function FavoriteGrid({ places, selecting, checked, onOpen, onToggle }: P
               */}
               <Photo
                 src={place.imageUrl}
-                loading="lazy"
                 className="h-full w-full object-cover"
                 fallback={
                   <span className="flex h-full w-full items-center justify-center px-2">

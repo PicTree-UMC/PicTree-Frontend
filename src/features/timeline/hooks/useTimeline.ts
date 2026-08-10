@@ -1,8 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { isAxiosError } from "axios";
-
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { getTimelines, TIMELINE_PAGE_SIZE } from "../api/timelineApi";
+import { useAllTrees } from "@/features/home/hooks/useAllTrees";
+import { toRecordFromListItem } from "../api/timelineApi";
+import type { TreeListItem } from "@/features/home/types/tree";
 import type {
   TimelineGroup,
   TimelineRecord,
@@ -16,16 +15,15 @@ import {
 } from "../lib/timelineQuery";
 
 /*
-  `thumbnails` 키는 지웠다 — 목록이 사진 URL 을 직접 준다(#123).
-  `detail`·`images` 키도 지웠다 — 상세 시트가 없어지며 상세·사진을 받는 곳이 사라졌다.
+  `timelineKeys` 는 지웠다 — **타임라인은 이제 자기 캐시를 갖지 않는다.**
 
-  ⚠️ 다른 기능들(home·camera)이 `timelineKeys.all` 로 목록을 무효화한다. 네임스페이스
-  문자열("timeline")을 바꾸면 그쪽이 조용히 안 듣게 된다.
+  `["timeline"]` 은 같은 `GET /trees` 를 이 화면 몫으로 한 번 더 받아 두던 키였고,
+  그래서 home·camera 가 나무를 만들거나 지울 때마다 그 키를 **따로 나열해 깨야** 했다.
+  하나라도 빠뜨리면 조용히 낡은 화면이 남았다(이슈 #237). 지금은 원본
+  (`treeSourceKey`)을 `select` 로 나눠 쓰므로 `['trees']` 무효화 하나에 같이 따라온다.
+
+  타임라인 쪽 낙관적 갱신도 원본을 고친다 — `useToggleTimelineFavorite` 참고.
 */
-export const timelineKeys = {
-  all: ["timeline"] as const,
-  list: (page: number, size: number) => ["timeline", "list", page, size] as const,
-};
 
 const toDateKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
@@ -115,13 +113,18 @@ interface UseTimelineOptions {
  * 화면은 날짜별 그룹을 요구하므로 여기서 묶는다.
  *
  * ⚠️ 검색·정렬은 서버가 아니라 여기서 한다. 쿼리 파라미터가 `page`·`size` 뿐이라
- * 서버에 넘길 수단이 없다. 따라서 받아온 페이지 안에서만 동작하며, 기록이 한 페이지를
- * 넘어가면 뒤쪽은 검색에 걸리지 않는다.
- * 백엔드에 `keyword`·`sort` 가 생기면 `timelineApi` 로 옮겨야 한다.
+ * 서버에 넘길 수단이 없다. 백엔드에 `keyword`·`sort` 가 생기면 `timelineApi` 로 옮긴다.
+ *
+ * ⚠️ **한 페이지(20개) 안에서만 돌던 제약이 풀렸다**(이슈 #237). 이 훅만 `/trees` 를
+ * 1페이지로 받고 있어서 21번째부터는 목록에도, 검색에도 안 걸렸다 — 지도·동선·캘린더가
+ * 이미 전체를 받고 있던 것과 어긋난 채였다(#200 과 같은 종류의 잘림이다). 지금은 원본
+ * 하나를 나눠 쓰므로 전부 걸린다.
  */
+/** 원본 나무 → 타임라인 기록. 모듈 최상위 참조로 `select` 에 넘긴다. */
+const toTimelineRecords = (trees: TreeListItem[]): TimelineRecord[] =>
+  trees.map(toRecordFromListItem);
+
 export const useTimeline = ({
-  page = 1,
-  size = TIMELINE_PAGE_SIZE,
   keyword = "",
   sort = "recent",
 }: UseTimelineOptions = {}): UseTimelineResult => {
@@ -133,34 +136,24 @@ export const useTimeline = ({
    */
   const isEnabled = Boolean(accessToken);
 
-  const { data, isPending, isError, refetch } = useQuery({
-    queryKey: timelineKeys.list(page, size),
-    queryFn: () => getTimelines({ page, size }),
+  /*
+    원본 나무를 기록 레코드로 옮긴다. `select` 는 모듈 최상위 함수여야 렌더마다 다시
+    돌지 않는다(`useAllTrees` 주석).
+  */
+  const { data, isPending, isError, refetch } = useAllTrees({
+    select: toTimelineRecords,
     enabled: isEnabled,
-    /**
-     * 4xx 는 재시도하지 않는다. 401(토큰 무효)·400(잘못된 요청)은 같은 요청을
-     * 반복해도 결과가 바뀌지 않는다. 5xx·네트워크 오류는 기본값(1회)을 쓴다.
-     */
-    retry: (failureCount, error) => {
-      const status = isAxiosError(error) ? error.response?.status : undefined;
-
-      if (status && status >= 400 && status < 500) {
-        return false;
-      }
-
-      return failureCount < 1;
-    },
   });
 
   /*
    * 썸네일 조인이 사라졌다 — 목록(`GET /trees`)이 `imageUrl` 을 직접 준다(#123).
    * 예전에는 타임라인 응답에 사진이 아예 없어 나무 목록을 따로 받아 `treeId` 로 이었다.
    */
-  const visible = sortRecords(searchRecords(data?.records ?? [], keyword), sort);
+  const visible = sortRecords(searchRecords(data ?? [], keyword), sort);
 
   return {
     groups: groupByDate(visible, sort),
-    totalCount: data?.totalCount ?? 0,
+    totalCount: data?.length ?? 0,
     visibleCount: visible.length,
     /**
      * ⚠️ 타임라인 응답에는 요금제 정보가 없다. 무료/유료 구분은 `GET /users/me` 의

@@ -1,13 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { treeKeys } from "@/features/home/hooks/useTrees";
-import { routePlaceCandidateKey } from "@/features/route/hooks/useRoutePlaceCandidates";
 import { treeStatsKeys } from "@/features/profile/hooks/useTreeStats";
 import { calendarKeys } from "@/features/profile/hooks/useTravelCalendar";
 import { useToast } from "@/shared/components";
 import { deleteTimeline } from "../api/timelineApi";
 import { getTimelineErrorMessage } from "../lib/timelineError";
-import { timelineKeys } from "./useTimeline";
 
 /**
  * 타임라인 기록 삭제 mutation 훅. `DELETE /trees/{treeId}`
@@ -28,10 +26,11 @@ export const useDeleteRecord = () => {
     mutationFn: (recordId: string) => deleteTimeline(recordId),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: timelineKeys.all });
+      /*
+        `['trees']` 하나가 원본(타임라인·지도·동선 후보·블로그)과 상세를 함께 덮는다.
+        예전에는 `timelineKeys.all`·`routePlaceCandidateKey` 를 더 나열했다(이슈 #237).
+      */
       queryClient.invalidateQueries({ queryKey: treeKeys.all });
-      // 동선 후보는 /trees 를 가공한 독립 키다. 지운 장소가 새 동선 만들기에 남지 않게.
-      queryClient.invalidateQueries({ queryKey: routePlaceCandidateKey });
       // 잔디는 나무 개수로 그려지므로 장소가 사라지면 같이 옅어져야 한다.
       queryClient.invalidateQueries({ queryKey: calendarKeys.all });
       // 나무를 지우면 사진도 함께 지워진다 — 용량도 다시 센다.

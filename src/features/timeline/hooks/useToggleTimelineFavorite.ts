@@ -3,8 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { toggleTreeFavorite } from "@/features/home/api/treesApi";
 import { useToast } from "@/shared/components";
-import type { TimelinePage } from "../types/timeline.types";
-import { timelineKeys } from "./useTimeline";
+import { treeSourceKey } from "@/features/home/hooks/useAllTrees";
+import type { TreeListItem } from "@/features/home/types/tree";
 
 interface ToggleArgs {
   /** 대상 기록 id — 낙관적 갱신으로 하트를 바로 반전할 때 쓴다. */
@@ -26,18 +26,20 @@ export const useToggleTimelineFavorite = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { showToast } = useToast();
 
+  /*
+    ⚠️ **원본(`TreeListItem[]`)을 고친다.** 타임라인 레코드는 `select` 가 만든 사본이라
+    고쳐 봐야 다음 계산에서 덮인다(이슈 #237). 대신 여기 한 번 고치면 지도 마커의
+    하트까지 같이 뒤집힌다 — 예전에 두 캐시를 각각 손대던 일이 한 줄로 접혔다.
+
+    키가 하나라 `setQueriesData` 도 필요 없다. 예전에는 목록 캐시가 page·size 로
+    갈려 있어 한꺼번에 훑어야 했다.
+  */
   const patchCache = (id: string, next: boolean) => {
-    queryClient.setQueriesData({ queryKey: timelineKeys.all }, (data) => {
-      const page = data as TimelinePage | undefined;
-      // 같은 접두사를 쓰는 썸네일(Map)·상세 캐시는 records 가 없으니 건드리지 않는다.
-      if (!page || !Array.isArray(page.records)) return data;
-      return {
-        ...page,
-        records: page.records.map((record) =>
-          record.id === id ? { ...record, isFavorite: next } : record,
-        ),
-      };
-    });
+    queryClient.setQueryData<TreeListItem[]>(treeSourceKey, (trees) =>
+      trees?.map((tree) =>
+        String(tree.treeId) === id ? { ...tree, isFavorite: next } : tree,
+      ),
+    );
   };
 
   return useMutation({
@@ -45,7 +47,7 @@ export const useToggleTimelineFavorite = () => {
       if (isAuthenticated) await toggleTreeFavorite(treeId, !isFavorite);
     },
     onMutate: async ({ id, isFavorite }) => {
-      await queryClient.cancelQueries({ queryKey: timelineKeys.all });
+      await queryClient.cancelQueries({ queryKey: treeSourceKey });
       patchCache(id, !isFavorite);
     },
     onError: (_error, { id, isFavorite }) => {
@@ -58,7 +60,6 @@ export const useToggleTimelineFavorite = () => {
       // 응답에 실려 오게 됐다(#129). 서버의 favorite 은 값을 지정하는 게 아니라 순수
       // 토글이라, 우리가 들고 있던 값이 어긋나 있으면 낙관적 반전도 함께 어긋난다 —
       // 재조회로 서버 상태를 그대로 덮어써야 하트가 실제와 어긋난 채 남지 않는다.
-      queryClient.invalidateQueries({ queryKey: timelineKeys.all });
       queryClient.invalidateQueries({ queryKey: ["trees"] });
       queryClient.invalidateQueries({ queryKey: ["favorites"] });
     },

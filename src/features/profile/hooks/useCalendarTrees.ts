@@ -1,11 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
-import { getTreesByDate } from '../api/calendarTreesApi';
-import { isClientError } from '../lib/profileError';
+import { useAllTrees } from '@/features/home/hooks/useAllTrees';
+import { groupTreesByDate } from '../api/calendarTreesApi';
 
-/** `/trees` 를 날짜로 나눈 것이라 `calendarKeys`(=/calendar) 밑에 두지 않는다. */
-export const calendarTreesKey = ['calendarTrees'] as const;
+/*
+  `calendarTreesKey` 는 지웠다 — 이 화면 몫의 `/trees` 순회가 따로 있었기에 있던 키다.
+  지금은 원본(`treeSourceKey`)을 `select` 로 나눠 쓰므로 무효화도 그쪽 하나로 접힌다
+  (이슈 #237).
+*/
 
 /**
  * 캘린더에서 날짜를 눌렀을 때 보여줄 나무 목록.
@@ -20,12 +22,9 @@ export const calendarTreesKey = ['calendarTrees'] as const;
 export const useCalendarTrees = (enabled: boolean) => {
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  return useQuery({
-    queryKey: calendarTreesKey,
-    queryFn: getTreesByDate,
+  return useAllTrees({
+    select: groupTreesByDate,
     enabled: enabled && (Boolean(accessToken) || import.meta.env.DEV),
     staleTime: 5 * 60 * 1000,
-    /** 4xx 는 반복해도 결과가 같다. */
-    retry: (failureCount, error) => (isClientError(error) ? false : failureCount < 1),
   });
 };
