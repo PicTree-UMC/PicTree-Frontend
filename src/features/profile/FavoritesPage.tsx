@@ -1,9 +1,10 @@
 import { useState } from "react";
 
-import { Chip, NavBar } from "@/shared/components";
+import { Chip, NavBar, Skeleton } from "@/shared/components";
 import { useFavorites, useRemoveFavorites } from "./hooks/useFavorites";
 import type { FavoritePlace } from "./types/favorite";
 import { FavoriteGrid } from "./components/FavoriteGrid";
+import { FavoritesSkeleton } from "./components/FavoritesSkeleton";
 import { FavoritePostView } from "./components/FavoritePostView";
 import trashLargeIcon from "./assets/icons/trashLarge.svg";
 
@@ -167,7 +168,19 @@ export function FavoritesPage() {
         종전의 드롭다운은 여는 동작이 한 번 더 있었는데, 고를 것이 둘뿐이라
         늘어놓는 편이 짧다.
       */}
-      {favorites.length > 0 && (
+      {/*
+        불러오는 동안에도 칩 줄의 높이를 잡아 둔다. 안 그러면 목록이 도착하는 순간
+        칩이 생기면서 격자가 통째로 아래로 밀린다 — 담아 둔 곳이 있는 게 보통이라
+        자리를 비워 두는 쪽이 맞다. (정말 비어 있으면 빈 상태로 갈아타며 어차피 크게 바뀐다.)
+      */}
+      {isPending && (
+        <div className="flex gap-2 px-5 pb-6">
+          <Skeleton className="h-8 w-[70px] rounded-full" />
+          <Skeleton className="h-8 w-[70px] rounded-full" />
+        </div>
+      )}
+
+      {!isPending && favorites.length > 0 && (
         <div role="radiogroup" aria-label="정렬" className="flex gap-2 px-5 pb-6">
           {SORT_ORDERS.map((opt) => (
             <Chip
@@ -185,7 +198,7 @@ export function FavoritesPage() {
       )}
 
       {isPending ? (
-        <p className="py-10 text-center text-[15px] text-ink-muted">불러오는 중...</p>
+        <FavoritesSkeleton />
       ) : isError ? (
         <div className="py-10 text-center">
           <p className="text-[15px] text-error">즐겨찾기를 불러오지 못했어요.</p>

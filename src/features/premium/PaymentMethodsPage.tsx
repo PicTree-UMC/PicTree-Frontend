@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ConfirmModal, NavBar, useToast } from '@/shared/components';
+import { ConfirmModal, NavBar, Skeleton, useToast } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { formatKoreanDate } from '@/shared/lib/date';
 import { ROUTES } from '@/shared/constants/routes';
@@ -90,7 +90,7 @@ export function PaymentMethodsPage() {
           </div>
         ) : isPending ? (
           // 카드 한 장 높이만큼 자리를 잡아 둬 등록 버튼이 위로 튀지 않게 한다.
-          <div className="h-[86px] animate-pulse rounded-xl bg-cream-sub" />
+          <Skeleton className="h-[86px] rounded-xl" />
         ) : cards.length === 0 ? (
           <div className="rounded-xl border border-line-soft bg-white px-5 py-8 text-center">
             <p className="text-[15px] text-ink">등록된 카드가 없어요.</p>

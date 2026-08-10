@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Skeleton } from "@/shared/components";
 import { usePictreeToken } from "@/features/premium/hooks/usePictreeToken";
 import { useMySubscription } from "@/features/premium/hooks/useMySubscription";
 import { useSubscriptionPlans } from "@/features/premium/hooks/useSubscriptionPlans";
@@ -46,8 +47,8 @@ function StatTile({
 
       <div className="min-w-0">
         {value === null ? (
-          /* 흰 칸 위라 크림 띠의 #EDE4C4 가 아니라 헤어라인 회색을 쓴다. */
-          <div className="h-[23px] w-12 animate-pulse rounded bg-line-soft" />
+          /* 흰 칸 위라 크림 띠의 #EDE4C4 가 아니라 헤어라인 회색을 쓴다(`surface="card"`). */
+          <Skeleton surface="card" className="h-[23px] w-12 rounded" />
         ) : (
           <p className="text-[20px] font-medium leading-tight text-ink">{value}</p>
         )}

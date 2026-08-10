@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
 import { useSessionExpiredRedirect } from "@/features/auth/hooks/useSessionExpiredRedirect";
-import { SettingsList, SettingsRow } from "@/shared/components";
+import { SettingsList, SettingsRow, Skeleton } from "@/shared/components";
 import { useMyProfile } from "./hooks/useMyProfile";
 import { getApiErrorMessage, getProfileErrorKind } from "./lib/profileError";
 import { ProfileSummary } from "./components/ProfileSummary";
@@ -68,7 +68,7 @@ export function ProfilePage() {
 
         {isPending ? (
           // 스켈레톤 — 닉네임 한 줄 자리를 그대로 잡아 레이아웃이 튀지 않게 한다
-          <div className="mt-3 h-6 w-28 animate-pulse rounded bg-cream-sub" />
+          <Skeleton className="mt-3 h-6 w-28 rounded" />
         ) : errorKind === 'session-expired' ? (
           // useSessionExpiredRedirect 가 곧 로그인 화면으로 보낸다
           <p className="mt-3 text-[15px] font-medium text-ink">
