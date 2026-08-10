@@ -147,7 +147,19 @@ export function CameraPage() {
           ) : (
             <>
               <div className="flex flex-1 items-center justify-center gap-1.5">
-                <img src="/apple-touch-icon.jpg" alt="" className="h-6 w-6 rounded-md" />
+                {/*
+                  ⚠️ `/apple-touch-icon.jpg` 를 쓰면 안 된다 — 1024×1024 · 129,942 B 짜리
+                  홈 화면 아이콘 원본이라 24px 자리에 130KB 를 싣게 된다(그 용도로는
+                  `index.html`·`manifest.json` 에서 계속 쓰이므로 파일 자체는 남긴다).
+                  여기 것은 표시 크기의 3배(72px)로만 뽑은 사본이고 4KB 다.
+                */}
+                <img
+                  src="/assets/app-icon-24@3x.png"
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="h-6 w-6 rounded-md"
+                />
                 <span className="text-lg font-medium">PicTree</span>
               </div>
               {/* 왼쪽 버튼과 같은 폭의 빈 칸 — 가운데 로고가 정말 가운데 오게 한다. */}
