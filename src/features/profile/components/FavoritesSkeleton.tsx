@@ -16,7 +16,11 @@ const PLACEHOLDER_COUNT = 9;
  */
 export function FavoritesSkeleton() {
   return (
-    <div role="status" aria-label="즐겨찾기를 불러오는 중" className="grid grid-cols-3 gap-0.5">
+    <div
+      role="status"
+      aria-label="즐겨찾기를 불러오는 중"
+      className="skeleton-fade-b grid grid-cols-3 gap-0.5"
+    >
       {Array.from({ length: PLACEHOLDER_COUNT }, (_, index) => (
         <Skeleton key={index} className="aspect-[3/4] w-full" />
       ))}

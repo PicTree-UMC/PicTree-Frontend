@@ -34,7 +34,7 @@ export function BlogListSkeleton() {
     <section
       role="status"
       aria-label="블로그 목록을 불러오는 중"
-      className="flex flex-col px-5"
+      className="skeleton-fade-b flex flex-col px-5"
     >
       {Array.from({ length: PLACEHOLDER_COUNT }, (_, index) => (
         <CardSkeleton key={index} />

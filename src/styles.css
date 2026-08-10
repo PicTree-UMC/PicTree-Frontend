@@ -200,6 +200,28 @@ select {
   display: block !important;
 }
 
+/*
+ * 스켈레톤 목록의 끝을 흐린다.
+ *
+ * ⚠️ **골격 개수는 곧 "이만큼 온다"는 약속이다.** 초안이 하나뿐인 사람에게 네 장을
+ * 보여주면 목록이 도착하는 순간 세 장이 사라진다 — 밀려나는 것보다 **생겼다
+ * 없어지는 쪽이 더 거슬린다**(손이 이미 그쪽으로 가 있을 수 있다). 끝을 흐려 두면
+ * "여기서 끝" 이 아니라 "이어진다" 만 말하고 몇 개인지는 주장하지 않는다.
+ * 값을 모를 때 지어내지 않는다는 규칙(ProfileSummary 의 용량, usePictreeToken 의
+ * 잔량)을 개수에도 적용한 것이다.
+ *
+ * ⚠️ **배경색 그라디언트를 덮는 대신 mask 로 골격 자체를 투명하게 만든다.** 덮개
+ * 방식은 바닥색을 알아야 해서 크림·흰색이 섞인 화면마다 값을 따라가야 하고,
+ * 스크롤되는 목록 위에서는 덮개가 같이 안 움직여 엉뚱한 자리를 가린다.
+ *
+ * 페이드 길이는 고정 px 다. %로 잡으면 컨테이너가 긴 타임라인(약 1170px)에서만
+ * 페이드가 300px 넘게 늘어나 골격 한 장이 통째로 흐려진다.
+ */
+.skeleton-fade-b {
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 120px), transparent);
+  mask-image: linear-gradient(to bottom, black calc(100% - 120px), transparent);
+}
+
 /* 스크롤바를 숨기는 유틸(가로 스크롤 캐러셀 등). 스크롤 기능은 유지, 막대만 감춘다. */
 .no-scrollbar {
   -ms-overflow-style: none; /* 구형 Edge/IE */

@@ -52,7 +52,7 @@ export function TimelineSkeleton() {
     <div
       role="status"
       aria-label="기록을 불러오는 중"
-      className="flex flex-col gap-5 pb-4"
+      className="skeleton-fade-b flex flex-col gap-5 pb-4"
     >
       {Array.from({ length: PLACEHOLDER_COUNT }, (_, index) => (
         <PostSkeleton key={index} />
