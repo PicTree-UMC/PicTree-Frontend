@@ -7,6 +7,7 @@ import { useSavedRoutes } from './hooks/useSavedRoutes';
 import { useDeleteRoute } from './hooks/useDeleteRoute';
 import { useRenameRoute } from './hooks/useRenameRoute';
 import { RouteChips } from './components/RouteChips';
+import { RouteListSkeleton } from './components/RouteListSkeleton';
 import { RouteIllustration } from './components/RouteIllustration';
 import { SavedRouteRoadmap } from './components/RouteRoadmap';
 import { ROUTES, journeyViewPath } from '../../shared/constants/routes';
@@ -93,10 +94,7 @@ export function RouteListPage() {
       {/* pb: 탭바가 콘텐츠 위에 얹히므로 마지막 항목이 가려지지 않을 만큼 띄운다 */}
       <div className="flex flex-1 flex-col px-5 pb-nav pt-header">
         {isLoading ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3">
-            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
-            <p className="text-[15px] font-medium text-pictree-700">동선을 불러오는 중...</p>
-          </div>
+          <RouteListSkeleton />
         ) : isError ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4">
             <p className="text-center text-[15px] font-semibold text-ink">

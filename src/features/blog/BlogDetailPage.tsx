@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatDateRange, formatLongDate } from './lib/formatBlogDate';
 import { useBlogDraftDetail, useDeleteBlogDraft } from './hooks/useBlogDrafts';
+import { BlogDetailSkeleton } from './components/BlogDetailSkeleton';
 import { NavBar, Photo } from '@/shared/components';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
@@ -55,11 +56,7 @@ export function BlogDetailPage() {
         />
       </header>
 
-      {isPending && (
-        <div className="grid min-h-[60vh] place-items-center" role="status" aria-label="블로그를 불러오는 중">
-          <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
-        </div>
-      )}
+      {isPending && <BlogDetailSkeleton />}
 
       {isError && (
         <div className="flex min-h-[60vh] flex-col items-center justify-center px-5 text-center">
