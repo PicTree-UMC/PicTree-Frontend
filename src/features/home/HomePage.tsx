@@ -181,9 +181,9 @@ export function HomePage() {
         새싹이 숨쉬게 두었다. 그림은 타임라인 빈 화면과 같은 것을 쓴다.
       */}
       {!map && (
-        <div className="fixed inset-0 z-10 mx-auto flex flex-col items-center justify-center gap-4 bg-[#FFFCEF] sm:max-w-[390px]">
+        <div className="fixed inset-0 z-10 mx-auto flex flex-col items-center justify-center gap-4 bg-cream sm:max-w-[390px]">
           <SproutIllustration motion="breathe" className="w-[120px]" />
-          <p className="text-[15px] text-[#60655C]">현재 위치를 불러오는 중…</p>
+          <p className="text-[15px] text-ink-muted">현재 위치를 불러오는 중…</p>
         </div>
       )}
 

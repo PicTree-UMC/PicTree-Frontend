@@ -71,7 +71,7 @@ export function RoutePlacePreview({ places, onClear }: RoutePlacePreviewProps) {
   return (
     <section>
       <div className="flex items-center gap-2">
-        <h2 className="min-w-0 flex-1 truncate text-[13px] text-[#60655c]">
+        <h2 className="min-w-0 flex-1 truncate text-[13px] text-ink-muted">
           {places.length === 0
             ? '날짜를 고르면 그날의 장소가 여기에 보여요'
             : `장소 ${places.length}곳`}
@@ -82,7 +82,7 @@ export function RoutePlacePreview({ places, onClear }: RoutePlacePreviewProps) {
           <button
             type="button"
             onClick={onClear}
-            className="shrink-0 text-[13px] font-medium text-[#60655c] underline underline-offset-2"
+            className="shrink-0 text-[13px] font-medium text-ink-muted underline underline-offset-2"
           >
             전체 해제
           </button>
@@ -126,7 +126,7 @@ export function RoutePlacePreview({ places, onClear }: RoutePlacePreviewProps) {
           className="max-h-[70vh] rounded-t-[20px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.12)]"
           contentClassName="overflow-y-auto px-5"
         >
-          <h3 className="pb-3 text-[15px] font-medium text-[#2c3930]">
+          <h3 className="pb-3 text-[15px] font-medium text-ink">
             선택한 장소 {places.length}곳
           </h3>
 
@@ -138,8 +138,8 @@ export function RoutePlacePreview({ places, onClear }: RoutePlacePreviewProps) {
               <li key={place.id} className="flex items-center gap-3">
                 <PlaceAvatar place={place} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[15px] text-[#2c3930]">{place.name}</p>
-                  <p className="mt-0.5 text-[13px] text-[#60655c]">{formatDateLabel(place.date)}</p>
+                  <p className="truncate text-[15px] text-ink">{place.name}</p>
+                  <p className="mt-0.5 text-[13px] text-ink-muted">{formatDateLabel(place.date)}</p>
                 </div>
               </li>
             ))}

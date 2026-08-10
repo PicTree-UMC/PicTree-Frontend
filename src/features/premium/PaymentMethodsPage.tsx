@@ -71,15 +71,15 @@ export function PaymentMethodsPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
+    <div className="flex min-h-full flex-col bg-cream pb-nav">
       <header className="px-5 pt-header">
         <NavBar onBack={goBack} title="결제 수단" />
       </header>
 
       <div className="flex flex-col gap-4 px-5 pt-6">
         {isError ? (
-          <div className="rounded-xl border border-[#DC2626] bg-white px-5 py-4 text-center">
-            <p className="text-[15px] text-[#DC2626]">카드 목록을 불러오지 못했어요.</p>
+          <div className="rounded-xl border border-error bg-white px-5 py-4 text-center">
+            <p className="text-[15px] text-error">카드 목록을 불러오지 못했어요.</p>
             <button
               type="button"
               onClick={() => refetch()}
@@ -90,11 +90,11 @@ export function PaymentMethodsPage() {
           </div>
         ) : isPending ? (
           // 카드 한 장 높이만큼 자리를 잡아 둬 등록 버튼이 위로 튀지 않게 한다.
-          <div className="h-[86px] animate-pulse rounded-xl bg-[#F6F0D7]" />
+          <div className="h-[86px] animate-pulse rounded-xl bg-cream-sub" />
         ) : cards.length === 0 ? (
           <div className="rounded-xl border border-line-soft bg-white px-5 py-8 text-center">
-            <p className="text-[15px] text-[#2C3930]">등록된 카드가 없어요.</p>
-            <p className="mt-1 text-[13px] text-[#60655C]">
+            <p className="text-[15px] text-ink">등록된 카드가 없어요.</p>
+            <p className="mt-1 text-[13px] text-ink-muted">
               카드를 등록해 두면 구독이 자동으로 갱신돼요.
             </p>
           </div>
@@ -114,7 +114,7 @@ export function PaymentMethodsPage() {
                   <div className="min-w-0 flex-1">
                     {/* 결제 화면과 같은 꼴로 끊는다 — 같은 값을 두 화면이 다르게 보여주면
                         내 카드가 맞는지 대조할 때 한 번 더 되짚게 된다. */}
-                    <p className="truncate text-[17px] font-medium text-[#2C3930]">
+                    <p className="truncate text-[17px] font-medium text-ink">
                       {formatCardNumber(card.cardNumberMasked)}
                     </p>
                     {/*
@@ -122,7 +122,7 @@ export function PaymentMethodsPage() {
                       숫자를 그대로 보여주게 되고, 그건 사용자에게 아무 뜻이 없다.
                       대신 이 카드가 실제로 청구에 쓰이는지와 언제 등록했는지를 적는다.
                     */}
-                    <p className="mt-0.5 text-[13px] text-[#60655C]">
+                    <p className="mt-0.5 text-[13px] text-ink-muted">
                       {active ? '자동결제 사용 중' : '사용 안 함'}
                       {issued && ` · ${issued} 등록`}
                     </p>
@@ -131,7 +131,7 @@ export function PaymentMethodsPage() {
                   <button
                     type="button"
                     onClick={() => setPendingDelete(card)}
-                    className="shrink-0 px-2 py-1 text-[15px] font-medium text-[#DC2626]"
+                    className="shrink-0 px-2 py-1 text-[15px] font-medium text-error"
                   >
                     삭제
                   </button>
@@ -149,12 +149,12 @@ export function PaymentMethodsPage() {
           type="button"
           onClick={handleRegister}
           disabled={register.isPending}
-          className="h-12 rounded-xl bg-pictree-100 text-[17px] font-medium text-[#2C3930] disabled:opacity-60"
+          className="h-12 rounded-xl bg-pictree-100 text-[17px] font-medium text-ink disabled:opacity-60"
         >
           {register.isPending ? '카드 등록 창을 여는 중...' : '카드 등록'}
         </button>
 
-        <p className="px-1 text-[13px] leading-relaxed text-[#60655C]">
+        <p className="px-1 text-[13px] leading-relaxed text-ink-muted">
           카드 정보는 토스페이먼츠가 보관해요. 픽트리에는 마스킹된 번호만 저장돼요.
         </p>
       </div>

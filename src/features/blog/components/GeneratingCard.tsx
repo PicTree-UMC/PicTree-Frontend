@@ -24,7 +24,7 @@ export function GeneratingCard() {
           ✦
         </span>
         <div className="min-w-0">
-          <p className="text-[15px] font-bold text-[#2c3930]">AI가 여행 글을 쓰고 있어요</p>
+          <p className="text-[15px] font-bold text-ink">AI가 여행 글을 쓰고 있어요</p>
           <p key={step} className="blog-step-enter mt-1 text-[13px] text-[#737970]">
             {GENERATING_STEPS[step]}
           </p>

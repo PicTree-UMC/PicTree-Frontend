@@ -39,11 +39,11 @@ export function CalendarMonthNav({ year, month, onPrev, onNext, canGoPrev = true
         onClick={onPrev}
         disabled={!canGoPrev}
         aria-label="이전 달"
-        className="p-1 text-[#2c3930] disabled:text-[#b4b4b4]"
+        className="p-1 text-ink disabled:text-ink-disabled"
       >
         <ChevronIcon className="h-5 w-5" />
       </button>
-      <p className="text-[17px] font-medium text-[#2c3930]" aria-live="polite">
+      <p className="text-[17px] font-medium text-ink" aria-live="polite">
         {year}년 {month}월
       </p>
       <button
@@ -51,7 +51,7 @@ export function CalendarMonthNav({ year, month, onPrev, onNext, canGoPrev = true
         onClick={onNext}
         disabled={!canGoNext}
         aria-label="다음 달"
-        className="p-1 text-[#2c3930] disabled:text-[#b4b4b4]"
+        className="p-1 text-ink disabled:text-ink-disabled"
       >
         <ChevronIcon className="h-5 w-5 rotate-180" />
       </button>

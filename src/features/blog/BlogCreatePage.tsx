@@ -62,7 +62,7 @@ function BlogCreateContent() {
 
   return (
     // min-h-full: 뷰포트 단위를 아는 곳은 셸(styles.css) 하나다.
-    <main className="flex min-h-full flex-col bg-[#fffcef] text-[#2c3930]">
+    <main className="flex min-h-full flex-col bg-cream text-ink">
       <CreateStepHeader step={flow.step} onBack={handleBack} />
       <div className="flex flex-1 flex-col">
         {flow.step === 1 && (
@@ -114,7 +114,7 @@ export function BlogCreatePage() {
 
   if (isPending) {
     return (
-      <main className="grid min-h-full place-items-center bg-[#fffcef]" role="status" aria-label="PICTREE 토큰 잔량을 확인하는 중">
+      <main className="grid min-h-full place-items-center bg-cream" role="status" aria-label="PICTREE 토큰 잔량을 확인하는 중">
         <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
       </main>
     );

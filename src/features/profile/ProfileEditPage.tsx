@@ -19,7 +19,7 @@ import cardImage from "./assets/icons/card3d.jpg";
 
 /** 값 자리를 잡아 두는 막대. 줄 높이가 로딩 끝에 튀지 않게 한다. */
 function ValueSkeleton({ className }: { className: string }) {
-  return <span className={`block h-4 animate-pulse rounded bg-[#F6F0D7] ${className}`} />;
+  return <span className={`block h-4 animate-pulse rounded bg-cream-sub ${className}`} />;
 }
 
 export function ProfileEditPage() {
@@ -54,7 +54,7 @@ export function ProfileEditPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
+    <div className="flex min-h-full flex-col bg-cream pb-nav">
       {/* pt-header 는 safe-area 몫이다 — pt-4 로는 노치 기기에서 제목이 가린다. */}
       <header className="px-5 pb-2 pt-header">
         <NavBar onBack={() => navigate(-1)} title="내 정보" />
@@ -69,7 +69,7 @@ export function ProfileEditPage() {
         이 아니라 설정 아이콘처럼 보인다.
       */}
       <div className="mt-2 flex flex-col items-center px-5">
-        <div className="flex size-16 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
+        <div className="flex size-16 items-center justify-center overflow-hidden rounded-full bg-cream-sub">
           {hasImage && profile?.profileImageUrl ? (
             <img
               src={profile.profileImageUrl}
@@ -90,8 +90,8 @@ export function ProfileEditPage() {
           막혀 있지만(줄이 안 열린다) 사유와 재시도 수단은 있어야 한다.
         */}
         {isError && (
-          <div className="rounded-xl border border-[#DC2626] bg-[#FEF7F7] px-5 py-4 text-center">
-            <p className="text-[15px] text-[#DC2626]">내 정보를 불러오지 못했어요.</p>
+          <div className="rounded-xl border border-error bg-error-surface px-5 py-4 text-center">
+            <p className="text-[15px] text-error">내 정보를 불러오지 못했어요.</p>
             <button
               type="button"
               onClick={() => refetch()}

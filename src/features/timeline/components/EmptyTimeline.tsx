@@ -24,13 +24,13 @@ export function EmptyTimeline() {
       <SproutIllustration className="animate-fade-in-up w-[164px]" />
 
       <h2
-        className="animate-fade-in-up mt-6 text-[17px] font-medium text-[#2C3930]"
+        className="animate-fade-in-up mt-6 text-[17px] font-medium text-ink"
         style={{ animationDelay: "150ms" }}
       >
         아직 심은 기록이 없어요
       </h2>
       <p
-        className="animate-fade-in-up mt-2 text-[15px] leading-6 text-[#60655C]"
+        className="animate-fade-in-up mt-2 text-[15px] leading-6 text-ink-muted"
         style={{ animationDelay: "150ms" }}
       >
         사진을 찍으면 그 자리에
@@ -45,7 +45,7 @@ export function EmptyTimeline() {
       <button
         type="button"
         onClick={() => navigate(ROUTES.camera)}
-        className="animate-fade-in-up mt-7 h-[46px] rounded-[24px] bg-pictree-700 px-7 text-[15px] font-medium text-[#FFFCEF]"
+        className="animate-fade-in-up mt-7 h-[46px] rounded-[24px] bg-pictree-700 px-7 text-[15px] font-medium text-cream"
         style={{ animationDelay: "300ms" }}
       >
         첫 기록 남기기

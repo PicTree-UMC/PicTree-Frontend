@@ -56,11 +56,11 @@ interface ChipProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'child
 const TONE_CLASS: Record<ChipTone, { on: string; off: string }> = {
   outline: {
     on: 'bg-pictree-700 text-white',
-    off: 'border border-pictree-300 bg-white text-[#2c3930]',
+    off: 'border border-pictree-300 bg-white text-ink',
   },
   ghost: {
-    on: 'bg-pictree-300 text-[#2c3930]',
-    off: 'text-[#60655c]',
+    on: 'bg-pictree-300 text-ink',
+    off: 'text-ink-muted',
   },
 };
 

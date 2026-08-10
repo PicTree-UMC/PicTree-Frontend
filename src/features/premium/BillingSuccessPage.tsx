@@ -108,7 +108,7 @@ export function BillingSuccessPage() {
   }, [navigate, searchParams, queryClient]);
 
   return (
-    <main className="flex min-h-full w-full flex-col items-center justify-center gap-4 px-5 text-center text-[#2c3930]">
+    <main className="flex min-h-full w-full flex-col items-center justify-center gap-4 px-5 text-center text-ink">
       {status === 'processing' ? (
         <p className="text-[15px]">
           {isRegisterOnly ? '카드를 등록하고 있어요…' : '결제를 확인하고 있어요…'}

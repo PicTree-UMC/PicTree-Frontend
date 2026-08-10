@@ -63,7 +63,7 @@ export function FavoriteGrid({ places, selecting, checked, onOpen, onToggle }: P
                 className="h-full w-full object-cover"
                 fallback={
                   <span className="flex h-full w-full items-center justify-center px-2">
-                    <span className="line-clamp-3 text-[13px] text-[#60655C]">
+                    <span className="line-clamp-3 text-[13px] text-ink-muted">
                       {place.name}
                     </span>
                   </span>

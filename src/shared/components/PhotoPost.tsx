@@ -43,8 +43,8 @@ export function PhotoPost({ title, meta, imageUrl, actions, caption }: PhotoPost
         <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#EDE7D2]">
           <img src={TREE_AVATAR} alt="" className="h-5 w-5" />
         </span>
-        <span className="min-w-0 flex-1 truncate text-[15px] text-[#2C3930]">{title}</span>
-        {meta && <span className="shrink-0 text-[15px] text-[#60655C]">{meta}</span>}
+        <span className="min-w-0 flex-1 truncate text-[15px] text-ink">{title}</span>
+        {meta && <span className="shrink-0 text-[15px] text-ink-muted">{meta}</span>}
       </div>
 
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#EDE7D2]">
@@ -58,11 +58,11 @@ export function PhotoPost({ title, meta, imageUrl, actions, caption }: PhotoPost
 
       {(actions || caption) && (
         <div className="px-3 pt-2">
-          {actions && <div className="flex items-center text-[#2C3930]">{actions}</div>}
+          {actions && <div className="flex items-center text-ink">{actions}</div>}
 
           {/* 한줄평은 font-light 로 머리글의 medium 느낌을 뺀다. */}
           {caption && (
-            <p className="pt-1 text-[15px] font-light leading-[22px] text-[#2C3930]">
+            <p className="pt-1 text-[15px] font-light leading-[22px] text-ink">
               {caption}
             </p>
           )}

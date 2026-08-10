@@ -199,7 +199,7 @@ export function PremiumPage() {
         <div className="relative z-10 flex flex-1 flex-col">
           <PremiumNavBar />
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-5">
-            <p className="text-center text-[15px] font-medium text-[#2C3930]">
+            <p className="text-center text-[15px] font-medium text-ink">
               요금제를 불러오지 못했어요
             </p>
             <button
@@ -216,7 +216,7 @@ export function PremiumPage() {
   }
 
   return (
-    <main className="relative min-h-full pb-nav text-[#2C3930]">
+    <main className="relative min-h-full pb-nav text-ink">
       <div className={PREMIUM_BACKDROP_CLASS} />
 
       {/* 배경 레이어(z-0) 위로 올린다 — `lib/backdrop.ts` 주석의 페인트 순서 참고. */}
@@ -290,7 +290,7 @@ export function PremiumPage() {
             13px 위반이었다). '무료 체험'·'상위 요금제로 변경' 은 근거가 없어 빠졌다 —
             constants/premiumFaq.ts 주석 참고.
           */}
-          <p className="text-[13px] leading-relaxed text-[#60655C]">
+          <p className="text-[13px] leading-relaxed text-ink-muted">
             결제 후 즉시 저장 용량과 월 작성 횟수가 적용돼요.
             <br />
             매월 자동으로 갱신되고, 다음 결제일 전까지 언제든 해지할 수 있어요.

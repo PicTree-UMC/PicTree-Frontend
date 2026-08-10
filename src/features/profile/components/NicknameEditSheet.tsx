@@ -53,11 +53,11 @@ export function NicknameEditSheet({ currentNickname, isSaving, onClose, onSubmit
       contentClassName="px-6"
       bottomPadding="2rem"
     >
-      <h2 className="text-[15px] font-medium text-[#2C3930]">닉네임</h2>
+      <h2 className="text-[15px] font-medium text-ink">닉네임</h2>
 
       <div
         className={`mt-3 flex items-center gap-2 rounded-xl border bg-white px-4 py-3 ${
-          isEmpty || isTooLong ? 'border-[#DC2626]' : 'border-line-soft'
+          isEmpty || isTooLong ? 'border-error' : 'border-line-soft'
         }`}
       >
         <input
@@ -67,9 +67,9 @@ export function NicknameEditSheet({ currentNickname, isSaving, onClose, onSubmit
           onKeyDown={(event) => event.key === 'Enter' && handleSubmit()}
           aria-label="닉네임"
           placeholder="닉네임을 입력해주세요"
-          className="min-w-0 flex-1 text-[17px] font-medium text-[#2C3930] outline-none placeholder:font-normal placeholder:text-[#B4B4B4]"
+          className="min-w-0 flex-1 text-[17px] font-medium text-ink outline-none placeholder:font-normal placeholder:text-ink-disabled"
         />
-        <span className="shrink-0 text-[13px] text-[#60655C]">
+        <span className="shrink-0 text-[13px] text-ink-muted">
           {trimmed.length}/{NICKNAME_MAX}
         </span>
       </div>
@@ -78,7 +78,7 @@ export function NicknameEditSheet({ currentNickname, isSaving, onClose, onSubmit
         빈 자리를 늘 잡아 둔다. 글자를 지우다 안내가 나타나면서 버튼이 아래로 밀리면,
         마침 그 자리를 누르던 손가락이 '저장' 대신 방금 생긴 여백을 누른다.
       */}
-      <p className="mt-1.5 min-h-[18px] pl-1 text-[13px] leading-[18px] text-[#DC2626]">
+      <p className="mt-1.5 min-h-[18px] pl-1 text-[13px] leading-[18px] text-error">
         {isEmpty
           ? '닉네임을 입력해주세요.'
           : isTooLong
@@ -90,7 +90,7 @@ export function NicknameEditSheet({ currentNickname, isSaving, onClose, onSubmit
         <button
           type="button"
           onClick={onClose}
-          className="h-[44px] flex-1 rounded-[12px] bg-line text-[15px] font-medium text-[#2C3930]"
+          className="h-[44px] flex-1 rounded-[12px] bg-line text-[15px] font-medium text-ink"
         >
           취소
         </button>
@@ -98,7 +98,7 @@ export function NicknameEditSheet({ currentNickname, isSaving, onClose, onSubmit
           type="button"
           onClick={handleSubmit}
           disabled={!canSave}
-          className="h-[44px] flex-1 rounded-[12px] bg-pictree-700 text-[15px] font-medium text-white disabled:bg-line disabled:text-[#60655C]"
+          className="h-[44px] flex-1 rounded-[12px] bg-pictree-700 text-[15px] font-medium text-white disabled:bg-line disabled:text-ink-muted"
         >
           {isSaving ? '저장 중' : '저장'}
         </button>

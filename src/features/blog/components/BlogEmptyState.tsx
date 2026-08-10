@@ -44,13 +44,13 @@ export function BlogEmptyState() {
       </svg>
 
       <h2
-        className="animate-fade-in-up mt-5 text-[17px] font-medium text-[#2c3930]"
+        className="animate-fade-in-up mt-5 text-[17px] font-medium text-ink"
         style={{ animationDelay: "700ms" }}
       >
         아직 작성한 블로그가 없어요
       </h2>
       <p
-        className="animate-fade-in-up mt-2 text-[15px] leading-6 text-[#60655c]"
+        className="animate-fade-in-up mt-2 text-[15px] leading-6 text-ink-muted"
         style={{ animationDelay: "700ms" }}
       >
         여행 기록으로 블로그 초안을 만들어보세요.

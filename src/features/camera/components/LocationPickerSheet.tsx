@@ -46,10 +46,10 @@ export function LocationPickerSheet({
       label="위치 직접 지정"
       handle={false}
       animateIn={false}
-      className="rounded-t-[24px] bg-[#fffcef]"
+      className="rounded-t-[24px] bg-cream"
       contentClassName="px-4 pt-5"
     >
-      <h2 className="text-[15px] font-medium tracking-wide text-[#2c3930]">위치 직접 지정</h2>
+      <h2 className="text-[15px] font-medium tracking-wide text-ink">위치 직접 지정</h2>
       <p className="mt-1 text-[13px] text-pictree-700">지도를 움직여 핀을 실제 위치에 맞춰 주세요.</p>
 
       <div className="relative mt-3 h-[260px] w-full overflow-hidden rounded-[16px]">
@@ -74,14 +74,14 @@ export function LocationPickerSheet({
       <div className="mt-4 flex justify-center gap-6">
         <button
           onClick={onClose}
-          className="h-[38px] w-[92px] rounded-[12px] bg-line text-[15px] font-medium tracking-wide text-[#2c3930]"
+          className="h-[38px] w-[92px] rounded-[12px] bg-line text-[15px] font-medium tracking-wide text-ink"
         >
           취소
         </button>
         <button
           onClick={handleConfirm}
           disabled={!map}
-          className={`h-[38px] w-[110px] rounded-[12px] bg-pictree-300 text-[15px] font-medium tracking-wide text-[#2c3930] transition-opacity ${
+          className={`h-[38px] w-[110px] rounded-[12px] bg-pictree-300 text-[15px] font-medium tracking-wide text-ink transition-opacity ${
             map ? '' : 'opacity-50'
           }`}
         >

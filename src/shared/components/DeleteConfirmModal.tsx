@@ -37,7 +37,7 @@ export function DeleteIconButton({ label, onClick, className = '' }: DeleteIconB
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`grid size-10 shrink-0 place-items-center rounded-full text-[#dc2626] active:bg-red-50 ${className}`}
+      className={`grid size-10 shrink-0 place-items-center rounded-full text-error active:bg-red-50 ${className}`}
     >
       <TrashIcon size={21} />
     </button>
@@ -86,26 +86,26 @@ export function DeleteConfirmModal({
       onClick={isDeleting ? undefined : onClose}
     >
       <section
-        className="w-full max-w-[350px] rounded-[20px] bg-[#fffcef] px-6 pb-5 pt-7 text-center"
+        className="w-full max-w-[350px] rounded-[20px] bg-cream px-6 pb-5 pt-7 text-center"
         role="dialog"
         aria-modal="true"
         aria-labelledby="delete-confirm-title"
         aria-describedby="delete-confirm-description"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mx-auto flex w-fit text-[#dc2626]" aria-hidden>
+        <div className="mx-auto flex w-fit text-error" aria-hidden>
           <TrashIcon size={38} />
         </div>
         <h2 id="delete-confirm-title" className="mt-2 text-xl font-semibold text-black">
           {title}
         </h2>
-        <p id="delete-confirm-description" className="mt-2 text-[12px] text-[#60655c]">
+        <p id="delete-confirm-description" className="mt-2 text-[12px] text-ink-muted">
           {description}
         </p>
         <div className="mt-5 flex justify-center gap-[18px]">
           <button
             type="button"
-            className="h-[39px] w-[92px] rounded-xl bg-line-soft text-base font-medium text-[#60655c] disabled:opacity-50"
+            className="h-[39px] w-[92px] rounded-xl bg-line-soft text-base font-medium text-ink-muted disabled:opacity-50"
             onClick={onClose}
             disabled={isDeleting}
           >
@@ -113,7 +113,7 @@ export function DeleteConfirmModal({
           </button>
           <button
             type="button"
-            className="h-[39px] w-[92px] rounded-xl bg-[#dc2626] text-base font-medium text-white disabled:opacity-50"
+            className="h-[39px] w-[92px] rounded-xl bg-error text-base font-medium text-white disabled:opacity-50"
             onClick={onConfirm}
             disabled={isDeleting}
           >

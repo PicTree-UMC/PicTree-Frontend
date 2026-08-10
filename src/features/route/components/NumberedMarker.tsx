@@ -20,14 +20,14 @@ export function NumberedMarker({ index }: { index: number | null }) {
   if (index === null) {
     // 꺼둔 장소. 테두리를 INK-비활성 회색으로 둔다 — 연초록 테두리는 켜진 마커의 채움색과
     // 이웃해서 '흐린 초록 = 꺼짐'이 잘 안 읽혔다. 회색이면 색만 보고 바로 갈린다.
-    return <div className="h-9 w-9 rounded-full border-2 border-[#b4b4b4] bg-white shadow-md" />;
+    return <div className="h-9 w-9 rounded-full border-2 border-ink-disabled bg-white shadow-md" />;
   }
 
   return (
     // 테두리가 흰색이 아니라 GREEN-700 인 건 클러스터 채움색과 같은 값이기 때문이다 —
     // '연초록 알맹이 + 짙은 테두리 = 하나', '짙은 초록 덩어리 = 여럿' 으로 둘이 한 체계로 읽힌다.
     // 채움이 밝아진 뒤로는 흰 링이 밝은 지도 위에서 경계를 잡아주지도 못했다.
-    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-pictree-300 text-[15px] font-medium leading-none text-[#2c3930] shadow-md ring-2 ring-pictree-700">
+    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-pictree-300 text-[15px] font-medium leading-none text-ink shadow-md ring-2 ring-pictree-700">
       {index}
     </div>
   );

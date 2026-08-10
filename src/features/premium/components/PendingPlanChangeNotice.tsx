@@ -42,7 +42,7 @@ export function PendingPlanChangeNotice() {
         15px 이다. 바로 위 고지(13px)와 같은 크기로 두면 잔글씨로 읽혀 넘어가는데,
         이건 잔글씨가 아니라 다음 달에 요금이 바뀐다는 통지다.
       */}
-      <p className="text-[15px] text-[#60655C]">
+      <p className="text-[15px] text-ink-muted">
         {effectiveLabel
           ? `${effectiveLabel}부터 ${pending.plan.name}으로 바뀌어요.`
           : `다음 결제일부터 ${pending.plan.name}으로 바뀌어요.`}
@@ -57,7 +57,7 @@ export function PendingPlanChangeNotice() {
         type="button"
         onClick={handleCancel}
         disabled={cancelMutation.isPending}
-        className="h-12 text-[15px] font-medium text-[#2C3930] underline underline-offset-4 disabled:opacity-60"
+        className="h-12 text-[15px] font-medium text-ink underline underline-offset-4 disabled:opacity-60"
       >
         {cancelMutation.isPending ? '처리 중...' : '예약 취소하고 지금 플랜 유지'}
       </button>

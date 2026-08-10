@@ -93,7 +93,7 @@ export function FavoritesPage() {
   const allChecked = favorites.length > 0 && checked.size === favorites.length;
 
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
+    <div className="flex min-h-full flex-col bg-cream pb-nav">
       {/*
         칩 줄은 위아래로 24px 씩 띄운다(이슈 #193). 12px 일 때는 칩이 헤더에
         딸린 줄처럼 붙어 보였다 — 칩은 헤더의 일부가 아니라 제 몫의 띠다.
@@ -113,7 +113,7 @@ export function FavoritesPage() {
                 type="button"
                 onClick={exitSelecting}
                 aria-label="선택 취소"
-                className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-[#2C3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
+                className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-ink shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
               >
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                   <path d="M6 18L18 6M6 6l12 12" />
@@ -133,7 +133,7 @@ export function FavoritesPage() {
                     allChecked ? new Set() : new Set(favorites.map((p) => p.treeId)),
                   )
                 }
-                className="text-[15px] text-[#2C3930]"
+                className="text-[15px] text-ink"
               >
                 {allChecked ? "선택 해제" : "전체 선택"}
               </button>
@@ -141,7 +141,7 @@ export function FavoritesPage() {
               <button
                 type="button"
                 onClick={() => setSelecting(true)}
-                className="text-[15px] text-[#2C3930]"
+                className="text-[15px] text-ink"
               >
                 선택
               </button>
@@ -185,10 +185,10 @@ export function FavoritesPage() {
       )}
 
       {isPending ? (
-        <p className="py-10 text-center text-[15px] text-[#60655C]">불러오는 중...</p>
+        <p className="py-10 text-center text-[15px] text-ink-muted">불러오는 중...</p>
       ) : isError ? (
         <div className="py-10 text-center">
-          <p className="text-[15px] text-[#DC2626]">즐겨찾기를 불러오지 못했어요.</p>
+          <p className="text-[15px] text-error">즐겨찾기를 불러오지 못했어요.</p>
           <button
             type="button"
             onClick={() => refetch()}
@@ -207,7 +207,7 @@ export function FavoritesPage() {
           들어온 사람에게 하는 말은 아니다.
         */
         <div className="py-10 text-center">
-          <p className="text-[15px] text-[#60655C]">즐겨찾기한 장소가 없어요.</p>
+          <p className="text-[15px] text-ink-muted">즐겨찾기한 장소가 없어요.</p>
         </div>
       ) : (
         /* 격자는 인스타 '저장됨' 처럼 좌우 여백 없이 화면 끝까지 채운다. */
@@ -226,7 +226,7 @@ export function FavoritesPage() {
           <button
             type="button"
             onClick={() => setConfirming({ ids: [...checked] })}
-            className="flex h-[46px] w-full items-center justify-center rounded-[24px] bg-[#DC2626] text-[15px] font-medium text-white"
+            className="flex h-[46px] w-full items-center justify-center rounded-[24px] bg-error text-[15px] font-medium text-white"
           >
             {checked.size}곳 제거
           </button>
@@ -252,17 +252,17 @@ export function FavoritesPage() {
           <div
             role="dialog"
             aria-modal="true"
-            className="w-full max-w-[302px] rounded-[20px] bg-[#FFFCEF] px-6 py-6 text-center"
+            className="w-full max-w-[302px] rounded-[20px] bg-cream px-6 py-6 text-center"
             onClick={(event) => event.stopPropagation()}
           >
             <img src={trashLargeIcon} alt="" className="mx-auto h-[34px] w-[30px]" />
-            <p className="mt-3 text-[17px] font-medium text-[#2C3930]">
+            <p className="mt-3 text-[17px] font-medium text-ink">
               {confirming.ids.length > 1
                 ? `선택한 ${confirming.ids.length}곳을 제거할까요?`
                 : "즐겨찾기에서 제거할까요?"}
             </p>
             {confirming.name && (
-              <p className="mt-1 text-[13px] text-[#2C3930]">{confirming.name}</p>
+              <p className="mt-1 text-[13px] text-ink">{confirming.name}</p>
             )}
 
             <div className="mt-5 flex gap-3">
@@ -270,7 +270,7 @@ export function FavoritesPage() {
                 type="button"
                 onClick={() => setConfirming(null)}
                 disabled={isRemoving}
-                className="h-[44px] flex-1 rounded-xl bg-line-soft text-[15px] text-[#2C3930] disabled:opacity-50"
+                className="h-[44px] flex-1 rounded-xl bg-line-soft text-[15px] text-ink disabled:opacity-50"
               >
                 취소
               </button>
@@ -278,7 +278,7 @@ export function FavoritesPage() {
                 type="button"
                 onClick={handleRemove}
                 disabled={isRemoving}
-                className="h-[44px] flex-1 rounded-xl bg-[#DC2626] text-[15px] font-medium text-white disabled:opacity-50"
+                className="h-[44px] flex-1 rounded-xl bg-error text-[15px] font-medium text-white disabled:opacity-50"
               >
                 {isRemoving ? "제거하는 중" : "제거"}
               </button>

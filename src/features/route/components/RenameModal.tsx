@@ -53,32 +53,32 @@ export function RenameModal({ currentTitle, onClose, onConfirm }: RenameModalPro
       aria-modal="true"
     >
       <div
-        className="w-full max-w-[350px] rounded-[20px] bg-[#fffcef] px-6 py-7"
+        className="w-full max-w-[350px] rounded-[20px] bg-cream px-6 py-7"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-bold tracking-[0.2px] text-[#2c3930]">이름 변경</h2>
+        <h2 className="text-xl font-bold tracking-[0.2px] text-ink">이름 변경</h2>
 
         <div className="mt-4 flex items-center gap-2 rounded-[20px] border-2 border-pictree-500 bg-[#fffdfd] px-2.5 py-1.5">
-          <PenIcon className="size-[26px] shrink-0 text-[#2c3930]" />
+          <PenIcon className="size-[26px] shrink-0 text-ink" />
           <input
             ref={inputRef}
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
-            className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-[#2c3930] outline-none"
+            className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-ink outline-none"
           />
         </div>
 
         <div className="mt-5 flex justify-center gap-4">
           <button
             onClick={onClose}
-            className="h-[38px] w-[92px] rounded-[12px] bg-line-soft text-base font-semibold tracking-wide text-[#2c3930]"
+            className="h-[38px] w-[92px] rounded-[12px] bg-line-soft text-base font-semibold tracking-wide text-ink"
           >
             취소
           </button>
           <button
             onClick={handleConfirm}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#f6f0d7] text-base font-semibold tracking-wide text-[#2c3930]"
+            className="h-[38px] w-[92px] rounded-[12px] bg-cream-sub text-base font-semibold tracking-wide text-ink"
           >
             변경
           </button>

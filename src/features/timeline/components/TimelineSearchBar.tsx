@@ -48,7 +48,7 @@ export function TimelineSearchBar({ value, onChange }: Props) {
 
           플레이스홀더는 본문보다 흐리게 — 같은 색이면 이미 입력된 값처럼 읽힌다.
         */
-        className="h-[44px] w-full rounded-full border border-[#2C3930] bg-white px-4 text-left text-[15px] text-[#2C3930] placeholder:text-[#60655C] focus:border-pictree-500 focus:outline-none"
+        className="h-[44px] w-full rounded-full border border-ink bg-white px-4 text-left text-[15px] text-ink placeholder:text-ink-muted focus:border-pictree-500 focus:outline-none"
       />
     </div>
   );

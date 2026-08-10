@@ -28,10 +28,10 @@ const FEATURE_ICON: Record<string, ComponentType> = {
 function BenefitSkeleton() {
   return (
     <div className="flex min-h-[62px] items-center gap-3">
-      <span className="h-6 w-6 shrink-0 animate-pulse rounded bg-[#F6F0D7]" />
+      <span className="h-6 w-6 shrink-0 animate-pulse rounded bg-cream-sub" />
       <span className="flex-1">
-        <span className="block h-4 w-24 animate-pulse rounded bg-[#F6F0D7]" />
-        <span className="mt-1 block h-3 w-16 animate-pulse rounded bg-[#F6F0D7]" />
+        <span className="block h-4 w-24 animate-pulse rounded bg-cream-sub" />
+        <span className="mt-1 block h-3 w-16 animate-pulse rounded bg-cream-sub" />
       </span>
     </div>
   );
@@ -72,14 +72,14 @@ export function PremiumUpsellSheet({ onClose, onUpgrade }: PremiumUpsellSheetPro
       className="rounded-t-[20px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.12)]"
       contentClassName="px-5"
     >
-      <div className="flex justify-center text-[#2c3930]">
+      <div className="flex justify-center text-ink">
         <CrownIcon large />
       </div>
 
-      <h2 className="mt-3 text-center text-xl font-medium text-[#2c3930]">토큰을 다 썼어요</h2>
+      <h2 className="mt-3 text-center text-xl font-medium text-ink">토큰을 다 썼어요</h2>
       {/* 다음 주기에 채워지는 걸 숨기지 않는다 — 업그레이드만 말하면 기다리면 되는 사람에게
           결제가 유일한 길인 것처럼 읽힌다. `지금` 이 그 차이를 진다. */}
-      <p className="mt-2 text-center text-[15px] leading-[21px] text-[#2c3930]">
+      <p className="mt-2 text-center text-[15px] leading-[21px] text-ink">
         이번 주기 PICTREE 토큰을 다 썼어요
         <br />
         플랜을 올리면 지금 더 쓸 수 있어요
@@ -101,10 +101,10 @@ export function PremiumUpsellSheet({ onClose, onUpgrade }: PremiumUpsellSheetPro
                     {Icon && <Icon />}
                   </span>
                   <span className="flex-1">
-                    <strong className="block text-[15px] font-medium text-[#2c3930]">
+                    <strong className="block text-[15px] font-medium text-ink">
                       {featureLabel(feature)}
                     </strong>
-                    <small className="text-[13px] text-[#60655c]">{value}</small>
+                    <small className="text-[13px] text-ink-muted">{value}</small>
                   </span>
                   <CheckIcon />
                 </div>
@@ -115,7 +115,7 @@ export function PremiumUpsellSheet({ onClose, onUpgrade }: PremiumUpsellSheetPro
       <PrimaryCta onClick={onUpgrade} className="mt-4">
         플랜 업그레이드
       </PrimaryCta>
-      <button type="button" className="mt-3 w-full py-2 text-[13px] text-[#60655c]" onClick={onClose}>
+      <button type="button" className="mt-3 w-full py-2 text-[13px] text-ink-muted" onClick={onClose}>
         나중에 할게요
       </button>
     </Sheet>

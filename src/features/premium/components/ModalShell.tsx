@@ -10,7 +10,7 @@ export function ModalShell({ children }: PropsWithChildren) {
   return (
     <div className="fixed inset-y-0 left-1/2 z-[60] flex w-full -translate-x-1/2 items-center justify-center bg-black/50 sm:max-w-[390px]">
       <section
-        className="mx-5 w-full rounded-[20px] bg-[#fffcef] px-5 pb-6 pt-10"
+        className="mx-5 w-full rounded-[20px] bg-cream px-5 pb-6 pt-10"
         role="dialog"
         aria-modal="true"
       >

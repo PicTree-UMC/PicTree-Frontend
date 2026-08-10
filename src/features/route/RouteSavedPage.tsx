@@ -80,7 +80,7 @@ export function RouteSavedPage() {
         <RouteIllustration className="w-[200px]" />
 
         <p
-          className="animate-fade-in-up mt-6 text-xl font-medium text-[#2c3930]"
+          className="animate-fade-in-up mt-6 text-xl font-medium text-ink"
           style={{ animationDelay: '600ms' }}
         >
           동선을 저장했어요
@@ -89,7 +89,7 @@ export function RouteSavedPage() {
         {/* 이름이 없으면 줄째로 뺀다 — 빈 줄은 이름을 못 받은 게 아니라 이름이 없는 것처럼 읽힌다. */}
         {routeName && (
           <p
-            className="animate-fade-in-up mt-2 max-w-full truncate text-[15px] text-[#60655c]"
+            className="animate-fade-in-up mt-2 max-w-full truncate text-[15px] text-ink-muted"
             style={{ animationDelay: '600ms' }}
           >
             {routeName}
@@ -103,7 +103,7 @@ export function RouteSavedPage() {
           **사유는 문장이 말하고 버튼은 다음 수를 말한다.**
         */}
         <p
-          className="animate-fade-in-up mt-6 text-[15px] leading-[22px] text-[#2c3930]"
+          className="animate-fade-in-up mt-6 text-[15px] leading-[22px] text-ink"
           style={{ animationDelay: '750ms' }}
         >
           {isOutOfDrafts ? (
@@ -151,7 +151,7 @@ export function RouteSavedPage() {
           <button
             type="button"
             onClick={goToPremium}
-            className={`h-[52px] w-full rounded-[24px] text-[15px] font-medium text-[#2c3930] ${PREMIUM_GRADIENT_CLASS}`}
+            className={`h-[52px] w-full rounded-[24px] text-[15px] font-medium text-ink ${PREMIUM_GRADIENT_CLASS}`}
           >
             플랜 업그레이드
           </button>
@@ -164,7 +164,7 @@ export function RouteSavedPage() {
         <button
           type="button"
           onClick={goToRouteList}
-          className="mt-3 w-full py-2 text-[13px] text-[#60655c]"
+          className="mt-3 w-full py-2 text-[13px] text-ink-muted"
         >
           동선 목록으로 가기
         </button>

@@ -128,7 +128,7 @@ export function AuthCallbackPage() {
   return (
     // min-h-full: 뷰포트 단위를 아는 곳은 AppShell 하나다. 여기서 100vh 를 쓰면
     // 주소창이 떠 있을 때 셸 컬럼(h-dvh)을 넘긴다. 가드들의 '확인 중' 화면과 같은 규칙.
-    <main className="flex min-h-full items-center justify-center bg-[#FFFCEF] px-6 text-[#2C3930]">
+    <main className="flex min-h-full items-center justify-center bg-cream px-6 text-ink">
       <p className="font-['KOROAD'] text-[1rem] font-bold">로그인 처리 중입니다.</p>
     </main>
   );

@@ -60,7 +60,7 @@ export function HelpFaqPage() {
   const category = FAQ_CATEGORIES[activeTab];
 
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
+    <div className="flex min-h-full flex-col bg-cream pb-nav">
       <header className="px-5 pb-4 pt-header">
         <NavBar onBack={() => navigate(-1)} title="도움말 / FAQ" />
 
@@ -112,11 +112,11 @@ export function HelpFaqPage() {
                 className="flex w-full items-center gap-2.5 text-left"
               >
                 <IconQuestion />
-                <h2 className="flex-1 text-[15px] font-medium text-[#2C3930]">{item.q}</h2>
+                <h2 className="flex-1 text-[15px] font-medium text-ink">{item.q}</h2>
                 <Chevron open={isOpen} />
               </button>
               {isOpen && (
-                <p className="mt-2.5 text-[13px] leading-relaxed text-[#60655C]">
+                <p className="mt-2.5 text-[13px] leading-relaxed text-ink-muted">
                   {item.a}
                 </p>
               )}
@@ -128,11 +128,11 @@ export function HelpFaqPage() {
         <div className="mt-2 rounded-xl border border-line-soft bg-white px-5 py-4">
           <div className="flex items-center gap-2.5">
             <IconMail />
-            <h2 className="text-[15px] font-medium text-[#2C3930]">
+            <h2 className="text-[15px] font-medium text-ink">
               더 궁금한 점이 있나요?
             </h2>
           </div>
-          <p className="mt-2.5 text-[13px] leading-relaxed text-[#60655C]">
+          <p className="mt-2.5 text-[13px] leading-relaxed text-ink-muted">
             {SUPPORT_EMAIL} 으로 보내주시면 확인 후 답변드릴게요.
           </p>
         </div>

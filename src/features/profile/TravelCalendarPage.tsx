@@ -14,7 +14,7 @@ function InfoButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label="잔디 색 안내"
-      className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
+      className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-ink shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
     >
       <svg
         viewBox="0 0 24 24"
@@ -78,7 +78,7 @@ export function TravelCalendarPage() {
     pickedDate?.startsWith(`${year}-${String(month).padStart(2, '0')}`) ? pickedDate : null;
 
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
+    <div className="flex min-h-full flex-col bg-cream pb-nav">
       <header className="px-5 pt-header">
         <NavBar
           onBack={() => window.history.back()}
@@ -90,7 +90,7 @@ export function TravelCalendarPage() {
       <div className="mt-4 px-5">
         {isError ? (
           <div className="flex flex-col items-center gap-4 py-10">
-            <p className="text-center text-[15px] font-medium text-[#2c3930]">
+            <p className="text-center text-[15px] font-medium text-ink">
               캘린더를 불러오지 못했어요
             </p>
             <button

@@ -151,7 +151,7 @@ export function RouteSavePage() {
     // 줄어드는 몫은 위 로드맵(스크롤 영역)이 흡수한다.
     <div
       style={{ paddingBottom: keyboardOffset }}
-      className="flex h-full w-full flex-col bg-[#FFFCEF]"
+      className="flex h-full w-full flex-col bg-cream"
     >
       <header className="px-5 pt-header">
         {/* 제목이 `동선 저장` 이 아닌 이유는 하단 버튼이다 — 화면 위아래에서 같은 말을 두 번
@@ -170,7 +170,7 @@ export function RouteSavePage() {
           </div>
         ) : isError || isOffline ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-8">
-            <p className="text-center text-[15px] font-medium text-[#2c3930]">
+            <p className="text-center text-[15px] font-medium text-ink">
               {isOffline ? '네트워크에 연결되어 있지 않아요' : '동선을 불러오지 못했어요'}
             </p>
             <button
@@ -188,44 +188,44 @@ export function RouteSavePage() {
 
         {/* 잘린 자리를 크림으로 흐려 '아래가 더 있다'를 알린다. 스크롤바가 없는 모바일에서
             딱 잘린 노드는 그냥 마지막처럼 보인다. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#FFFCEF] to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-cream to-transparent" />
       </div>
 
       {/* ② 동선 이름. 이 화면에서 사용자가 정하는 유일한 값이라 테두리 없이 놓는다 —
           알약 입력창은 '여기 칸이 있다'를 말하지만, 이 자리에서는 굳이 말할 필요가 없고
           윗줄의 제목처럼 읽히는 편이 낫다.
           16px 인 이유는 iOS 다 — 그보다 작으면 사파리가 포커스할 때 화면을 확대해 버린다. */}
-      <div className="border-t border-[#2c3930]/10 px-5 py-4">
+      <div className="border-t border-ink/10 px-5 py-4">
         <input
           value={name}
           onChange={(event) => setName(event.target.value)}
           onKeyDown={(event) => event.key === 'Enter' && handleSave()}
           aria-label="동선 이름"
           placeholder="동선 이름 추가..."
-          className="w-full bg-transparent text-base text-[#2c3930] outline-none placeholder:text-[#b4b4b4]"
+          className="w-full bg-transparent text-base text-ink outline-none placeholder:text-ink-disabled"
         />
       </div>
 
       {/* ③ 앞 단계에서 정한 것. **읽기만 한다** — 여기서 장소를 더 고르게 하면 지도가 하는 일과
           겹치고, 고치려면 뒤로 가면 된다. */}
-      <div className="border-t border-[#2c3930]/10 px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-3">
+      <div className="border-t border-ink/10 px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-3">
         <dl className="flex flex-col gap-1.5">
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="shrink-0 text-[13px] text-[#60655c]">장소</dt>
-            <dd className="text-[15px] text-[#2c3930]">
+            <dt className="shrink-0 text-[13px] text-ink-muted">장소</dt>
+            <dd className="text-[15px] text-ink">
               {places.length}/{MAX_PLACES}개
             </dd>
           </div>
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="shrink-0 text-[13px] text-[#60655c]">날짜</dt>
-            <dd className="min-w-0 truncate text-[15px] text-[#2c3930]">
+            <dt className="shrink-0 text-[13px] text-ink-muted">날짜</dt>
+            <dd className="min-w-0 truncate text-[15px] text-ink">
               {formatRecordDates(savedDates)}
             </dd>
           </div>
         </dl>
 
         {isOverLimit && (
-          <p className="mt-2 text-[13px] text-[#dc2626]">
+          <p className="mt-2 text-[13px] text-error">
             장소는 {MAX_PLACES}개까지 저장할 수 있어요. 뒤로 가서 몇 곳을 꺼주세요
           </p>
         )}

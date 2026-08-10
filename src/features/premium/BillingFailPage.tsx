@@ -11,9 +11,9 @@ export function BillingFailPage() {
   const message = searchParams.get('message');
 
   return (
-    <main className="flex min-h-full w-full flex-col items-center justify-center gap-4 px-5 text-center text-[#2c3930]">
+    <main className="flex min-h-full w-full flex-col items-center justify-center gap-4 px-5 text-center text-ink">
       <p className="text-[15px]">결제가 완료되지 않았어요.</p>
-      {message && <p className="text-[13px] text-[#60655c]">{message}</p>}
+      {message && <p className="text-[13px] text-ink-muted">{message}</p>}
       <button
         className="h-[45px] rounded-xl bg-pictree-700 px-6 font-bold text-white"
         onClick={() => navigate(ROUTES.premium, { replace: true })}

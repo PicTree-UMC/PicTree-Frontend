@@ -25,19 +25,19 @@ export function PhotoAlbumSheet({ route, onClose }: PhotoAlbumSheetProps) {
       dim="dark"
       handle={false}
       top="5rem"
-      className="overflow-hidden rounded-t-[20px] bg-[#fffcef] shadow-[0_-4px_6px_0_rgba(0,0,0,0.12)]"
+      className="overflow-hidden rounded-t-[20px] bg-cream shadow-[0_-4px_6px_0_rgba(0,0,0,0.12)]"
       contentClassName="flex flex-col overflow-hidden"
       bottomPadding="0"
     >
       {/* 헤더: 뒤로 가기 + 동선 이름 + 날짜 */}
       {/* px-[17px] 이었는데 다른 헤더(px-5)와 어긋나 뒤로가기 원만 3px 안쪽에 있었다. */}
-      <header className="h-[70px] shrink-0 bg-[#f6f0d7] px-5">
+      <header className="h-[70px] shrink-0 bg-cream-sub px-5">
         <NavBar
           className="h-full"
           onBack={onClose}
           title={route.title}
           action={
-            <span className="text-[13px] font-medium tracking-[0.12px] text-[#2c3930]">
+            <span className="text-[13px] font-medium tracking-[0.12px] text-ink">
               {route.date}
             </span>
           }
@@ -58,7 +58,7 @@ export function PhotoAlbumSheet({ route, onClose }: PhotoAlbumSheetProps) {
           </div>
         ) : isError ? (
           <div className="mt-[22px] flex flex-col items-center gap-4">
-            <p className="text-[15px] font-medium text-[#2c3930]">사진을 불러오지 못했어요</p>
+            <p className="text-[15px] font-medium text-ink">사진을 불러오지 못했어요</p>
             <button
               onClick={() => refetch()}
               className="h-[38px] rounded-[19px] bg-pictree-700 px-6 text-[15px] font-medium text-white"
@@ -67,7 +67,7 @@ export function PhotoAlbumSheet({ route, onClose }: PhotoAlbumSheetProps) {
             </button>
           </div>
         ) : photos.length === 0 ? (
-          <p className="mt-[22px] text-[15px] font-medium text-[#2c3930]">
+          <p className="mt-[22px] text-[15px] font-medium text-ink">
             이 동선에는 아직 사진이 없어요
           </p>
         ) : (

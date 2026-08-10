@@ -88,13 +88,13 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
 
   return (
     <div className="flex flex-1 flex-col pt-7">
-      <h1 className="px-2 font-['KOROAD'] text-[1.5rem] font-bold leading-normal text-[#2C3930]">
+      <h1 className="px-2 font-['KOROAD'] text-[1.5rem] font-bold leading-normal text-ink">
         서비스 이용 동의
       </h1>
 
       <Button
         unstyled
-        className="mt-6 flex h-[3.75rem] w-full items-center gap-4 rounded-[1.125rem] bg-pictree-100 px-6 font-['KOROAD'] text-[1.125rem] font-bold text-[#2C3930]"
+        className="mt-6 flex h-[3.75rem] w-full items-center gap-4 rounded-[1.125rem] bg-pictree-100 px-6 font-['KOROAD'] text-[1.125rem] font-bold text-ink"
         type="button"
         onClick={toggleAll}
       >
@@ -103,14 +103,14 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
       </Button>
 
       <section className="mt-4 rounded-[1.125rem] bg-white px-6 py-5">
-        <h2 className="mb-5 font-['KOROAD'] text-[1.125rem] font-bold text-[#2C3930]">약관 안내</h2>
+        <h2 className="mb-5 font-['KOROAD'] text-[1.125rem] font-bold text-ink">약관 안내</h2>
         {isPending ? (
-          <p className="py-6 text-center font-['KOROAD'] text-[0.875rem] text-[#60655C]">
+          <p className="py-6 text-center font-['KOROAD'] text-[0.875rem] text-ink-muted">
             약관을 불러오는 중...
           </p>
         ) : isError ? (
           <div className="py-6 text-center">
-            <p className="font-['KOROAD'] text-[0.875rem] text-[#DC2626]">
+            <p className="font-['KOROAD'] text-[0.875rem] text-error">
               약관을 불러오지 못했어요.
             </p>
             <Button
@@ -142,7 +142,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
                 <div>
                   <button
                     className={`whitespace-pre-line text-left font-['KOROAD'] text-[1rem] font-medium leading-7 ${
-                      term.required || checked ? 'text-[#2C3930]' : 'text-[#60655C]'
+                      term.required || checked ? 'text-ink' : 'text-ink-muted'
                     }`}
                     type="button"
                     onClick={() => toggleTerm(term.key)}
@@ -156,7 +156,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
                       알 수 없다. (현재 실서버는 5개 모두 summary 를 채워 준다)
                     */
                     term.description ? (
-                      <p className="mt-1 whitespace-pre-line font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-[#2C3930]">
+                      <p className="mt-1 whitespace-pre-line font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-ink">
                         {term.description}
                       </p>
                     ) : term.contentUrl ? (
@@ -190,7 +190,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
       <Button
         unstyled
         className={`mt-auto flex h-[3.75rem] w-full items-center justify-center rounded-[1.125rem] font-['KOROAD'] text-[1.125rem] font-bold transition ${
-          canStart ? 'bg-pictree-300 text-[#2C3930] hover:bg-pictree-300' : 'bg-line-soft text-[#60655C]'
+          canStart ? 'bg-pictree-300 text-ink hover:bg-pictree-300' : 'bg-line-soft text-ink-muted'
         }`}
         disabled={!canStart || isSaving}
         type="button"

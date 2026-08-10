@@ -29,12 +29,12 @@ export function PaymentCompleteModal({
         <AnimatedCheckIcon />
       </div>
 
-      <h2 className="mt-3 text-center text-[21px] font-medium text-[#2C3930]">결제 완료!</h2>
-      <p className="mt-1 text-center text-[13px] text-[#60655C]">
+      <h2 className="mt-3 text-center text-[21px] font-medium text-ink">결제 완료!</h2>
+      <p className="mt-1 text-center text-[13px] text-ink-muted">
         프리미엄 기능이 활성화 되었어요.
       </p>
 
-      <div className="relative mt-5 rounded-xl border-2 border-pictree-300 bg-white px-4 py-4 text-center text-[15px] font-medium leading-8 text-[#2C3930]">
+      <div className="relative mt-5 rounded-xl border-2 border-pictree-300 bg-white px-4 py-4 text-center text-[15px] font-medium leading-8 text-ink">
         <span className="absolute -left-3 -top-4 -rotate-6 rounded-full bg-pictree-700 px-4 py-1 text-[13px] font-medium text-white">
           {details.shortName}
         </span>

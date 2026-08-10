@@ -41,7 +41,7 @@ export function PlanCheckoutButton({ plan, action, onStart, onChange }: Props) {
   const enabledClass =
     'mt-4 h-12 w-full rounded-xl bg-pictree-700 text-[15px] font-medium text-white';
   const disabledClass =
-    'mt-4 h-12 w-full rounded-xl bg-line-soft text-[15px] font-medium text-[#60655C]';
+    'mt-4 h-12 w-full rounded-xl bg-line-soft text-[15px] font-medium text-ink-muted';
 
   if (action === 'start') {
     return (

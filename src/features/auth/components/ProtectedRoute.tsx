@@ -55,7 +55,7 @@ export function ProtectedRoute() {
 
   if (status === 'checking') {
     return (
-      <main className="flex min-h-full items-center justify-center bg-[#FFFCEF] px-6 text-[#2C3930]">
+      <main className="flex min-h-full items-center justify-center bg-cream px-6 text-ink">
         <p className="font-['KOROAD'] text-[1rem] font-bold">로그인 상태를 확인 중입니다.</p>
       </main>
     );

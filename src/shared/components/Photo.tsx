@@ -66,7 +66,7 @@ export function Photo({
   iconClassName = 'h-6 w-6',
   fallback,
   message,
-  messageClassName = 'text-[13px] text-[#60655c]',
+  messageClassName = 'text-[13px] text-ink-muted',
   loading,
   style,
 }: PhotoProps) {

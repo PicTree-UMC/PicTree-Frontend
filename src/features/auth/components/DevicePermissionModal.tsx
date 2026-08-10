@@ -23,10 +23,10 @@ export function DevicePermissionModal({ isOpen, onConfirm }: DevicePermissionMod
     <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto bg-black/40 px-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] pt-[max(env(safe-area-inset-top),1.25rem)]">
       <section
         aria-modal="true"
-        className="my-auto w-full max-w-[22rem] shrink-0 rounded-[1.125rem] bg-[#FFFCEF] px-[1.375rem] pb-6 pt-7"
+        className="my-auto w-full max-w-[22rem] shrink-0 rounded-[1.125rem] bg-cream px-[1.375rem] pb-6 pt-7"
         role="dialog"
       >
-        <h2 className="font-['KOROAD'] text-[1.25rem] font-bold text-[#2C3930]">
+        <h2 className="font-['KOROAD'] text-[1.25rem] font-bold text-ink">
           기기 접근 권한 안내
         </h2>
 
@@ -36,8 +36,8 @@ export function DevicePermissionModal({ isOpen, onConfirm }: DevicePermissionMod
           <PermissionRow icon={<LocationIcon />} title="위치 정보 · 사진 EXIF 위치" description="장소와 동선을 지도에 기록하기 위해 사용해요" />
         </div>
 
-        <h3 className="mt-4 font-['KOROAD'] text-[1.125rem] font-bold text-[#2C3930]">보관 및 삭제</h3>
-        <div className="mt-3 rounded-[1.125rem] bg-white px-4 py-4 font-['KOROAD'] text-[0.75rem] font-medium leading-7 text-[#2C3930]">
+        <h3 className="mt-4 font-['KOROAD'] text-[1.125rem] font-bold text-ink">보관 및 삭제</h3>
+        <div className="mt-3 rounded-[1.125rem] bg-white px-4 py-4 font-['KOROAD'] text-[0.75rem] font-medium leading-7 text-ink">
           <p>사진·기록·위치정보는 회원 탈퇴 시까지 보관되며,</p>
           <p>탈퇴하면 관련 데이터가 지체 없이 파기됩니다.</p>
           <p>(관계 법령상 보존이 필요한 경우 해당 기간 동안만 별도 보관)</p>
@@ -45,7 +45,7 @@ export function DevicePermissionModal({ isOpen, onConfirm }: DevicePermissionMod
 
         <Button
           unstyled
-          className="mt-5 flex h-[2.4375rem] w-full items-center justify-center rounded-[0.625rem] bg-pictree-300 font-['KOROAD'] text-[1rem] font-bold text-[#2C3930]"
+          className="mt-5 flex h-[2.4375rem] w-full items-center justify-center rounded-[0.625rem] bg-pictree-300 font-['KOROAD'] text-[1rem] font-bold text-ink"
           type="button"
           onClick={onConfirm}
         >
@@ -69,8 +69,8 @@ function PermissionRow({
     <div className="flex items-center gap-4 py-2">
       <span className="grid h-8 w-8 shrink-0 place-items-center text-pictree-700">{icon}</span>
       <div>
-        <p className="font-['KOROAD'] text-[1rem] font-bold text-[#2C3930]">{title}</p>
-        <p className="mt-0.5 font-['KOROAD'] text-[0.75rem] font-medium text-[#2C3930]">
+        <p className="font-['KOROAD'] text-[1rem] font-bold text-ink">{title}</p>
+        <p className="mt-0.5 font-['KOROAD'] text-[0.75rem] font-medium text-ink">
           {description}
         </p>
       </div>
