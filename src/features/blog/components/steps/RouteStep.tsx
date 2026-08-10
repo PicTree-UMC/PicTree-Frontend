@@ -142,7 +142,7 @@ export function RouteStep({
                   className={`mt-0.5 flex size-[22px] shrink-0 items-center justify-center rounded-full border-2 transition ${
                     selected
                       ? 'border-pictree-700 bg-pictree-700 text-white'
-                      : 'border-[#d4d4d4] bg-white text-transparent'
+                      : 'border-line bg-white text-transparent'
                   }`}
                 >
                   <CheckIcon />

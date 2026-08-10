@@ -62,14 +62,14 @@ export function BlogDetailPage() {
 
       {isPending && (
         <div className="grid min-h-[60vh] place-items-center" role="status" aria-label="블로그를 불러오는 중">
-          <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#788f4a]" />
+          <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
         </div>
       )}
 
       {isError && (
         <div className="flex min-h-[60vh] flex-col items-center justify-center px-5 text-center">
           <p className="text-[15px] text-[#60655c]">블로그를 불러오지 못했어요.</p>
-          <button type="button" onClick={() => refetch()} className="mt-4 rounded-xl bg-[#5b6b38] px-5 py-3 text-[15px] font-medium text-white">
+          <button type="button" onClick={() => refetch()} className="mt-4 rounded-xl bg-pictree-700 px-5 py-3 text-[15px] font-medium text-white">
             다시 시도
           </button>
         </div>
@@ -78,7 +78,7 @@ export function BlogDetailPage() {
       {data && (
         <article className="mx-auto w-full max-w-[680px] bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+3rem)] pt-8">
           <header className="border-b border-[#eeeeea] pb-6">
-            <p className="text-[13px] font-medium text-[#6f8542]">여행 기록</p>
+            <p className="text-[13px] font-medium text-pictree-700">여행 기록</p>
             <h1 className="mt-2 text-[25px] font-bold leading-[1.45] tracking-[-0.025em] text-[#1f241f]">
               {data.title}
             </h1>

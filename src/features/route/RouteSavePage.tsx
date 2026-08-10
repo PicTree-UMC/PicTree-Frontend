@@ -165,8 +165,8 @@ export function RouteSavePage() {
       <div className="relative min-h-0 flex-1">
         {isLoading ? (
           <div className="flex h-full flex-col items-center justify-center gap-3">
-            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-[#89986d]" />
-            <p className="text-[15px] font-medium text-[#5c6f2b]">동선을 그리는 중...</p>
+            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
+            <p className="text-[15px] font-medium text-pictree-700">동선을 그리는 중...</p>
           </div>
         ) : isError || isOffline ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-8">

@@ -45,7 +45,7 @@ export function EmptyTimeline() {
       <button
         type="button"
         onClick={() => navigate(ROUTES.camera)}
-        className="animate-fade-in-up mt-7 h-[46px] rounded-[24px] bg-[#5B6B38] px-7 text-[15px] font-medium text-[#FFFCEF]"
+        className="animate-fade-in-up mt-7 h-[46px] rounded-[24px] bg-pictree-700 px-7 text-[15px] font-medium text-[#FFFCEF]"
         style={{ animationDelay: "300ms" }}
       >
         첫 기록 남기기

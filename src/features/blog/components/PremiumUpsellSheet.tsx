@@ -67,7 +67,7 @@ export function PremiumUpsellSheet({ onClose, onUpgrade }: PremiumUpsellSheetPro
       onClose={onClose}
       label="PICTREE 토큰 소진"
       handleSize="grip"
-      handleColor="#d9d9d9"
+      handleColor="#D9D9D9"
       z={60}
       className="rounded-t-[20px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.12)]"
       contentClassName="px-5"

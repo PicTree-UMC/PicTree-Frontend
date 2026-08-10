@@ -115,7 +115,7 @@ export function SettingsRow({
 /**
  * 흰 카드에 담긴 줄 묶음 — iOS 설정의 그룹 리스트 꼴.
  *
- * **테두리는 1px `#ECECEC` 헤어라인이다.** 크림 페이지 배경(`#FFFCEF`)과 흰 카드는 밝기 차가
+ * **테두리는 1px `border-line-soft` 헤어라인이다.** 크림 페이지 배경(`#FFFCEF`)과 흰 카드는 밝기 차가
  * ΔL* 1.1 밖에 안 나서(iOS 의 회색 배경은 4.4) 배경만으로는 카드가 안 보인다. 종전의 2px
  * GREEN-300 테두리가 이 문제를 색으로 때우고 있었는데, 그러면 카드마다 초록 상자가 도드라져
  * 줄 내용보다 틀이 먼저 읽힌다.
@@ -134,7 +134,7 @@ export function SettingsList({
   const rows = Children.toArray(children);
 
   return (
-    <div className={`overflow-hidden rounded-xl border border-[#ECECEC] bg-white ${className}`}>
+    <div className={`overflow-hidden rounded-xl border border-line-soft bg-white ${className}`}>
       {rows.map((row, index) => {
         const props = isValidElement<SettingsRowProps>(row) ? row.props : null;
 
@@ -144,7 +144,7 @@ export function SettingsList({
         return (
           <Fragment key={index}>
             {index > 0 && (
-              <div aria-hidden className="h-px bg-[#ECECEC]" style={{ marginLeft: inset }} />
+              <div aria-hidden className="h-px bg-line-soft" style={{ marginLeft: inset }} />
             )}
             {row}
           </Fragment>

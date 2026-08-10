@@ -33,7 +33,7 @@ type Props = {
  * 떴다 — 카드를 바꿔도 안 되는 길이었다. 지금은 `plan-change` 로 간다.
  *
  * ⚠️ 비활성 상태에도 대비 4.5:1 을 지킨다. `opacity-60` 으로 흐리면 회색 면 위 회색
- * 글자가 3:1 아래로 떨어진다 — 색을 직접 지정한다(#ECECEC 면 위 #60655C = 4.6:1).
+ * 글자가 3:1 아래로 떨어진다 — 색을 직접 지정한다(LINE-soft 면 위 #60655C = 4.6:1).
  */
 export function PlanCheckoutButton({ plan, action, onStart, onChange }: Props) {
   const { shortName } = planSummary(plan);
@@ -41,7 +41,7 @@ export function PlanCheckoutButton({ plan, action, onStart, onChange }: Props) {
   const enabledClass =
     'mt-4 h-12 w-full rounded-xl bg-pictree-700 text-[15px] font-medium text-white';
   const disabledClass =
-    'mt-4 h-12 w-full rounded-xl bg-[#ECECEC] text-[15px] font-medium text-[#60655C]';
+    'mt-4 h-12 w-full rounded-xl bg-line-soft text-[15px] font-medium text-[#60655C]';
 
   if (action === 'start') {
     return (

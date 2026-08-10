@@ -41,7 +41,7 @@ export function DeleteRecordModal({
           <button
             type="button"
             onClick={onCancel}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#E6E6E6] text-base font-medium text-[#2C3930]"
+            className="h-[38px] w-[92px] rounded-[12px] bg-line-soft text-base font-medium text-[#2C3930]"
           >
             취소
           </button>

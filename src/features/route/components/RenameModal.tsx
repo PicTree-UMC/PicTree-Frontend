@@ -56,7 +56,7 @@ export function RenameModal({ currentTitle, onClose, onConfirm }: RenameModalPro
         className="w-full max-w-[350px] rounded-[20px] bg-[#fffcef] px-6 py-7"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-bold tracking-[0.2px] text-[#111]">이름 변경</h2>
+        <h2 className="text-xl font-bold tracking-[0.2px] text-[#2c3930]">이름 변경</h2>
 
         <div className="mt-4 flex items-center gap-2 rounded-[20px] border-2 border-pictree-500 bg-[#fffdfd] px-2.5 py-1.5">
           <PenIcon className="size-[26px] shrink-0 text-[#2c3930]" />
@@ -72,7 +72,7 @@ export function RenameModal({ currentTitle, onClose, onConfirm }: RenameModalPro
         <div className="mt-5 flex justify-center gap-4">
           <button
             onClick={onClose}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#e6e6e6] text-base font-semibold tracking-wide text-[#2c3930]"
+            className="h-[38px] w-[92px] rounded-[12px] bg-line-soft text-base font-semibold tracking-wide text-[#2c3930]"
           >
             취소
           </button>

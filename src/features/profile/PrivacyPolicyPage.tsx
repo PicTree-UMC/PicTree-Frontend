@@ -191,7 +191,7 @@ const SECTIONS: Section[] = [
 
 function PolicyCardView({ card }: { card: PolicyCard }) {
   return (
-    <div className="rounded-xl border border-[#ECECEC] bg-white px-5 py-4">
+    <div className="rounded-xl border border-line-soft bg-white px-5 py-4">
       <div className="flex items-center gap-2.5">
         {card.icon}
         <h3 className="text-[15px] font-medium text-[#2C3930]">{card.title}</h3>
@@ -201,7 +201,7 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
         <dl className="mt-3 flex flex-col gap-2">
           {card.fields.map((field) => (
             <div key={field.label} className="flex gap-3">
-              <dt className="w-9 flex-shrink-0 text-[13px] font-medium text-[#5B6B38]">
+              <dt className="w-9 flex-shrink-0 text-[13px] font-medium text-pictree-700">
                 {field.label}
               </dt>
               <dd className="flex-1 text-[13px] leading-relaxed text-[#2C3930]">
@@ -231,7 +231,7 @@ export function PrivacyPolicyPage() {
       <div className="flex flex-col gap-6 px-5 pt-5">
         {SECTIONS.map((section) => (
           <section key={section.label}>
-            <h2 className="mb-2 pl-1 text-[15px] font-medium text-[#5B6B38]">
+            <h2 className="mb-2 pl-1 text-[15px] font-medium text-pictree-700">
               {section.label}
             </h2>
             <div className="flex flex-col gap-3">

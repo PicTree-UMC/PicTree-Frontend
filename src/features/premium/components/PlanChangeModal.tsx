@@ -64,7 +64,7 @@ export function PlanChangeModal({
         </p>
 
         {/* 바뀔 값 두 개(이름·가격)만 짚는다. 혜택 비교는 바로 뒤 표가 이미 하고 있다. */}
-        <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-[#ECECEC] bg-white py-4 text-[15px] font-medium text-[#2C3930]">
+        <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-line-soft bg-white py-4 text-[15px] font-medium text-[#2C3930]">
           <span className="text-[#60655C]">{currentPlanName}</span>
           <span aria-hidden className="text-[#B4B4B4]">
             →
@@ -78,7 +78,7 @@ export function PlanChangeModal({
             type="button"
             onClick={onKeep}
             disabled={isPending}
-            className="h-[38px] w-[120px] rounded-xl bg-[#ECECEC] text-[15px] font-medium text-[#2C3930] disabled:opacity-60"
+            className="h-[38px] w-[120px] rounded-xl bg-line-soft text-[15px] font-medium text-[#2C3930] disabled:opacity-60"
           >
             그대로 두기
           </button>

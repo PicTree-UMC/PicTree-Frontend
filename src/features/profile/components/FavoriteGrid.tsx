@@ -83,7 +83,7 @@ export function FavoriteGrid({ places, selecting, checked, onOpen, onToggle }: P
                     aria-hidden
                     className={`absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full border-2 ${
                       isChecked
-                        ? "border-[#5B6B38] bg-[#5B6B38]"
+                        ? "border-pictree-700 bg-pictree-700"
                         : "border-white bg-black/20"
                     }`}
                   >

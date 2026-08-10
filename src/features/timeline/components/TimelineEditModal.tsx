@@ -112,7 +112,7 @@ export function TimelineEditModal({ record, isSaving = false, onClose, onSave }:
           <button
             type="button"
             onClick={onClose}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#E6E6E6] text-[16px] font-medium tracking-[0.8px] text-[#2C3930]"
+            className="h-[38px] w-[92px] rounded-[12px] bg-line-soft text-[16px] font-medium tracking-[0.8px] text-[#2C3930]"
           >
             취소
           </button>

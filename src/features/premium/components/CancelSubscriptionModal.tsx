@@ -38,7 +38,7 @@ export function CancelSubscriptionModal({ onKeep, onCancel, isPending }: Props) 
           구독을 취소하면 다음 혜택을 잃게 됩니다
         </p>
 
-        <div className="mt-4 flex flex-col items-center gap-1 rounded-xl border border-[#ECECEC] bg-white py-4 text-center text-[13px] font-medium text-[#2C3930]">
+        <div className="mt-4 flex flex-col items-center gap-1 rounded-xl border border-line-soft bg-white py-4 text-center text-[13px] font-medium text-[#2C3930]">
           {LOSING_BENEFITS.map((benefit) => (
             <p key={benefit}>{benefit}</p>
           ))}
@@ -49,7 +49,7 @@ export function CancelSubscriptionModal({ onKeep, onCancel, isPending }: Props) 
             type="button"
             onClick={onKeep}
             disabled={isPending}
-            className="h-[38px] w-[120px] rounded-xl bg-[#ECECEC] text-[15px] font-medium text-[#2C3930] disabled:opacity-60"
+            className="h-[38px] w-[120px] rounded-xl bg-line-soft text-[15px] font-medium text-[#2C3930] disabled:opacity-60"
           >
             구독 유지
           </button>

@@ -94,7 +94,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
 
       <Button
         unstyled
-        className="mt-6 flex h-[3.75rem] w-full items-center gap-4 rounded-[1.125rem] bg-pictree-100 px-6 font-['KOROAD'] text-[1.125rem] font-bold text-[#111]"
+        className="mt-6 flex h-[3.75rem] w-full items-center gap-4 rounded-[1.125rem] bg-pictree-100 px-6 font-['KOROAD'] text-[1.125rem] font-bold text-[#2C3930]"
         type="button"
         onClick={toggleAll}
       >
@@ -102,8 +102,8 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
         약관 전체 동의하기
       </Button>
 
-      <section className="mt-4 rounded-[1.125rem] bg-[#FFFDF7] px-6 py-5">
-        <h2 className="mb-5 font-['KOROAD'] text-[1.125rem] font-bold text-[#111]">약관 안내</h2>
+      <section className="mt-4 rounded-[1.125rem] bg-white px-6 py-5">
+        <h2 className="mb-5 font-['KOROAD'] text-[1.125rem] font-bold text-[#2C3930]">약관 안내</h2>
         {isPending ? (
           <p className="py-6 text-center font-['KOROAD'] text-[0.875rem] text-[#60655C]">
             약관을 불러오는 중...
@@ -142,7 +142,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
                 <div>
                   <button
                     className={`whitespace-pre-line text-left font-['KOROAD'] text-[1rem] font-medium leading-7 ${
-                      term.required || checked ? 'text-[#111]' : 'text-[#60655C]'
+                      term.required || checked ? 'text-[#2C3930]' : 'text-[#60655C]'
                     }`}
                     type="button"
                     onClick={() => toggleTerm(term.key)}
@@ -156,7 +156,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
                       알 수 없다. (현재 실서버는 5개 모두 summary 를 채워 준다)
                     */
                     term.description ? (
-                      <p className="mt-1 whitespace-pre-line font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-[#111]">
+                      <p className="mt-1 whitespace-pre-line font-['KOROAD'] text-[0.75rem] font-medium leading-5 text-[#2C3930]">
                         {term.description}
                       </p>
                     ) : term.contentUrl ? (
@@ -190,7 +190,7 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
       <Button
         unstyled
         className={`mt-auto flex h-[3.75rem] w-full items-center justify-center rounded-[1.125rem] font-['KOROAD'] text-[1.125rem] font-bold transition ${
-          canStart ? 'bg-pictree-300 text-[#111] hover:bg-pictree-300' : 'bg-[#EDEDED] text-[#60655C]'
+          canStart ? 'bg-pictree-300 text-[#2C3930] hover:bg-pictree-300' : 'bg-line-soft text-[#60655C]'
         }`}
         disabled={!canStart || isSaving}
         type="button"
@@ -213,7 +213,7 @@ function CheckCircle({ checked, compact = false }: { checked: boolean; compact?:
       <svg width="15" height="12" viewBox="0 0 15 12" fill="none">
         <path
           d="M1.5 6L5.4 9.8L13.5 1.8"
-          stroke={checked ? '#FFFDF4' : '#60655C'}
+          stroke={checked ? '#FFFCEF' : '#60655C'}
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth="2.2"
@@ -234,7 +234,7 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
     >
       <path
         d="M1.5 1.5L8 7.5L14.5 1.5"
-        stroke="#111"
+        stroke="#2C3930"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="2.2"

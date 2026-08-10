@@ -192,7 +192,7 @@ export function FavoritesPage() {
           <button
             type="button"
             onClick={() => refetch()}
-            className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
+            className="mt-2 rounded-xl bg-pictree-700 px-4 py-1.5 text-[13px] font-medium text-white"
           >
             다시 시도
           </button>
@@ -270,7 +270,7 @@ export function FavoritesPage() {
                 type="button"
                 onClick={() => setConfirming(null)}
                 disabled={isRemoving}
-                className="h-[44px] flex-1 rounded-xl bg-[#ECECEC] text-[15px] text-[#2C3930] disabled:opacity-50"
+                className="h-[44px] flex-1 rounded-xl bg-line-soft text-[15px] text-[#2C3930] disabled:opacity-50"
               >
                 취소
               </button>

@@ -116,16 +116,16 @@ export function BenefitShowcase() {
           위 여백 100px · 아래 27px 로 갈라 놨다.
         */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="benefit-doc w-[200px] rounded-2xl border border-[#ECECEC] bg-white p-4 shadow-sm">
+          <div className="benefit-doc w-[200px] rounded-2xl border border-line-soft bg-white p-4 shadow-sm">
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-pictree-500" />
-              <span className="text-[13px] font-medium text-[#5B6B38]">여행기 초안</span>
+              <span className="text-[13px] font-medium text-pictree-700">여행기 초안</span>
             </div>
             <div className="mt-3 flex flex-col gap-2">
               {LINES.map((line) => (
                 <span
                   key={line.delay}
-                  className="benefit-line block h-[7px] rounded-full bg-[#ECF6D8]"
+                  className="benefit-line block h-[7px] rounded-full bg-pictree-100"
                   style={{ '--w': line.w, '--d': `${line.delay}s` } as CSSProperties}
                 />
               ))}

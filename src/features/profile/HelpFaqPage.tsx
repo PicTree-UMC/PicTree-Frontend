@@ -103,7 +103,7 @@ export function HelpFaqPage() {
           return (
             <div
               key={item.q}
-              className="rounded-xl border border-[#ECECEC] bg-white px-5 py-4"
+              className="rounded-xl border border-line-soft bg-white px-5 py-4"
             >
               <button
                 type="button"
@@ -125,7 +125,7 @@ export function HelpFaqPage() {
         })}
 
         {/* 문의처는 주제와 무관하게 늘 보인다 — 답을 못 찾았을 때 다음 행동이 필요하다. */}
-        <div className="mt-2 rounded-xl border border-[#ECECEC] bg-white px-5 py-4">
+        <div className="mt-2 rounded-xl border border-line-soft bg-white px-5 py-4">
           <div className="flex items-center gap-2.5">
             <IconMail />
             <h2 className="text-[15px] font-medium text-[#2C3930]">

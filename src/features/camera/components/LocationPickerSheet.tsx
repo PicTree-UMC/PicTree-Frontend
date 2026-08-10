@@ -50,7 +50,7 @@ export function LocationPickerSheet({
       contentClassName="px-4 pt-5"
     >
       <h2 className="text-[15px] font-medium tracking-wide text-[#2c3930]">위치 직접 지정</h2>
-      <p className="mt-1 text-[13px] text-[#5c6f2b]">지도를 움직여 핀을 실제 위치에 맞춰 주세요.</p>
+      <p className="mt-1 text-[13px] text-pictree-700">지도를 움직여 핀을 실제 위치에 맞춰 주세요.</p>
 
       <div className="relative mt-3 h-[260px] w-full overflow-hidden rounded-[16px]">
         <div ref={containerRef} className="h-full w-full" />
@@ -62,19 +62,19 @@ export function LocationPickerSheet({
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             className="h-9 w-9 drop-shadow"
-            fill="#5c6f2b"
+            fill="#5B6B38"
           >
             <path d="M12 2a7 7 0 00-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z" />
           </svg>
         </div>
         {/* 핀 끝이 가리키는 지점 표시 — 핀 그림만으로는 어디를 찍는지 애매하다. */}
-        <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#5c6f2b]/60" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-pictree-700/60" />
       </div>
 
       <div className="mt-4 flex justify-center gap-6">
         <button
           onClick={onClose}
-          className="h-[38px] w-[92px] rounded-[12px] bg-[#d9d9d9] text-[15px] font-medium tracking-wide text-[#2c3930]"
+          className="h-[38px] w-[92px] rounded-[12px] bg-line text-[15px] font-medium tracking-wide text-[#2c3930]"
         >
           취소
         </button>
