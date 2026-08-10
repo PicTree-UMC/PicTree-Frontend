@@ -40,7 +40,7 @@ export function ProfilePage() {
       그건 그 띠가 마지막 자식이라 배경이 탭바까지 이어져야 했기 때문이다. 요약이 위로
       올라가면서 마지막 자식이 다시 크림 바닥의 목록이 됐고, 그래서 루트가 맡는 게 맞다.
     */
-    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
+    <div className="flex min-h-full flex-col bg-cream pb-nav">
       {/*
         머리글 — 아바타와 닉네임을 가운데 모은다.
         종전엔 초록 밴드 전체가 '내 정보' 로 가는 버튼이었는데, 누를 수 있다는 신호가
@@ -53,7 +53,7 @@ export function ProfilePage() {
           제일 큰 덩어리라, 줄인 만큼 아래 요약·목록이 첫 화면에 더 들어온다.
           기본 나무 글리프는 지름 대비 비율(약 46%)을 지켜 44px → 28px 로 같이 줄인다.
         */}
-        <div className="flex size-16 items-center justify-center overflow-hidden rounded-full bg-[#F6F0D7]">
+        <div className="flex size-16 items-center justify-center overflow-hidden rounded-full bg-cream-sub">
           {profile?.profileImageUrl && !isAvatarBroken ? (
             <img
               src={profile.profileImageUrl}
@@ -68,16 +68,16 @@ export function ProfilePage() {
 
         {isPending ? (
           // 스켈레톤 — 닉네임 한 줄 자리를 그대로 잡아 레이아웃이 튀지 않게 한다
-          <div className="mt-3 h-6 w-28 animate-pulse rounded bg-[#F6F0D7]" />
+          <div className="mt-3 h-6 w-28 animate-pulse rounded bg-cream-sub" />
         ) : errorKind === 'session-expired' ? (
           // useSessionExpiredRedirect 가 곧 로그인 화면으로 보낸다
-          <p className="mt-3 text-[15px] font-medium text-[#2C3930]">
+          <p className="mt-3 text-[15px] font-medium text-ink">
             로그인 화면으로 이동합니다
           </p>
         ) : errorKind === 'account-unavailable' ? (
           // 정지·삭제된 계정. 재시도해도 결과가 바뀌지 않으니 사유만 알린다.
           <div className="mt-3 flex flex-col items-center">
-            <p className="text-[15px] font-medium text-[#2C3930]">
+            <p className="text-[15px] font-medium text-ink">
               {getApiErrorMessage(error, '계정 정보를 확인할 수 없어요')}
             </p>
             <button
@@ -91,7 +91,7 @@ export function ProfilePage() {
         ) : isError ? (
           // 500·네트워크 오류 — 여기서만 재시도가 의미 있다
           <div className="mt-3 flex flex-col items-center">
-            <p className="text-[15px] font-medium text-[#2C3930]">
+            <p className="text-[15px] font-medium text-ink">
               {getApiErrorMessage(error, '정보를 불러오지 못했어요')}
             </p>
             <button
@@ -108,7 +108,7 @@ export function ProfilePage() {
             머리글 높이가 달랐고, 여기서 할 수 있는 일이 없는 읽기 전용 값이다.
             바꾸거나 확인하려면 아래 `개인정보` 줄로 들어가면 된다 — 거기 있다.
           */
-          <p className="mt-3 text-[20px] font-medium text-[#2C3930]">{profile?.nickname}</p>
+          <p className="mt-3 text-[20px] font-medium text-ink">{profile?.nickname}</p>
         )}
       </header>
 

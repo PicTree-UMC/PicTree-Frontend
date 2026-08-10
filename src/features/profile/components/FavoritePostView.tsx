@@ -32,7 +32,7 @@ const formatDate = (value: string): string => {
 export function FavoritePostView({ place, onClose, onRemove }: Props) {
   return createPortal(
     <div
-      className="fixed inset-0 z-50 mx-auto flex w-full flex-col bg-[#FFFCEF] sm:max-w-[390px]"
+      className="fixed inset-0 z-50 mx-auto flex w-full flex-col bg-cream sm:max-w-[390px]"
       role="dialog"
       aria-modal="true"
       aria-label={`${place.name} 게시물`}

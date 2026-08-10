@@ -97,7 +97,7 @@ export function TimelinePage() {
 
   return (
     // min-h-full: 100vh 는 셸 컬럼을 넘긴다. 상단 안전영역은 안쪽 pt-header 가 갖는다.
-    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
+    <div className="flex min-h-full flex-col bg-cream pb-nav">
       <div className="flex flex-col gap-4 px-5 pb-5 pt-header">
         {/*
           평소엔 좌측 타이틀 + 우측 검색 버튼을 둔다. 돋보기를 누르면
@@ -115,14 +115,14 @@ export function TimelinePage() {
               <button
                 type="button"
                 onClick={toggleSearch}
-                className="shrink-0 text-[15px] text-[#2C3930]"
+                className="shrink-0 text-[15px] text-ink"
               >
                 취소
               </button>
             </div>
           ) : (
             <div className="flex w-full items-center justify-between">
-              <h1 className="text-[20px] font-medium text-[#2C3930]">타임라인</h1>
+              <h1 className="text-[20px] font-medium text-ink">타임라인</h1>
               {/*
                 기록이 하나도 없으면 검색을 숨긴다. 걸러 줄 것이 없어서 눌러도
                 아무 일이 일어나지 않는 버튼이다. 기록이 하나라도 생기면 돌아온다.
@@ -132,7 +132,7 @@ export function TimelinePage() {
                   type="button"
                   onClick={toggleSearch}
                   aria-label="검색"
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-[#2C3930] transition-colors hover:bg-[#EDE7D2]"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-[#EDE7D2]"
                 >
                   <SearchIcon />
                 </button>
@@ -149,11 +149,11 @@ export function TimelinePage() {
         )}
 
         {isLoading && (
-          <p className="py-10 text-center text-[15px] text-[#60655C]">불러오는 중...</p>
+          <p className="py-10 text-center text-[15px] text-ink-muted">불러오는 중...</p>
         )}
         {isError && (
           <div className="py-10 text-center">
-            <p className="text-[15px] text-[#DC2626]">기록을 불러오지 못했어요.</p>
+            <p className="text-[15px] text-error">기록을 불러오지 못했어요.</p>
             <button
               type="button"
               onClick={() => refetch()}
@@ -164,7 +164,7 @@ export function TimelinePage() {
           </div>
         )}
         {!isLoading && !isError && isSearching && groups.length === 0 && (
-          <p className="py-10 text-center text-[15px] text-[#60655C]">
+          <p className="py-10 text-center text-[15px] text-ink-muted">
             검색과 일치하는 기록이 없어요.
           </p>
         )}

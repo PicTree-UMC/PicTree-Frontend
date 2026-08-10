@@ -115,7 +115,7 @@ export function RouteCreatePage() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-[#FFFCEF]">
+    <div className="flex h-full w-full flex-col bg-cream">
       {/* 상단 여백은 pt-header 하나로 — 스텝 2(지도)와 같은 값이라 넘어갈 때 뒤로가기가 안 튄다. */}
       <header className="px-5 pt-header">
         <NavBar onBack={goBack} title="날짜 선택" />
@@ -144,7 +144,7 @@ export function RouteCreatePage() {
               key={date}
               onClick={() => toggleDate(date)}
               aria-label={`${formatDateLabel(date)} 선택 해제`}
-              trailing={<CloseIcon className="h-4 w-4 text-[#60655c]" />}
+              trailing={<CloseIcon className="h-4 w-4 text-ink-muted" />}
               className="pr-2.5"
             >
               {formatDateLabel(date)}
@@ -161,7 +161,7 @@ export function RouteCreatePage() {
           </div>
         ) : isError || isOffline ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-3">
-            <p className="text-center text-[15px] font-medium text-[#2c3930]">
+            <p className="text-center text-[15px] font-medium text-ink">
               {isOffline ? '네트워크에 연결되어 있지 않아요' : '방문한 날짜를 불러오지 못했어요'}
             </p>
             <button
@@ -172,7 +172,7 @@ export function RouteCreatePage() {
             </button>
           </div>
         ) : placeCountByDate.size === 0 ? (
-          <p className="mt-10 text-center text-[15px] leading-6 text-[#60655c]">
+          <p className="mt-10 text-center text-[15px] leading-6 text-ink-muted">
             아직 방문한 장소가 없어요.
             <br />
             사진을 남기면 그날이 달력에 표시돼요.
@@ -188,7 +188,7 @@ export function RouteCreatePage() {
 
       {/* 미리보기와 CTA 는 아래에 고정한다 — 달력을 넘기는 동안에도 '지금 뭘 골랐는지' 가
           화면 밖으로 밀려나지 않는다. */}
-      <div className="border-t border-[#2c3930]/10 px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-3">
+      <div className="border-t border-ink/10 px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-3">
         <RoutePlacePreview
           places={pickedPlaces}
           onClear={() => {
@@ -200,7 +200,7 @@ export function RouteCreatePage() {
         {/* 장소 한도는 여기서 막지 않는다 — 다음 화면에서 장소를 꺼서 줄일 수 있기 때문에
             길을 막는 대신 미리 알려만 준다(저장 시점에 다시 검사한다). */}
         {pickedPlaces.length > MAX_PLACES && (
-          <p className="mt-2 text-[13px] text-[#dc2626]">
+          <p className="mt-2 text-[13px] text-error">
             장소가 {MAX_PLACES}개를 넘었어요. 다음 화면에서 뺄 수 있어요
           </p>
         )}

@@ -18,10 +18,10 @@ interface PremiumBannerProps {
 export function PremiumBanner({ onUpgrade }: PremiumBannerProps) {
   return (
     <div className="flex items-center gap-3 rounded-[12px] bg-pictree-100/80 px-4 py-2.5 shadow-[0px_4px_12px_rgba(0,0,0,0.12)]">
-      <CrownIcon className="h-[30px] w-[30px] shrink-0 text-[#2c3930]" />
+      <CrownIcon className="h-[30px] w-[30px] shrink-0 text-ink" />
       <div className="min-w-0 flex-1">
-        <p className="text-base font-semibold text-[#2c3930]">프리미엄 기능</p>
-        <p className="truncate text-[11px] font-medium text-[#2c3930]">
+        <p className="text-base font-semibold text-ink">프리미엄 기능</p>
+        <p className="truncate text-[11px] font-medium text-ink">
           사진 저장 용량 1GB부터 + AI 블로그 작성
         </p>
       </div>

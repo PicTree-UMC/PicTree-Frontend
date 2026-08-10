@@ -134,7 +134,7 @@ export function CameraPage() {
           <button
             onClick={handleClose}
             aria-label="뒤로가기"
-            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#2c3930]/70 text-[#fffcef]"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-ink/70 text-cream"
           >
             <BackIcon />
           </button>

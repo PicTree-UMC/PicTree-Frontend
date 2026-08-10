@@ -35,7 +35,7 @@ export function SavedBlogCard({ blog, treeCount }: SavedBlogCardProps) {
         />
 
         <span className="flex min-w-0 flex-1 flex-col self-stretch py-1">
-          <span className="overflow-hidden text-base font-medium leading-[1.45] text-[#2c3930] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+          <span className="overflow-hidden text-base font-medium leading-[1.45] text-ink [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
             {blog.title}
           </span>
           <span className="mt-2 text-[13px] text-[#737970]">

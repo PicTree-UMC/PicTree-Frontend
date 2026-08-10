@@ -36,11 +36,11 @@ function SummaryRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-2">
-      <span className={`shrink-0 ${emphasis ? 'text-[17px]' : 'text-[15px]'} text-[#60655C]`}>
+      <span className={`shrink-0 ${emphasis ? 'text-[17px]' : 'text-[15px]'} text-ink-muted`}>
         {label}
       </span>
       <span
-        className={`text-right font-medium text-[#2C3930] ${
+        className={`text-right font-medium text-ink ${
           emphasis ? 'text-[21px]' : 'text-[15px]'
         }`}
       >
@@ -130,8 +130,8 @@ export function PaymentCheckoutView({
 
       <div className="flex-1 overflow-y-auto px-5 pb-6">
         {/* §2 볼드 금지 — 21px 이면 medium 으로도 위계가 선다. */}
-        <h2 className="mt-6 text-[21px] font-medium text-[#2C3930]">확인 후 결제하기</h2>
-        <p className="mt-1 text-[15px] text-[#60655C]">
+        <h2 className="mt-6 text-[21px] font-medium text-ink">확인 후 결제하기</h2>
+        <p className="mt-1 text-[15px] text-ink-muted">
           등록한 카드로 안전하게 결제할 수 있어요
         </p>
 
@@ -161,7 +161,7 @@ export function PaymentCheckoutView({
                   }`}
                 >
                   <img src={cardIcon} alt="" className="h-6 w-6 shrink-0" />
-                  <span className="shrink-0 text-[17px] font-medium text-[#2C3930]">
+                  <span className="shrink-0 text-[17px] font-medium text-ink">
                     신용카드
                   </span>
                   {/*
@@ -169,7 +169,7 @@ export function PaymentCheckoutView({
                     그대로 보여주게 되고, 그건 사용자에게 아무 뜻이 없다. 여러 장을 가릴 근거는
                     마스킹 번호뿐이라 오른쪽 끝에 그것만 둔다.
                   */}
-                  <span className="ml-auto min-w-0 truncate text-[15px] text-[#60655C]">
+                  <span className="ml-auto min-w-0 truncate text-[15px] text-ink-muted">
                     {formatCardNumber(card.cardNumberMasked)}
                   </span>
                 </button>
@@ -217,13 +217,13 @@ export function PaymentCheckoutView({
           값이라 이 그라데이션 위에서는 거의 안 보인다 — 바닥이 색을 갖는 화면에서는 선도
           바닥을 따라 어두워져야 한다(크림 위 `RouteCreatePage` 가 같은 방식이다).
         */}
-        <div className="mt-8 border-b border-[#2C3930]/10 pb-4">
+        <div className="mt-8 border-b border-ink/10 pb-4">
           <SummaryRow label="상품명" value={`${details.name} · ${details.storage}`} />
           <SummaryRow label="총 결제 금액" value={planPriceLabel(plan)} emphasis />
         </div>
 
         {/* 13px 은 이 흐름에서 가장 작은 단이고 고지에만 쓴다(§2 최소 13px). */}
-        <p className="mt-4 text-[13px] leading-relaxed text-[#60655C]">
+        <p className="mt-4 text-[13px] leading-relaxed text-ink-muted">
           매월 자동으로 갱신되고, 다음 결제일 전까지 언제든 해지할 수 있어요.
           <br />
           카드 정보는 토스페이먼츠가 보관해요. 픽트리에는 마스킹된 번호만 저장돼요.
@@ -242,7 +242,7 @@ export function PaymentCheckoutView({
           type="button"
           onClick={handleSubmit}
           disabled={isPending}
-          className="h-[52px] w-full rounded-xl bg-pictree-700 text-[17px] font-medium text-white disabled:bg-line-soft disabled:text-[#60655C]"
+          className="h-[52px] w-full rounded-xl bg-pictree-700 text-[17px] font-medium text-white disabled:bg-line-soft disabled:text-ink-muted"
         >
           {isPending ? '결제 중...' : isNewCard ? '카드 등록하고 결제하기' : '결제하기'}
         </button>

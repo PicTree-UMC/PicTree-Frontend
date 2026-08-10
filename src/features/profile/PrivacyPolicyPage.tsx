@@ -194,7 +194,7 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
     <div className="rounded-xl border border-line-soft bg-white px-5 py-4">
       <div className="flex items-center gap-2.5">
         {card.icon}
-        <h3 className="text-[15px] font-medium text-[#2C3930]">{card.title}</h3>
+        <h3 className="text-[15px] font-medium text-ink">{card.title}</h3>
       </div>
 
       {card.fields && (
@@ -204,7 +204,7 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
               <dt className="w-9 flex-shrink-0 text-[13px] font-medium text-pictree-700">
                 {field.label}
               </dt>
-              <dd className="flex-1 text-[13px] leading-relaxed text-[#2C3930]">
+              <dd className="flex-1 text-[13px] leading-relaxed text-ink">
                 {field.value}
               </dd>
             </div>
@@ -213,7 +213,7 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
       )}
 
       {card.body && (
-        <p className="mt-2.5 text-[13px] leading-relaxed text-[#60655C]">{card.body}</p>
+        <p className="mt-2.5 text-[13px] leading-relaxed text-ink-muted">{card.body}</p>
       )}
     </div>
   );
@@ -222,7 +222,7 @@ function PolicyCardView({ card }: { card: PolicyCard }) {
 export function PrivacyPolicyPage() {
   return (
     // min-h-full: 100vh 는 셸 컬럼을 넘긴다. 상단 안전영역은 헤더의 pt-header 가 갖는다.
-    <div className="flex min-h-full flex-col bg-[#FFFCEF] pb-nav">
+    <div className="flex min-h-full flex-col bg-cream pb-nav">
       {/* 헤더 */}
       <header className="px-5 pb-5 pt-header">
         <NavBar onBack={() => window.history.back()} title="개인정보 처리방침" />

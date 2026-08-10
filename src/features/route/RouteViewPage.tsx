@@ -392,7 +392,7 @@ export function RouteViewPage() {
 
       {(isError || isOffline) && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-white/90 px-8">
-          <p className="text-center text-[15px] font-medium text-[#2c3930]">
+          <p className="text-center text-[15px] font-medium text-ink">
             {isOffline ? '네트워크에 연결되어 있지 않아요' : '동선을 불러오지 못했어요'}
           </p>
           <button

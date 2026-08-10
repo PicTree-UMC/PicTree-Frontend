@@ -80,12 +80,12 @@ function SheetMenuItem({ icon, title, desc, onClick }: SheetMenuItemProps) {
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-4 py-3 text-left text-[#2c3930]"
+      className="flex w-full items-center gap-4 py-3 text-left text-ink"
     >
       <span className="shrink-0">{icon}</span>
       <span className="min-w-0">
-        <span className="block text-[15px] font-medium text-[#2c3930]">{title}</span>
-        <span className="block text-[11px] font-medium text-[#2c3930]">{desc}</span>
+        <span className="block text-[15px] font-medium text-ink">{title}</span>
+        <span className="block text-[11px] font-medium text-ink">{desc}</span>
       </span>
     </button>
   );
@@ -106,14 +106,14 @@ export function BottomSheet({
       label={`${route.title} 옵션`}
       dim="dark"
       animateIn={animateIn}
-      className="rounded-t-[20px] bg-[#fffcef]"
+      className="rounded-t-[20px] bg-cream"
       contentClassName="px-6"
       bottomPadding="1.5rem"
     >
       {/* 헤더: 제목 + 날짜, 미니 동선 */}
       <div className="flex items-baseline gap-2.5">
-        <h2 className="truncate text-xl font-bold text-[#2c3930]">{route.title}</h2>
-        <span className="shrink-0 text-[13px] font-medium text-[#2c3930]">{route.date}</span>
+        <h2 className="truncate text-xl font-bold text-ink">{route.title}</h2>
+        <span className="shrink-0 text-[13px] font-medium text-ink">{route.date}</span>
       </div>
       <PlaceTrail places={route.places} className="mt-4" />
 

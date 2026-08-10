@@ -33,7 +33,7 @@ export function BackButton({ className = '', ...props }: ButtonHTMLAttributes<HT
     <button
       type="button"
       aria-label="뒤로 가기"
-      className={`grid size-10 shrink-0 place-items-center rounded-full bg-white text-[#2c3930] shadow-[0_2px_6px_rgba(0,0,0,0.15)] ${className}`}
+      className={`grid size-10 shrink-0 place-items-center rounded-full bg-white text-ink shadow-[0_2px_6px_rgba(0,0,0,0.15)] ${className}`}
       {...props}
     >
       <svg

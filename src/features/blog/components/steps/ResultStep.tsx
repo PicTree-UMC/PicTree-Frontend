@@ -41,7 +41,7 @@ export function ResultStep({
         >
           <span
             aria-hidden
-            className="mx-auto grid size-10 place-items-center rounded-full bg-[#fdeaea] text-[#dc2626]"
+            className="mx-auto grid size-10 place-items-center rounded-full bg-[#fdeaea] text-error"
           >
             <svg
               viewBox="0 0 24 24"
@@ -56,11 +56,11 @@ export function ResultStep({
             </svg>
           </span>
 
-          <p className="mt-4 text-[15px] font-medium text-[#2c3930]">초안을 만들지 못했어요</p>
+          <p className="mt-4 text-[15px] font-medium text-ink">초안을 만들지 못했어요</p>
 
           {/* 서버 문구를 그대로 보인다 — 다음부터는 콘솔을 열지 않아도 원인이 보인다. */}
           {errorMessage && (
-            <p className="mt-2 text-[13px] leading-[1.7] text-[#60655c]">{errorMessage}</p>
+            <p className="mt-2 text-[13px] leading-[1.7] text-ink-muted">{errorMessage}</p>
           )}
         </div>
 
@@ -69,7 +69,7 @@ export function ResultStep({
           <button
             type="button"
             onClick={onBack}
-            className="h-[54px] flex-1 rounded-xl bg-line-soft text-[15px] font-medium text-[#60655c]"
+            className="h-[54px] flex-1 rounded-xl bg-line-soft text-[15px] font-medium text-ink-muted"
           >
             이전 단계로
           </button>
@@ -125,7 +125,7 @@ export function ResultStep({
       <article className="mx-5 overflow-hidden rounded-2xl border border-[#e7e8dc] bg-white shadow-[0_5px_18px_rgba(45,51,34,0.06)]">
         <header className="px-5 pb-5 pt-6">
           <span className="text-[12px] font-medium text-pictree-700">여행 기록</span>
-          <h2 className="mt-2 text-[23px] font-bold leading-[1.4] tracking-[-0.02em] text-[#2c3930]">
+          <h2 className="mt-2 text-[23px] font-bold leading-[1.4] tracking-[-0.02em] text-ink">
             {draft.title}
           </h2>
           <p className="mt-3 text-[12px] text-[#9a9e96]">AI가 여행 기록과 사진으로 작성한 초안이에요.</p>
@@ -173,7 +173,7 @@ export function ResultStep({
       </article>
 
       <div className="mt-auto flex gap-3 px-5 pt-5">
-        <button type="button" className="h-[54px] flex-1 rounded-xl bg-line-soft text-[15px] font-medium text-[#60655c]" onClick={handleCopy}>복사하기</button>
+        <button type="button" className="h-[54px] flex-1 rounded-xl bg-line-soft text-[15px] font-medium text-ink-muted" onClick={handleCopy}>복사하기</button>
         <button
           type="button"
           className="h-[54px] flex-[2] rounded-xl bg-pictree-700 text-[15px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)] disabled:cursor-not-allowed disabled:opacity-60"

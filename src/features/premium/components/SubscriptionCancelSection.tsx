@@ -94,14 +94,14 @@ export function SubscriptionCancelSection() {
         13px 은 고지에만 쓴다.
       */}
       {isCanceled ? (
-        <p className="text-[15px] text-[#60655C]">
+        <p className="text-[15px] text-ink-muted">
           {expiresLabel
             ? `자동갱신이 꺼져 있어요. ${expiresLabel}까지 이용할 수 있어요.`
             : '자동갱신이 꺼져 있어요.'}
         </p>
       ) : (
         nextBillingLabel && (
-          <p className="text-[15px] text-[#60655C]">
+          <p className="text-[15px] text-ink-muted">
             다음 결제일 : {nextBillingLabel}
           </p>
         )
@@ -112,7 +112,7 @@ export function SubscriptionCancelSection() {
           type="button"
           onClick={handleResume}
           disabled={resumeMutation.isPending}
-          className="h-12 w-full rounded-xl bg-white text-[15px] font-medium text-[#2C3930] disabled:opacity-60"
+          className="h-12 w-full rounded-xl bg-white text-[15px] font-medium text-ink disabled:opacity-60"
         >
           {resumeMutation.isPending ? '처리 중...' : '자동갱신 다시 켜기'}
         </button>
@@ -126,7 +126,7 @@ export function SubscriptionCancelSection() {
           type="button"
           onClick={() => setIsCancelOpen(true)}
           // `px-4` 를 뺐다 — 왼쪽 정렬이 되면서 그 패딩이 글자만 16px 안으로 들여쓴 꼴이 됐다.
-          className="h-12 text-[15px] font-medium text-[#DC2626] underline underline-offset-4"
+          className="h-12 text-[15px] font-medium text-error underline underline-offset-4"
         >
           구독 해지
         </button>

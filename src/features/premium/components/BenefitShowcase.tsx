@@ -134,12 +134,12 @@ export function BenefitShowcase() {
         </div>
       </div>
 
-      <h2 className="mt-8 text-center text-[21px] font-medium text-[#2C3930]">
+      <h2 className="mt-8 text-center text-[21px] font-medium text-ink">
         흩어져있던 여정의 파편들을
         <br/>
         하나의 이야기로 만드세요
       </h2>
-      <p className="mx-auto mt-2 max-w-[300px] text-center text-[18px] leading-relaxed text-[#60655C]">
+      <p className="mx-auto mt-2 max-w-[300px] text-center text-[18px] leading-relaxed text-ink-muted">
         플랜을 성장시키고 더 많은 저장 공간과 PICTREE 토큰을 누려보세요
       </p>
     </section>

@@ -11,7 +11,7 @@ type ToneStepProps = {
 export function ToneStep({ toneId, onSelect, onNext }: ToneStepProps) {
   return (
     <div className="flex flex-1 flex-col px-5 pb-6 pt-2">
-      <p className="text-[15px] leading-6 text-[#60655c]">기록한 기분을 바탕으로 어울리는 어체를 추천했어요. 원하는 문체로 바꿀 수 있어요.</p>
+      <p className="text-[15px] leading-6 text-ink-muted">기록한 기분을 바탕으로 어울리는 어체를 추천했어요. 원하는 문체로 바꿀 수 있어요.</p>
 
       <div className="mt-4 flex flex-col gap-3">
         {BLOG_TONES.map((tone) => {
@@ -28,8 +28,8 @@ export function ToneStep({ toneId, onSelect, onNext }: ToneStepProps) {
                 <span className="text-[16px] font-medium">{tone.label}</span>
                 {selected && <span className="scale-[0.55] text-pictree-700"><CheckIcon /></span>}
               </div>
-              <p className="mt-[2px] text-[13px] text-[#60655c]">{tone.description}</p>
-              <p className="mt-2 rounded-lg bg-[#f6f9ec] px-3 py-2 text-[13px] leading-5 text-[#60655c]">"{tone.example}"</p>
+              <p className="mt-[2px] text-[13px] text-ink-muted">{tone.description}</p>
+              <p className="mt-2 rounded-lg bg-[#f6f9ec] px-3 py-2 text-[13px] leading-5 text-ink-muted">"{tone.example}"</p>
             </button>
           );
         })}

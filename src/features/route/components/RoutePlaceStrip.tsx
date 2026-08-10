@@ -305,7 +305,7 @@ export function RoutePlaceStrip({
             이미 그 말을 하고 있어서 자리만 먹는다.
             따라가기 줄이 있으면 그쪽이 이 말을 대신한다. */}
         {collapsed && !stepper && (
-          <h2 className="truncate pb-1 pt-1 text-[15px] font-medium tracking-tight text-[#2c3930]">
+          <h2 className="truncate pb-1 pt-1 text-[15px] font-medium tracking-tight text-ink">
             전체 동선
           </h2>
         )}
@@ -345,7 +345,7 @@ export function RoutePlaceStrip({
               유일하게 잘못된 것이라 옆의 `전체 해제` 와 무게가 같으면 안 된다. */}
           <p
             className={`min-w-0 flex-1 truncate text-[13px] ${
-              overLimit ? 'font-medium text-[#dc2626]' : 'text-[#60655c]'
+              overLimit ? 'font-medium text-error' : 'text-ink-muted'
             }`}
           >
             장소 {maxPlaces === undefined ? activeCount : `${activeCount}/${maxPlaces}`}개
@@ -356,7 +356,7 @@ export function RoutePlaceStrip({
           <button
             type="button"
             onClick={onToggleAllVisible}
-            className="-my-2.5 shrink-0 py-2.5 text-[13px] font-medium text-[#60655c] underline underline-offset-2"
+            className="-my-2.5 shrink-0 py-2.5 text-[13px] font-medium text-ink-muted underline underline-offset-2"
           >
             {allVisibleSelected ? '전체 해제' : '전체 선택'}
           </button>
@@ -368,13 +368,13 @@ export function RoutePlaceStrip({
             넘쳤을 때만 나타난다. ① 날짜 고르기의 안내와 짝이다: 거기서 '다음 화면에서 뺄 수
             있어요'로 끝나고, 뺄 수 있는 화면이 여기다. */}
         {overLimit && (
-          <p className="shrink-0 px-5 pt-1.5 text-[13px] text-[#dc2626]">
+          <p className="shrink-0 px-5 pt-1.5 text-[13px] text-error">
             {maxPlaces}개까지 저장할 수 있어요. 줄을 눌러 빼주세요
           </p>
         )}
 
         {places.length === 0 ? (
-          <p className="mt-4 px-5 text-[13px] text-[#60655c]">표시할 동선이 없어요</p>
+          <p className="mt-4 px-5 text-[13px] text-ink-muted">표시할 동선이 없어요</p>
         ) : (
           /*
             시트 안에서 굴러가는 목록.
@@ -435,7 +435,7 @@ export function RoutePlaceStrip({
                       aria-hidden
                       // 사진(56px)의 세로 중심선 위에 놓는다: 줄 여백 20 + 사진 반폭 28 -
                       // 선 굵기 절반. 사진 아래(64)에서 다음 사진 위(80)까지 16px.
-                      className="absolute left-[47px] top-16 h-4 border-l-2 border-dashed border-[#7a5c3a]/50"
+                      className="absolute left-[47px] top-16 h-4 border-l-2 border-dashed border-bark/50"
                     />
                   )}
 
@@ -467,7 +467,7 @@ export function RoutePlaceStrip({
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[15px] font-medium text-[#2c3930]">
+                      <p className="truncate text-[15px] font-medium text-ink">
                         {place.name}
                       </p>
                       <p className="mt-0.5 text-[13px] text-pictree-700">

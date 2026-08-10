@@ -68,17 +68,17 @@ export function SettingsRow({
       <span
         className={`min-w-0 flex-1 truncate text-[17px] font-medium ${
           action === 'danger'
-            ? 'text-center text-[#DC2626]'
+            ? 'text-center text-error'
             : action === 'quiet'
-              ? 'text-center text-[#60655C]'
-              : 'text-[#2C3930]'
+              ? 'text-center text-ink-muted'
+              : 'text-ink'
         }`}
       >
         {title}
       </span>
 
       {value !== undefined && value !== null && (
-        <span className="min-w-0 truncate text-[15px] text-[#60655C]">{value}</span>
+        <span className="min-w-0 truncate text-[15px] text-ink-muted">{value}</span>
       )}
 
       {trailing}
@@ -87,7 +87,7 @@ export function SettingsRow({
         // 비활성 회색(§1.1). 꺾쇠 기하는 BackButton 과 같은 24 viewBox 를 쓴다.
         <svg
           viewBox="0 0 24 24"
-          className="size-[18px] shrink-0 text-[#B4B4B4]"
+          className="size-[18px] shrink-0 text-ink-disabled"
           fill="none"
           stroke="currentColor"
           strokeWidth="2.25"
@@ -162,5 +162,5 @@ export function SettingsList({
  * 허용하면 줄 높이가 카드마다 들쭉날쭉해진다.
  */
 export function SettingsFooter({ children }: { children: ReactNode }) {
-  return <p className="mt-1.5 px-4 text-[13px] text-[#60655C]">{children}</p>;
+  return <p className="mt-1.5 px-4 text-[13px] text-ink-muted">{children}</p>;
 }

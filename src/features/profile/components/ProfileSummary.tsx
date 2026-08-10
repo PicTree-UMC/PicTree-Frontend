@@ -49,9 +49,9 @@ function StatTile({
           /* 흰 칸 위라 크림 띠의 #EDE4C4 가 아니라 헤어라인 회색을 쓴다. */
           <div className="h-[23px] w-12 animate-pulse rounded bg-line-soft" />
         ) : (
-          <p className="text-[20px] font-medium leading-tight text-[#2C3930]">{value}</p>
+          <p className="text-[20px] font-medium leading-tight text-ink">{value}</p>
         )}
-        <p className="mt-px truncate text-[13px] text-[#60655C]">{label}</p>
+        <p className="mt-px truncate text-[13px] text-ink-muted">{label}</p>
       </div>
     </div>
   );
@@ -187,8 +187,8 @@ export function ProfileSummary() {
       */}
       <section className="rounded-xl border border-line-soft bg-white p-[15px]">
         <div className="flex items-baseline">
-          <h2 className="text-[15px] font-medium text-[#2C3930]">사진 저장 용량</h2>
-          <span className="ml-auto text-[15px] font-medium text-[#2C3930]">
+          <h2 className="text-[15px] font-medium text-ink">사진 저장 용량</h2>
+          <span className="ml-auto text-[15px] font-medium text-ink">
             {isUsageKnown ? `${Math.round(usagePercent)}%` : "-"}
           </span>
         </div>
@@ -212,7 +212,7 @@ export function ProfileSummary() {
           />
         </div>
 
-        <p className="mt-[7px] text-[13px] text-[#60655C]">
+        <p className="mt-[7px] text-[13px] text-ink-muted">
           {formatBytes(storageLimit)} 중{" "}
           {isUsageKnown ? `${formatBytes(usedBytes)} 사용 중` : "-"}
         </p>

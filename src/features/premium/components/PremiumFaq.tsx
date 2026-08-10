@@ -35,7 +35,7 @@ export function PremiumFaq() {
   return (
     <section>
       {/* 섹션 제목 21px + 가운데 정렬 — `PlanComparison` 주석의 규칙과 같다. */}
-      <h2 className="text-center text-[21px] font-medium text-[#2C3930]">자주 묻는 질문</h2>
+      <h2 className="text-center text-[21px] font-medium text-ink">자주 묻는 질문</h2>
 
       {/* 제목 → 내용 32px. 플랜 비교 섹션(제목 → 피커바)과 같은 값으로 맞췄다. */}
       <div className="mt-8 flex flex-col gap-2.5">
@@ -56,11 +56,11 @@ export function PremiumFaq() {
                   본문인지 구분이 안 됐고, 펼친 답은 고지사항처럼 읽혔다.
                   이 페이지의 사다리는 27(헤드라인) → 21(섹션) → 17(항목) → 15(본문) → 13(고지) 다.
                 */}
-                <h3 className="flex-1 text-[17px] font-medium text-[#2C3930]">{item.q}</h3>
+                <h3 className="flex-1 text-[17px] font-medium text-ink">{item.q}</h3>
                 <Chevron open={isOpen} />
               </button>
               {isOpen && (
-                <p className="mt-2.5 text-[15px] leading-relaxed text-[#60655C]">{item.a}</p>
+                <p className="mt-2.5 text-[15px] leading-relaxed text-ink-muted">{item.a}</p>
               )}
             </div>
           );

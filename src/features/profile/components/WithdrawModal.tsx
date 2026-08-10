@@ -20,12 +20,12 @@ export function WithdrawModal({ isWithdrawing, onCancel, onConfirm }: Props) {
       onClick={onCancel}
     >
       <div
-        className="w-[350px] rounded-[20px] bg-[#FFFCEF] px-6 py-6 text-center"
+        className="w-[350px] rounded-[20px] bg-cream px-6 py-6 text-center"
         onClick={(e) => e.stopPropagation()}
       >
         <img src={trashIcon} alt="" className="mx-auto h-[30px] w-[30px]" />
-        <p className="mt-2 text-[20px] font-medium text-[#2C3930]">정말 탈퇴할까요?</p>
-        <p className="mt-1 text-[13px] leading-[18px] text-[#2C3930]">
+        <p className="mt-2 text-[20px] font-medium text-ink">정말 탈퇴할까요?</p>
+        <p className="mt-1 text-[13px] leading-[18px] text-ink">
           지금까지 기록한 나무와 타임라인이 모두 사라지고
           <br />
           되돌릴 수 없어요.
@@ -37,7 +37,7 @@ export function WithdrawModal({ isWithdrawing, onCancel, onConfirm }: Props) {
           그대로라, 같은 카카오·구글 계정으로 로그인하면 서버가 USER_UNAVAILABLE
           로 막는다. 새 계정으로 시작할 방법이 지금은 없다.
         */}
-        <p className="mt-3 rounded-[12px] bg-[#FEF7F7] px-4 py-3 text-[13px] font-medium leading-[18px] text-[#DC2626]">
+        <p className="mt-3 rounded-[12px] bg-error-surface px-4 py-3 text-[13px] font-medium leading-[18px] text-error">
           탈퇴하면 같은 계정으로
           <br />
           다시 가입할 수 없어요.
@@ -47,7 +47,7 @@ export function WithdrawModal({ isWithdrawing, onCancel, onConfirm }: Props) {
           <button
             type="button"
             onClick={onCancel}
-            className="h-[38px] w-[92px] rounded-[12px] bg-line text-[15px] font-medium text-[#2C3930]"
+            className="h-[38px] w-[92px] rounded-[12px] bg-line text-[15px] font-medium text-ink"
           >
             취소
           </button>
@@ -55,7 +55,7 @@ export function WithdrawModal({ isWithdrawing, onCancel, onConfirm }: Props) {
             type="button"
             onClick={onConfirm}
             disabled={isWithdrawing}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#DC2626] text-[15px] font-medium text-white disabled:opacity-50"
+            className="h-[38px] w-[92px] rounded-[12px] bg-error text-[15px] font-medium text-white disabled:opacity-50"
           >
             {isWithdrawing ? "처리 중" : "탈퇴"}
           </button>

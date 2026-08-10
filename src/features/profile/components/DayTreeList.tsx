@@ -38,16 +38,16 @@ export function DayTreeList({ date, trees, isPending, isError, onRetry }: DayTre
     <section className="mt-6">
       {/* 개수(`나무 n그루`)는 오른쪽에 붙였다가 뺐다 — 줄이 곧 나무 하나라 세면 바로 나오고,
           목록 위에 숫자를 또 두면 제목이 두 갈래로 읽힌다. */}
-      <h2 className="mb-2 px-1 text-[17px] font-medium text-[#2c3930]">{formatDayTitle(date)}</h2>
+      <h2 className="mb-2 px-1 text-[17px] font-medium text-ink">{formatDayTitle(date)}</h2>
 
       {isPending ? (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-line-soft bg-white py-10">
           <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
-          <p className="text-[15px] text-[#60655C]">나무를 불러오는 중...</p>
+          <p className="text-[15px] text-ink-muted">나무를 불러오는 중...</p>
         </div>
       ) : isError ? (
         <div className="flex flex-col items-center gap-4 rounded-xl border border-line-soft bg-white py-8">
-          <p className="text-[15px] font-medium text-[#2c3930]">나무를 불러오지 못했어요</p>
+          <p className="text-[15px] font-medium text-ink">나무를 불러오지 못했어요</p>
           <button
             type="button"
             onClick={onRetry}
@@ -61,7 +61,7 @@ export function DayTreeList({ date, trees, isPending, isError, onRetry }: DayTre
           잔디가 깔린 날인데 목록이 비었다면 서버의 `/calendar` 집계와 `/trees` 목록이
           어긋난 것이다. 그래도 화면은 말이 되게 둔다 — 빈 카드를 그리는 것보다 낫다.
         */
-        <p className="rounded-xl border border-line-soft bg-white py-8 text-center text-[15px] text-[#60655C]">
+        <p className="rounded-xl border border-line-soft bg-white py-8 text-center text-[15px] text-ink-muted">
           이 날 심은 나무가 없어요
         </p>
       ) : (
@@ -81,17 +81,17 @@ export function DayTreeList({ date, trees, isPending, isError, onRetry }: DayTre
                 />
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[15px] font-medium text-[#2c3930]">
+                  <p className="truncate text-[15px] font-medium text-ink">
                     {/* 기분 이모지는 이름 앞에 붙인다 — 한 줄을 더 쓰지 않으면서 눈에 걸린다. */}
                     {tree.mood && <span className="mr-1">{tree.mood}</span>}
                     {tree.name}
                   </p>
                   {tree.description && (
-                    <p className="mt-0.5 truncate text-[13px] text-[#60655C]">{tree.description}</p>
+                    <p className="mt-0.5 truncate text-[13px] text-ink-muted">{tree.description}</p>
                   )}
                 </div>
 
-                <span className="shrink-0 text-[13px] text-[#60655C]">{tree.time}</span>
+                <span className="shrink-0 text-[13px] text-ink-muted">{tree.time}</span>
               </div>
             </div>
           ))}

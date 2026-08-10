@@ -63,7 +63,7 @@ export function RouteStep({
   if (isError) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center px-5 text-center">
-        <p className="text-[15px] text-[#60655c]">동선을 불러오지 못했어요.</p>
+        <p className="text-[15px] text-ink-muted">동선을 불러오지 못했어요.</p>
         <button
           type="button"
           onClick={onRetry}
@@ -82,8 +82,8 @@ export function RouteStep({
   if (routes.length === 0) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center px-5 pb-6 text-center">
-        <p className="text-[16px] font-medium text-[#2c3930]">아직 저장한 동선이 없어요</p>
-        <p className="mt-2 text-[15px] leading-6 text-[#60655c]">
+        <p className="text-[16px] font-medium text-ink">아직 저장한 동선이 없어요</p>
+        <p className="mt-2 text-[15px] leading-6 text-ink-muted">
           블로그 초안은 저장한 동선 하나를 통째로 옮겨 적어요.
           <br />
           먼저 다녀온 곳을 동선으로 묶어주세요.
@@ -101,7 +101,7 @@ export function RouteStep({
 
   return (
     <div className="flex flex-1 flex-col px-5 pb-6 pt-2">
-      <p className="text-[15px] leading-6 text-[#60655c]">블로그로 만들 동선을 골라주세요.</p>
+      <p className="text-[15px] leading-6 text-ink-muted">블로그로 만들 동선을 골라주세요.</p>
 
       <ul className="mt-4 flex flex-col gap-2.5">
         {routes.map((route) => {
@@ -121,12 +121,12 @@ export function RouteStep({
               >
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
-                    <span className="truncate text-[16px] font-medium text-[#2c3930]">{route.title}</span>
+                    <span className="truncate text-[16px] font-medium text-ink">{route.title}</span>
                     <span className="shrink-0 rounded-full bg-pictree-100 px-2 py-[1px] text-[13px] font-medium text-pictree-700">
                       {route.placeCount}곳
                     </span>
                   </span>
-                  <span className="mt-1 block text-[13px] text-[#60655c]">{route.date}</span>
+                  <span className="mt-1 block text-[13px] text-ink-muted">{route.date}</span>
                   {/*
                     목록 응답의 `places` 는 미리보기용이라 잘려 올 수 있다 — 그래서 개수는
                     위 배지의 `placeCount`(서버 값)를 쓰고 여기서는 이름만 늘어놓는다.
@@ -154,7 +154,7 @@ export function RouteStep({
       </ul>
 
       {/* 고른 뒤에야 말할 수 있는 것들. 자리를 미리 비워 두면 버튼이 위아래로 튄다. */}
-      <p className="mt-4 min-h-[1.25rem] text-[13px] text-[#60655c]" role="status">
+      <p className="mt-4 min-h-[1.25rem] text-[13px] text-ink-muted" role="status">
         {selectedRouteId === null
           ? ''
           : isDetailPending

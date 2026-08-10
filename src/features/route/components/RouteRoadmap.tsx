@@ -144,8 +144,8 @@ export function RouteRoadmap({ places }: RouteRoadmapProps) {
               style={{ top: y, ...labelStyle }}
             >
               <div className="animate-roadmap-pop" style={{ animationDelay: labelDelay }}>
-                <p className="line-clamp-2 text-base font-medium text-[#2c3930]">{place.name}</p>
-                <p className="mt-0.5 text-[13px] font-medium text-[#60655c]">
+                <p className="line-clamp-2 text-base font-medium text-ink">{place.name}</p>
+                <p className="mt-0.5 text-[13px] font-medium text-ink-muted">
                   {index + 1}번째 장소
                 </p>
               </div>

@@ -23,13 +23,13 @@ export function WelcomeView({ onSocialLogin }: WelcomeViewProps) {
     <div className="flex flex-1 flex-col">
       <div className="flex flex-1 flex-col items-center justify-center pb-[9.25rem] text-center">
         <PicTreeMark />
-        <h1 className="mt-7 flex h-[2.375rem] flex-col justify-center text-center font-['KOROAD'] text-base font-bold leading-[2.5rem] tracking-[0px] text-[#2C3930]">
+        <h1 className="mt-7 flex h-[2.375rem] flex-col justify-center text-center font-['KOROAD'] text-base font-bold leading-[2.5rem] tracking-[0px] text-ink">
           나의 여행 발자국
         </h1>
         {/* 빈칸의 위 모서리다 — 바깥 div 에 ref 를 달면 pb-[9.25rem] 까지 포함돼 버튼 위와 같아진다. */}
         <p
           ref={contentRef}
-          className="mt-2 flex h-[2.375rem] flex-col justify-center text-center font-['KOROAD'] text-base font-medium leading-[2.5rem] tracking-[0px] text-[#2C3930]"
+          className="mt-2 flex h-[2.375rem] flex-col justify-center text-center font-['KOROAD'] text-base font-medium leading-[2.5rem] tracking-[0px] text-ink"
         >
           발걸음마다 기록하고, 나무처럼 키우세요
         </p>
@@ -57,7 +57,7 @@ function SocialLoginButton({
   return (
     <Button
       unstyled
-      className={`flex h-[4.3125rem] w-full items-center justify-center gap-3 rounded-[1.5rem] font-['KOROAD'] text-[1.125rem] font-bold text-[#2C3930] transition ${
+      className={`flex h-[4.3125rem] w-full items-center justify-center gap-3 rounded-[1.5rem] font-['KOROAD'] text-[1.125rem] font-bold text-ink transition ${
         isKakao ? 'bg-[#FFEC9A] hover:bg-[#f7df70]' : 'bg-line-soft hover:bg-line'
       }`}
       type="button"

@@ -20,7 +20,7 @@ export function DeleteRecordModal({
       onClick={onCancel}
     >
       <div
-        className="w-[350px] rounded-[20px] bg-[#FFFCEF] px-6 py-6 text-center"
+        className="w-[350px] rounded-[20px] bg-cream px-6 py-6 text-center"
         onClick={(e) => e.stopPropagation()}
       >
         <img src={trashIcon} alt="" className="mx-auto h-[30px] w-[30px]" />
@@ -33,15 +33,15 @@ export function DeleteRecordModal({
           되돌릴 방법이 없는 동작이라 결과를 먼저 말해야 한다.
         */}
         <p className="mt-2 text-xl font-medium text-black">이 장소를 삭제할까요?</p>
-        <p className="mt-1 text-[13px] text-[#2C3930]">{record.placeName}</p>
-        <p className="mt-2 text-[13px] text-[#DC2626]">
+        <p className="mt-1 text-[13px] text-ink">{record.placeName}</p>
+        <p className="mt-2 text-[13px] text-error">
           지도에서도 사라지고 되돌릴 수 없어요
         </p>
         <div className="mt-4 flex justify-center gap-4">
           <button
             type="button"
             onClick={onCancel}
-            className="h-[38px] w-[92px] rounded-[12px] bg-line-soft text-base font-medium text-[#2C3930]"
+            className="h-[38px] w-[92px] rounded-[12px] bg-line-soft text-base font-medium text-ink"
           >
             취소
           </button>
@@ -49,7 +49,7 @@ export function DeleteRecordModal({
             type="button"
             onClick={onConfirm}
             disabled={isDeleting}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#DC2626] text-base font-medium text-white disabled:opacity-50"
+            className="h-[38px] w-[92px] rounded-[12px] bg-error text-base font-medium text-white disabled:opacity-50"
           >
             삭제
           </button>

@@ -44,10 +44,10 @@ export function PlanChangeModal({
       <div
         role="dialog"
         aria-label="요금제 변경 확인"
-        className="w-full max-w-[352px] rounded-[20px] bg-[#FFFCEF] px-6 py-8"
+        className="w-full max-w-[352px] rounded-[20px] bg-cream px-6 py-8"
         onClick={(event) => event.stopPropagation()}
       >
-        <p className="text-center text-[20px] font-medium text-[#2C3930]">
+        <p className="text-center text-[20px] font-medium text-ink">
           {shortName} 플랜으로 바꿀까요?
         </p>
 
@@ -55,7 +55,7 @@ export function PlanChangeModal({
           ⚠️ 적용 시점이 이 모달의 본문이다. 13px 고지로 흘리지 않고 15px 로 둔다 —
           잔글씨가 아니라 이 동작이 무엇인지 자체다.
         */}
-        <p className="mt-2 text-center text-[15px] leading-[22px] text-[#60655C]">
+        <p className="mt-2 text-center text-[15px] leading-[22px] text-ink-muted">
           {effectiveLabel
             ? `${effectiveLabel} 다음 결제일부터 적용돼요.`
             : '다음 결제일부터 적용돼요.'}
@@ -64,13 +64,13 @@ export function PlanChangeModal({
         </p>
 
         {/* 바뀔 값 두 개(이름·가격)만 짚는다. 혜택 비교는 바로 뒤 표가 이미 하고 있다. */}
-        <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-line-soft bg-white py-4 text-[15px] font-medium text-[#2C3930]">
-          <span className="text-[#60655C]">{currentPlanName}</span>
-          <span aria-hidden className="text-[#B4B4B4]">
+        <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-line-soft bg-white py-4 text-[15px] font-medium text-ink">
+          <span className="text-ink-muted">{currentPlanName}</span>
+          <span aria-hidden className="text-ink-disabled">
             →
           </span>
           <span>{nextPlan.name}</span>
-          <span className="text-[#60655C]">· {planPriceLabel(nextPlan)}</span>
+          <span className="text-ink-muted">· {planPriceLabel(nextPlan)}</span>
         </div>
 
         <div className="mt-5 flex justify-center gap-4">
@@ -78,7 +78,7 @@ export function PlanChangeModal({
             type="button"
             onClick={onKeep}
             disabled={isPending}
-            className="h-[38px] w-[120px] rounded-xl bg-line-soft text-[15px] font-medium text-[#2C3930] disabled:opacity-60"
+            className="h-[38px] w-[120px] rounded-xl bg-line-soft text-[15px] font-medium text-ink disabled:opacity-60"
           >
             그대로 두기
           </button>

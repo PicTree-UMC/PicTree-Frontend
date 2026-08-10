@@ -31,7 +31,7 @@ export function PremiumHero() {
         PicTree Premium
       </p>
 
-      <h1 className="mt-3 text-[27px] font-medium leading-[1.35] tracking-[-0.01em] text-[#2C3930]">
+      <h1 className="mt-3 text-[27px] font-medium leading-[1.35] tracking-[-0.01em] text-ink">
         나만의 순간과 기록을
         <br />
         제한없이 남겨보세요

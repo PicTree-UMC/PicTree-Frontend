@@ -89,7 +89,7 @@ export function RouteListPage() {
   const isEmpty = routes.length === 0;
 
   return (
-    <div className="flex min-h-full flex-col bg-[#fffcef]">
+    <div className="flex min-h-full flex-col bg-cream">
       {/* pb: 탭바가 콘텐츠 위에 얹히므로 마지막 항목이 가려지지 않을 만큼 띄운다 */}
       <div className="flex flex-1 flex-col px-5 pb-nav pt-header">
         {isLoading ? (
@@ -99,7 +99,7 @@ export function RouteListPage() {
           </div>
         ) : isError ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4">
-            <p className="text-center text-[15px] font-semibold text-[#2c3930]">
+            <p className="text-center text-[15px] font-semibold text-ink">
               동선을 불러오지 못했어요
             </p>
             <button
@@ -115,13 +115,13 @@ export function RouteListPage() {
                 그림이 끝날 즈음 떠오른다 — 그림보다 먼저 뜨면 이야기 순서가 꼬인다. */}
             <RouteIllustration className="w-[200px]" />
             <h2
-              className="animate-fade-in-up mt-6 text-[17px] font-medium text-[#2c3930]"
+              className="animate-fade-in-up mt-6 text-[17px] font-medium text-ink"
               style={{ animationDelay: '600ms' }}
             >
               아직 저장된 동선이 없어요
             </h2>
             <p
-              className="animate-fade-in-up mt-2 text-[15px] leading-6 text-[#60655c]"
+              className="animate-fade-in-up mt-2 text-[15px] leading-6 text-ink-muted"
               style={{ animationDelay: '600ms' }}
             >
               여행하며 다녀온 장소들을 이어
@@ -155,8 +155,8 @@ export function RouteListPage() {
                 {/* 선택 동선 메타 + 액션(더보기 / 삭제) */}
                 <div className="mt-5 flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-[13px] font-medium text-[#2c3930]">{selectedRoute.date}</p>
-                    <p className="text-[11px] font-light text-[#60655c]">
+                    <p className="text-[13px] font-medium text-ink">{selectedRoute.date}</p>
+                    <p className="text-[11px] font-light text-ink-muted">
                       {selectedRoute.placeCount}개 장소
                     </p>
                   </div>
@@ -167,14 +167,14 @@ export function RouteListPage() {
                         setShowBottomSheet(true);
                       }}
                       aria-label="동선 더보기"
-                      className="flex size-9 items-center justify-center rounded-full border border-pictree-300 bg-white text-[#2c3930]"
+                      className="flex size-9 items-center justify-center rounded-full border border-pictree-300 bg-white text-ink"
                     >
                       <MoreIcon className="size-5" />
                     </button>
                     <DeleteIconButton
                       label="동선 삭제"
                       onClick={() => setShowDeleteModal(true)}
-                      className="size-9 border-[1.5px] border-[#dc2626]"
+                      className="size-9 border-[1.5px] border-error"
                     />
                   </div>
                 </div>

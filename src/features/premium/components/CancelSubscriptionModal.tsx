@@ -26,19 +26,19 @@ export function CancelSubscriptionModal({ onKeep, onCancel, isPending }: Props) 
       <div
         role="dialog"
         aria-label="구독 취소 확인"
-        className="w-full max-w-[352px] rounded-[20px] bg-[#FFFCEF] px-6 py-8"
+        className="w-full max-w-[352px] rounded-[20px] bg-cream px-6 py-8"
         onClick={(event) => event.stopPropagation()}
       >
         <img src={alertIcon} alt="" className="mx-auto h-[50px] w-[50px]" />
 
-        <p className="mt-3 text-center text-[20px] font-medium text-[#2C3930]">
+        <p className="mt-3 text-center text-[20px] font-medium text-ink">
           정말 구독을 취소할까요?
         </p>
-        <p className="mt-1 text-center text-[13px] text-[#2C3930]">
+        <p className="mt-1 text-center text-[13px] text-ink">
           구독을 취소하면 다음 혜택을 잃게 됩니다
         </p>
 
-        <div className="mt-4 flex flex-col items-center gap-1 rounded-xl border border-line-soft bg-white py-4 text-center text-[13px] font-medium text-[#2C3930]">
+        <div className="mt-4 flex flex-col items-center gap-1 rounded-xl border border-line-soft bg-white py-4 text-center text-[13px] font-medium text-ink">
           {LOSING_BENEFITS.map((benefit) => (
             <p key={benefit}>{benefit}</p>
           ))}
@@ -49,7 +49,7 @@ export function CancelSubscriptionModal({ onKeep, onCancel, isPending }: Props) 
             type="button"
             onClick={onKeep}
             disabled={isPending}
-            className="h-[38px] w-[120px] rounded-xl bg-line-soft text-[15px] font-medium text-[#2C3930] disabled:opacity-60"
+            className="h-[38px] w-[120px] rounded-xl bg-line-soft text-[15px] font-medium text-ink disabled:opacity-60"
           >
             구독 유지
           </button>
@@ -57,7 +57,7 @@ export function CancelSubscriptionModal({ onKeep, onCancel, isPending }: Props) 
             type="button"
             onClick={onCancel}
             disabled={isPending}
-            className="h-[38px] w-[120px] rounded-xl bg-[#DC2626] text-[15px] font-medium text-white disabled:opacity-60"
+            className="h-[38px] w-[120px] rounded-xl bg-error text-[15px] font-medium text-white disabled:opacity-60"
           >
             {isPending ? "처리 중..." : "구독 취소"}
           </button>

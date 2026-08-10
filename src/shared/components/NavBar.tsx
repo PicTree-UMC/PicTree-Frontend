@@ -51,7 +51,7 @@ export function NavBar({
         // pointer-events-none: 가운데 제목이 줄 전체를 가로지르므로, 켜 두면 오른쪽
         // 액션의 터치를 가로챌 수 있다. 제목은 누를 것이 아니라 읽는 것이다.
         <h1
-          className={`pointer-events-none absolute left-1/2 max-w-[60%] -translate-x-1/2 truncate text-center text-[18px] font-medium text-[#2c3930] ${
+          className={`pointer-events-none absolute left-1/2 max-w-[60%] -translate-x-1/2 truncate text-center text-[18px] font-medium text-ink ${
             titleOnMap ? 'text-halo' : ''
           }`}
         >

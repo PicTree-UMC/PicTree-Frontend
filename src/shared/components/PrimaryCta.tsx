@@ -20,7 +20,7 @@ export function PrimaryCta({ children, className = '', ...props }: PrimaryCtaPro
   return (
     <button
       type="button" // 폼 안에서 실수로 submit 되지 않도록
-      className={`h-[52px] w-full rounded-[24px] bg-pictree-700 text-[15px] font-medium text-white transition-colors disabled:bg-[#b4b4b4] ${className}`}
+      className={`h-[52px] w-full rounded-[24px] bg-pictree-700 text-[15px] font-medium text-white transition-colors disabled:bg-ink-disabled ${className}`}
       {...props}
     >
       {children}

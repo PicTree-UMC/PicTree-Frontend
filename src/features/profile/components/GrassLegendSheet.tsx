@@ -31,7 +31,7 @@ export function GrassLegendSheet({ onClose }: { onClose: () => void }) {
     >
       <div className="flex items-center justify-center gap-2 pt-2">
         <img src={treeIcon} alt="" className="h-5 w-5" />
-        <p className="text-[15px] font-medium text-[#2c3930]">
+        <p className="text-[15px] font-medium text-ink">
           하루에 심은 나무 수만큼 잔디가 진해져요
         </p>
       </div>
@@ -48,19 +48,19 @@ export function GrassLegendSheet({ onClose }: { onClose: () => void }) {
         56px 로 올려도 줄 전체는 312px 라 시트 폭(390-40)에 넉넉히 들어간다.
       */}
       <div className="mt-5 flex items-start justify-center gap-1">
-        <span className="mt-[5px] px-1 text-[13px] text-[#2c3930]">적음</span>
+        <span className="mt-[5px] px-1 text-[13px] text-ink">적음</span>
         {CALENDAR_LEVELS.map(({ shade, label }) => (
           <span key={label} className="flex w-14 flex-col items-center gap-1.5">
             <span className="h-5 w-5 rounded-full" style={{ backgroundColor: shade }} />
-            <span className="whitespace-nowrap text-[13px] leading-none text-[#2c3930]">
+            <span className="whitespace-nowrap text-[13px] leading-none text-ink">
               {label}
             </span>
           </span>
         ))}
-        <span className="mt-[5px] px-1 text-[13px] text-[#2c3930]">많음</span>
+        <span className="mt-[5px] px-1 text-[13px] text-ink">많음</span>
       </div>
 
-      <p className="mt-5 text-center text-[13px] leading-[18px] text-[#60655C]">
+      <p className="mt-5 text-center text-[13px] leading-[18px] text-ink-muted">
         날짜를 누르면 그날 심은 나무를 볼 수 있어요.
       </p>
     </Sheet>

@@ -77,13 +77,13 @@ export function RouteNodeStepper({
         type="button"
         onClick={() => step(-1)}
         aria-label="이전 장소로"
-        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-pictree-100 text-[#2c3930]"
+        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-pictree-100 text-ink"
       >
         <ChevronIcon className="h-5 w-5" />
       </button>
 
       {/* 이름이 길면 자른다. 번호는 안 자른다 — 어디쯤인지를 말하는 건 이름이 아니라 번호다. */}
-      <p className="min-w-0 flex-1 truncate text-center text-[15px] font-medium text-[#2c3930]">
+      <p className="min-w-0 flex-1 truncate text-center text-[15px] font-medium text-ink">
         {focused ? `${sequenceById.get(focused.id)}. ${focused.name}` : '동선 따라가기'}
       </p>
 
@@ -91,7 +91,7 @@ export function RouteNodeStepper({
         type="button"
         onClick={() => step(1)}
         aria-label="다음 장소로"
-        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-pictree-100 text-[#2c3930]"
+        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-pictree-100 text-ink"
       >
         <ChevronIcon className="h-5 w-5 rotate-180" />
       </button>

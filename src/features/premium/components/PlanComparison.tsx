@@ -96,7 +96,7 @@ export function PlanComparison({
         여기만 왼쪽에 붙으면 시선의 축이 중간에 꺾인다. 앱의 다른 화면들이 제목을 왼쪽에
         두는 것과 다른 이유가 이것이다 — 그쪽은 훑는 목록이다.
       */}
-      <h2 className="mt-8 text-center text-[21px] font-medium text-[#2C3930]">
+      <h2 className="mt-8 text-center text-[21px] font-medium text-ink">
         내게 맞는 플랜을
         <br/>
         찾아보세요
@@ -136,7 +136,7 @@ export function PlanComparison({
       </div>
 
       <div className="mt-4 overflow-hidden rounded-2xl border border-line-soft bg-white">
-        <div className="grid grid-cols-[1.4fr_1fr_1fr] border-b border-line-soft px-4 py-3 text-[13px] text-[#60655C]">
+        <div className="grid grid-cols-[1.4fr_1fr_1fr] border-b border-line-soft px-4 py-3 text-[13px] text-ink-muted">
           <span>혜택</span>
           <span className="text-center">무료</span>
           <span className="text-center text-pictree-700">{planSummary(selected).shortName}</span>
@@ -149,12 +149,12 @@ export function PlanComparison({
               i > 0 ? 'border-t border-line-soft' : ''
             }`}
           >
-            <span className="text-[#2C3930]">{row.label}</span>
+            <span className="text-ink">{row.label}</span>
             {/*
               무료 열을 흐리게 하지 않는다 — 비교 대상이지 비활성이 아니다(§5 의 칩 규칙과 같은 이유).
               차이는 유료 열에 색을 주는 쪽으로만 낸다.
             */}
-            <span className="text-center text-[#60655C]">{row.free}</span>
+            <span className="text-center text-ink-muted">{row.free}</span>
             <span className="text-center font-medium text-pictree-700">{row.paid}</span>
           </div>
         ))}
