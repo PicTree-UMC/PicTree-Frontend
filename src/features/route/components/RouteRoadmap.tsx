@@ -17,12 +17,17 @@ import { useRoutePhotos } from '../hooks/useRoutePhotos';
  *  - 폭을 알아야 하는 건 SVG path 하나뿐이라 거기만 실제 폭을 측정해 쓴다.
  *    (viewBox 를 늘려 스케일하면 점선 dash 와 stroke 가 가로로만 찌그러진다)
  */
-const MAX_W = 320; // 시안 기준 폭. 넓은 화면에서는 여기서 멈추고 가운데 정렬된다
-const R = 28; // 노드 반지름(지름 56)
-const TOP = R + 12; // 첫 노드 중심 y (순번 배지가 위로 삐져나오므로 여유)
-const STEP = 118; // 노드 간 세로 간격
-const INSET = 46; // 컨테이너 가장자리 ~ 노드 중심
-const NODE_EDGE = INSET - R; // 가장자리 ~ 노드 상자 바깥면
+/*
+  ⚠️ **로딩 자리(`RouteRoadmapLoader`)가 이 값들을 그대로 쓴다** — 그래서 export 다.
+  "동선이 깔리는" 연출이 실제 노드가 앉을 자리에 정확히 그려져야 해서, 상수를 따로 들면
+  로딩에서 본 곡선과 실제 곡선이 미묘하게 어긋난다. (§ '각자 상수를 들지 말 것')
+*/
+export const MAX_W = 320; // 시안 기준 폭. 넓은 화면에서는 여기서 멈추고 가운데 정렬된다
+export const R = 28; // 노드 반지름(지름 56)
+export const TOP = R + 12; // 첫 노드 중심 y (순번 배지가 위로 삐져나오므로 여유)
+export const STEP = 118; // 노드 간 세로 간격
+export const INSET = 46; // 컨테이너 가장자리 ~ 노드 중심
+export const NODE_EDGE = INSET - R; // 가장자리 ~ 노드 상자 바깥면
 const LABEL_EDGE = INSET + R + 12; // 가장자리 ~ 라벨 시작(노드 반대편)
 
 /** 로드맵이 노드 하나를 그리는 데 필요한 전부. 저장 전/후 어느 쪽에서 왔는지는 모른다. */

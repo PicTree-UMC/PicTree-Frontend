@@ -175,6 +175,21 @@ export function PremiumPage() {
     navigate(ROUTES.blog);
   };
 
+  /*
+    ⚠️ **여기는 일부러 스켈레톤이 아니다** (#240 에서 판정). 다른 화면은 골격으로 갔는데
+    이 화면만 스피너로 남은 이유가 둘이다.
+
+    1. **카드가 몇 장인지 서버가 정한다.** `GET /subscription-plans` 가 오기 전에는 골격을
+       몇 장 그릴지 알 수 없고, 잘못 세면 도착하는 순간 카드가 생겼다 없어진다 —
+       스피너보다 튄다. 목록이면 아래를 흐려 개수를 얼버무리는 수가 있지만(`skeleton-fade-b`),
+       여기는 요금제 비교라 **몇 개인지가 곧 내용**이라 얼버무릴 수 없다.
+
+    2. **이 대기 자체가 거의 사라졌다.** `useSubscriptionPlans` 가 `staleTime: Infinity`
+       라(#238) 한 세션에 한 번만 받고, 그 한 번도 대개 마이페이지(`ProfileSummary`)가
+       이미 받아 둔다. 여기 닿기 전에 캐시가 차 있으면 로딩 분기를 아예 안 지난다.
+
+    되살릴 거라면 요금제 개수가 고정이라는 보장이 먼저 있어야 한다.
+  */
   if (isLoading) {
     return (
       <main className="relative flex min-h-full flex-col">
