@@ -21,6 +21,11 @@ export const useMyProfile = () => {
     },
     enabled: Boolean(accessToken),
     /**
+     * 내가 바꿀 때만 변한다(`useUpdateMyProfile` 이 `userKeys.me` 를 무효화한다).
+     * 60초 기본값은 그 무효화가 없을 때를 가정한 값이다.
+     */
+    staleTime: 1000 * 60 * 5,
+    /**
      * 4xx 는 재시도하지 않는다. 401(토큰 무효)·403(정지 계정)·404(사용자 없음)는
      * 같은 요청을 반복해도 결과가 바뀌지 않아 서버만 두드리게 된다.
      * 5xx·네트워크 오류는 queryClient 기본값(1회)을 그대로 쓴다.

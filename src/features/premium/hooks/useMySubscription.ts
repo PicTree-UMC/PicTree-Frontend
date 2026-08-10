@@ -17,5 +17,14 @@ export const useMySubscription = () => {
   return useQuery({
     queryKey: paymentKeys.me,
     queryFn: getMySubscription,
+    /**
+     * **내가 바꿀 때만 변한다** — 구독 시작·해지·재개·플랜 변경이 전부 이 앱 안에서
+     * 일어나고, 그 자리마다 `paymentKeys.me` 무효화가 이미 걸려 있다. 60초 기본값은
+     * 그 무효화가 없을 때를 가정한 값이라 여기서는 헛돈다.
+     *
+     * 그래도 `Infinity` 는 아니다 — 만료(`expiresAt`)는 **서버 시간이 지나며** 바뀌고
+     * 우리 쪽 무효화가 안 걸린다.
+     */
+    staleTime: 1000 * 60 * 5,
   });
 };
