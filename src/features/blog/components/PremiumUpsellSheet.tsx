@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { PrimaryCta, Sheet } from '@/shared/components';
+import { PrimaryCta, Sheet, Skeleton } from '@/shared/components';
 import { useSubscriptionPlans } from '@/features/premium/hooks/useSubscriptionPlans';
 import {
   FEATURE_CODE,
@@ -28,10 +28,10 @@ const FEATURE_ICON: Record<string, ComponentType> = {
 function BenefitSkeleton() {
   return (
     <div className="flex min-h-[62px] items-center gap-3">
-      <span className="h-6 w-6 shrink-0 animate-pulse rounded bg-cream-sub" />
+      <Skeleton className="h-6 w-6 shrink-0 rounded" />
       <span className="flex-1">
-        <span className="block h-4 w-24 animate-pulse rounded bg-cream-sub" />
-        <span className="mt-1 block h-3 w-16 animate-pulse rounded bg-cream-sub" />
+        <Skeleton className="h-4 w-24 rounded" />
+        <Skeleton className="mt-1 h-3 w-16 rounded" />
       </span>
     </div>
   );

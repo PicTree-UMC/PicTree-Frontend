@@ -20,6 +20,7 @@ export { SettingsList, SettingsRow, SettingsFooter } from './SettingsList';
 export { GrassIcon } from './GrassIcon';
 export { IconFrame } from './IconFrame';
 export { Photo } from './Photo';
+export { Skeleton } from './Skeleton';
 export { PhotoPost, PostHeartIcon } from './PhotoPost';
 export { SproutIllustration } from './SproutIllustration';
 export { CalendarMonthNav } from './CalendarMonthNav';

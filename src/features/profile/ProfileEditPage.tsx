@@ -5,6 +5,7 @@ import {
   SettingsFooter,
   SettingsList,
   SettingsRow,
+  Skeleton,
   useToast,
 } from "@/shared/components";
 import { ROUTES } from "@/shared/constants/routes";
@@ -17,9 +18,14 @@ import { WithdrawModal } from "./components/WithdrawModal";
 import treeIcon from "./assets/icons/tree.svg";
 import cardImage from "./assets/icons/card3d.jpg";
 
-/** 값 자리를 잡아 두는 막대. 줄 높이가 로딩 끝에 튀지 않게 한다. */
+/**
+ * 값 자리를 잡아 두는 막대. 줄 높이가 로딩 끝에 튀지 않게 한다.
+ *
+ * 공용 `Skeleton` 을 감싸 **높이(15px 줄에 맞춘 `h-4`)만 고정**한다 — 이 화면의 스켈레톤은
+ * 전부 설정 줄의 값 자리라 폭만 다르다.
+ */
 function ValueSkeleton({ className }: { className: string }) {
-  return <span className={`block h-4 animate-pulse rounded bg-cream-sub ${className}`} />;
+  return <Skeleton className={`h-4 rounded ${className}`} />;
 }
 
 export function ProfileEditPage() {
