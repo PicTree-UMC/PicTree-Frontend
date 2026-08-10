@@ -1,21 +1,18 @@
-import { useBlogDraftStore } from './store/blogDraftStore';
 import { BlogCreateFab } from './components/BlogCreateFab';
 import { BlogEmptyState } from './components/BlogEmptyState';
 import { SavedBlogCard } from './components/SavedBlogCard';
-import { useEffect } from 'react';
+import { useBlogDrafts } from './hooks/useBlogDrafts';
 import { useBlogTrees } from './hooks/useBlogTrees';
 import { getLocalDateString } from '@/shared/lib/date';
 
 export function BlogPage() {
-  const savedBlogs = useBlogDraftStore((state) => state.savedBlogs);
-  const isLoading = useBlogDraftStore((state) => state.isLoading);
-  const fetchError = useBlogDraftStore((state) => state.fetchError);
-  const fetchSavedBlogs = useBlogDraftStore((state) => state.fetchSavedBlogs);
+  /*
+    ⚠️ `isPending` 이지 `isFetching` 이 아니다. 캐시가 있으면 `isPending` 은 false 라
+    탭을 다시 열어도 스피너가 안 뜨고 목록이 바로 나온다 — 갱신은 뒤에서 돈다.
+    `isFetching` 으로 갈면 캐시가 있어도 매번 스피너가 떠서 고치기 전과 같아진다.
+  */
+  const { data: savedBlogs = [], isPending, isError, refetch } = useBlogDrafts();
   const { data: trees } = useBlogTrees();
-
-  useEffect(() => {
-    fetchSavedBlogs();
-  }, [fetchSavedBlogs]);
 
   return (
     // pb: 탭바가 콘텐츠 위에 얹히므로 마지막 카드가 가려지지 않을 만큼 띄운다
@@ -30,14 +27,14 @@ export function BlogPage() {
         )}
       </header>
 
-      {isLoading ? (
+      {isPending ? (
         <div className="grid min-h-[55vh] place-items-center" role="status" aria-label="블로그 목록을 불러오는 중">
           <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
         </div>
-      ) : fetchError ? (
+      ) : isError ? (
         <div className="flex min-h-[55vh] flex-col items-center justify-center px-5 text-center">
           <p className="text-[15px] text-ink-muted">블로그 목록을 불러오지 못했어요.</p>
-          <button type="button" onClick={fetchSavedBlogs} className="mt-4 rounded-xl bg-pictree-700 px-5 py-3 text-[15px] font-medium text-white">
+          <button type="button" onClick={() => refetch()} className="mt-4 rounded-xl bg-pictree-700 px-5 py-3 text-[15px] font-medium text-white">
             다시 시도
           </button>
         </div>
