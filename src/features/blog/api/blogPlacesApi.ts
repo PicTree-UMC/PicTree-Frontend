@@ -1,5 +1,4 @@
-import { httpClient } from '@/shared/lib/httpClient';
-import type { ApiResponse } from '@/shared/types/api';
+import type { TreeListItem } from '@/features/home/types/tree';
 import type { BlogTreeRecord } from '../types/blog';
 
 /**
@@ -12,52 +11,11 @@ import type { BlogTreeRecord } from '../types/blog';
  *
  * `createdAt` 이 응답에 있으면 그걸로 기간 필터링을 하고, 없으면(구버전 서버)
  * 필터링 없이 전체를 보여준다 — 캘린더 활동 표시가 비어 보이는 것보다 낫다.
+ *
+ * ⚠️ **이 파일은 이제 요청을 하지 않는다.** 자기 몫의 `/trees` 페이지 순회를 들고
+ * 있었는데(순차, 최대 20페이지) 원본 하나로 접혔다 — 여기 남은 건 순수 변환뿐이다
+ * (이슈 #237).
  */
-
-const PAGE_SIZE = 100;
-const MAX_PAGES = 20;
-
-interface TreeItem {
-  treeId: number;
-  name: string;
-  latitude: number;
-  longitude: number;
-  mood: string | null;
-  // 응답의 `defaultImage` 는 여기 안 적는다 — 식별자라 화면에서 쓸 데가 없는데,
-  // 타입에 있으면 사진 자리에 채우게 된다(#209 가 그렇게 났다).
-  imageUrl?: string | null;
-  description?: string | null;
-  address?: string | null;
-  /** 실제 서버 응답에 포함되는 경우가 있어 optional 로 받는다. */
-  createdAt?: string | null;
-}
-
-interface TreeListData {
-  items: TreeItem[] | null;
-  total: number;
-}
-
-const fetchAllTrees = async (): Promise<TreeItem[]> => {
-  const trees: TreeItem[] = [];
-  const seen = new Set<number>();
-
-  for (let page = 1; page <= MAX_PAGES; page += 1) {
-    const { data } = await httpClient.get<ApiResponse<TreeListData>>('/trees', {
-      params: { page, size: PAGE_SIZE },
-    });
-
-    const items = data.data?.items ?? [];
-    const fresh = items.filter((item) => !seen.has(item.treeId));
-    fresh.forEach((item) => {
-      seen.add(item.treeId);
-      trees.push(item);
-    });
-
-    if (fresh.length === 0 || trees.length >= (data.data?.total ?? trees.length)) break;
-  }
-
-  return trees;
-};
 
 /**
  * 내 나무(=기록) 전체를 블로그용 레코드로 반환한다.
@@ -65,8 +23,7 @@ const fetchAllTrees = async (): Promise<TreeItem[]> => {
  * `createdAt` 이 없는 나무는 오늘 날짜로 채워 최소한 목록에는 뜨게 한다
  * (기간 필터 정확도는 떨어지지만, 서버가 날짜를 아직 안 줄 때의 임시 조치).
  */
-export const getMyBlogPlaces = async (): Promise<BlogTreeRecord[]> => {
-  const trees = await fetchAllTrees();
+export const toBlogTreeRecords = (trees: TreeListItem[]): BlogTreeRecord[] => {
   const today = new Date().toISOString();
 
   return trees
@@ -76,7 +33,6 @@ export const getMyBlogPlaces = async (): Promise<BlogTreeRecord[]> => {
       description: tree.description ?? '',
       latitude: tree.latitude,
       longitude: tree.longitude,
-      address: tree.address ?? '',
       mood: tree.mood ?? '😌',
       // `tree.defaultImage` 로 폴백하지 않는다 — URL 이 아니라 식별자다(BlogTreeRecord 주석).
       imageUrl: tree.imageUrl || '',

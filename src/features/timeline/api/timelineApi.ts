@@ -1,7 +1,6 @@
 import { httpClient } from '@/shared/lib/httpClient';
-import type { ApiEnvelope, TreeListData, TreeListItem } from '@/features/home/types/tree';
+import type { ApiEnvelope, TreeListItem } from '@/features/home/types/tree';
 import type {
-  TimelinePage,
   TimelineRecord,
   UpdateTimelineRequest,
 } from '../types/timeline.types';
@@ -41,7 +40,7 @@ export const TIMELINE_PAGE_SIZE = 20;
  * 날짜가 없어 날짜 그룹이 통째로 무너졌고, 상세를 항목마다 부르는 우회(N+1)를 검토했다.
  * **필드가 오면서 그 우회는 필요 없어졌다** — 목록 한 번으로 카드가 다 채워진다.
  */
-const toRecordFromListItem = (tree: TreeListItem): TimelineRecord => ({
+export const toRecordFromListItem = (tree: TreeListItem): TimelineRecord => ({
   // 기록 id 가 곧 나무 id 다. 화면이 문자열로 다루므로 여기서 맞춘다.
   id: String(tree.treeId),
   placeName: tree.name,
@@ -57,30 +56,12 @@ const toRecordFromListItem = (tree: TreeListItem): TimelineRecord => ({
   isFavorite: tree.isFavorite,
 });
 
-/**
- * 타임라인 목록 조회. `GET /trees?page=&size=`
- *
- * 지도(`home/api/treesApi`)와 같은 엔드포인트지만 쓰는 모양이 달라 매핑을 따로 둔다 —
- * 지도는 마커(좌표 중심), 여기는 기록(날짜·사진 중심)이다.
- */
-export const getTimelines = async ({
-  page = 1,
-  size = TIMELINE_PAGE_SIZE,
-}: { page?: number; size?: number } = {}): Promise<TimelinePage> => {
-  const { data } = await httpClient.get<ApiEnvelope<TreeListData>>('/trees', {
-    params: { page, size },
-  });
-
-  const body = data.data;
-  const items = body?.items ?? [];
-
-  return {
-    records: items.map(toRecordFromListItem),
-    page: body?.page ?? page,
-    size: body?.size ?? size,
-    totalCount: body?.total ?? items.length,
-  };
-};
+/*
+  `getTimelines()` 와 `TimelinePage` 는 지웠다 — 이 화면 몫으로 `GET /trees` 를 1페이지
+  받던 함수다. **다섯 소비처 중 여기만 1페이지였고**, 그래서 21번째 기록부터는 목록에도
+  검색에도 안 걸렸다(#200 과 같은 종류의 잘림). 지금은 원본 한 벌을 `select` 로 나눠 쓴다
+  (이슈 #237). 남은 `toRecordFromListItem` 이 그 `select` 다.
+*/
 
 /**
  * 기록 수정. `PATCH /trees/{treeId}`

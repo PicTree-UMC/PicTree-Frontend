@@ -1,4 +1,4 @@
-import { fetchAllTreeItems } from '@/features/home/api/treesApi';
+import type { TreeListItem } from '@/features/home/types/tree';
 import { toCalendarDate } from '@/shared/lib/calendar';
 
 /** 캘린더 아래 그룹 리스트가 쓰는 나무 한 그루. */
@@ -45,17 +45,16 @@ function localTimeLabel(value: string): string {
  * 날짜별로 묶은 내 나무들.
  *
  * ⚠️ **`GET /trees` 에 날짜 필터가 없다.** 그래서 달을 넘길 때마다 그 달치를 받는
- * `/calendar` 와 달리 여기는 `fetchAllTreeItems` 로 전부 받아 프론트가 날짜로 나눈다.
- * 날짜별 조회 API 가 생기면 이 함수의 첫 줄만 갈아끼우면 된다.
+ * `/calendar` 와 달리 여기는 나무 전체를 프론트가 날짜로 나눈다.
  *
- * `/calendar` 로 잔디만 그릴 때는 이 비용을 치를 이유가 없으므로, 호출은 **날짜를 처음
- * 누른 뒤에야** 시작된다(`useCalendarTrees` 의 `enabled`).
+ * ⚠️ **이 함수는 이제 요청을 하지 않는다** — 원본(`useAllTrees`)을 받아 나누기만 하는
+ * 순수 변환이고, `select` 자리에서 돈다(이슈 #237). 예전에는 여기서 `fetchAllTreeItems`
+ * 를 직접 불러 캘린더 몫의 전체 순회가 따로 나갔다.
  *
  * 날짜를 못 읽는 나무는 뺀다 — 붙일 칸이 없다. 서버가 `createdAt` 을 빼먹거나 파싱이
  * 실패할 때의 방어이고, 정상 응답에서는 아무것도 빠지지 않는다.
  */
-export async function getTreesByDate(): Promise<TreesByDate> {
-  const trees = await fetchAllTreeItems();
+export function groupTreesByDate(trees: TreeListItem[]): TreesByDate {
   const byDate: TreesByDate = {};
 
   for (const tree of trees) {

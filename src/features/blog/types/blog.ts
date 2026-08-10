@@ -121,7 +121,12 @@ export interface BlogTreeRecord {
   description: string;
   latitude: number;
   longitude: number;
-  address: string;
+  /*
+    `address` 는 지웠다 — 이 레코드를 그리는 어느 화면도 읽지 않았고, 원본
+    `TreeListItem`(=`GET /trees` 목록)에도 없는 필드다. 블로그 쪽 로컬 타입만
+    `address?: string | null` 로 들고 있으면서 "응답에 포함되는 경우가 있어" 라는
+    주석을 달아 뒀는데, 쓰는 데가 없으니 확인할 방법도 없었다(이슈 #237).
+  */
   /** 기록 당시 기분 이모지 (예: "😍"). */
   mood: string;
   /**

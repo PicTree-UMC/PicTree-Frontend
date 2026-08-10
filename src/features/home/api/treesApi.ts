@@ -1,5 +1,4 @@
 import { httpClient } from '@/shared/lib/httpClient';
-import { useAuthStore } from '@/features/auth/store/authStore';
 import type { MapMarkerData } from '../hooks/useMapMarkers';
 import type {
   ApiEnvelope,
@@ -11,8 +10,7 @@ import type {
   TreeListData,
   TreeListItem,
 } from '../types/tree';
-import { detailToMarker, listItemToMarker } from '../lib/treeMapping';
-import { DEMO_MARKERS } from '../mocks/markers';
+import { detailToMarker } from '../lib/treeMapping';
 
 /**
  * 나무(지도) API 레이어.
@@ -21,8 +19,6 @@ import { DEMO_MARKERS } from '../mocks/markers';
  * 토큰이 없거나 API 호출이 실패하면 목데이터로 폴백한다.
  * 프로덕션(배포)에서는 폴백 없이 실 API 만 사용하고 에러는 그대로 노출한다.
  */
-const hasToken = () => Boolean(useAuthStore.getState().accessToken);
-const USE_MOCK_FALLBACK = import.meta.env.DEV;
 
 /** 서버가 허용하는 최대 페이지 크기(`TreePagination.MAX_SIZE`). */
 const MAX_PAGE_SIZE = 100;
@@ -85,16 +81,12 @@ export async function fetchAllTreeItems(): Promise<TreeListItem[]> {
 */
 
 /** 지도에 찍을 내 나무 목록 조회. */
-export const getTrees = async (): Promise<MapMarkerData[]> => {
-  if (!hasToken()) return USE_MOCK_FALLBACK ? DEMO_MARKERS : [];
-
-  try {
-    return (await fetchAllTreeItems()).map(listItemToMarker);
-  } catch (error) {
-    if (USE_MOCK_FALLBACK) return DEMO_MARKERS;
-    throw error;
-  }
-};
+/*
+  `getTrees()` 는 지웠다 — `fetchAllTreeItems()` 결과를 마커로 옮기고 DEV 목 폴백을
+  씌우던 래퍼였는데, 그 둘이 각각 원본 쿼리(`useAllTrees`)와 지도 훅(`useTrees`)으로
+  갈라졌다(이슈 #237). **폴백을 api 레이어에 두면 그 함수를 쓰는 곳마다 가짜 `treeId`
+  가 흘러든다** — 동선 후보가 이 파일 재사용을 일부러 피했던 이유가 그것이었다.
+*/
 
 /*
   `getNearbyTrees`(GET /trees/nearby)는 지웠다. 부르는 곳이 지도 위 안내 카드 하나뿐이었는데,
