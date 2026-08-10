@@ -47,7 +47,7 @@ export function WithdrawModal({ isWithdrawing, onCancel, onConfirm }: Props) {
           <button
             type="button"
             onClick={onCancel}
-            className="h-[38px] w-[92px] rounded-[12px] bg-[#D9D9D9] text-[15px] font-medium text-[#2C3930]"
+            className="h-[38px] w-[92px] rounded-[12px] bg-line text-[15px] font-medium text-[#2C3930]"
           >
             취소
           </button>

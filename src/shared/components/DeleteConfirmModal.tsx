@@ -105,7 +105,7 @@ export function DeleteConfirmModal({
         <div className="mt-5 flex justify-center gap-[18px]">
           <button
             type="button"
-            className="h-[39px] w-[92px] rounded-xl bg-[#e4e5e6] text-base font-medium text-[#60655c] disabled:opacity-50"
+            className="h-[39px] w-[92px] rounded-xl bg-line-soft text-base font-medium text-[#60655c] disabled:opacity-50"
             onClick={onClose}
             disabled={isDeleting}
           >

@@ -183,7 +183,7 @@ export function PremiumPage() {
           <PremiumNavBar />
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-5">
             <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-700" />
-            <p className="text-[15px] font-medium text-[#5B6B38]">요금제를 불러오는 중...</p>
+            <p className="text-[15px] font-medium text-pictree-700">요금제를 불러오는 중...</p>
           </div>
         </div>
       </main>

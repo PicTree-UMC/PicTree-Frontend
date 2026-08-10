@@ -83,7 +83,7 @@ export function ProfilePage() {
             <button
               type="button"
               onClick={() => navigate(ROUTES.auth, { replace: true })}
-              className="mt-2 rounded-xl bg-[#5B6B38] px-3 py-1 text-[13px] font-medium text-white"
+              className="mt-2 rounded-xl bg-pictree-700 px-3 py-1 text-[13px] font-medium text-white"
             >
               로그인 화면으로
             </button>
@@ -97,7 +97,7 @@ export function ProfilePage() {
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-2 rounded-xl bg-[#5B6B38] px-3 py-1 text-[13px] font-medium text-white"
+              className="mt-2 rounded-xl bg-pictree-700 px-3 py-1 text-[13px] font-medium text-white"
             >
               다시 시도
             </button>

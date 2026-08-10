@@ -19,14 +19,21 @@ interface SheetProps {
   dim?: keyof typeof DIM_CLASS;
   /** 손잡이 표시 + 끌어 닫기. 손잡이가 없으면 끌 수도 없다. */
   handle?: boolean;
-  /** 손잡이 색. 배경이 밝은 시트는 진하게, 어두운 시트는 흐리게 쓴다. */
+  /**
+   * 손잡이 색. 배경이 밝은 시트는 진하게, 어두운 시트는 흐리게 쓴다.
+   *
+   * ⚠️ **여기만 hex 인 것은 실수가 아니다** — 값이 인라인 `style={{ backgroundColor }}` 로
+   * 들어가서 Tailwind 클래스(`bg-line` 등)가 닿지 않는다. 토큰으로 바꾸려면 prop 을 색이 아니라
+   * 클래스명으로 받도록 API 를 바꿔야 하는데, 그건 색 정리(#58)의 범위가 아니라 뒀다.
+   * 실제로 쓰이는 값은 둘뿐이다: 기본 INK(`#2c3930`), 흰 바닥 시트는 LINE(`#D9D9D9`).
+   */
   handleColor?: string;
   /**
    * 손잡이 크기.
    *
    * - `wide` — 134×5px. 이 셸이 생길 때 있던 시트들이 쓰던 값이라 기본값으로 남겨 뒀다.
    * - `grip` — 40×4px. **동선 만들기 ②(`RoutePlaceStrip`)의 손잡이**이고, 시트를 이쪽으로
-   *   통일해 가는 중이다. 흰 바닥 시트에서 유일하게 '선'인 요소라 LINE 회색(#d9d9d9)과 짝이다.
+   *   통일해 가는 중이다. 흰 바닥 시트에서 유일하게 '선'인 요소라 LINE 회색(`bg-line`)과 짝이다.
    *
    * ⚠️ 기본값을 아직 안 바꾼 이유: 이 셸을 쓰는 시트가 아홉이라, 한꺼번에 뒤집으면 이번
    * 변경과 무관한 화면까지 같이 움직인다. 옮길 때마다 이 값을 `grip` 으로 넘기고, 남는 게
@@ -85,7 +92,7 @@ export function Sheet({
   label,
   dim = 'light',
   handle = true,
-  handleColor = '#111',
+  handleColor = '#2c3930',
   handleSize = 'wide',
   animateIn = true,
   top,

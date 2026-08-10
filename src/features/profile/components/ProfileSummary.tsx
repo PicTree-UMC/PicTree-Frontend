@@ -36,10 +36,10 @@ function StatTile({
   return (
     /* 껍데기는 `SettingsList` 의 카드와 같은 값이다 — 같은 바닥에 놓이는 흰 면이라
        한쪽만 그림자를 쓰면 두 카드가 다른 높이에 떠 있는 것처럼 보인다. */
-    <div className="flex items-center gap-[11px] rounded-xl border border-[#ECECEC] bg-white p-[13px]">
+    <div className="flex items-center gap-[11px] rounded-xl border border-line-soft bg-white p-[13px]">
       <span
         aria-hidden
-        className="grid size-[30px] flex-none place-items-center rounded-[9px] bg-[#ECF6D8] text-[16px] leading-none"
+        className="grid size-[30px] flex-none place-items-center rounded-[9px] bg-pictree-100 text-[16px] leading-none"
       >
         {icon}
       </span>
@@ -47,7 +47,7 @@ function StatTile({
       <div className="min-w-0">
         {value === null ? (
           /* 흰 칸 위라 크림 띠의 #EDE4C4 가 아니라 헤어라인 회색을 쓴다. */
-          <div className="h-[23px] w-12 animate-pulse rounded bg-[#ECECEC]" />
+          <div className="h-[23px] w-12 animate-pulse rounded bg-line-soft" />
         ) : (
           <p className="text-[20px] font-medium leading-tight text-[#2C3930]">{value}</p>
         )}
@@ -185,7 +185,7 @@ export function ProfileSummary() {
         사진 없는 기록은 상한이 없다 — '저장 공간' 으로 넓히면 상한이 없는 것까지 센
         값처럼 읽힌다.
       */}
-      <section className="rounded-xl border border-[#ECECEC] bg-white p-[15px]">
+      <section className="rounded-xl border border-line-soft bg-white p-[15px]">
         <div className="flex items-baseline">
           <h2 className="text-[15px] font-medium text-[#2C3930]">사진 저장 용량</h2>
           <span className="ml-auto text-[15px] font-medium text-[#2C3930]">
@@ -200,14 +200,14 @@ export function ProfileSummary() {
           aria-valuemax={100}
           aria-valuenow={Math.round(usagePercent)}
           /*
-            ⚠️ 트랙이 #E0D5AF 에서 #D9D9D9 로 바뀌었다. 그 값은 크림 띠(#F6F0D7) 위라
+            ⚠️ 트랙이 #E0D5AF 에서 LINE(`bg-line`) 으로 바뀌었다. 그 값은 크림 띠(#F6F0D7) 위라
             한 단 진하게 고른 것이었는데, 막대가 흰 칸 안으로 들어오면서 근거가 뒤집혔다 —
             띠 기준 색을 흰 바닥에 그대로 두면 필요 이상으로 탁해진다.
           */
-          className="mt-[11px] h-2 w-full overflow-hidden rounded-full bg-[#D9D9D9]"
+          className="mt-[11px] h-2 w-full overflow-hidden rounded-full bg-line"
         >
           <div
-            className="h-full rounded-full bg-[#5B6B38] transition-[width]"
+            className="h-full rounded-full bg-pictree-700 transition-[width]"
             style={{ width: `${usagePercent}%` }}
           />
         </div>

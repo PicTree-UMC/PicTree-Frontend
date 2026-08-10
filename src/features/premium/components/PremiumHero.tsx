@@ -27,7 +27,7 @@ export function PremiumHero() {
         표지 글자처럼 읽힌다. ⚠️ 아래 헤드라인의 `tracking-[-0.01em]`(음수)와 반대 방향인
         게 맞다 — 저쪽은 27px 큰 글자라 오히려 조여야 한 덩어리로 읽힌다.
       */}
-      <p className="mt-20 text-[15px] font-medium uppercase tracking-[0.12em] text-[#5B6B38]">
+      <p className="mt-20 text-[15px] font-medium uppercase tracking-[0.12em] text-pictree-700">
         PicTree Premium
       </p>
 

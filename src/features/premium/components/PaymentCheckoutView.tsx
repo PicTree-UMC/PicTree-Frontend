@@ -157,7 +157,7 @@ export function PaymentCheckoutView({
                     테두리는 2px GREEN-700 — 1px 로는 흰 카드 위에서 두께 차이가 안 보인다.
                   */
                   className={`flex w-full items-center gap-3 rounded-xl bg-white px-5 py-4 text-left ${
-                    active ? 'border-2 border-[#5B6B38]' : 'border border-[#ECECEC]'
+                    active ? 'border-2 border-pictree-700' : 'border border-line-soft'
                   }`}
                 >
                   <img src={cardIcon} alt="" className="h-6 w-6 shrink-0" />
@@ -194,10 +194,10 @@ export function PaymentCheckoutView({
               onClick={() => setSelected(NEW_CARD)}
               disabled={isPending}
               className={`flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed px-5 py-4 ${
-                isNewCard ? 'border-[#5B6B38] bg-white' : 'border-[#788F4A] bg-transparent'
+                isNewCard ? 'border-pictree-700 bg-white' : 'border-pictree-500 bg-transparent'
               }`}
             >
-              <span className="text-[17px] font-medium text-[#5B6B38]">
+              <span className="text-[17px] font-medium text-pictree-700">
                 + 다른 카드로 결제
               </span>
             </button>
@@ -213,7 +213,7 @@ export function PaymentCheckoutView({
           **읽기를 여기서 멈추는 것**이다 — 위는 확인할 것들이고 아래는 고지다. 카드 목록과
           금액 사이는 여백(32px)만으로 갈린다.
 
-          ⚠️ 선 색은 INK 반투명이다. `#ECECEC` 헤어라인(§8)은 흰 카드 위에서 쓰라고 고른
+          ⚠️ 선 색은 INK 반투명이다. `border-line-soft` 헤어라인(§8)은 흰 카드 위에서 쓰라고 고른
           값이라 이 그라데이션 위에서는 거의 안 보인다 — 바닥이 색을 갖는 화면에서는 선도
           바닥을 따라 어두워져야 한다(크림 위 `RouteCreatePage` 가 같은 방식이다).
         */}
@@ -242,7 +242,7 @@ export function PaymentCheckoutView({
           type="button"
           onClick={handleSubmit}
           disabled={isPending}
-          className="h-[52px] w-full rounded-xl bg-pictree-700 text-[17px] font-medium text-white disabled:bg-[#ECECEC] disabled:text-[#60655C]"
+          className="h-[52px] w-full rounded-xl bg-pictree-700 text-[17px] font-medium text-white disabled:bg-line-soft disabled:text-[#60655C]"
         >
           {isPending ? '결제 중...' : isNewCard ? '카드 등록하고 결제하기' : '결제하기'}
         </button>

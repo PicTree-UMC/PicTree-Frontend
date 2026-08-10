@@ -32,12 +32,12 @@ export function BlogPage() {
 
       {isLoading ? (
         <div className="grid min-h-[55vh] place-items-center" role="status" aria-label="블로그 목록을 불러오는 중">
-          <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#788f4a]" />
+          <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
         </div>
       ) : fetchError ? (
         <div className="flex min-h-[55vh] flex-col items-center justify-center px-5 text-center">
           <p className="text-[15px] text-[#60655c]">블로그 목록을 불러오지 못했어요.</p>
-          <button type="button" onClick={fetchSavedBlogs} className="mt-4 rounded-xl bg-[#5b6b38] px-5 py-3 text-[15px] font-medium text-white">
+          <button type="button" onClick={fetchSavedBlogs} className="mt-4 rounded-xl bg-pictree-700 px-5 py-3 text-[15px] font-medium text-white">
             다시 시도
           </button>
         </div>

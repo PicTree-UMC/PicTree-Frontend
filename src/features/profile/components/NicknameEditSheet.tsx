@@ -57,7 +57,7 @@ export function NicknameEditSheet({ currentNickname, isSaving, onClose, onSubmit
 
       <div
         className={`mt-3 flex items-center gap-2 rounded-xl border bg-white px-4 py-3 ${
-          isEmpty || isTooLong ? 'border-[#DC2626]' : 'border-[#ECECEC]'
+          isEmpty || isTooLong ? 'border-[#DC2626]' : 'border-line-soft'
         }`}
       >
         <input
@@ -90,7 +90,7 @@ export function NicknameEditSheet({ currentNickname, isSaving, onClose, onSubmit
         <button
           type="button"
           onClick={onClose}
-          className="h-[44px] flex-1 rounded-[12px] bg-[#D9D9D9] text-[15px] font-medium text-[#2C3930]"
+          className="h-[44px] flex-1 rounded-[12px] bg-line text-[15px] font-medium text-[#2C3930]"
         >
           취소
         </button>
@@ -98,7 +98,7 @@ export function NicknameEditSheet({ currentNickname, isSaving, onClose, onSubmit
           type="button"
           onClick={handleSubmit}
           disabled={!canSave}
-          className="h-[44px] flex-1 rounded-[12px] bg-[#5B6B38] text-[15px] font-medium text-white disabled:bg-[#D9D9D9] disabled:text-[#60655C]"
+          className="h-[44px] flex-1 rounded-[12px] bg-pictree-700 text-[15px] font-medium text-white disabled:bg-line disabled:text-[#60655C]"
         >
           {isSaving ? '저장 중' : '저장'}
         </button>

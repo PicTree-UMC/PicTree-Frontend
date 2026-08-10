@@ -84,7 +84,7 @@ function SheetMenuItem({ icon, title, desc, onClick }: SheetMenuItemProps) {
     >
       <span className="shrink-0">{icon}</span>
       <span className="min-w-0">
-        <span className="block text-[15px] font-medium text-[#111]">{title}</span>
+        <span className="block text-[15px] font-medium text-[#2c3930]">{title}</span>
         <span className="block text-[11px] font-medium text-[#2c3930]">{desc}</span>
       </span>
     </button>
@@ -112,12 +112,12 @@ export function BottomSheet({
     >
       {/* 헤더: 제목 + 날짜, 미니 동선 */}
       <div className="flex items-baseline gap-2.5">
-        <h2 className="truncate text-xl font-bold text-[#111]">{route.title}</h2>
+        <h2 className="truncate text-xl font-bold text-[#2c3930]">{route.title}</h2>
         <span className="shrink-0 text-[13px] font-medium text-[#2c3930]">{route.date}</span>
       </div>
       <PlaceTrail places={route.places} className="mt-4" />
 
-      <hr className="my-4 border-t border-[#e5e5e5]" />
+      <hr className="my-4 border-t border-line-soft" />
 
       {/* 메뉴 */}
       <div className="flex flex-col">

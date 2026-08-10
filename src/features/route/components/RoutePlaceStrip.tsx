@@ -298,7 +298,7 @@ export function RoutePlaceStrip({
         >
           {/* 손잡이는 흰 바닥에서 유일하게 '선'인 요소라 LINE 회색을 쓴다. 크림이었을 땐
               초록 바닥 위에서 밝게 떠 보였지만 흰 바닥에선 아예 사라진다. */}
-          <span className="h-1 w-10 rounded-full bg-[#d9d9d9]" />
+          <span className="h-1 w-10 rounded-full bg-line" />
         </button>
 
         {/* 접혔을 때만. 그때는 시트가 무엇인지 말해줄 게 이 한 줄뿐이다 — 펼치면 목록이
@@ -452,7 +452,7 @@ export function RoutePlaceStrip({
                       // 쓴다 — 흰 속에 회색 테두리만 남은 빈 틀.
                       className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-[14px] transition-colors ${
                         disabled
-                          ? 'border border-[#d9d9d9] bg-white'
+                          ? 'border border-line bg-white'
                           : 'bg-pictree-100 shadow-[0_2px_6px_rgba(0,0,0,0.12)]'
                       }`}
                     >

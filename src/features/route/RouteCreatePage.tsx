@@ -156,8 +156,8 @@ export function RouteCreatePage() {
       <div className="mt-4 flex-1 overflow-y-auto px-5">
         {isLoading ? (
           <div className="flex h-full flex-col items-center justify-center gap-3">
-            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-[#89986d]" />
-            <p className="text-[15px] font-medium text-[#5c6f2b]">방문한 날짜를 불러오는 중...</p>
+            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
+            <p className="text-[15px] font-medium text-pictree-700">방문한 날짜를 불러오는 중...</p>
           </div>
         ) : isError || isOffline ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-3">

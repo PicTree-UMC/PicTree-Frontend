@@ -135,18 +135,18 @@ export function PlanComparison({
         })}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-[#ECECEC] bg-white">
-        <div className="grid grid-cols-[1.4fr_1fr_1fr] border-b border-[#ECECEC] px-4 py-3 text-[13px] text-[#60655C]">
+      <div className="mt-4 overflow-hidden rounded-2xl border border-line-soft bg-white">
+        <div className="grid grid-cols-[1.4fr_1fr_1fr] border-b border-line-soft px-4 py-3 text-[13px] text-[#60655C]">
           <span>혜택</span>
           <span className="text-center">무료</span>
-          <span className="text-center text-[#5B6B38]">{planSummary(selected).shortName}</span>
+          <span className="text-center text-pictree-700">{planSummary(selected).shortName}</span>
         </div>
 
         {rows.map((row, i) => (
           <div
             key={row.label}
             className={`grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 py-3.5 text-[15px] ${
-              i > 0 ? 'border-t border-[#ECECEC]' : ''
+              i > 0 ? 'border-t border-line-soft' : ''
             }`}
           >
             <span className="text-[#2C3930]">{row.label}</span>
@@ -155,7 +155,7 @@ export function PlanComparison({
               차이는 유료 열에 색을 주는 쪽으로만 낸다.
             */}
             <span className="text-center text-[#60655C]">{row.free}</span>
-            <span className="text-center font-medium text-[#5B6B38]">{row.paid}</span>
+            <span className="text-center font-medium text-pictree-700">{row.paid}</span>
           </div>
         ))}
       </div>

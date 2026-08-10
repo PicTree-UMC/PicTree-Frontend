@@ -69,7 +69,7 @@ export function ResultStep({
           <button
             type="button"
             onClick={onBack}
-            className="h-[54px] flex-1 rounded-xl bg-[#e4e5e6] text-[15px] font-medium text-[#60655c]"
+            className="h-[54px] flex-1 rounded-xl bg-line-soft text-[15px] font-medium text-[#60655c]"
           >
             이전 단계로
           </button>
@@ -124,7 +124,7 @@ export function ResultStep({
     <div className="blog-result-enter flex flex-1 flex-col pb-6 pt-2">
       <article className="mx-5 overflow-hidden rounded-2xl border border-[#e7e8dc] bg-white shadow-[0_5px_18px_rgba(45,51,34,0.06)]">
         <header className="px-5 pb-5 pt-6">
-          <span className="text-[12px] font-medium text-[#7b8f4d]">여행 기록</span>
+          <span className="text-[12px] font-medium text-pictree-700">여행 기록</span>
           <h2 className="mt-2 text-[23px] font-bold leading-[1.4] tracking-[-0.02em] text-[#20251f]">
             {draft.title}
           </h2>
@@ -173,7 +173,7 @@ export function ResultStep({
       </article>
 
       <div className="mt-auto flex gap-3 px-5 pt-5">
-        <button type="button" className="h-[54px] flex-1 rounded-xl bg-[#e4e5e6] text-[15px] font-medium text-[#60655c]" onClick={handleCopy}>복사하기</button>
+        <button type="button" className="h-[54px] flex-1 rounded-xl bg-line-soft text-[15px] font-medium text-[#60655c]" onClick={handleCopy}>복사하기</button>
         <button
           type="button"
           className="h-[54px] flex-[2] rounded-xl bg-pictree-700 text-[15px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)] disabled:cursor-not-allowed disabled:opacity-60"

@@ -73,7 +73,7 @@ export function PhotoAlbumSheet({ route, onClose }: PhotoAlbumSheetProps) {
         ) : (
           <ul className="mt-[22px] grid grid-cols-2 gap-5">
             {photos.map((photo) => (
-              <li key={photo.treeId} className="aspect-square overflow-hidden bg-[#d9d9d9]">
+              <li key={photo.treeId} className="aspect-square overflow-hidden bg-line">
                 {/*
                     사진이 없거나(url=null) 못 불러오면 나무 폴백으로 떨어진다.
                     예전엔 앱 아이콘을 깔았는데, 아이콘에 둥근 모서리가 그려져 있어

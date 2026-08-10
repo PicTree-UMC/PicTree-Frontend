@@ -115,7 +115,7 @@ export function BlogCreatePage() {
   if (isPending) {
     return (
       <main className="grid min-h-full place-items-center bg-[#fffcef]" role="status" aria-label="PICTREE 토큰 잔량을 확인하는 중">
-        <div className="size-8 animate-spin rounded-full border-[3px] border-[#c5d89d] border-t-[#788f4a]" />
+        <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
       </main>
     );
   }

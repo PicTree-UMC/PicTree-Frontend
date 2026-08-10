@@ -58,7 +58,7 @@ function SocialLoginButton({
     <Button
       unstyled
       className={`flex h-[4.3125rem] w-full items-center justify-center gap-3 rounded-[1.5rem] font-['KOROAD'] text-[1.125rem] font-bold text-[#2C3930] transition ${
-        isKakao ? 'bg-[#FFEC9A] hover:bg-[#f7df70]' : 'bg-[#ECECEC] hover:bg-[#e2e2e2]'
+        isKakao ? 'bg-[#FFEC9A] hover:bg-[#f7df70]' : 'bg-line-soft hover:bg-line'
       }`}
       type="button"
       onClick={onClick}

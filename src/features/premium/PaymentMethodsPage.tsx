@@ -83,7 +83,7 @@ export function PaymentMethodsPage() {
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-2 rounded-xl bg-[#5B6B38] px-4 py-1.5 text-[13px] font-medium text-white"
+              className="mt-2 rounded-xl bg-pictree-700 px-4 py-1.5 text-[13px] font-medium text-white"
             >
               다시 시도
             </button>
@@ -92,7 +92,7 @@ export function PaymentMethodsPage() {
           // 카드 한 장 높이만큼 자리를 잡아 둬 등록 버튼이 위로 튀지 않게 한다.
           <div className="h-[86px] animate-pulse rounded-xl bg-[#F6F0D7]" />
         ) : cards.length === 0 ? (
-          <div className="rounded-xl border border-[#ECECEC] bg-white px-5 py-8 text-center">
+          <div className="rounded-xl border border-line-soft bg-white px-5 py-8 text-center">
             <p className="text-[15px] text-[#2C3930]">등록된 카드가 없어요.</p>
             <p className="mt-1 text-[13px] text-[#60655C]">
               카드를 등록해 두면 구독이 자동으로 갱신돼요.
@@ -107,7 +107,7 @@ export function PaymentMethodsPage() {
               return (
                 <li
                   key={card.billingKeyId}
-                  className="flex items-center gap-3 rounded-xl border border-[#ECECEC] bg-white px-5 py-4"
+                  className="flex items-center gap-3 rounded-xl border border-line-soft bg-white px-5 py-4"
                 >
                   <img src={cardIcon} alt="" className="h-6 w-6 shrink-0" />
 
@@ -149,7 +149,7 @@ export function PaymentMethodsPage() {
           type="button"
           onClick={handleRegister}
           disabled={register.isPending}
-          className="h-12 rounded-xl bg-[#ECF6D8] text-[17px] font-medium text-[#2C3930] disabled:opacity-60"
+          className="h-12 rounded-xl bg-pictree-100 text-[17px] font-medium text-[#2C3930] disabled:opacity-60"
         >
           {register.isPending ? '카드 등록 창을 여는 중...' : '카드 등록'}
         </button>

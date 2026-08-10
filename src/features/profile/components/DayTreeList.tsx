@@ -31,7 +31,7 @@ function formatDayTitle(date: string) {
  * 그대로 얹는 34px **아이콘** 자리이고(주석에 명시), 부제도 일부러 막아 뒀다 — 줄마다
  * 두 줄짜리 설명이 붙으면 카드가 목록처럼 읽힌다는 이유다. 여기 줄은 정확히 그 목록이라
  * 사진 썸네일 + 한줄평이 필요하다. 대신 **카드 껍데기는 같은 규칙**을 지킨다:
- * 1px `#ECECEC` 헤어라인, `rounded-xl`, 구분선은 글자 시작점(72px)에 맞춰 들여쓴다.
+ * 1px `border-line-soft` 헤어라인, `rounded-xl`, 구분선은 글자 시작점(72px)에 맞춰 들여쓴다.
  */
 export function DayTreeList({ date, trees, isPending, isError, onRetry }: DayTreeListProps) {
   return (
@@ -41,12 +41,12 @@ export function DayTreeList({ date, trees, isPending, isError, onRetry }: DayTre
       <h2 className="mb-2 px-1 text-[17px] font-medium text-[#2c3930]">{formatDayTitle(date)}</h2>
 
       {isPending ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-[#ECECEC] bg-white py-10">
-          <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-[#89986d]" />
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-line-soft bg-white py-10">
+          <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
           <p className="text-[15px] text-[#60655C]">나무를 불러오는 중...</p>
         </div>
       ) : isError ? (
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-[#ECECEC] bg-white py-8">
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-line-soft bg-white py-8">
           <p className="text-[15px] font-medium text-[#2c3930]">나무를 불러오지 못했어요</p>
           <button
             type="button"
@@ -61,15 +61,15 @@ export function DayTreeList({ date, trees, isPending, isError, onRetry }: DayTre
           잔디가 깔린 날인데 목록이 비었다면 서버의 `/calendar` 집계와 `/trees` 목록이
           어긋난 것이다. 그래도 화면은 말이 되게 둔다 — 빈 카드를 그리는 것보다 낫다.
         */
-        <p className="rounded-xl border border-[#ECECEC] bg-white py-8 text-center text-[15px] text-[#60655C]">
+        <p className="rounded-xl border border-line-soft bg-white py-8 text-center text-[15px] text-[#60655C]">
           이 날 심은 나무가 없어요
         </p>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[#ECECEC] bg-white">
+        <div className="overflow-hidden rounded-xl border border-line-soft bg-white">
           {trees.map((tree, index) => (
             <div key={tree.treeId}>
               {index > 0 && (
-                <div aria-hidden className="h-px bg-[#ECECEC]" style={{ marginLeft: TEXT_INSET_PX }} />
+                <div aria-hidden className="h-px bg-line-soft" style={{ marginLeft: TEXT_INSET_PX }} />
               )}
 
               <div className="flex items-center gap-3 px-4 py-3">
@@ -77,7 +77,7 @@ export function DayTreeList({ date, trees, isPending, isError, onRetry }: DayTre
                 <Photo
                   src={tree.imageUrl}
                   className="size-11 shrink-0 rounded-lg object-cover"
-                  fallback={<span className="size-11 shrink-0 rounded-lg bg-[#D9D9D9]" />}
+                  fallback={<span className="size-11 shrink-0 rounded-lg bg-line" />}
                 />
 
                 <div className="min-w-0 flex-1">

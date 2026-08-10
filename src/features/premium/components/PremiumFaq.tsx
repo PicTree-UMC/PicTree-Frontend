@@ -43,7 +43,7 @@ export function PremiumFaq() {
           const isOpen = openQuestion === item.q;
 
           return (
-            <div key={item.q} className="rounded-xl border border-[#ECECEC] bg-white px-4 py-3.5">
+            <div key={item.q} className="rounded-xl border border-line-soft bg-white px-4 py-3.5">
               <button
                 type="button"
                 onClick={() => setOpenQuestion(isOpen ? null : item.q)}
