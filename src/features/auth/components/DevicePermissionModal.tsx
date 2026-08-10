@@ -33,7 +33,7 @@ export function DevicePermissionModal({ isOpen, onConfirm }: DevicePermissionMod
         <div className="mt-4 rounded-[1.125rem] bg-white px-5 py-4">
           <PermissionRow icon={<CameraIcon />} title="카메라 접근" description="즉석에서 사진을 촬영하기 위해 사용해요." />
           <PermissionRow icon={<AlbumIcon />} title="사진 · 앨범 접근" description="이미지 업로드가 필요할 때 사용해요" />
-          <PermissionRow icon={<LocationIcon />} title="위치 정보 · 사진 EXIF 위치" description="장소와 동선을 지도에 기록하기 위해 사용해요" />
+          <PermissionRow icon={<LocationIcon />} title="위치 정보" description="장소와 동선을 지도에 기록하기 위해 사용해요" />
         </div>
 
         <h3 className="mt-4 font-['KOROAD'] text-[1.125rem] font-bold text-ink">보관 및 삭제</h3>
