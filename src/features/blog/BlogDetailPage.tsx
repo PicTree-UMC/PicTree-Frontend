@@ -1,9 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getAIBlogDraftDetail } from './api/blogApi';
 import { formatDateRange, formatLongDate } from './lib/formatBlogDate';
-import { useBlogDraftStore } from './store/blogDraftStore';
+import { useBlogDraftDetail, useDeleteBlogDraft } from './hooks/useBlogDrafts';
 import { NavBar, Photo } from '@/shared/components';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
@@ -15,14 +13,11 @@ export function BlogDetailPage() {
   const numericDraftId = Number(draftId);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const deleteBlog = useBlogDraftStore((state) => state.deleteBlogAsync);
+  const { mutateAsync: deleteBlog } = useDeleteBlogDraft();
   const { showToast } = useToast();
 
-  const { data, isPending, isError, refetch } = useQuery({
-    queryKey: ['blog-drafts', 'detail', numericDraftId],
-    queryFn: () => getAIBlogDraftDetail(numericDraftId),
-    enabled: Number.isInteger(numericDraftId) && numericDraftId > 0,
-  });
+  // 인라인 useQuery 였다. 키를 훅으로 옮겨 목록·상세가 같은 네임스페이스를 공유한다.
+  const { data, isPending, isError, refetch } = useBlogDraftDetail(numericDraftId);
 
   const handleDelete = async () => {
     if (isDeleting) return;
