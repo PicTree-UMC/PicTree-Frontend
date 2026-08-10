@@ -100,7 +100,7 @@ const SECTIONS: Section[] = [
         icon: <IconPin />,
         title: "위치기반 기능",
         fields: [
-          { label: "항목", value: "현재 위치, 촬영 위치, 사진 EXIF 위치, 저장 장소의 위도·경도" },
+          { label: "항목", value: "현재 위치, 촬영 위치, 저장 장소의 위도·경도" },
           { label: "목적", value: "지도 기록, 동선 표시, 근처 장소 알림, 위치 보정" },
           { label: "기간", value: "기록 삭제 또는 회원 탈퇴 시까지" },
         ],
