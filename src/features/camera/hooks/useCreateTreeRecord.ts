@@ -2,10 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { createTree, uploadTreeImage } from '@/features/home/api/treesApi';
 import { treeKeys } from '@/features/home/hooks/useTrees';
-import { routePlaceCandidateKey } from '@/features/route/hooks/useRoutePlaceCandidates';
 import { treeStatsKeys } from '@/features/profile/hooks/useTreeStats';
 import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
-import { timelineKeys } from '@/features/timeline/hooks/useTimeline';
 import type { GeoCoords } from '@/shared/hooks/useGeolocation';
 import { dataUrlToFile } from '../lib/dataUrlToFile';
 
@@ -69,11 +67,14 @@ export function useCreateTreeRecord() {
     onSuccess: () => {
       // `list()` 가 아니라 `all` 이다 — 마이페이지 요약의 그루 수(`treeKeys.count()`)도
       // 같이 깨야 한다. 안 그러면 방금 심은 나무가 지도에는 뜨는데 개수는 그대로다.
+      /*
+        `['trees']` 하나가 원본(지도·타임라인·동선 후보·블로그)과 상세를 함께 덮는다.
+        예전에는 `timelineKeys.all`·`routePlaceCandidateKey` 를 더 나열해야 했다 —
+        같은 `/trees` 를 가공한 독립 키들이었기 때문이다(이슈 #237).
+      */
       queryClient.invalidateQueries({ queryKey: treeKeys.all });
-      queryClient.invalidateQueries({ queryKey: timelineKeys.all });
       // 동선 후보는 /routes 와 무관한 독립 키라 위 두 무효화가 닿지 않는다.
       // 안 지우면 staleTime(60s) 동안 방금 찍은 장소가 빠진 목록이 그대로 보인다.
-      queryClient.invalidateQueries({ queryKey: routePlaceCandidateKey });
       // 여행 캘린더도 마찬가지로 독립 키(`['calendar', 연, 월]`)다. 이게 빠져 있어서
       // 사진을 찍어도 동선·타임라인에만 뜨고 잔디는 그대로였다.
       queryClient.invalidateQueries({ queryKey: calendarKeys.all });
