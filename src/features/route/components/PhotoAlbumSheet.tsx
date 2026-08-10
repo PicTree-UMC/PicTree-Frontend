@@ -1,6 +1,28 @@
-import { NavBar, Photo, Sheet } from '@/shared/components';
+import { NavBar, Photo, Sheet, Skeleton } from '@/shared/components';
 import { Route } from '../types/route';
 import { useRoutePhotos } from '../hooks/useRoutePhotos';
+
+/**
+ * 앨범 격자가 오기 전 자리. 본문 격자와 같은 2열 · `gap-5` · 정사각.
+ *
+ * 시트가 화면 거의 전부를 덮으므로 세 줄이면 첫 화면이 찬다. 아래를 흐려 몇 장인지는
+ * 주장하지 않는다 — 사진이 두 장뿐인 동선도 흔하다.
+ */
+function AlbumSkeleton() {
+  return (
+    <ul
+      role="status"
+      aria-label="사진을 불러오는 중"
+      className="skeleton-fade-b mt-[22px] grid grid-cols-2 gap-5"
+    >
+      {Array.from({ length: 6 }, (_, index) => (
+        <li key={index}>
+          <Skeleton className="aspect-square w-full" />
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 interface PhotoAlbumSheetProps {
   route: Route;
@@ -53,9 +75,7 @@ export function PhotoAlbumSheet({ route, onClose }: PhotoAlbumSheetProps) {
         </p>
 
         {isLoading ? (
-          <div className="mt-[22px] flex justify-center">
-            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
-          </div>
+          <AlbumSkeleton />
         ) : isError ? (
           <div className="mt-[22px] flex flex-col items-center gap-4">
             <p className="text-[15px] font-medium text-ink">사진을 불러오지 못했어요</p>

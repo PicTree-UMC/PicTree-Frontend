@@ -222,6 +222,16 @@ select {
   mask-image: linear-gradient(to bottom, black calc(100% - 120px), transparent);
 }
 
+/*
+ * 같은 규칙의 가로판. 가로 스크롤 줄(동선 칩)에 쓴다 — 칩 개수도 "동선이 이만큼 있다"는
+ * 약속이라 셋을 그렸다가 하나로 줄면 눈에 띈다. 오른쪽을 흐리면 "옆으로 더 있다" 만
+ * 말한다. 스크롤 방향과 페이드 방향이 같아야 뜻이 맞으므로 세로줄에는 쓰지 않는다.
+ */
+.skeleton-fade-r {
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 72px), transparent);
+  mask-image: linear-gradient(to right, black calc(100% - 72px), transparent);
+}
+
 /* 스크롤바를 숨기는 유틸(가로 스크롤 캐러셀 등). 스크롤 기능은 유지, 막대만 감춘다. */
 .no-scrollbar {
   -ms-overflow-style: none; /* 구형 Edge/IE */
