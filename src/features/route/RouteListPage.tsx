@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BottomSheet } from './components/BottomSheet';
+import { RouteMenuSheet } from './components/RouteMenuSheet';
 import { PhotoAlbumSheet } from './components/PhotoAlbumSheet';
 import { RenameModal } from './components/RenameModal';
 import { useSavedRoutes } from './hooks/useSavedRoutes';
@@ -11,7 +11,7 @@ import { RouteListSkeleton } from './components/RouteListSkeleton';
 import { RouteIllustration } from './components/RouteIllustration';
 import { SavedRouteRoadmap } from './components/RouteRoadmap';
 import { ROUTES, journeyViewPath } from '../../shared/constants/routes';
-import { DeleteConfirmModal, DeleteIconButton } from '../../shared/components/DeleteConfirmModal';
+import { DeleteConfirmModal } from '../../shared/components/DeleteConfirmModal';
 
 /** 더보기(⋯) 아이콘 — 선택된 동선의 액션 시트를 연다. */
 function MoreIcon({ className }: { className?: string }) {
@@ -43,12 +43,12 @@ export function RouteListPage() {
   const [pendingSelectId, setPendingSelectId] = useState<number | null>(
     navigationState?.selectedRouteId ?? null,
   );
-  const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const [showMenuSheet, setShowMenuSheet] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPhotoAlbum, setShowPhotoAlbum] = useState(false);
   /** 앨범에서 되돌아온 경우 바텀시트를 애니메이션 없이 즉시 띄운다. */
-  const [animateBottomSheet, setAnimateBottomSheet] = useState(true);
+  const [animateMenuSheet, setAnimateMenuSheet] = useState(true);
 
   // 목록이 로드되거나 선택한 동선이 삭제되면 첫 동선으로 선택을 맞춘다.
   useEffect(() => {
@@ -84,7 +84,7 @@ export function RouteListPage() {
     if (!selectedRoute) return;
     renameMutation.mutate({ id: selectedRoute.id, title: newTitle });
     setShowRenameModal(false);
-    setShowBottomSheet(false);
+    setShowMenuSheet(false);
   };
 
   const isEmpty = routes.length === 0;
@@ -150,31 +150,30 @@ export function RouteListPage() {
 
             {selectedRoute && (
               <>
-                {/* 선택 동선 메타 + 액션(더보기 / 삭제) */}
+                {/*
+                  선택 동선 메타 + 더보기.
+
+                  **삭제 버튼이 여기 있었다.** 동선에 걸 수 있는 동작 다섯 중 넷은 시트를
+                  열어야 보이는데 삭제만 목록 옆에 상시로 떠 있어서, 가장 위험한 것이 가장
+                  누르기 쉬운 자리를 차지하고 있었다. 지금은 시트 맨 아래 ERROR 줄이다.
+
+                  장소 수는 11px light 였다 — 최소 13px 이고 굵기는 regular·medium 만 쓴다(§2).
+                */}
                 <div className="mt-5 flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-[13px] font-medium text-ink">{selectedRoute.date}</p>
-                    <p className="text-[11px] font-light text-ink-muted">
-                      {selectedRoute.placeCount}개 장소
-                    </p>
+                    <p className="text-[13px] text-ink-muted">{selectedRoute.placeCount}개 장소</p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <button
-                      onClick={() => {
-                        setAnimateBottomSheet(true);
-                        setShowBottomSheet(true);
-                      }}
-                      aria-label="동선 더보기"
-                      className="flex size-9 items-center justify-center rounded-full border border-pictree-300 bg-white text-ink"
-                    >
-                      <MoreIcon className="size-5" />
-                    </button>
-                    <DeleteIconButton
-                      label="동선 삭제"
-                      onClick={() => setShowDeleteModal(true)}
-                      className="size-9 border-[1.5px] border-error"
-                    />
-                  </div>
+                  <button
+                    onClick={() => {
+                      setAnimateMenuSheet(true);
+                      setShowMenuSheet(true);
+                    }}
+                    aria-label="동선 더보기"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full border border-pictree-300 bg-white text-ink"
+                  >
+                    <MoreIcon className="size-5" />
+                  </button>
                 </div>
 
                 {/* 로드맵: 장소 이동을 사진 노드 + 점선으로 표현.
@@ -188,26 +187,35 @@ export function RouteListPage() {
         )}
       </div>
 
-      {showBottomSheet && selectedRoute && (
-        <BottomSheet
+      {showMenuSheet && selectedRoute && (
+        <RouteMenuSheet
           route={selectedRoute}
-          onClose={() => setShowBottomSheet(false)}
-          animateIn={animateBottomSheet}
+          onClose={() => setShowMenuSheet(false)}
+          animateIn={animateMenuSheet}
           onMapView={() => navigate(journeyViewPath(selectedRoute.id))}
           onPhotoGallery={() => {
-            setShowBottomSheet(false);
+            setShowMenuSheet(false);
             setShowPhotoAlbum(true);
           }}
           // AI 블로그 작성 플로우로 이동. **이 동선 자체**를 넘긴다 — 초안 입력 단위가
           // 기간에서 동선으로 바뀌면서(이슈 #212) 작성 화면 1단계가 이미 정해진 셈이 된다.
           // 기간은 거기서 동선 상세로 도로 뽑으므로 여기서 계산해 넘길 것이 없다.
           onAIBlog={() => {
-            setShowBottomSheet(false);
+            setShowMenuSheet(false);
             navigate(ROUTES.blogCreate, { state: { routeId: selectedRoute.id } });
           }}
           onRename={() => {
-            setShowBottomSheet(false);
+            setShowMenuSheet(false);
             setShowRenameModal(true);
+          }}
+          /*
+            시트를 닫고 확인 모달로 넘긴다. **시트를 열어둔 채 모달을 얹지 않는다** —
+            층이 둘 겹치면 모달을 닫았을 때 무엇이 남는지가 흐려지고, 확인 모달은
+            자기 말고 다른 것이 화면에 남을 이유가 없는 자리다.
+          */
+          onDelete={() => {
+            setShowMenuSheet(false);
+            setShowDeleteModal(true);
           }}
         />
       )}
@@ -217,8 +225,8 @@ export function RouteListPage() {
           route={selectedRoute}
           onClose={() => {
             setShowPhotoAlbum(false);
-            setAnimateBottomSheet(false);
-            setShowBottomSheet(true);
+            setAnimateMenuSheet(false);
+            setShowMenuSheet(true);
           }}
         />
       )}
