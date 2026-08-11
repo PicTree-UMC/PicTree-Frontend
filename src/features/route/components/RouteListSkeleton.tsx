@@ -17,19 +17,40 @@ import { RouteRoadmapLoader } from './RouteRoadmapLoader';
  * ⚠️ 로드맵 높이가 실제와 달라도 괜찮다 — **페이지의 마지막 요소라 뒤에 밀릴 것이 없다.**
  * 스크롤 길이만 달라진다. 목록 골격에서 개수가 문제였던 건 아래에 내용이 이어졌기 때문이다.
  */
+/**
+ * 트레이 한 칸의 골격 — 원 + 이름 자리.
+ *
+ * 크기는 `RouteTray` 의 것과 같은 값이다(링 상자 66 / 칸 폭 72 / 원 56). 링은 회색 막대
+ * 하나로 흡수한다 — 로딩 중에는 고른 것이 없어 링 색이 말할 상태가 없다.
+ */
+function TrayItemSkeleton() {
+  return (
+    <div className="flex w-[72px] shrink-0 flex-col items-center gap-2">
+      <div className="flex size-[66px] items-center justify-center">
+        <Skeleton className="size-14 rounded-full" />
+      </div>
+      <Skeleton className="h-3 w-12 rounded" />
+    </div>
+  );
+}
+
 export function RouteListSkeleton() {
   return (
     <div role="status" aria-label="동선을 불러오는 중" className="flex flex-1 flex-col">
       {/*
-        칩 줄. 맨 왼쪽 + 버튼은 스크롤 밖에 고정된 실제 요소와 같은 자리이고,
-        오른쪽으로 흐려 개수를 주장하지 않는다(`RouteChips` 는 가로 스크롤이다).
+        동선 트레이. 맨 왼쪽 `새 동선` 칸은 스크롤 밖에 고정된 실제 요소와 같은 자리이고,
+        오른쪽으로 흐려 개수를 주장하지 않는다(`RouteTray` 는 가로 스크롤이다).
+
+        원 아래 이름은 길이가 제각각이라 골격에서는 짧은 막대로 통일한다 — 실제 이름 길이를
+        흉내 내면 데이터가 올 때 길이가 늘었다 줄었다 하는 것처럼 보인다.
       */}
-      <div className="flex items-start gap-2 pt-4">
-        <Skeleton className="h-10 w-[46px] shrink-0 rounded-full" />
-        <div className="skeleton-fade-r flex gap-2 overflow-hidden pb-1">
-          <Skeleton className="h-10 w-28 shrink-0 rounded-full" />
-          <Skeleton className="h-10 w-20 shrink-0 rounded-full" />
-          <Skeleton className="h-10 w-24 shrink-0 rounded-full" />
+      <div className="-mx-5 flex items-start gap-2 pl-5 pt-4">
+        <TrayItemSkeleton />
+        <div className="skeleton-fade-r flex gap-2 overflow-hidden">
+          <TrayItemSkeleton />
+          <TrayItemSkeleton />
+          <TrayItemSkeleton />
+          <TrayItemSkeleton />
         </div>
       </div>
 

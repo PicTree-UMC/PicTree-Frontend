@@ -225,7 +225,7 @@ export function RoutePlaceStrip({
    * 목록을 그 줄까지 굴린다.
    *
    * ⚠️ `scrollIntoView` 를 쓰지 않는다 — 조상 스크롤 컨테이너까지 함께 움직일 수 있다.
-   * 이 목록의 `scrollTop` 만 건드린다(`RouteChips` 와 같은 이유).
+   * 이 목록의 `scrollTop` 만 건드린다(`RouteTray` 와 같은 이유).
    * 위치는 `offsetTop` 이 아니라 rect 차이로 잰다 — 줄(`li`)이 `relative` 라 `offsetParent`
    * 가 목록이 아니어서 `offsetTop` 이 엉뚱한 기준을 가리킨다.
    */
