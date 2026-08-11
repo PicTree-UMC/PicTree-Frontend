@@ -1,15 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import {
-  CloseButton,
-  EmojiPicker,
-  NavBar,
-  Photo,
-  SettingsFooter,
-  SettingsList,
-  SettingsRow,
-} from "@/shared/components";
+import { CloseButton, EmojiPicker, NavBar, Photo } from "@/shared/components";
 import { useLockBodyScroll } from "@/shared/hooks/useLockBodyScroll";
 import type { TimelineRecord } from "../types/timeline.types";
 
@@ -93,15 +85,20 @@ function SaveButton({
  * 날에는 지금 어느 기록을 고치는 중인지가 장소명 글자에만 걸려 있었다.
  *
  * 풀스크린으로 오면서 사진이 맨 위에 서고, 아래는 레퍼런스의 얼개를 따른다:
- * **사진 → 그 밑에 글(장소명·한줄평) → 부가 속성(기분·날짜)은 카드로 묶어 아래로.**
- * 게시물을 읽던 그 순서 그대로 고치게 된다.
+ * **사진 → 그 밑에 글(장소명·한줄평) → 부가 속성(기분·날짜).** 게시물을 읽던 그 순서
+ * 그대로 고치게 된다.
  *
- * ⚠️ **레퍼런스와 두 곳이 다르다.**
- * 1. 레퍼런스의 행은 전부 다음 화면으로 가는 길(chevron)인데, 기분은 이모지 14개라 화면을
- *    하나 더 팔 물건이 아니다. 카드 안에 그리드를 그대로 펼친다 — 접어 두면 이 화면에서
- *    고칠 수 있는 셋 중 하나가 탭 뒤로 숨는다.
- * 2. 레퍼런스는 바닥이 흰색이라 행에 테두리가 없다. 우리 바닥은 크림(#FFFCEF)이고 흰 카드와
- *    밝기 차가 ΔL* 1.1 뿐이라 그대로 깔면 묶음이 배경에 묻는다 → 공용 `SettingsList`(§8).
+ * **줄을 가르는 방식은 동선 만들기 ③(`RouteSavePage`)에서 가져왔다.** 입력에 테두리를
+ * 두르지 않고 `border-t border-ink/10` 로 **띠 자체를** 가른다 — 알약 입력창은 '여기 칸이
+ * 있다'를 말하지만, 고칠 것이 셋뿐인 화면에서는 굳이 말할 필요가 없고 윗줄 제목처럼 읽히는
+ * 편이 낫다. ③ 이 고치는 값(이름)과 읽는 값(장소·날짜)을 같은 띠로 세우는 것도 그대로 따랐다.
+ *
+ * ⚠️ **한줄평이 16px 인 이유는 iOS 다** — 그보다 작으면 사파리가 포커스할 때 화면을 확대해
+ * 버린다. 본문 15px 규칙보다 이쪽이 우선인 자리다(③ 의 이름 입력도 같은 이유로 16px).
+ *
+ * ⚠️ **레퍼런스와 다른 곳:** 거기 행은 전부 다음 화면으로 가는 길(chevron)인데, 기분은
+ * 이모지 14개라 화면을 하나 더 팔 물건이 아니다. 띠 안에 그리드를 그대로 펼친다 — 접어 두면
+ * 이 화면에서 고칠 수 있는 셋 중 하나가 탭 뒤로 숨는다.
  *
  * ⚠️ **× 는 고친 것을 버린다.** 종전 모달의 딤 탭·× 와 같은 동작이라 새로 생긴 위험은
  * 아니지만, 화면이 커지면서 한 번에 잃는 양이 늘었다(한줄평 500자). 확인 대화를 끼우는
@@ -166,14 +163,18 @@ export function TimelineEditView({ record, isSaving = false, onClose, onSave }: 
         />
       </div>
 
-      {/* min-h-0: flex 자식은 기본 min-height 가 auto 라 이게 없으면 안 줄고 넘친다. */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-10">
+      {/*
+        min-h-0: flex 자식은 기본 min-height 가 auto 라 이게 없으면 안 줄고 넘친다.
+        가로 패딩은 여기가 아니라 **띠마다** 갖는다 — 구분선이 화면 끝까지 닿아야
+        칸이 아니라 줄로 읽힌다(③ 과 같은 얼개).
+      */}
+      <div className="min-h-0 flex-1 overflow-y-auto pb-10">
         {/*
           사진은 읽기 전용이다 — 이 화면에서 바꿀 수 있는 건 글과 기분뿐이다.
           w-[46%] + 3:4 는 레퍼런스 실측(390pt 폭에서 178×239pt)에서 가져왔다.
           `Photo` 가 없는 사진·만료된 presigned URL 을 같은 나무 폴백으로 흡수한다.
         */}
-        <div className="flex justify-center pt-1">
+        <div className="flex justify-center px-5 pb-6 pt-1">
           <Photo
             src={record.thumbnailUrl}
             alt=""
@@ -184,23 +185,23 @@ export function TimelineEditView({ record, isSaving = false, onClose, onSave }: 
         </div>
 
         {/*
-          레퍼런스에서 캡션(`Blue🌟`)이 있던 자리. 테두리도 알약도 없이 사진 밑에 글이
-          그대로 이어지므로, 고치는 중에도 게시물을 읽는 그림이 유지된다.
+          레퍼런스에서 캡션(`Blue🌟`)이 있던 자리. 사진 밑에 글이 그대로 이어지므로,
+          고치는 중에도 게시물을 읽는 그림이 유지된다.
 
-          ⚠️ 무테라 '누를 수 있다'는 신호가 약하다 — 빈 값 placeholder 와 초점 밑줄이
-          그 몫을 한다. 밑줄을 focus 에만 주는 이유는, 늘 그어 두면 결국 알약 두 개를
-          선으로 바꾼 것뿐이라 레퍼런스의 그림에서 멀어져서다.
+          Enter 로도 저장한다(③ 과 같다) — 장소명은 한 줄짜리라 줄바꿈을 받을 이유가 없고,
+          한 손으로 고칠 때 오른쪽 위까지 손을 옮기지 않아도 된다.
         */}
-        <div className="pt-6">
+        <div className="border-t border-ink/10 px-5 py-4">
           <input
             id="edit-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
             maxLength={100}
             aria-label="장소명"
             aria-invalid={isTitleEmpty}
-            placeholder="장소명"
-            className="w-full border-b border-transparent bg-transparent pb-1 text-[17px] font-medium text-ink outline-none placeholder:text-ink-disabled focus:border-pictree-500"
+            placeholder="장소명 추가..."
+            className="w-full bg-transparent text-[17px] font-medium text-ink outline-none placeholder:text-ink-disabled"
           />
 
           {/*
@@ -208,9 +209,12 @@ export function TimelineEditView({ record, isSaving = false, onClose, onSave }: 
             '버튼 글자로 이유를 말할 것' 이다). 아이콘 버튼에서는 그 말을 여기서 한다.
           */}
           {isTitleEmpty && (
-            <p className="pt-1 text-[13px] text-error">장소명은 비워 둘 수 없어요.</p>
+            <p className="mt-1 text-[13px] text-error">장소명은 비워 둘 수 없어요.</p>
           )}
+        </div>
 
+        {/* 한줄평은 Enter 를 저장으로 안 쓴다 — 500자까지라 줄을 바꿔 쓸 수 있어야 한다. */}
+        <div className="border-t border-ink/10 px-5 py-4">
           <textarea
             ref={contentRef}
             id="edit-content"
@@ -219,32 +223,32 @@ export function TimelineEditView({ record, isSaving = false, onClose, onSave }: 
             maxLength={500}
             rows={1}
             aria-label="한줄평"
-            placeholder="한줄평을 남겨보세요"
-            className="mt-2 w-full resize-none overflow-hidden border-b border-transparent bg-transparent pb-1 text-[15px] leading-6 text-ink outline-none placeholder:text-ink-disabled focus:border-pictree-500"
+            placeholder="한줄평 추가..."
+            className="w-full resize-none overflow-hidden bg-transparent text-base leading-6 text-ink outline-none placeholder:text-ink-disabled"
           />
         </div>
 
-        {/* 레퍼런스의 구분선 아래 행 묶음 자리 — 고치는 글이 아니라 붙는 속성들이다. */}
-        <div className="pt-7">
-          <SettingsList>
-            <div className="px-4 py-3">
-              {/* 17px medium: `SettingsRow` 의 제목과 같은 값이라 카드 안에서 한 줄로 읽힌다. */}
-              <p className="text-[17px] font-medium text-ink">기분</p>
-              <div className="mt-3">
-                <EmojiPicker variant="modal" selected={mood} onSelect={setMood} />
-              </div>
-            </div>
-
-            {/*
-              날짜 줄에는 `onClick` 을 안 준다 — `SettingsRow` 가 그때만 <div> 로 그려
-              화살표도 누를 자리도 안 생긴다. 못 고치는 값을 누를 수 있게 두면 안 되고,
-              그렇다고 안 보여주면 어느 날 기록인지 확인할 데가 없다.
-            */}
-            {recordedDate && <SettingsRow title="날짜" value={recordedDate} />}
-          </SettingsList>
-
-          {recordedDate && <SettingsFooter>날짜는 기록한 시점 그대로 유지돼요.</SettingsFooter>}
+        {/* 라벨이 13px INK-muted 인 것은 ③ 의 읽기 줄(`장소`·`날짜`)과 같은 값이다. */}
+        <div className="border-t border-ink/10 px-5 py-4">
+          <p className="text-[13px] text-ink-muted">기분</p>
+          <div className="mt-3">
+            <EmojiPicker variant="modal" selected={mood} onSelect={setMood} />
+          </div>
         </div>
+
+        {/*
+          여기만 읽는 줄이다. 못 고치는 값을 누를 수 있게 두면 안 되고, 그렇다고 안 보여주면
+          어느 날 기록인지 확인할 데가 없다 — 그래서 ③ 의 `dl` 꼴로 값만 세운다.
+        */}
+        {recordedDate && (
+          <div className="border-t border-ink/10 px-5 py-4">
+            <dl className="flex items-baseline justify-between gap-3">
+              <dt className="shrink-0 text-[13px] text-ink-muted">날짜</dt>
+              <dd className="text-[15px] text-ink">{recordedDate}</dd>
+            </dl>
+            <p className="mt-1.5 text-[13px] text-ink-muted">기록한 시점 그대로 유지돼요.</p>
+          </div>
+        )}
 
         <div aria-hidden className="pb-safe" />
       </div>
