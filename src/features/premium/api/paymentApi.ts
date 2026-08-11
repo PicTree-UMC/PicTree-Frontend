@@ -16,11 +16,14 @@
 
 import axios from 'axios';
 import { httpClient } from '@/shared/lib/httpClient';
+import { PAYMENT_STATUS } from '../types/payment';
 import type { ApiResponse } from '@/shared/types/api';
 import type {
   BillingKeyDeactivateResult,
   BillingKeyDto,
   ChangeSubscriptionPlanRequest,
+  PaymentDto,
+  PaymentListData,
   CustomerKeyResponse,
   MySubscription,
   RegisterBillingKeyRequest,
@@ -159,5 +162,37 @@ export const cancelPlanChange = async (
   const { data } = await httpClient.post<ApiResponse<SubscriptionDto>>(
     `/subscriptions/${subscriptionId}/plan-change/cancel`,
   );
+  return data.data;
+};
+
+/** 한 번에 받아 오는 결제 건수. 서버 기본값과 같다(최대 100). */
+export const PAYMENT_PAGE_SIZE = 20;
+
+/**
+ * GET /payments — 내 결제 내역 한 페이지. **완료된 결제만.**
+ *
+ * ⚠️ **거르는 일을 서버에 맡긴다**(`status` 쿼리). 프론트에서 받아 놓고 걸러내면 한 페이지
+ * 20건 중 몇 건만 남아 화면이 들쭉날쭉해지고, `total`·`totalPages` 가 걸러내기 전 수라서
+ * '더 보기' 가 있는데 눌러도 아무것도 안 늘어나는 상태가 생긴다. 서버는 같은 `where` 로
+ * 목록과 개수를 세므로 페이징이 맞는다.
+ *
+ * 대기·실패·취소 건을 안 보여주는 것은 화면 결정이다(회의) — 사용자가 이 화면에서 할 수
+ * 있는 일이 '낸 돈을 확인하는 것' 뿐이라, 완료되지 않은 시도는 답할 수 없는 질문만 만든다.
+ *
+ * ⚠️ `page` 는 **1-based** 다(`/trees` 와 같다). `items` 가 `null` 로 올 수 있어 호출부에서
+ * 빈 배열로 받는다.
+ */
+export const getMyPayments = async (page: number): Promise<PaymentListData> => {
+  const { data } = await httpClient.get<ApiResponse<PaymentListData>>('/payments', {
+    params: { page, size: PAYMENT_PAGE_SIZE, status: PAYMENT_STATUS.done },
+  });
+
+  return data.data;
+};
+
+/** GET /payments/{id} — 결제 1건. 목록 항목과 같은 모양이다. */
+export const getMyPayment = async (paymentId: number): Promise<PaymentDto> => {
+  const { data } = await httpClient.get<ApiResponse<PaymentDto>>(`/payments/${paymentId}`);
+
   return data.data;
 };

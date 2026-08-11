@@ -1,0 +1,66 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+  <!--
+    결제 내역 줄 아이콘 — 영수증.
+
+    ⚠️ 옆줄 '결제 수단'(card3d.jpg)과 **같은 가족으로 읽히되 같은 그림이 아니어야** 한다.
+    그래서 맞춘 것과 일부러 어긋낸 것을 갈라 뒀다.
+
+    맞춘 것 : 흰 바탕에 구운 렌더 · 왼쪽 위에서 오는 빛 · 부드러운 그림자 · 오른쪽 아래
+             초록 배지 · 살짝 기운 각도.
+    어긋낸 것 : 카드는 가로로 눕고 영수증은 세로로 선다 · 배지가 체크(확인)가 아니라
+             ₩(금액) 이다 — 하나는 '수단이 등록됐다', 하나는 '돈이 오갔다' 는 뜻이다.
+
+    ⚠️ **흰 바탕이 구워져 있다.** 카드 아이콘과 같은 전제이고, `SettingsRow` 카드가
+    흰색이라 성립한다. 카드 바탕색이 바뀌면 네모난 흰 자국이 드러난다(그쪽 주석 참고).
+  -->
+  <defs>
+    <linearGradient id="paper" x1="30" y1="14" x2="70" y2="84" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" />
+      <stop offset="1" stop-color="#EDEEEA" />
+    </linearGradient>
+    <linearGradient id="badge" x1="58" y1="58" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8CA65C" />
+      <stop offset="1" stop-color="#5B6B38" />
+    </linearGradient>
+    <filter id="soft" x="10" y="6" width="76" height="88" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="1.5" dy="3" stdDeviation="2.6" flood-color="#2C3930" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <rect width="96" height="96" fill="#FFFFFF" />
+
+  <!-- 영수증 한 장. 아래 끝은 뜯긴 톱니 — 이 모양 하나가 '영수증' 을 말한다. -->
+  <g filter="url(#soft)" transform="rotate(-6 48 48)">
+    <path
+      d="M30 17a3 3 0 0 1 3-3h30a3 3 0 0 1 3 3v58.5l-5-3.2-5 3.2-5-3.2-5 3.2-5-3.2-5 3.2-5-3.2-1 .6V17Z"
+      fill="url(#paper)"
+      stroke="#D9DAD5"
+      stroke-width="1.2"
+      stroke-linejoin="round"
+    />
+    <!-- 옆면 한 겹 — 종이에 두께를 준다(카드 렌더의 입체감과 같은 역할). -->
+    <path d="M30 17a3 3 0 0 1 3-3h3v61.6l-5-3.2-1 .6V17Z" fill="#E4E5E0" opacity="0.75" />
+
+    <!-- 적힌 것: 머리글 한 줄, 항목 두 줄, 합계 한 줄(가장 진하고 짧다). -->
+    <rect x="37" y="24" width="22" height="3.4" rx="1.7" fill="#B9BBB4" />
+    <rect x="37" y="34" width="22" height="2.6" rx="1.3" fill="#D2D4CE" />
+    <rect x="37" y="41" width="16" height="2.6" rx="1.3" fill="#D2D4CE" />
+    <rect x="37" y="48" width="20" height="2.6" rx="1.3" fill="#D2D4CE" />
+    <rect x="37" y="58" width="13" height="3.4" rx="1.7" fill="#7C8076" />
+  </g>
+
+  <!-- 초록 배지. 카드의 체크와 같은 자리·같은 초록이되 글리프가 ₩ 다. -->
+  <g filter="url(#soft)">
+    <circle cx="69" cy="69" r="13" fill="url(#badge)" />
+    <path
+      d="M63.4 63.6 66.9 71.2 70.4 63.6 73.9 71.2 77.4 63.6"
+      stroke="#FFFFFF"
+      stroke-width="2.1"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      fill="none"
+    />
+    <path d="M62.6 71.6h13.8" stroke="#FFFFFF" stroke-width="2.1" stroke-linecap="round" />
+    <path d="M62.6 75h13.8" stroke="#FFFFFF" stroke-width="2.1" stroke-linecap="round" />
+  </g>
+</svg>

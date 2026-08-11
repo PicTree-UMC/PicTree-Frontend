@@ -6,6 +6,15 @@ export const paymentKeys = {
   plans: ['subscription-plans'] as const,
   me: ['subscription', 'me'] as const,
   billingKeys: ['billing-keys'] as const,
+  /**
+   * 결제 내역(`GET /payments`).
+   *
+   * ⚠️ **`me` 밑에 두지 않는다.** 구독 상태는 바뀌는 값이고 내역은 쌓이는 기록이라,
+   * 한 접두사로 묶으면 해지·플랜 변경 무효화가 내역까지 매번 다시 부른다.
+   */
+  history: ['payments', 'history'] as const,
+  /** 결제 1건. 목록과 같은 네임스페이스라 `['payments']` 하나로 둘 다 덮인다. */
+  detail: (paymentId: number) => ['payments', 'detail', paymentId] as const,
 };
 
 /**

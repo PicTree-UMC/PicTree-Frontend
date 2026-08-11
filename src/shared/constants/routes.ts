@@ -20,6 +20,10 @@ export const ROUTES = {
    * 지우러 들어간 사람이 구독 해지 버튼 옆에 서게 된다.
    */
   paymentMethods: '/profile/payment-methods',
+  /** 결제 내역. 결제 수단과 같은 '내 정보' 딸림 화면이라 같은 접두사를 쓴다. */
+  paymentHistory: '/profile/payment-history',
+  /** 결제 1건 상세. **패턴**이라 이동할 땐 아래 `paymentDetailPath` 를 쓴다. */
+  paymentDetail: '/profile/payment-history/:paymentId',
   calendar: '/profile/calendar',
   favorites: '/profile/favorites',
   privacy: '/profile/privacy',
@@ -85,3 +89,7 @@ export const journeySavedPath = (routeId: number) => `/journey/saved/${routeId}`
 
 /** 저장된 AI 블로그 초안의 상세 경로. */
 export const blogDetailPath = (draftId: number | string) => `/blog/${draftId}`;
+
+/** `/profile/payment-history/:paymentId` 의 실제 경로. */
+export const paymentDetailPath = (paymentId: number) =>
+  `/profile/payment-history/${paymentId}`;

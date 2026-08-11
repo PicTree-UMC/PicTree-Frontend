@@ -139,3 +139,52 @@ export interface SubscriptionDto {
  * 확정: 구독 중이면 SubscriptionDto, 미구독이면 404 → api 레이어에서 null 로 변환.
  */
 export type MySubscription = SubscriptionDto | null;
+
+/**
+ * 결제 1건. `GET /payments` 목록 항목이자 `GET /payments/{id}` 응답.
+ *
+ * 서버 `PaymentResponseDto` 그대로다. 화면 용어로 옮기지 않았다 — 결제는 분쟁이 생기는
+ * 자리라 **서버가 부르는 이름 그대로** 두는 편이 문의할 때 서로 같은 것을 가리킨다.
+ */
+export interface PaymentDto {
+  paymentId: number;
+  /** 우리가 만든 주문번호(`ORDER_...`). 문의할 때 사용자가 대는 번호다. */
+  orderId: string;
+  /** 무엇을 샀는지. 화면의 줄 제목이 된다(예: `플러스 플랜 1개월`). */
+  orderName: string;
+  amount: number;
+  /** `PaymentStatus` 참고. 서버가 문자열로 준다 — 모르는 값이 올 수 있어 좁히지 않는다. */
+  status: string;
+  /** 카드·간편결제 등. 서버가 토스에서 받은 값을 그대로 넘긴다. 없을 수 있다. */
+  paymentMethod: string | null;
+  /** 토스 `paymentKey`. 화면에는 안 쓰고 문의용으로만 들고 있는다. */
+  providerPaymentId: string | null;
+  /** 토스 영수증 URL. 결제가 끝난 건에만 있다. */
+  receiptUrl: string | null;
+  /** 결제 완료 시각. 아직 안 끝난 건은 `null` 이라 `createdAt` 으로 물러난다. */
+  paidAt: string | null;
+  createdAt: string;
+}
+
+/** `GET /payments` 응답. 페이지 정보가 함께 온다. */
+export interface PaymentListData {
+  items: PaymentDto[] | null;
+  page: number;
+  size: number;
+  total: number;
+  totalPages: number;
+}
+
+/**
+ * 결제 상태. 서버 `payments.constant.ts` 의 `PaymentStatus` 와 같은 값이다.
+ *
+ * ⚠️ **여기 없는 값이 올 수 있다고 보고 쓴다.** 서버가 토스 상태를 넓히면 프론트가 먼저
+ * 아는 길이 없어서, 화면은 모르는 상태를 '알 수 없음' 으로 흘려보낸다(지어내지 않는다).
+ */
+export const PAYMENT_STATUS = {
+  ready: 'READY',
+  waitingForDeposit: 'WAITING_FOR_DEPOSIT',
+  done: 'DONE',
+  failed: 'FAILED',
+  canceled: 'CANCELED',
+} as const;
