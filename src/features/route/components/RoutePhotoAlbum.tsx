@@ -77,21 +77,17 @@ export function RoutePhotoAlbum({ routeId }: { routeId: number }) {
     <section>
       <AlbumHeading count={photos.length} />
 
+      {/* 점은 사진 안에 얹는다 — 사진 한 칸이 이 섹션의 전부라, 점이 밖에 있으면 사진과
+          다음 섹션 사이에 정체 모를 줄이 하나 끼는 꼴이 된다. */}
       <div className="mt-3">
         <PhotoStrip
           slides={slides}
           activeIndex={activeIndex}
           onActiveIndexChange={setIndex}
           className="overflow-hidden rounded-[16px]"
+          dotsInside
         />
       </div>
-
-      {/* 지금 보고 있는 장이 어디였는지. **격자에는 없던 것이다** — 한 번에 한 장을 보는
-          자리라서 이름이 붙을 수 있게 됐고, 사진만으로는 어디였는지 되살아나지 않는 장소가
-          흔하다. 점 줄 바로 아래에 두어 둘이 같은 것(지금 이 장)을 말하게 한다. */}
-      <p className="mt-1 truncate text-center text-[13px] text-ink-muted">
-        {photos[activeIndex]?.placeName}
-      </p>
     </section>
   );
 }

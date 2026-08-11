@@ -72,15 +72,27 @@ export function PhotoStrip({
   activeIndex,
   onActiveIndexChange,
   className = '',
+  dotsInside = false,
 }: {
   slides: PhotoPostSlide[];
   activeIndex: number;
   onActiveIndexChange: (index: number) => void;
   /**
-   * 사진 칸 바깥틀에만 붙는다(점 줄은 제외) — 모서리를 둥글리는 자리.
+   * 사진 칸 바깥틀에만 붙는다(사진 아래 점 줄은 제외) — 모서리를 둥글리는 자리.
    * 게시물은 화면 끝까지 닿아 각진 채로 두고, 여백 안에 놓이는 앨범은 둥글린다.
    */
   className?: string;
+  /**
+   * 점을 사진 **안** 아래쪽에 얹는다. 기본은 사진 밑에 한 줄로 놓는 것.
+   *
+   * 게시물(타임라인)은 사진 아래에 액션 줄·한줄평이 이어지므로 점도 그 흐름의 첫 줄로
+   * 두는 게 맞다. 반면 앨범은 사진 한 칸이 섹션의 전부라, 점이 밖에 있으면 사진과
+   * 아래 섹션 사이에 정체 모를 8px 짜리 줄이 하나 끼는 꼴이 된다.
+   *
+   * 얹을 땐 흰 점 + 그림자다 — 사진이 무엇이든(하늘·눈밭) 흰 점만으로는 사라질 수 있어
+   * 획 주변에만 그늘을 깐다(지도 위 제목의 외곽선과 같은 수법).
+   */
+  dotsInside?: boolean;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isSwiping, setIsSwiping] = useState(false);
@@ -119,6 +131,28 @@ export function PhotoStrip({
   // 점을 못 그릴 만큼 많으면 알약을 계속 띄워 둔다 — 자리를 알 방법이 그것뿐이다.
   const isDotted = slides.length <= MAX_DOTS;
   const showCounter = !isDotted || isSwiping;
+
+  const dots = isDotted && (
+    <div
+      aria-hidden
+      className={`flex items-center justify-center gap-1.5 ${
+        dotsInside ? 'pointer-events-none absolute inset-x-0 bottom-3' : 'pt-2'
+      }`}
+    >
+      {slides.map((slide, i) => (
+        <span
+          key={slide.key}
+          className={`h-1.5 w-1.5 rounded-full transition-colors ${
+            dotsInside
+              ? `shadow-[0_0_3px_rgba(0,0,0,0.45)] ${i === activeIndex ? 'bg-white' : 'bg-white/50'}`
+              : i === activeIndex
+                ? 'bg-pictree-700'
+                : 'bg-ink/20'
+          }`}
+        />
+      ))}
+    </div>
+  );
 
   return (
     <>
@@ -161,20 +195,11 @@ export function PhotoStrip({
         >
           {activeIndex + 1}/{slides.length}
         </span>
+
+        {dotsInside && dots}
       </div>
 
-      {isDotted && (
-        <div aria-hidden className="flex items-center justify-center gap-1.5 pt-2">
-          {slides.map((slide, i) => (
-            <span
-              key={slide.key}
-              className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                i === activeIndex ? 'bg-pictree-700' : 'bg-ink/20'
-              }`}
-            />
-          ))}
-        </div>
-      )}
+      {!dotsInside && dots}
     </>
   );
 }
