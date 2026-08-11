@@ -22,8 +22,8 @@ export const calendarKeys = {
  * `opacity-50` 로딩 표시가 그때 꺼진다. **빈 잔디는 그대로인데 로딩 신호만 사라지는**
  * 셈이라 손해다. (이슈 #238 의 '덤' 항목을 그대로 넣었다가 되돌렸다.)
  *
- * 화면이 쓰기 좋게 `날짜 → level` 맵으로 바꿔서 돌려준다. 격자가 날짜로 조회하는데
- * 배열이면 매 칸마다 훑어야 한다.
+ * 화면이 쓰기 좋게 `날짜 → level` · `날짜 → 나무 수` 맵으로 바꿔서 돌려준다. 격자가 날짜로
+ * 조회하는데 배열이면 매 칸마다 훑어야 한다.
  *
  * 토큰이 없어도 개발 환경에서는 돌린다 — `calendarApi` 가 목데이터로 폴백한다.
  */
@@ -40,12 +40,20 @@ export const useTravelCalendar = (year: number, month: number) => {
   });
 
   const levelByDate: Record<string, number> = {};
+  /*
+    ⚠️ **`countByDate` 는 위와 달리 0 인 날도 담는다.** 여기서 0 을 빼면 "그날 안 심었다"와
+    "아직 이 달을 못 받았다"가 똑같이 `undefined` 가 되는데, 그 둘의 처리가 정반대다 —
+    전자는 나무 목록 요청을 아예 걸러도 되고(`TravelCalendarPage`), 후자는 걸렀다가는
+    있는 나무를 없다고 말하게 된다.
+  */
+  const countByDate: Record<string, number> = {};
   for (const day of query.data?.days ?? []) {
     // 0 은 방문 없음이라 담지 않는다 — 격자가 "값이 있으면 그린다" 로 판단한다
     if (day.level > 0) {
       levelByDate[day.date] = day.level;
     }
+    countByDate[day.date] = day.count;
   }
 
-  return { ...query, levelByDate };
+  return { ...query, levelByDate, countByDate };
 };
