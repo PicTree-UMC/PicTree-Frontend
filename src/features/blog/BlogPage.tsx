@@ -14,8 +14,14 @@ export function BlogPage() {
   const { data: savedBlogs = [], isPending, isError, refetch } = useBlogDrafts();
 
   return (
-    // pb: 탭바가 콘텐츠 위에 얹히므로 마지막 카드가 가려지지 않을 만큼 띄운다
-    <main className="min-h-full w-full bg-cream pb-nav text-ink">
+    /*
+      pb: 탭바가 콘텐츠 위에 얹히므로 마지막 카드가 가려지지 않을 만큼 띄운다.
+
+      ⚠️ **`flex flex-col` 이 필요하다.** 빈 화면(`BlogEmptyState`)이 `flex-1` 로 남은
+      높이를 받아 그 가운데 서기 때문이다. 이게 없으면 높이를 못 받아 내용만큼만 차지하고
+      머리글 바로 밑에 붙는다 — 실제로 다른 탭이 412px 인데 여기만 146px 였다(이슈 #274).
+    */
+    <main className="flex min-h-full w-full flex-col bg-cream pb-nav text-ink">
       {/* 상단 여백은 노치(safe-area) + 0.75rem 로 계산한다. 고정 px(pt-[68px])는
           safe-area 가 작은 기기에서 과하게 떠 보였다. AuthShell·CameraPage 와 같은 값. */}
       {/* 제목 밑 구분선은 뺐다 — 다른 탭(타임라인·동선) 머리글엔 선이 없다. */}

@@ -34,3 +34,4 @@ export { default as Toaster } from './toast/Toaster';
 export { useToast, useToastStore } from './toast/toastStore';
 export type { ToastType, ToastItem } from './toast/toastStore';
 export { EmojiPicker } from './EmojiPicker';
+export { EmptyState } from './EmptyState';
