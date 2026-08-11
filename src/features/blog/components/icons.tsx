@@ -20,6 +20,13 @@ export function AdOffIcon() {
   return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M12.2 8.99922L10.2 6.99922H13C14.1 6.99922 15 7.89922 15 8.99922V11.7992L13 9.79922V8.99922H12.2ZM23 8.99922V6.99922H19C17.9 6.99922 17 7.89922 17 8.99922V10.9992C17 12.0992 17.9 12.9992 19 12.9992H21V14.9992H18.2L20.2 16.9992H21C22.1 16.9992 23 16.0992 23 14.9992V12.9992C23 11.8992 22.1 10.9992 21 10.9992H19V8.99922H23ZM22.1 21.4992L20.8 22.7992L14.4 16.3992C14.1 16.6992 13.6 16.9992 13 16.9992H9V10.8992L7 8.89922V16.9992H5V12.9992H3V16.9992H1V8.99922C1 7.89922 1.9 6.99922 3 6.99922H5.1L1.1 2.99922L2.4 1.69922L22.1 21.4992ZM5 8.99922H3V10.9992H5V8.99922ZM13 14.8992L11 12.8992V14.9992H13V14.8992Z" fill="#2c3930"/></svg>;
 }
 
-export function PencilIcon({ size = 26 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>;
+/**
+ * 작성 FAB 의 글리프(lucide:pencil-sparkles) — 연필 둘레에 반짝임 셋.
+ *
+ * 맨 연필(lucide:pencil)이었다. 연필은 '쓴다'까지만 말하는데 이 버튼이 하는 일은
+ * **AI 가 대신 써 주는 것**이라, 반짝임이 그 차이를 말한다(앱 어디에도 '쓰기' 버튼이
+ * 여럿이라 더 그렇다 — 카메라의 한줄평, 타임라인의 수정도 연필이다).
+ */
+export function PencilSparklesIcon({ size = 26 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M10 3H8" /><path d="m15.007 5.008 3.987 3.986" /><path d="M20 15v4" /><path d="M21.174 6.813a2.82 2.82 0 0 0-3.986-3.987L3.842 16.175a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="M22 17h-4" /><path d="M4 5v4" /><path d="M6 7H2" /><path d="M9 2v2" /></svg>;
 }

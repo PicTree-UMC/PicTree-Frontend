@@ -240,13 +240,10 @@ export function RouteListPage() {
         (`BlogCreateFab`): 이달 잔량이 0 이면 결제 시트로 가로채는 판단이 그 안에 있어서,
         여기에 따로 만들면 한쪽만 한도를 안 보게 된다.
 
-        글자를 곁들인 알약이다 — 동선 탭에는 '새 동선' 입구가 따로 있어서, 초록 원 하나로는
-        무엇을 만드는 버튼인지 갈린다.
-
         **고른 동선이 있을 때만 뜬다.** 이 버튼이 넘기는 건 그 동선이라, 목록이 비었거나
         아직 안 불러온 화면에서는 넘길 것이 없다.
       */}
-      {selectedRoute && <BlogCreateFab routeId={selectedRoute.id} label="AI 블로그" />}
+      {selectedRoute && <BlogCreateFab routeId={selectedRoute.id} />}
 
       {showMenuSheet && selectedRoute && (
         <RouteMenuSheet
