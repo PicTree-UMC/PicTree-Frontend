@@ -4,16 +4,23 @@ import { Button } from '../../../shared/components';
 
 type DevicePermissionModalProps = {
   isOpen: boolean;
+  /** 브라우저 권한 창이 떠 있는 동안. 확인 버튼을 잠가 연타를 막는다. */
+  isRequesting?: boolean;
   onConfirm: () => void;
 };
 
-export function DevicePermissionModal({ isOpen, onConfirm }: DevicePermissionModalProps) {
+export function DevicePermissionModal({
+  isOpen,
+  isRequesting = false,
+  onConfirm,
+}: DevicePermissionModalProps) {
   if (!isOpen) {
     return null;
   }
 
   return (
-    // 이 모달은 568px 로 길다. 짧은 뷰포트(주소창 뜬 iPhone SE, 가로 모드)에서는 화면을
+    // 이 모달은 길다(권한 행 셋이던 때 568px, 앨범 행을 뺀 지금은 그보다 한 행 짧다).
+    // 짧은 뷰포트(주소창 뜬 iPhone SE, 가로 모드)에서는 그래도 화면을
     // 넘치는데, 예전엔 `items-center` + overflow visible 이라 위아래가 잘린 채 스크롤도
     // 안 돼 '확인' 버튼에 닿을 수 없었다.
     //  - overflow-y-auto 로 넘칠 땐 스크롤. 단 `items-center` 와 같이 쓰면 위로 넘친 부분이
@@ -30,9 +37,13 @@ export function DevicePermissionModal({ isOpen, onConfirm }: DevicePermissionMod
           기기 접근 권한 안내
         </h2>
 
+        {/*
+          '사진 · 앨범 접근' 은 지웠다(#271). 앱에 `<input type="file">` 이 한 곳도 없고
+          앨범 선택·프로필 이미지 업로드는 **예정에도 없다**고 확인됐다 — 없는 기능을 설명하는
+          고지는 사용자가 검증할 수 없는 약속이 된다. 기능이 생기면 그때 되살린다.
+        */}
         <div className="mt-4 rounded-[1.125rem] bg-white px-5 py-4">
           <PermissionRow icon={<CameraIcon />} title="카메라 접근" description="즉석에서 사진을 촬영하기 위해 사용해요." />
-          <PermissionRow icon={<AlbumIcon />} title="사진 · 앨범 접근" description="이미지 업로드가 필요할 때 사용해요" />
           <PermissionRow icon={<LocationIcon />} title="위치 정보" description="장소와 동선을 지도에 기록하기 위해 사용해요" />
         </div>
 
@@ -43,9 +54,15 @@ export function DevicePermissionModal({ isOpen, onConfirm }: DevicePermissionMod
           <p>(관계 법령상 보존이 필요한 경우 해당 기간 동안만 별도 보관)</p>
         </div>
 
+        {/*
+          누르면 **진짜 브라우저 권한 창**이 뜬다(#271, `auth/lib/devicePermission.ts`).
+          창이 떠 있는 동안은 잠근다 — `unstyled` 라 공용 `disabled:` 스타일이 안 따라오므로
+          여기서 직접 준다.
+        */}
         <Button
           unstyled
-          className="mt-5 flex h-[2.4375rem] w-full items-center justify-center rounded-[0.625rem] bg-pictree-300 font-['KOROAD'] text-[1rem] font-bold text-ink"
+          className="mt-5 flex h-[2.4375rem] w-full items-center justify-center rounded-[0.625rem] bg-pictree-300 font-['KOROAD'] text-[1rem] font-bold text-ink transition disabled:opacity-60"
+          disabled={isRequesting}
           type="button"
           onClick={onConfirm}
         >
@@ -82,14 +99,6 @@ function CameraIcon() {
   return (
     <svg fill="currentColor" height="32" viewBox="0 0 32 32" width="32">
       <path d="M11.2 8L13 5.5h6L20.8 8H25a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V11a3 3 0 0 1 3-3h4.2ZM16 22.5a5.5 5.5 0 1 0 0-11a5.5 5.5 0 0 0 0 11Zm0-2.8a2.7 2.7 0 1 1 0-5.4a2.7 2.7 0 0 1 0 5.4Z" />
-    </svg>
-  );
-}
-
-function AlbumIcon() {
-  return (
-    <svg fill="currentColor" height="32" viewBox="0 0 32 32" width="32">
-      <path d="M6 6h20a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm3 5.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5Zm-1.5 11h17l-5.7-7.2l-4.5 5.4l-2.6-3.1L7.5 22.5Z" />
     </svg>
   );
 }

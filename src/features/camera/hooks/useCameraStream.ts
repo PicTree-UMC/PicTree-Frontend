@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
+import {
+  CAMERA_UNSUPPORTED_MESSAGE,
+  getCameraErrorMessage,
+  isCameraApiAvailable,
+} from '../lib/cameraError';
+
 export type FacingMode = 'user' | 'environment';
 
 // OBS 등 가상 카메라 라벨 패턴. 데스크톱에서 기본 장치로 잡히는 걸 걸러낸다.
@@ -26,6 +32,13 @@ export function useCameraStream(facingMode: FacingMode) {
     });
 
     const open = async () => {
+      // http 로 열었거나 아주 낡은 브라우저면 `mediaDevices` 자체가 없다. 그대로 부르면
+      // TypeError 로 떨어져 "잠시 후 다시" 같은 틀린 안내가 나가므로 여기서 가른다.
+      if (!isCameraApiAvailable()) {
+        setError(CAMERA_UNSUPPORTED_MESSAGE);
+        return;
+      }
+
       try {
         let stream = await navigator.mediaDevices.getUserMedia(constraintsFor());
         if (cancelled) {
@@ -64,8 +77,10 @@ export function useCameraStream(facingMode: FacingMode) {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
-      } catch {
-        if (!cancelled) setError('카메라를 사용할 수 없습니다. 권한을 확인해주세요.');
+      } catch (err) {
+        // 원인에 따라 할 일이 다르다 — 설정에서 켜기 / 그 앱 닫기 / 할 수 있는 것 없음.
+        // 문구 판정은 `lib/cameraError.ts` 가 한 자리에서 한다(#271).
+        if (!cancelled) setError(getCameraErrorMessage(err));
       }
     };
 

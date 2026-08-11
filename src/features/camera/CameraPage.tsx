@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTodayTreeQuota } from '@/features/home/hooks/useTodayTreeQuota';
 import { isDailyTreeLimitError } from '@/features/home/lib/treeQuota';
@@ -42,6 +42,20 @@ export function CameraPage() {
   const { showToast } = useToast();
   const { mutate: saveRecord, isPending: isSaving } = useCreateTreeRecord();
   const today = getLocalDateString();
+
+  /*
+    카메라가 안 열린 이유는 **두 자리**에 있다(#271).
+    - 토스트: 방금 실패했다는 것을 알린다. 저장 실패와 같은 창구라 어디를 보고 있든 눈에 든다.
+    - 화면 중앙 문구: 토스트가 2.5초 뒤 사라져도 원인이 남는다. 검은 화면만 남으면 셔터를
+      눌러도 아무 일이 없는 이유를 알 길이 없다.
+    같은 문구를 두 번 말하는 셈이지만, 하나는 **알림**이고 하나는 **상태**다.
+
+    `error` 가 바뀔 때만 뜬다 — 전면/후면 전환은 `error` 를 null 로 되돌리므로 실패가
+    이어질 때만 다시 알린다.
+  */
+  useEffect(() => {
+    if (error) showToast(error, 'error');
+  }, [error, showToast]);
 
   /*
     홈에서 이미 한 번 걸렀지만 여기서 또 본다 — 이 화면은 딥링크로도 열리고, 열어 둔 채
@@ -136,8 +150,9 @@ export function CameraPage() {
         style={{ transform: `scale(${zoom})${isMirrored ? ' scaleX(-1)' : ''}` }}
         className="absolute inset-0 h-full w-full origin-center object-cover"
       />
+      {/* `whitespace-pre-line` — 문구의 `\n`(원인 / 대처) 을 줄바꿈으로 살린다. 토스트와 같은 규칙. */}
       {error && (
-        <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-[15px] text-white">
+        <p className="absolute inset-0 flex items-center justify-center whitespace-pre-line px-6 text-center text-[15px] leading-6 text-white">
           {error}
         </p>
       )}
