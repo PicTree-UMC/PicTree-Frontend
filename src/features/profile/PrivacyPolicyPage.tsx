@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { SUPPORT_EMAIL } from "./constants/contact";
-import { NavBar } from "@/shared/components";
+import { NavBar, TRASH_GLYPH } from "@/shared/components";
 
 const iconBase = "h-[22px] w-[22px] flex-shrink-0";
 const stroke = {
@@ -37,7 +37,7 @@ const IconPerson = () => (
 );
 const IconTrash = () => (
   <svg viewBox="0 0 24 24" className={iconBase} {...stroke}>
-    <path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6" />
+    <path d={TRASH_GLYPH} />
   </svg>
 );
 const IconBell = () => (

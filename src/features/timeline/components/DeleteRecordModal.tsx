@@ -1,5 +1,5 @@
 import type { TimelineRecord } from "../types/timeline.types";
-import trashIcon from "../assets/trashcan.svg";
+import { TrashIcon } from "@/shared/components";
 
 interface Props {
   record: TimelineRecord;
@@ -23,7 +23,7 @@ export function DeleteRecordModal({
         className="w-[350px] rounded-[20px] bg-cream px-6 py-6 text-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <img src={trashIcon} alt="" className="mx-auto h-[30px] w-[30px]" />
+        <TrashIcon className="mx-auto h-[30px] w-[30px] text-error" />
         {/*
           ⚠️ 문구가 '타임라인 제거' 에서 '장소 삭제' 로 바뀐 이유 (#123).
 
