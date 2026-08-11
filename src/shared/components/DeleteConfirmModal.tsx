@@ -1,29 +1,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-type TrashIconProps = {
-  className?: string;
-  size?: number;
-};
-
-export function TrashIcon({ className, size = 20 }: TrashIconProps) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M4 7h16M10 11v6M14 11v6M5 7l1 13a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-13M9 7V4h6v3" />
-    </svg>
-  );
-}
+import { TrashIcon } from './TrashIcon';
 
 type DeleteIconButtonProps = {
   label: string;
@@ -41,7 +19,7 @@ export function DeleteIconButton({ label, onClick, className = '' }: DeleteIconB
       // `error-surface`(#FEF7F7)다. 한 클래스 안에서 토큰과 팔레트 이름이 섞여 있던 자리다.
       className={`grid size-10 shrink-0 place-items-center rounded-full text-error active:bg-error-surface ${className}`}
     >
-      <TrashIcon size={21} />
+      <TrashIcon className="h-[21px] w-[21px]" />
     </button>
   );
 }
@@ -96,7 +74,7 @@ export function DeleteConfirmModal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto flex w-fit text-error" aria-hidden>
-          <TrashIcon size={38} />
+          <TrashIcon className="h-[38px] w-[38px]" />
         </div>
         <h2 id="delete-confirm-title" className="mt-2 text-xl font-semibold text-black">
           {title}

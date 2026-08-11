@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
-import { IconFrame, Photo } from '@/shared/components';
+import {
+  FavoriteHeartButton,
+  IconFrame,
+  Photo,
+  TRASH_BOX,
+  TRASH_GLYPH,
+} from '@/shared/components';
 import { DeleteMarkerModal } from './DeleteMarkerModal';
 import type { MapMarkerData } from '../hooks/useMapMarkers';
 
@@ -41,7 +47,6 @@ export function MarkerStoryViewer({
 }: MarkerStoryViewerProps) {
   const { data: profile } = useMyProfile();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [favBump, setFavBump] = useState(false);
 
   const marker = markers[activeIndex];
 
@@ -64,12 +69,6 @@ export function MarkerStoryViewer({
     const target = activeIndex * el.clientWidth;
     if (Math.abs(el.scrollLeft - target) > 1) el.scrollTo({ left: target });
   }, [activeIndex]);
-
-  const handleToggleFavorite = () => {
-    // 즐겨찾기로 켜질 때만 팝(인스타 좋아요 느낌). 해제 시엔 조용히.
-    if (!marker.isFavorite) setFavBump(true);
-    onToggleFavorite();
-  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -171,23 +170,12 @@ export function MarkerStoryViewer({
           {/* 좌: 즐겨찾기 / 중앙: 점 인디케이터 / 우: 수정·삭제 */}
           <div className="grid grid-cols-3 items-center text-white">
             <div className="justify-self-start">
-              <button
-                onClick={handleToggleFavorite}
-                aria-label="즐겨찾기"
-                aria-pressed={!!marker.isFavorite}
-                className="-ml-1 p-1"
-              >
-                {/*
-                  하트 팝 애니메이션용 래퍼. `inline-block` 이면 글자 베이스라인에 얹혀
-                  옆 아이콘보다 몇 px 높게 앉는다 — `block` 으로 두어야 줄이 맞는다.
-                */}
-                <span
-                  className={`block ${favBump ? 'animate-heart-pop' : ''}`}
-                  onAnimationEnd={() => setFavBump(false)}
-                >
-                  <HeartIcon filled={!!marker.isFavorite} />
-                </span>
-              </button>
+              <FavoriteHeartButton
+                filled={!!marker.isFavorite}
+                onToggle={onToggleFavorite}
+                label="즐겨찾기"
+                className="-ml-1"
+              />
             </div>
 
             {/*
@@ -238,22 +226,9 @@ export function MarkerStoryViewer({
   );
 }
 
-function HeartIcon({ filled }: { filled: boolean }) {
-  return (
-    <IconFrame
-      box={{ cx: 12, cy: 12, h: 16.5 }}
-      fill={filled ? '#ff4d6d' : 'none'}
-      stroke={filled ? '#ff4d6d' : 'currentColor'}
-      aria-hidden
-    >
-      <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-    </IconFrame>
-  );
-}
-
 function PencilIcon() {
   return (
-    <IconFrame box={{ cx: 13.8, cy: 10.4, h: 15.2 }} aria-hidden>
+    <IconFrame box={{ cx: 13.8, cy: 10.4, w: 15.8, h: 15.2 }} aria-hidden>
       <path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
       <path d="M19.5 7.125L16.875 4.5" />
     </IconFrame>
@@ -262,8 +237,8 @@ function PencilIcon() {
 
 function TrashIcon() {
   return (
-    <IconFrame box={{ cx: 12, cy: 13, h: 18 }} aria-hidden>
-      <path d="M4 7h16M10 11v6M14 11v6M5 7l1 13a2 2 0 002 2h8a2 2 0 002-2l1-13M9 7V4h6v3" />
+    <IconFrame box={TRASH_BOX} aria-hidden>
+      <path d={TRASH_GLYPH} />
     </IconFrame>
   );
 }

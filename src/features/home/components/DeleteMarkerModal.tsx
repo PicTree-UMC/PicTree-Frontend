@@ -1,28 +1,12 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
+import { TrashIcon } from '@/shared/components';
+
 interface DeleteMarkerModalProps {
   placeName: string;
   onClose: () => void;
   onConfirm: () => void;
-}
-
-/** 삭제 강조 휴지통 아이콘. */
-function TrashIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M4 7h16M10 11v6M14 11v6M5 7l1 13a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-13M9 7V4h6v3" />
-    </svg>
-  );
 }
 
 /**
