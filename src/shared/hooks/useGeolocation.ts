@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useGeolocationStore } from '@/shared/lib/geolocationStore';
+
 export interface GeoCoords {
   latitude: number;
   longitude: number;
@@ -56,6 +58,18 @@ export const LOW_ACCURACY_THRESHOLD_M = 30;
 const ACCURACY_REGRESSION_RATIO = 3;
 const ACCURACY_REGRESSION_WINDOW_MS = 10000;
 
+/**
+ * 보관된 좌표를 **새로 묻지 않고 그대로 써도 되는** 것으로 보는 시간(ms).
+ *
+ * 걷는 속도(약 4km/h = 분당 67m)로 이 시간 동안 벗어나는 거리가 정확도 임계값
+ * `LOW_ACCURACY_THRESHOLD_M`(30m)과 비슷해지는 지점이다. 그보다 오래된 좌표를 기록에
+ * 그대로 쓰면 **사진을 찍은 곳과 저장된 곳이 눈에 띄게 어긋난다.**
+ *
+ * ⚠️ 이 값은 **요청을 건너뛸지에만** 쓴다. 화면을 그리는 데는 낡은 좌표도 쓴다 — 지도가
+ * 비는 것보다 몇십 m 어긋난 중심이 낫고, 추적이 곧 덮어쓴다.
+ */
+const FRESH_FIX_MAX_AGE_MS = 30000;
+
 const isSupported = () => typeof navigator !== 'undefined' && 'geolocation' in navigator;
 
 const UNSUPPORTED_MESSAGE = '이 기기에서는 위치를 사용할 수 없어요.';
@@ -80,10 +94,23 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     maximumAge = DEFAULT_MAXIMUM_AGE,
   } = options;
 
-  const [state, setState] = useState<GeolocationState>({
-    coords: null,
-    error: null,
-    loading: true,
+  /*
+   * 마지막으로 알던 좌표에서 시작한다 — 화면을 다시 열 때 빈 상태로 되돌아가지 않는다.
+   *
+   * 홈은 초기 중심이 정해질 때까지 지도 생성을 미루므로(HomePage 의 `initialCenter`),
+   * 보관된 좌표가 있으면 **기다림 없이 바로 그린다.** 카메라는 저장 직전에 좌표가 없어
+   * "위치를 확인하는 중" 으로 막히는 일이 준다.
+   *
+   * 좌표가 있으면 `loading` 도 false 로 연다. 보여줄 것이 이미 있는데 로딩으로 열면
+   * 홈의 새로고침 버튼이 이유 없이 잠기고 지도도 그대로 대기한다.
+   */
+  const [state, setState] = useState<GeolocationState>(() => {
+    const cached = useGeolocationStore.getState().fix;
+    return {
+      coords: cached?.coords ?? null,
+      error: null,
+      loading: cached === null,
+    };
   });
 
   /** 마지막으로 받아들인 측위의 정확도·시각. 아래 역행 필터의 기준점. */
@@ -117,11 +144,16 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       }
 
       lastFixRef.current = { accuracy, timestamp: position.timestamp };
-      setState({
-        coords: { latitude, longitude, accuracy },
-        error: null,
-        loading: false,
+      const nextCoords = { latitude, longitude, accuracy };
+
+      // 다음 화면이 이어받을 수 있게 화면 밖에도 남긴다. 걸러낸 좌표(regressed)는 남기지
+      // 않는다 — 여기까지 온 것만 우리가 믿기로 한 값이다.
+      useGeolocationStore.getState().setFix({
+        coords: nextCoords,
+        timestamp: position.timestamp,
       });
+
+      setState({ coords: nextCoords, error: null, loading: false });
     },
     [watch],
   );
@@ -134,6 +166,14 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
    */
   const handleError = useCallback((error: GeolocationPositionError) => {
     const denied = error.code === error.PERMISSION_DENIED;
+
+    /*
+     * 거부됐으면 보관해 둔 좌표도 버린다. 안 버리면 다른 화면이 "마지막으로 알던 위치" 로
+     * 계속 그려서 **권한을 껐는데도 위치가 남아 있는 것처럼 보인다.** 아래에서 이 훅의
+     * 좌표를 비우는 것과 짝이고, 잠깐 끊긴 경우(denied 아님)에 좌표를 남기는 규칙도 같다.
+     */
+    if (denied) useGeolocationStore.getState().clearFix();
+
     setState((prev) => ({
       coords: denied ? null : prev.coords,
       error: denied
@@ -159,7 +199,18 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
   }, [enableHighAccuracy, timeout, maximumAge, handleSuccess, handleError]);
 
   useEffect(() => {
+    const cached = useGeolocationStore.getState().fix;
+    const isFresh = cached !== null && Date.now() - cached.timestamp < FRESH_FIX_MAX_AGE_MS;
+
     if (!watch) {
+      /*
+       * 방금 받은 좌표가 있으면 다시 묻지 않는다 — **홈에서 촬영 버튼으로 넘어오는 흐름이
+       * 여기다.** 요청이 통째로 사라지므로 권한 프롬프트도 그만큼 덜 뜬다.
+       *
+       * 낡았으면 새로 요청한다. 그래도 화면은 안 빈다 — 위에서 옛 좌표로 이미 열었고
+       * `request` 가 좌표를 지우지 않기 때문이다.
+       */
+      if (isFresh) return;
       request();
       return;
     }
@@ -169,7 +220,12 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       return;
     }
 
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    // 보관된 좌표로 이미 그리고 있으면 로딩으로 되돌리지 않는다 — 지도가 다시 빈 화면이 된다.
+    // (신선도는 안 따진다. 그리는 데는 낡은 좌표도 쓰고, 곧 추적이 덮어쓴다.)
+    if (cached === null) {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+    }
+
     const watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
       enableHighAccuracy,
       timeout,
