@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { ConfirmModal, NavBar, Skeleton, useToast } from '@/shared/components';
+import { DeleteConfirmModal, NavBar, Skeleton, useToast } from '@/shared/components';
 import { getApiErrorMessage } from '@/shared/lib/apiError';
 import { ROUTES } from '@/shared/constants/routes';
 
@@ -127,27 +127,37 @@ function DetailBody({ payment }: { payment: PaymentDto }) {
         </button>
       )}
 
-      <ConfirmModal
+      {/*
+        앱의 파괴적 확인은 전부 이 공용 모달을 쓴다(`DeleteConfirmModal`) — 삭제·탈퇴와
+        같은 생김새·같은 버튼 순서여야 "무서운 쪽" 이 어디인지 화면마다 다시 배우지 않는다.
+      */}
+      <DeleteConfirmModal
         isOpen={isConfirmOpen}
         title="이 결제를 취소할까요?"
         /*
           ⚠️ **"구독이 끊긴다" 고 말하면 안 된다.** 서버는 결제 행의 상태만 바꾸고 구독은
           그대로 둔다(`cancelPayment` 주석). 환불과 해지는 다른 동작이라 갈 곳도 다르다.
-        */
-        /*
+
           ⚠️ **문구에 `—`(em dash)를 쓰지 않는다.** 앱 폰트에 그 글리프가 없어서 화면에는
           빈칸으로 나온다(실제로 그렇게 떴다). 주석에는 써도 되지만 사용자에게 보이는
           문자열에는 마침표로 끊는다.
         */
-        message={`${formatPrice(payment.amount)}이 결제 수단으로 환불돼요. 이용 중인 구독은 그대로예요. 해지는 프리미엄 화면에서 따로 할 수 있어요.`}
-        confirmText="결제 취소"
+        description={
+          <>
+            {formatPrice(payment.amount)}이 결제 수단으로 환불돼요.
+            <br />
+            이용 중인 구독은 그대로예요.
+          </>
+        }
         /*
-          ⚠️ 기본값('취소')을 쓰면 **버튼 둘 다 '취소'** 가 된다 — 하나는 모달을 닫고
-          하나는 돈을 되돌리는데 글자가 같으면 어느 쪽이 무엇인지 문구로 못 가른다.
-          요금제 변경 모달이 쓰는 말과 맞춘다.
+          ⚠️ **`결제 취소` 가 아니라 `환불하기` 다.** 이 모달의 닫기 버튼은 글자가 `취소` 로
+          고정돼 있어서(공용 컴포넌트), 확인까지 `결제 취소` 로 두면 **버튼 둘 다 '취소'** 가
+          된다 — 하나는 모달을 닫고 하나는 돈을 되돌리는데 글자로 못 가른다.
+          하는 일을 그대로 부르면 겹치지 않는다(돈이 돌아온다 = 환불).
         */
-        cancelText="그대로 두기"
-        isConfirming={cancel.isPending}
+        confirmLabel="환불하기"
+        pendingLabel="환불 중"
+        isDeleting={cancel.isPending}
         onConfirm={handleCancel}
         onClose={() => setIsConfirmOpen(false)}
       />
