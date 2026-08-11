@@ -1,7 +1,12 @@
 import type { MapMarkerData } from '../hooks/useMapMarkers';
 import type { TreeDetail, TreeListItem } from '../types/tree';
 
-/** mood 가 비어 있을 때 마커에 쓸 기본 이모지. */
+/**
+ * mood 가 비어 있을 때 마커에 쓸 기본 이모지.
+ *
+ * ⚠️ **마커 글리프 전용이다.** 지도에는 뭐라도 그려야 해서 채우는 값이지 그 사람이 이걸
+ * 골랐다는 뜻이 아니다 — 그래서 원본 `mood` 를 따로 싣는다(수정 화면이 그쪽을 쓴다).
+ */
 const FALLBACK_EMOJI = '😊';
 
 /** ISO 날짜 문자열 → 'YYYY-MM-DD'. */
@@ -17,6 +22,7 @@ export const listItemToMarker = (item: TreeListItem): MapMarkerData => ({
   lat: item.latitude,
   lng: item.longitude,
   emoji: item.mood || FALLBACK_EMOJI,
+  mood: item.mood,
   label: item.name,
   date: '',
   comment: '',
@@ -30,6 +36,7 @@ export const detailToMarker = (detail: TreeDetail): MapMarkerData => ({
   lat: detail.latitude,
   lng: detail.longitude,
   emoji: detail.mood || FALLBACK_EMOJI,
+  mood: detail.mood,
   label: detail.name,
   date: toDateString(detail.createdAt),
   comment: detail.description ?? '',

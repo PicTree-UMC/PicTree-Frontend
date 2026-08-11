@@ -9,7 +9,7 @@ import { TimelineSearchBar } from "./components/TimelineSearchBar";
 import { TimelineSortTabs } from "./components/TimelineSortTabs";
 import { TimelinePhotoGroup } from "./components/TimelinePhotoGroup";
 import { TimelineSkeleton } from "./components/TimelineSkeleton";
-import { TimelineEditModal } from "./components/TimelineEditModal";
+import { TimelineEditView, type TimelineEditValues } from "./components/TimelineEditView";
 import { DeleteRecordModal } from "./components/DeleteRecordModal";
 import { EmptyTimeline } from "./components/EmptyTimeline";
 import { useToast } from "@/shared/components";
@@ -62,7 +62,7 @@ export function TimelinePage() {
     setDeleteTarget(null);
   };
 
-  const handleSaveEdit = (values: { title: string; content: string }) => {
+  const handleSaveEdit = (values: TimelineEditValues) => {
     if (!editTarget) return;
 
     updateMutation.mutate(
@@ -194,7 +194,7 @@ export function TimelinePage() {
       )}
 
       {editTarget && (
-        <TimelineEditModal
+        <TimelineEditView
           record={editTarget}
           isSaving={updateMutation.isPending}
           onClose={() => setEditTarget(null)}

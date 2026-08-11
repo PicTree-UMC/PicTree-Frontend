@@ -54,6 +54,7 @@ export const toRecordFromListItem = (tree: TreeListItem): TimelineRecord => ({
   treeId: tree.treeId,
   defaultImage: tree.defaultImage,
   isFavorite: tree.isFavorite,
+  mood: tree.mood,
 });
 
 /*
