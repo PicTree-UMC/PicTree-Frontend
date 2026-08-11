@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BottomSheet } from './components/BottomSheet';
-import { PhotoAlbumSheet } from './components/PhotoAlbumSheet';
+import { RouteMenuSheet } from './components/RouteMenuSheet';
 import { RenameModal } from './components/RenameModal';
 import { useSavedRoutes } from './hooks/useSavedRoutes';
 import { useDeleteRoute } from './hooks/useDeleteRoute';
@@ -10,16 +9,34 @@ import { RouteTray } from './components/RouteTray';
 import { RouteListSkeleton } from './components/RouteListSkeleton';
 import { RouteIllustration } from './components/RouteIllustration';
 import { SavedRouteRoadmap } from './components/RouteRoadmap';
+import { RouteInlineMap } from './components/RouteInlineMap';
+import { RoutePhotoAlbum } from './components/RoutePhotoAlbum';
+import { BlogCreateFab } from '../blog/components/BlogCreateFab';
+import { RouteViewPicker, type RouteViewMode } from './components/RouteViewPicker';
 import { ROUTES, journeyViewPath } from '../../shared/constants/routes';
-import { DeleteConfirmModal, DeleteIconButton } from '../../shared/components/DeleteConfirmModal';
+import { DeleteConfirmModal } from '../../shared/components/DeleteConfirmModal';
 
-/** 더보기(⋯) 아이콘 — 선택된 동선의 액션 시트를 연다. */
-function MoreIcon({ className }: { className?: string }) {
+/**
+ * 메뉴 아이콘 — 선택된 동선의 액션 시트를 연다(lucide:list-sort-descending).
+ *
+ * **점 셋(⋯)이었다.** 인스타그램 게시물 헤더가 쓰는 계단형 줄 아이콘으로 바꿨다 — 점 셋은
+ * '더 있다'까지만 말하는데, 이 글리프는 목록이 딸려 나온다는 것까지 말한다.
+ * 흰 원 + 초록 테두리를 두르고 있었지만 **면을 없앴다**: 크림 페이지에서 유일하게 테두리를
+ * 두른 요소라 옆의 피커보다 먼저 눈에 걸렸다. 지금은 회색 글리프 하나다.
+ */
+function MenuIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
-      <circle cx="5" cy="12" r="1.8" />
-      <circle cx="12" cy="12" r="1.8" />
-      <circle cx="19" cy="12" r="1.8" />
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 5h18M3 12h12M3 19h6" />
     </svg>
   );
 }
@@ -43,12 +60,16 @@ export function RouteListPage() {
   const [pendingSelectId, setPendingSelectId] = useState<number | null>(
     navigationState?.selectedRouteId ?? null,
   );
-  const [showBottomSheet, setShowBottomSheet] = useState(false);
+  /**
+   * 고른 동선을 로드맵으로 볼지 지도로 볼지. **동선을 바꿔도 유지된다**(피커 주석 참고).
+   *
+   * 지도는 좌표가 필요해 상세를 따로 받아야 하므로(`RouteInlineMap`), 로드맵으로 두는
+   * 동안에는 그 요청이 아예 나가지 않는다 — 기본값이 로드맵인 이유이기도 하다.
+   */
+  const [viewMode, setViewMode] = useState<RouteViewMode>('roadmap');
+  const [showMenuSheet, setShowMenuSheet] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showPhotoAlbum, setShowPhotoAlbum] = useState(false);
-  /** 앨범에서 되돌아온 경우 바텀시트를 애니메이션 없이 즉시 띄운다. */
-  const [animateBottomSheet, setAnimateBottomSheet] = useState(true);
 
   // 목록이 로드되거나 선택한 동선이 삭제되면 첫 동선으로 선택을 맞춘다.
   useEffect(() => {
@@ -84,7 +105,7 @@ export function RouteListPage() {
     if (!selectedRoute) return;
     renameMutation.mutate({ id: selectedRoute.id, title: newTitle });
     setShowRenameModal(false);
-    setShowBottomSheet(false);
+    setShowMenuSheet(false);
   };
 
   const isEmpty = routes.length === 0;
@@ -150,37 +171,69 @@ export function RouteListPage() {
 
             {selectedRoute && (
               <>
-                {/* 선택 동선 메타 + 액션(더보기 / 삭제) */}
-                <div className="mt-5 flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-medium text-ink">{selectedRoute.date}</p>
-                    <p className="text-[11px] font-light text-ink-muted">
-                      {selectedRoute.placeCount}개 장소
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
+                {/*
+                  선택 동선 메타 + 보기 피커 + 메뉴.
+
+                  **삭제 버튼이 여기 있었다.** 동선에 거는 다른 동작은 전부 시트를 열어야
+                  보이는데 삭제만 목록 옆에 상시로 떠 있어서, 가장 위험한 것이 가장 누르기
+                  쉬운 자리를 차지하고 있었다. 지금은 시트 맨 아래 ERROR 줄이다.
+
+                  반대로 **`지도에서 보기` 는 시트에서 나와 이 줄의 피커가 됐다** — 그건
+                  동선에 무언가를 하는 게 아니라 같은 동선을 다른 방식으로 보는 일이라,
+                  로드맵과 나란히 서야 둘이 대등해진다.
+
+                  **`n개 장소` 줄은 뺐다.** 13px 두 줄이 38px 짜리 피커 옆에서 잔글씨로 눌렸고,
+                  장소 수는 바로 아래 로드맵이 번호로, 지도가 마커로 이미 세어 보여준다.
+                  남은 한 줄은 13 → 17px medium 으로 올렸다.
+
+                  **그 한 줄은 날짜였다가 동선 이름이 됐다.** 날짜는 '2026년 3월 31일 ~ 4월 1일'
+                  처럼 길기만 하고, 어느 여행이었는지는 알려주지 않는다. 이름은 사용자가 직접
+                  붙인 말이라 그 자리에서 가장 많은 것을 말한다.
+                  ⚠️ **날짜는 이제 이 화면에 없다** — 메뉴 시트 머리(`날짜 · n개 장소`)에만 남는다.
+                */}
+                <div className="mt-5 flex items-center justify-between gap-3">
+                  {/* 이름은 길이 제한이 없어(이름 변경에 maxLength 가 없다) 두 줄로 흐르게 두면
+                      긴 이름 하나가 피커를 아래로 밀어낸다. 날짜와 달리 잘려도 앞부분이 이미
+                      무엇인지 말해 주므로 한 줄로 자른다. 전문은 이름 변경 화면에서 볼 수 있다. */}
+                  <h2 className="min-w-0 truncate text-[17px] font-medium text-ink">
+                    {selectedRoute.title}
+                  </h2>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    {/* 보기 방식은 동선을 바꿔도 유지한다 — 지도로 훑어보던 사람은 다음
+                        동선도 지도로 보려던 참이다. 되돌리면 두 번째 동선부터 매번 다시 누른다. */}
+                    <RouteViewPicker value={viewMode} onChange={setViewMode} />
                     <button
-                      onClick={() => {
-                        setAnimateBottomSheet(true);
-                        setShowBottomSheet(true);
-                      }}
-                      aria-label="동선 더보기"
-                      className="flex size-9 items-center justify-center rounded-full border border-pictree-300 bg-white text-ink"
+                      onClick={() => setShowMenuSheet(true)}
+                      aria-label="동선 메뉴"
+                      className="flex size-9 items-center justify-center rounded-full text-ink-muted active:bg-cream-sub"
                     >
-                      <MoreIcon className="size-5" />
+                      <MenuIcon className="size-[22px]" />
                     </button>
-                    <DeleteIconButton
-                      label="동선 삭제"
-                      onClick={() => setShowDeleteModal(true)}
-                      className="size-9 border-[1.5px] border-error"
-                    />
                   </div>
                 </div>
 
-                {/* 로드맵: 장소 이동을 사진 노드 + 점선으로 표현.
-                    key 로 동선이 바뀔 때마다 등장 애니메이션을 다시 재생한다. */}
+                {/* 로드맵 ↔ 지도. 피커가 이 자리를 갈아끼운다.
+                    로드맵은 key 로 동선이 바뀔 때마다 등장 애니메이션을 다시 재생한다.
+                    지도도 key 를 받는다 — 동선이 바뀌면 지도 인스턴스를 새로 세워, 이전
+                    동선을 보던 배율·중심이 남아 있지 않게 한다. */}
                 <div className="mt-6">
-                  <SavedRouteRoadmap key={selectedRoute.id} route={selectedRoute} />
+                  {viewMode === 'roadmap' ? (
+                    <SavedRouteRoadmap key={selectedRoute.id} route={selectedRoute} />
+                  ) : (
+                    <RouteInlineMap
+                      key={selectedRoute.id}
+                      routeId={selectedRoute.id}
+                      onExpand={() => navigate(journeyViewPath(selectedRoute.id))}
+                    />
+                  )}
+                </div>
+
+                {/* 사진 앨범. **메뉴 시트의 줄이었다** — 사진은 이 동선이 어떤 여행이었는지
+                    가장 잘 말해 주는 것인데 메뉴를 열어야 닿았다. 로드맵/지도 아래에 두면
+                    고른 동선을 훑는 흐름(날짜 → 지도 → 사진) 안에 그대로 들어온다.
+                    key 로 동선이 바뀌면 보던 장을 첫 장으로 되돌린다. */}
+                <div className="mt-8">
+                  <RoutePhotoAlbum key={selectedRoute.id} routeId={selectedRoute.id} />
                 </div>
               </>
             )}
@@ -188,37 +241,33 @@ export function RouteListPage() {
         )}
       </div>
 
-      {showBottomSheet && selectedRoute && (
-        <BottomSheet
+      {/*
+        AI 블로그 작성. **메뉴 시트의 줄이었다** — 접혀 있는 동안에는 이 앱이 동선으로
+        블로그를 써 준다는 것 자체가 화면에 없었다. 블로그 탭과 **같은 버튼**을 쓴다
+        (`BlogCreateFab`): 이달 잔량이 0 이면 결제 시트로 가로채는 판단이 그 안에 있어서,
+        여기에 따로 만들면 한쪽만 한도를 안 보게 된다.
+
+        **고른 동선이 있을 때만 뜬다.** 이 버튼이 넘기는 건 그 동선이라, 목록이 비었거나
+        아직 안 불러온 화면에서는 넘길 것이 없다.
+      */}
+      {selectedRoute && <BlogCreateFab routeId={selectedRoute.id} />}
+
+      {showMenuSheet && selectedRoute && (
+        <RouteMenuSheet
           route={selectedRoute}
-          onClose={() => setShowBottomSheet(false)}
-          animateIn={animateBottomSheet}
-          onMapView={() => navigate(journeyViewPath(selectedRoute.id))}
-          onPhotoGallery={() => {
-            setShowBottomSheet(false);
-            setShowPhotoAlbum(true);
-          }}
-          // AI 블로그 작성 플로우로 이동. **이 동선 자체**를 넘긴다 — 초안 입력 단위가
-          // 기간에서 동선으로 바뀌면서(이슈 #212) 작성 화면 1단계가 이미 정해진 셈이 된다.
-          // 기간은 거기서 동선 상세로 도로 뽑으므로 여기서 계산해 넘길 것이 없다.
-          onAIBlog={() => {
-            setShowBottomSheet(false);
-            navigate(ROUTES.blogCreate, { state: { routeId: selectedRoute.id } });
-          }}
+          onClose={() => setShowMenuSheet(false)}
           onRename={() => {
-            setShowBottomSheet(false);
+            setShowMenuSheet(false);
             setShowRenameModal(true);
           }}
-        />
-      )}
-
-      {showPhotoAlbum && selectedRoute && (
-        <PhotoAlbumSheet
-          route={selectedRoute}
-          onClose={() => {
-            setShowPhotoAlbum(false);
-            setAnimateBottomSheet(false);
-            setShowBottomSheet(true);
+          /*
+            시트를 닫고 확인 모달로 넘긴다. **시트를 열어둔 채 모달을 얹지 않는다** —
+            층이 둘 겹치면 모달을 닫았을 때 무엇이 남는지가 흐려지고, 확인 모달은
+            자기 말고 다른 것이 화면에 남을 이유가 없는 자리다.
+          */
+          onDelete={() => {
+            setShowMenuSheet(false);
+            setShowDeleteModal(true);
           }}
         />
       )}

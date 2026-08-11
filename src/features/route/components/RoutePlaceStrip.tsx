@@ -16,10 +16,13 @@ interface RoutePlaceStripProps {
    * 번호도 유지된다. 빼고 넣는 건 `onToggleAllVisible` 과 줄 탭이 맡는다.
    */
   dateFilter: string | null;
-  /** 지금 보이는 장소가 전부 켜져 있는가. 버튼 문구를 정한다. */
-  allVisibleSelected: boolean;
-  /** 지금 보이는 장소를 통째로 켜거나 끈다. */
-  onToggleAllVisible: () => void;
+  /**
+   * 지금 보이는 장소가 전부 켜져 있는가. 버튼 문구를 정한다.
+   * **저장된 동선을 볼 때는 넘기지 않는다**(아래 `onTogglePlace` 참고).
+   */
+  allVisibleSelected?: boolean;
+  /** 지금 보이는 장소를 통째로 켜거나 끈다. 안 넘기면 버튼째 사라진다. */
+  onToggleAllVisible?: () => void;
   /**
    * 저장 한도. **저장된 동선을 볼 때는 넘기지 않는다** — 이미 저장된 것이라 한도가 의미 없고,
    * `3/20개` 처럼 보이면 더 담을 수 있다는 오해를 준다. 없으면 `장소 n개` 로만 쓴다.
@@ -32,7 +35,16 @@ interface RoutePlaceStripProps {
    * 눌린 뒤에 토스트로 알려준다 — 그건 빼다 지나가는 한때이지 잘못이 아니다.
    */
   onNext?: () => void;
-  onTogglePlace: (placeId: number) => void;
+  /**
+   * 줄을 눌러 그 장소를 동선에서 빼고 넣는다.
+   *
+   * ⚠️ **저장된 동선을 볼 때는 넘기지 않는다 — 그때 이 시트는 읽기 전용이다.**
+   * 다듬기는 새 동선을 만드는 ②단계의 일인데, 두 모드가 이 컴포넌트를 공유하는 바람에
+   * 저장된 동선을 볼 때도 줄이 눌리고 `전체 해제` 가 떠 있었다. 저장하는 자리가 없으니
+   * 무엇을 빼도 새로고침 한 번에 되돌아오는, **아무 데도 닿지 않는 조작**이었다.
+   * 안 넘기면 줄이 `button` 이 아니라 평범한 칸이 되고 `전체 선택/해제` 도 사라진다.
+   */
+  onTogglePlace?: (placeId: number) => void;
   /**
    * 접힘 상태는 **부모가 들고 있다.** 지도가 화면을 맞출 때 시트가 덮는 높이를 빼야 하는데,
    * 그 값이 접힘에 따라 달라지기 때문이다(`SHEET_EXPANDED_RATIO` / `SHEET_COLLAPSED_PX`).
@@ -147,6 +159,42 @@ function useCollapseDrag(setCollapsed: (collapsed: boolean) => void) {
   };
 }
 
+/** 장소 한 줄의 겉모습. 두 모드가 같은 목록으로 보여야 하므로 감싸는 태그만 갈린다. */
+const ROW_CLASS = 'flex w-full items-center gap-3 py-2 text-left';
+
+/**
+ * 줄을 감싸는 틀. `onClick` 이 있으면 버튼, 없으면(보기 전용) 평범한 칸이다.
+ *
+ * **누를 수 없는 것을 `button` 으로 두지 않는다** — 스크린리더는 그걸 그대로 '버튼'이라
+ * 읽어 주고, 초점도 줄마다 한 번씩 멈춘다. 저장된 동선을 볼 때 목록은 읽을 것이지
+ * 조작할 것이 아니다.
+ */
+function RowFrame({
+  onClick,
+  pressed,
+  label,
+  children,
+}: {
+  onClick?: () => void;
+  pressed?: boolean;
+  label: string;
+  children: ReactNode;
+}) {
+  if (!onClick) return <div className={ROW_CLASS}>{children}</div>;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={pressed}
+      aria-label={label}
+      className={ROW_CLASS}
+    >
+      {children}
+    </button>
+  );
+}
+
 /**
  * 화면 하단의 동선 시트. **이 시트가 다루는 건 하나다 — 동선에 무엇을 넣을지.**
  * 장소를 켜고 끄고, 몇 곳인지 세고, 다음 단계로 넘긴다. **이름 짓기와 저장은 여기 없다** —
@@ -182,6 +230,12 @@ function useCollapseDrag(setCollapsed: (collapsed: boolean) => void) {
  *
  * 줄을 누르면 그 장소가 꺼지고 **뒤 번호가 당겨진다**(설계서 7번). 켠 장소만 세기 때문에
  * 화면에 보이는 번호는 항상 1부터 빈틈없이 이어진다.
+ *
+ * ⚠️ **저장된 동선을 볼 때는 그 전부가 없다 — 읽기 전용 시트다.** 다듬기(`onTogglePlace`)와
+ * `전체 선택/해제`(`onToggleAllVisible`)를 안 넘기면 줄이 `button` 을 벗고 버튼도 사라진다.
+ * 이 컴포넌트를 두 모드가 공유하는 바람에 **보기 화면에서도 장소를 뺄 수 있었는데, 저장하는
+ * 자리가 없어 새로고침 한 번에 되돌아왔다** — 아무 데도 닿지 않는 조작이었다. 보기 화면에
+ * 남는 것은 날짜 필터와 따라가기, 즉 **무엇을 보여줄지**를 정하는 것들뿐이다.
  *
  * **접을 수 있다**(손잡이 탭, 또는 손잡이·`다음` 줄에서 끌기). 지도가 이 화면의 본체인데
  * 시트가 아래를 계속 물고 있으면 남쪽 마커가 가려진다.
@@ -352,14 +406,18 @@ export function RoutePlaceStrip({
           </p>
 
           {/* 글자는 13px 한 줄이라 그대로 두면 누를 자리가 20px 도 안 된다. 음수 마진으로
-              **줄 간격은 그대로 두고 누를 자리만** 40px 가까이로 넓힌다(권장 터치 영역). */}
-          <button
-            type="button"
-            onClick={onToggleAllVisible}
-            className="-my-2.5 shrink-0 py-2.5 text-[13px] font-medium text-ink-muted underline underline-offset-2"
-          >
-            {allVisibleSelected ? '전체 해제' : '전체 선택'}
-          </button>
+              **줄 간격은 그대로 두고 누를 자리만** 40px 가까이로 넓힌다(권장 터치 영역).
+              보기 전용일 땐 아예 안 그린다 — 빼고 넣을 수 없는 화면에서 `전체 해제` 는
+              누를 수는 있는데 아무 데도 닿지 않는 버튼이 된다. */}
+          {onToggleAllVisible && (
+            <button
+              type="button"
+              onClick={onToggleAllVisible}
+              className="-my-2.5 shrink-0 py-2.5 text-[13px] font-medium text-ink-muted underline underline-offset-2"
+            >
+              {allVisibleSelected ? '전체 해제' : '전체 선택'}
+            </button>
+          )}
         </div>
 
         {/* 빨간 숫자만으로는 '많다'는 것만 읽히고 **어떻게 하라는 건지**가 없다. 개수 줄은
@@ -439,12 +497,16 @@ export function RoutePlaceStrip({
                     />
                   )}
 
-                  <button
-                    type="button"
-                    onClick={() => onTogglePlace(place.id)}
-                    aria-pressed={!disabled}
-                    aria-label={`${place.name} 동선 ${disabled ? '켜기' : '끄기'}`}
-                    className="flex w-full items-center gap-3 py-2 text-left"
+                  {/*
+                    다듬을 수 있을 때만 `button` 이다. 보기 전용(저장된 동선)에서는 평범한
+                    칸으로 그린다 — 눌러도 아무 일이 없는 버튼은 보조기술에서도 '누를 수 있음'
+                    으로 읽히고, 손가락으로도 한 번은 눌러 보게 된다.
+                    겉모습·간격은 두 모드가 같다(`ROW_CLASS`).
+                  */}
+                  <RowFrame
+                    onClick={onTogglePlace && (() => onTogglePlace(place.id))}
+                    pressed={onTogglePlace ? !disabled : undefined}
+                    label={`${place.name} 동선 ${disabled ? '켜기' : '끄기'}`}
                   >
                     <div
                       // 사진이 없을 때 드러나는 타일 바탕. 흰 바닥에선 흰 타일이 사라지므로
@@ -496,7 +558,7 @@ export function RoutePlaceStrip({
                         {sequenceById.get(place.id)}
                       </span>
                     )}
-                  </button>
+                  </RowFrame>
                 </li>
               );
             })}

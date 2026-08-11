@@ -23,7 +23,7 @@ export { IconFrame } from './IconFrame';
 export { Photo } from './Photo';
 export { Skeleton } from './Skeleton';
 export { Spinner } from './Spinner';
-export { PhotoPost, PostHeartIcon, FavoriteHeartButton } from './PhotoPost';
+export { PhotoPost, PhotoStrip, PostHeartIcon, FavoriteHeartButton } from './PhotoPost';
 export { TrashIcon } from './TrashIcon';
 export { TRASH_GLYPH, TRASH_BOX } from './trashGlyph';
 export type { PhotoPostSlide } from './PhotoPost';
