@@ -21,6 +21,9 @@ import type {
   BillingKeyDeactivateResult,
   BillingKeyDto,
   ChangeSubscriptionPlanRequest,
+  CancelPaymentRequest,
+  CancelPaymentResult,
+  PaymentDto,
   PaymentListData,
   CustomerKeyResponse,
   MySubscription,
@@ -163,19 +166,48 @@ export const cancelPlanChange = async (
   return data.data;
 };
 
+/** 한 번에 받아 오는 결제 건수. 서버 기본값과 같다(최대 100). */
+export const PAYMENT_PAGE_SIZE = 20;
+
 /**
- * GET /payments — 내 결제 내역.
+ * GET /payments — 내 결제 내역 한 페이지.
  *
- * `page`·`size`·`status` 를 받지만 지금은 첫 페이지만 쓴다(`size` 는 서버 최대 100).
- * 목록이 길어지는 건 결제가 수십 번 쌓인 뒤의 일이라, 그때 더보기를 붙인다.
- *
- * ⚠️ `items` 가 `null` 로 올 수 있어 호출부에서 빈 배열로 받는다 — `/routes`·`/trees` 도
- * 같은 모양이다.
+ * ⚠️ `page` 는 **1-based** 다(`/trees` 와 같다). `items` 가 `null` 로 올 수 있어 호출부에서
+ * 빈 배열로 받는다.
  */
-export const getMyPayments = async (): Promise<PaymentListData> => {
+export const getMyPayments = async (page: number): Promise<PaymentListData> => {
   const { data } = await httpClient.get<ApiResponse<PaymentListData>>('/payments', {
-    params: { page: 1, size: 100 },
+    params: { page, size: PAYMENT_PAGE_SIZE },
   });
+
+  return data.data;
+};
+
+/** GET /payments/{id} — 결제 1건. 목록 항목과 같은 모양이다. */
+export const getMyPayment = async (paymentId: number): Promise<PaymentDto> => {
+  const { data } = await httpClient.get<ApiResponse<PaymentDto>>(`/payments/${paymentId}`);
+
+  return data.data;
+};
+
+/**
+ * POST /payments/{id}/cancel — 결제 취소(환불).
+ *
+ * ⚠️ **구독은 건드리지 않는다.** 서버는 결제 행의 상태만 `CANCELED` 로 바꾼다
+ * (`updatePaymentAfterCancel`) — 이용 중인 구독은 그대로 남는다. 화면 문구가 이걸
+ * 말해야 한다("환불되고 구독은 유지된다").
+ *
+ * 이미 취소된 건은 다시 불러도 성공으로 돌아온다(서버가 멱등하게 받는다).
+ * 취소 불가 상태면 `PAYMENT409`.
+ */
+export const cancelPayment = async (
+  paymentId: number,
+  body: CancelPaymentRequest,
+): Promise<CancelPaymentResult> => {
+  const { data } = await httpClient.post<ApiResponse<CancelPaymentResult>>(
+    `/payments/${paymentId}/cancel`,
+    body,
+  );
 
   return data.data;
 };

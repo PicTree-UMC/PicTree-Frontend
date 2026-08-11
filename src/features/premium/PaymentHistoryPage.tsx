@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { NavBar, Skeleton } from '@/shared/components';
-import { ROUTES } from '@/shared/constants/routes';
+import { ROUTES, paymentDetailPath } from '@/shared/constants/routes';
 
 import { usePayments } from './hooks/usePayments';
 import { formatPrice } from './lib/planDisplay';
@@ -13,40 +13,42 @@ import {
 } from './lib/paymentDisplay';
 import type { PaymentDto } from './types/payment';
 
-/** 영수증으로 나가는 화살표. 앱 밖으로 나간다는 뜻이라 꺾쇠가 아니라 대각선이다. */
-function ExternalIcon() {
+/** 상세로 들어가는 꺾쇠. 앱 안에서 이동하므로 대각선이 아니다. */
+function ChevronIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
-      className="size-3.5"
+      className="mt-1 size-4 shrink-0 text-ink-disabled"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="2.2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M14 4h6v6" />
-      <path d="M20 4 11 13" />
-      <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+      <path d="m9 6 6 6-6 6" />
     </svg>
   );
 }
 
 /**
- * 결제 한 건.
+ * 결제 한 건. **줄 전체가 상세로 가는 버튼이다.**
  *
- * **누르는 줄이 아니다.** 상세 화면(`GET /payments/{id}`)이 서버엔 있지만, 목록이 이미
- * 영수증 URL까지 들고 와서 더 보여줄 것이 없다 — 눌러도 같은 값만 나오는 문을 만들면
- * 사용자는 한 번 눌러 보고 다시 안 누른다. 대신 **영수증만 밖으로 나가는 링크**로 둔다.
+ * ⚠️ **영수증 링크를 여기서 뺐다.** 줄이 눌리게 되면서 링크가 버튼 안의 버튼이 됐고,
+ * 34px 짜리 목표 둘이 겹치면 모바일에서 어느 쪽이 눌릴지 손가락이 정한다. 영수증은
+ * 상세로 옮겼다 — 거기서는 자기 자리를 갖는다.
  */
-function PaymentRow({ payment }: { payment: PaymentDto }) {
+function PaymentRow({ payment, onOpen }: { payment: PaymentDto; onOpen: () => void }) {
   const badge = getPaymentStatusBadge(payment.status);
   const refunded = isRefunded(payment.status);
 
   return (
     <li className="border-b border-line-soft last:border-b-0">
-      <div className="flex items-start gap-3 px-5 py-4">
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex w-full items-start gap-3 px-5 py-4 text-left transition active:bg-cream"
+      >
         <div className="min-w-0 flex-1">
           <p className="truncate text-[15px] font-medium text-ink">{payment.orderName}</p>
 
@@ -63,21 +65,6 @@ function PaymentRow({ payment }: { payment: PaymentDto }) {
             )}
           </div>
 
-          {/*
-            영수증은 결제가 실제로 끝난 건에만 있다. 없는 줄에 빈 자리를 두지 않는다 —
-            줄 높이가 들쭉날쭉해지는 것보다 링크가 있는 줄만 한 줄 긴 편이 읽기 쉽다.
-          */}
-          {payment.receiptUrl && (
-            <a
-              href={payment.receiptUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-pictree-700 underline underline-offset-4"
-            >
-              영수증 보기
-              <ExternalIcon />
-            </a>
-          )}
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-1.5">
@@ -96,7 +83,9 @@ function PaymentRow({ payment }: { payment: PaymentDto }) {
             {badge.label}
           </span>
         </div>
-      </div>
+
+        <ChevronIcon />
+      </button>
     </li>
   );
 }
@@ -113,9 +102,18 @@ function PaymentRow({ payment }: { payment: PaymentDto }) {
  */
 export function PaymentHistoryPage() {
   const navigate = useNavigate();
-  const { data, isPending, isError, refetch } = usePayments();
+  const {
+    data,
+    isPending,
+    isError,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = usePayments();
 
-  const payments = data?.items ?? [];
+  // 받아 둔 페이지를 한 줄로 편다. `items` 는 `null` 로 올 수 있다.
+  const payments = data?.pages.flatMap((page) => page.items ?? []) ?? [];
 
   return (
     <div className="flex min-h-full flex-col bg-cream pb-nav">
@@ -162,11 +160,33 @@ export function PaymentHistoryPage() {
             </p>
           </div>
         ) : (
-          <ul className="overflow-hidden rounded-xl border border-line-soft bg-white">
-            {payments.map((payment) => (
-              <PaymentRow key={payment.paymentId} payment={payment} />
-            ))}
-          </ul>
+          <>
+            <ul className="overflow-hidden rounded-xl border border-line-soft bg-white">
+              {payments.map((payment) => (
+                <PaymentRow
+                  key={payment.paymentId}
+                  payment={payment}
+                  onOpen={() => navigate(paymentDetailPath(payment.paymentId))}
+                />
+              ))}
+            </ul>
+
+            {/*
+              다음 페이지가 있을 때만 그린다. 무한 스크롤이 아니라 버튼이다 — 결제 내역은
+              끝까지 훑는 화면이 아니라 특정 건을 찾으러 오는 화면이라, 스크롤이 저절로
+              늘어나면 바닥(=가장 오래된 결제)에 닿을 방법이 없어진다.
+            */}
+            {hasNextPage && (
+              <button
+                type="button"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="h-[46px] w-full rounded-xl border border-line-soft bg-white text-[15px] font-medium text-ink-muted transition active:bg-cream disabled:opacity-60"
+              >
+                {isFetchingNextPage ? '불러오는 중...' : '더 보기'}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -18,6 +18,7 @@ import { RouteSavedPage } from '../features/route/RouteSavedPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { PaymentMethodsPage } from '../features/premium/PaymentMethodsPage';
 import { PaymentHistoryPage } from '../features/premium/PaymentHistoryPage';
+import { PaymentDetailPage } from '../features/premium/PaymentDetailPage';
 import { PremiumPage } from '../features/premium/PremiumPage';
 import { ProfileEditPage } from '../features/profile/ProfileEditPage';
 import { TravelCalendarPage } from '../features/profile/TravelCalendarPage';
@@ -122,6 +123,10 @@ export const router = createBrowserRouter([
               {
                 path: ROUTES.paymentHistory,
                 element: <PaymentHistoryPage />,
+              },
+              {
+                path: ROUTES.paymentDetail,
+                element: <PaymentDetailPage />,
               },
               {
                 path: ROUTES.calendar,
