@@ -21,6 +21,7 @@ import type {
   BillingKeyDeactivateResult,
   BillingKeyDto,
   ChangeSubscriptionPlanRequest,
+  PaymentListData,
   CustomerKeyResponse,
   MySubscription,
   RegisterBillingKeyRequest,
@@ -159,5 +160,22 @@ export const cancelPlanChange = async (
   const { data } = await httpClient.post<ApiResponse<SubscriptionDto>>(
     `/subscriptions/${subscriptionId}/plan-change/cancel`,
   );
+  return data.data;
+};
+
+/**
+ * GET /payments — 내 결제 내역.
+ *
+ * `page`·`size`·`status` 를 받지만 지금은 첫 페이지만 쓴다(`size` 는 서버 최대 100).
+ * 목록이 길어지는 건 결제가 수십 번 쌓인 뒤의 일이라, 그때 더보기를 붙인다.
+ *
+ * ⚠️ `items` 가 `null` 로 올 수 있어 호출부에서 빈 배열로 받는다 — `/routes`·`/trees` 도
+ * 같은 모양이다.
+ */
+export const getMyPayments = async (): Promise<PaymentListData> => {
+  const { data } = await httpClient.get<ApiResponse<PaymentListData>>('/payments', {
+    params: { page: 1, size: 100 },
+  });
+
   return data.data;
 };

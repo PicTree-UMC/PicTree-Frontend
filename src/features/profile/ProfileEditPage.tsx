@@ -17,6 +17,7 @@ import { NicknameEditSheet } from "./components/NicknameEditSheet";
 import { WithdrawModal } from "./components/WithdrawModal";
 import treeIcon from "./assets/icons/tree.svg";
 import cardImage from "./assets/icons/card3d.jpg";
+import receiptImage from "./assets/icons/receipt3d.svg";
 
 /**
  * 값 자리를 잡아 두는 막대. 줄 높이가 로딩 끝에 튀지 않게 한다.
@@ -158,6 +159,21 @@ export function ProfileEditPage() {
             image={cardImage}
             title="결제 수단"
             onClick={() => navigate(ROUTES.paymentMethods)}
+          />
+          {/*
+            결제 수단과 같은 카드에 둔다 — 둘 다 '돈' 이고, 카드를 가르면 내역이 어디에
+            딸린 화면인지 흐려진다. 순서는 **수단이 먼저, 내역이 나중**이다: 수단은 고치는
+            것이고 내역은 읽는 것이라, 하는 일이 앞에 온다(로그아웃·탈퇴 카드와 같은 결).
+          */}
+          <SettingsRow
+            /*
+              위 '결제 수단' 과 **같은 가족이되 같은 그림은 아니다** — 카드는 눕고 영수증은
+              서며, 초록 배지가 체크(수단이 등록됐다)가 아니라 ₩(돈이 오갔다)다.
+              두 줄에 같은 그림을 두면 복사한 것처럼 읽힌다(`receipt3d.svg` 주석).
+            */
+            image={receiptImage}
+            title="결제 내역"
+            onClick={() => navigate(ROUTES.paymentHistory)}
           />
         </SettingsList>
 

@@ -20,6 +20,8 @@ export const ROUTES = {
    * 지우러 들어간 사람이 구독 해지 버튼 옆에 서게 된다.
    */
   paymentMethods: '/profile/payment-methods',
+  /** 결제 내역. 결제 수단과 같은 '내 정보' 딸림 화면이라 같은 접두사를 쓴다. */
+  paymentHistory: '/profile/payment-history',
   calendar: '/profile/calendar',
   favorites: '/profile/favorites',
   privacy: '/profile/privacy',
