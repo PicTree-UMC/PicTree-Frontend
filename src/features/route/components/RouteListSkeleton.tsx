@@ -38,20 +38,20 @@ export function RouteListSkeleton() {
   return (
     <div role="status" aria-label="동선을 불러오는 중" className="flex flex-1 flex-col">
       {/*
-        동선 트레이. 맨 왼쪽 `새 동선` 칸은 스크롤 밖에 고정된 실제 요소와 같은 자리이고,
-        오른쪽으로 흐려 개수를 주장하지 않는다(`RouteTray` 는 가로 스크롤이다).
+        동선 트레이. 오른쪽으로 흐려 개수를 주장하지 않는다(`RouteTray` 는 가로 스크롤이다).
+
+        칸이 **한 줄에 이어져 있다** — 실제 트레이도 `새 동선` 칸까지 한 스크롤러 안이다.
+        한동안 첫 칸만 밖으로 빼 두었는데(그때는 그게 고정이었다) 지금은 갈라 둘 자리가 없다.
 
         원 아래 이름은 길이가 제각각이라 골격에서는 짧은 막대로 통일한다 — 실제 이름 길이를
         흉내 내면 데이터가 올 때 길이가 늘었다 줄었다 하는 것처럼 보인다.
       */}
-      <div className="-mx-5 flex items-start gap-2 pl-5 pt-4">
+      <div className="skeleton-fade-r -mx-5 flex items-start gap-2 overflow-hidden pl-5 pt-4">
         <TrayItemSkeleton />
-        <div className="skeleton-fade-r flex gap-2 overflow-hidden">
-          <TrayItemSkeleton />
-          <TrayItemSkeleton />
-          <TrayItemSkeleton />
-          <TrayItemSkeleton />
-        </div>
+        <TrayItemSkeleton />
+        <TrayItemSkeleton />
+        <TrayItemSkeleton />
+        <TrayItemSkeleton />
       </div>
 
       {/*

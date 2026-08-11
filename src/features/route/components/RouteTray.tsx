@@ -121,9 +121,20 @@ interface RouteTrayProps {
  * ⚠️ `scrollIntoView` 를 쓰지 않는다 — 조상 스크롤 컨테이너까지 세로로 움직일 수 있다.
  * 이 컨테이너의 `scrollLeft` 만 건드린다.
  *
- * 맨 왼쪽 `새 동선` 칸은 **스크롤 밖에 고정한다.** 동선이 많아지면 스크롤에 딸려 사라지는데,
- * 이건 새 동선을 만드는 유일한 입구라 항상 닿을 수 있어야 한다. 위의 자동 스크롤도
- * 한몫한다 — 저장 직후처럼 사용자가 누르지 않았는데 선택이 바뀌면 줄이 저절로 밀린다.
+ * `새 동선` 칸은 **줄의 첫 칸이고 나머지와 같이 미끄러진다**(인스타그램의 `내 스토리` 와
+ * 같은 자리). 한동안 스크롤 **밖**에 고정돼 있었다 — 새 동선을 만드는 유일한 입구라
+ * 동선이 늘어도 닿아야 한다는 이유였고, 저장 직후의 자동 스크롤에 딸려 나가지 않게 하려는
+ * 뜻도 있었다.
+ *
+ * **되돌린 이유: 고정이 화면에서 고정으로 안 읽혔다.** 다른 칸과 크기·모양이 같은 것이
+ * 혼자 안 움직이니 눌러붙은 것처럼 보였고, 한 줄로 보이는 것이 실제로는 **따로 노는 두 구역**
+ * 이었다. 경계선을 그어 그 사실을 알려주는 길도 있었지만(그것도 한 번 해봤다), 그건 어긋남을
+ * 설명하는 것이지 없애는 것이 아니다. 같이 밀리면 설명할 것이 남지 않는다.
+ *
+ * ⚠️ **대신 `+` 가 왼쪽으로 밀려 화면 밖으로 나갈 수 있다.** 되돌아오려면 줄을 오른쪽으로
+ * 밀면 되고(스토리 줄에서 늘 하는 손짓이다), 자동 스크롤이 그리 미는 경우는 **방금 동선을
+ * 저장하고 온 참**이라 곧바로 또 만들 일이 드물다. 그래도 만들 길이 화면에서 사라진다는
+ * 사실은 남으므로, 이게 걸리면 `+` 를 트레이 밖(헤더 등)으로 옮기는 쪽이 다음 수다.
  */
 export function RouteTray({ routes, selectedId, onSelect, onCreate }: RouteTrayProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -134,24 +145,42 @@ export function RouteTray({ routes, selectedId, onSelect, onCreate }: RouteTrayP
     const item = selectedRef.current;
     if (!scroller || !item) return;
 
-    const itemRight = item.offsetLeft + item.offsetWidth;
+    /*
+      자리는 **rect 차이로 잰다**(`offsetLeft` 가 아니라). `offsetLeft` 는 가장 가까운
+      **위치 지정 조상** 기준인데 이 스크롤러는 `relative` 가 아니라서, 값에 페이지 여백과
+      가운데 정렬 여백까지 섞여 들어온다. 아래 비교는 스크롤러 안쪽 좌표를 전제로 하므로
+      그만큼 어긋난다 — 칸이 하나(`새 동선`) 앞에 붙으면서 그 어긋남이 80px 더 커졌다.
+      (`RoutePlaceStrip.scrollToPlace` 가 세로로 같은 처리를 한다.)
+    */
+    const left =
+      item.getBoundingClientRect().left - scroller.getBoundingClientRect().left + scroller.scrollLeft;
+    const right = left + item.offsetWidth;
     const viewRight = scroller.scrollLeft + scroller.clientWidth;
 
     // 이미 보이는 칸이면 아무것도 하지 않는다 — 누를 때마다 줄이 흔들리면 안 된다.
-    if (item.offsetLeft < scroller.scrollLeft) {
-      scroller.scrollTo({ left: item.offsetLeft - SCROLL_MARGIN, behavior: 'smooth' });
-    } else if (itemRight > viewRight) {
+    if (left < scroller.scrollLeft) {
+      scroller.scrollTo({ left: Math.max(left - SCROLL_MARGIN, 0), behavior: 'smooth' });
+    } else if (right > viewRight) {
       scroller.scrollTo({
-        left: itemRight - scroller.clientWidth + SCROLL_MARGIN,
+        left: right - scroller.clientWidth + SCROLL_MARGIN,
         behavior: 'smooth',
       });
     }
   }, [selectedId]);
 
   return (
-    // 페이지의 `px-5` 를 상쇄해 오른쪽 끝까지 흘려보낸다 — 줄이 화면 가장자리에서 잘리면
-    // 옆에 더 있다는 게 보인다. 왼쪽은 `pl-5` 로 도로 맞춰 다른 줄들과 시작점이 같다.
-    <div className="-mx-5 flex items-start gap-2 pl-5">
+    /*
+      한 줄이 통째로 미끄러진다 — `새 동선` 도 그 안에 있다.
+
+      페이지의 `px-5` 를 상쇄해 양 끝까지 흘려보내고, 여백은 스크롤러가 padding 으로 되돌려
+      갖는다: 왼쪽 `pl-5` 로 다른 줄들과 시작점을 맞추고, 오른쪽 `pr-5` 는 끝까지 밀었을 때
+      마지막 칸이 화면 끝에 붙지 않게 한다. 줄이 가장자리에서 잘려 보이는 것이 곧
+      "옆에 더 있다" 다.
+    */
+    <div
+      ref={scrollerRef}
+      className="-mx-5 flex items-start gap-2 overflow-x-auto px-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
       {/* 점선 테두리 — 옆의 동선 칸들과 달리 '고르는 것'이 아니라 '만드는 것'이라
           한눈에 갈리게 한다. 그래서 링(선택 상태)이 없고 `aria-pressed` 도 없다. */}
       <button
@@ -167,20 +196,15 @@ export function RouteTray({ routes, selectedId, onSelect, onCreate }: RouteTrayP
         <span className="w-full truncate text-center text-[13px] text-ink">새 동선</span>
       </button>
 
-      <div
-        ref={scrollerRef}
-        className="flex gap-2 overflow-x-auto pr-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {routes.map((route) => (
-          <RouteTrayItem
-            key={route.id}
-            ref={route.id === selectedId ? selectedRef : undefined}
-            route={route}
-            selected={route.id === selectedId}
-            onClick={() => onSelect(route)}
-          />
-        ))}
-      </div>
+      {routes.map((route) => (
+        <RouteTrayItem
+          key={route.id}
+          ref={route.id === selectedId ? selectedRef : undefined}
+          route={route}
+          selected={route.id === selectedId}
+          onClick={() => onSelect(route)}
+        />
+      ))}
     </div>
   );
 }
