@@ -129,10 +129,8 @@ export function PaymentHistoryPage() {
                   <Skeleton surface="card" className="h-[15px] w-40" />
                   <Skeleton surface="card" className="mt-2 h-[13px] w-28" />
                 </div>
-                <div className="flex shrink-0 flex-col items-end gap-1.5">
-                  <Skeleton surface="card" className="h-[15px] w-16" />
-                  <Skeleton surface="card" className="h-[18px] w-14 rounded-full" />
-                </div>
+                {/* 배지가 없어졌으므로 골격도 금액 한 줄뿐이다 — 골격이 실제보다 크면 자리가 튄다. */}
+                <Skeleton surface="card" className="h-[15px] w-16 shrink-0" />
               </div>
             ))}
           </div>
