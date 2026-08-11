@@ -74,9 +74,19 @@ const enterClass: Record<ToastPlacement, string> = {
 // 토스트가 새싹 일러스트 위에 앉았다 — 그 화면엔 헤더도 칩도 없다.
 // 화면마다 여백이 다르므로, 안 맞으면 여기 값을 늘리지 말고 호출부가 `offset` 을 넘긴다
 // (PR #20 리뷰에서 "두 번째 top 사용처가 생기면 per-call 로 옮긴다"고 합의한 그 방식).
+//
+// ⚠️ **하단은 `.bottom-nav` 다 — 고정 px 를 다시 박지 말 것.** 예전 값 `bottom-20`(80px)은
+// 탭바(`--nav-height` 86px)보다 낮아 **토스트가 탭바에 6px 파묻혔고, 하단 안전영역이 있는
+// 기기에서는 56px 까지 파고들었다.** `.bottom-nav` 는 `--nav-height + --safe-bottom + 16px`
+// 이라 탭바 높이가 바뀌어도 따라온다 — 촬영 버튼·FAB·즐겨찾기 액션바가 쓰는 그 유틸이다
+// (`styles.css` 가 "두 곳에 같은 숫자를 두면 한쪽만 고쳐진다" 고 경고한 자리인데 토스트만
+// 빠져 있었다).
+//
+// 탭바가 없는 화면(카메라·결제·블로그 작성·로그인)에서는 22px 높이 뜬다. **가리는 것은
+// 실패지만 조금 높은 것은 무해**하다는 판단이고, 거슬리는 화면은 위와 같이 `offset` 을 넘긴다.
 const placementClass: Record<ToastPlacement, string> = {
   top: 'top-[calc(env(safe-area-inset-top,0px)+9rem)]',
-  bottom: 'bottom-20',
+  bottom: 'bottom-nav',
 };
 
 /** `offset` 은 모서리에서 **중앙**까지의 거리다 — 토스트 높이를 호출부가 몰라도 되도록. */
