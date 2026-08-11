@@ -3,15 +3,12 @@ import { useEffect, type RefObject } from 'react';
 import { WELCOME_TOAST_CSS_VAR } from '../lib/authToast';
 
 /**
- * 로그인 화면에서 **문구와 로그인 버튼 사이 빈칸의 정중앙**을 재서 CSS 변수로 내건다.
+ * 로그인 화면에서 **히어로 문구와 로그인 버튼 사이 빈칸의 정중앙**을 재서 CSS 변수로 내건다.
  * 토스트(`Toaster`)가 그 값을 자리로 쓴다.
  *
- * ⚠️ **왜 상수가 아니라 실측인가.** 처음엔 `WelcomeView` 의 여백을 더해 상수로 뒀다가
- * 57px 어긋났다. 그 빈칸은 `pb-[9.25rem]` 크기가 아니다 — 위 블록이 `flex-1` +
- * `justify-center` 라 남는 높이의 절반이 문구 아래로 더 붙는다. 즉 **빈칸 높이가 기기
- * 화면 높이에 따라 변한다**(390×812 에서 148px 이 아니라 263px 이었다). 상수로 맞추려면
- * `100dvh` 에 헤더·버튼·일러스트 높이를 전부 빼는 식이 되는데, 그러면 저 값 중 하나만
- * 바뀌어도 조용히 어긋난다.
+ * ⚠️ **왜 상수가 아니라 실측인가.** 위 히어로가 `flex-1` 로 남은 높이를 채우므로 문구와
+ * 버튼 사이 간격은 기기 높이에 따라 달라진다. 상수로 맞추면 작은 화면과 큰 화면 중 한쪽에서
+ * 토스트가 콘텐츠를 가리게 된다.
  *
  * **아래에서부터 재는 이유**는 따로 있다. 토스트는 `position: fixed` 라 스크롤과 무관한데,
  * 아래를 기준으로 두면 주소창이 접혔다 펴져 뷰포트가 변해도 버튼 묶음과의 거리가 그대로다.
@@ -20,7 +17,7 @@ import { WELCOME_TOAST_CSS_VAR } from '../lib/authToast';
  * 화면 토스트가 여기 좌표를 물려받는다.
  */
 export function useWelcomeToastAnchor(
-  /** 문구 블록(마크 + 제목 + 한 줄 설명)의 아래 모서리를 잴 대상. */
+  /** 히어로의 마지막 설명 문구 아래 모서리를 잴 대상. */
   contentRef: RefObject<HTMLElement | null>,
   /** 로그인 버튼 묶음의 위 모서리를 잴 대상. */
   actionsRef: RefObject<HTMLElement | null>,

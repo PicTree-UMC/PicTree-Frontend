@@ -11,8 +11,8 @@ type WelcomeViewProps = {
 
 export function WelcomeView({ onSocialLogin }: WelcomeViewProps) {
   /*
-    두 블록 사이 빈칸이 토스트 자리다. 로그인 실패 사유가 이 화면에서만 나오는데,
-    공용 위치는 새싹 일러스트 위에 앉아 글이 그림과 겹쳤다. 자리는 훅이 재서 알린다.
+    히어로 문구와 로그인 버튼 사이 빈칸이 토스트 자리다. 화면 높이에 따라 간격이
+    달라지므로 두 지점을 훅이 재서 공용 토스트에 알려준다.
   */
   const contentRef = useRef<HTMLParagraphElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
