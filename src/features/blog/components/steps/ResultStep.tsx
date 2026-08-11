@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { BlogDraftPreview, BlogStatus } from '../../types/blog';
 import { GeneratingCard } from '../GeneratingCard';
 import { useToast } from '../../../../shared/components/toast/toastStore';
-import { Photo } from '@/shared/components';
+import { Photo, PrimaryCta } from '@/shared/components';
 import { formatLongDate } from '../../lib/formatBlogDate';
 
 type ResultStepProps = {
@@ -69,17 +69,13 @@ export function ResultStep({
           <button
             type="button"
             onClick={onBack}
-            className="h-[54px] flex-1 rounded-xl bg-line-soft text-[15px] font-medium text-ink-muted"
+            className="h-[52px] flex-1 rounded-[24px] bg-line-soft text-[15px] font-medium text-ink-muted"
           >
             이전 단계로
           </button>
-          <button
-            type="button"
-            onClick={onRetry}
-            className="h-[54px] flex-[2] rounded-xl bg-pictree-700 text-[15px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)]"
-          >
-            다시 시도
-          </button>
+          <div className="flex-[2]">
+            <PrimaryCta onClick={onRetry}>다시 시도</PrimaryCta>
+          </div>
         </div>
       </div>
     );
@@ -173,15 +169,12 @@ export function ResultStep({
       </article>
 
       <div className="mt-auto flex gap-3 px-5 pt-5">
-        <button type="button" className="h-[54px] flex-1 rounded-xl bg-line-soft text-[15px] font-medium text-ink-muted" onClick={handleCopy}>복사하기</button>
-        <button
-          type="button"
-          className="h-[54px] flex-[2] rounded-xl bg-pictree-700 text-[15px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)] disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={handleSave}
-          disabled={isSaving}
-        >
-          {isSaving ? '저장 중...' : '저장하기'}
-        </button>
+        <button type="button" className="h-[52px] flex-1 rounded-[24px] bg-line-soft text-[15px] font-medium text-ink-muted" onClick={handleCopy}>복사하기</button>
+        <div className="flex-[2]">
+          <PrimaryCta onClick={handleSave} disabled={isSaving}>
+            {isSaving ? '저장 중...' : '저장하기'}
+          </PrimaryCta>
+        </div>
       </div>
     </div>
   );

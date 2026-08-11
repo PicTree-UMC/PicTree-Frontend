@@ -40,8 +40,7 @@ const API_TONE_BY_ID: Record<ToneId, CreateAIBlogDraftRequest['tone']> = {
  * 파생될 뿐이다. 화면이 날짜를 만지던 `setDateRange`·`toggleTree`·`activityByDate` 도 함께
  * 사라졌다(그 셋을 쓰던 `DateStep`·`BlogDateRangePicker`·`BlogRoadmap` 도).
  *
- * 부수 효과로 **나무 전체 조회(`useBlogTrees`, 1+N 페이지)가 이 흐름에서 빠졌다.** 필요한 건
- * 동선 하나에 속한 것뿐이라 동선 상세·사진 두 요청으로 끝난다.
+ * 필요한 건 동선 하나에 속한 기록뿐이라 동선 상세·사진 두 요청으로 끝난다.
  */
 export function useBlogCreate({ initialRouteId }: UseBlogCreateOptions = {}) {
   const [step, setStep] = useState<CreateStep>(1);

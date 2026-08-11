@@ -3,14 +3,18 @@ import type { AIBlogDraft } from '../types/blog';
 import { formatDateRange } from '../lib/formatBlogDate';
 import { blogDetailPath } from '@/shared/constants/routes';
 import { Photo } from '@/shared/components';
+import { useBlogDraftDetail } from '../hooks/useBlogDrafts';
 
 type SavedBlogCardProps = {
   blog: AIBlogDraft;
-  treeCount?: number;
 };
 
-export function SavedBlogCard({ blog, treeCount }: SavedBlogCardProps) {
+export function SavedBlogCard({ blog }: SavedBlogCardProps) {
   const navigate = useNavigate();
+  const { data: detail } = useBlogDraftDetail(blog.draftId);
+  const treeCount = detail
+    ? new Set(detail.days.flatMap((day) => day.items.map((item) => item.treeId))).size
+    : null;
 
   return (
     <article className="border-b border-[#ececdf] py-4">
@@ -46,7 +50,7 @@ export function SavedBlogCard({ blog, treeCount }: SavedBlogCardProps) {
               <path d="M12 21s-6-5.686-6-10a6 6 0 1 1 12 0c0 4.314-6 10-6 10Z" />
               <circle cx="12" cy="11" r="2" />
             </svg>
-            {treeCount != null ? `나무 ${treeCount}개` : '나무 확인 중'}
+            {treeCount !== null ? `나무 ${treeCount}개` : '나무 확인 중'}
           </span>
         </span>
 
