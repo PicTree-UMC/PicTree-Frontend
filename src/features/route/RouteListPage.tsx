@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { EmptyRouteList } from './components/EmptyRouteList';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BottomSheet } from './components/BottomSheet';
 import { PhotoAlbumSheet } from './components/PhotoAlbumSheet';
@@ -8,7 +9,6 @@ import { useDeleteRoute } from './hooks/useDeleteRoute';
 import { useRenameRoute } from './hooks/useRenameRoute';
 import { RouteTray } from './components/RouteTray';
 import { RouteListSkeleton } from './components/RouteListSkeleton';
-import { RouteIllustration } from './components/RouteIllustration';
 import { SavedRouteRoadmap } from './components/RouteRoadmap';
 import { ROUTES, journeyViewPath } from '../../shared/constants/routes';
 import { DeleteConfirmModal, DeleteIconButton } from '../../shared/components/DeleteConfirmModal';
@@ -91,8 +91,17 @@ export function RouteListPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-cream">
+      {/*
+        탭 제목. 타임라인·블로그에는 있고 **동선에만 없어서**, 이 탭으로 넘어오면 화면이
+        한 칸 위로 올라간 것처럼 보였다(이슈 #274). 규격은 두 탭과 같다 —
+        `px-5 pb-3 pt-header` 에 `text-[20px] font-medium`.
+      */}
+      <header className="px-5 pb-3 pt-header">
+        <h1 className="text-[20px] font-medium text-ink">동선</h1>
+      </header>
+
       {/* pb: 탭바가 콘텐츠 위에 얹히므로 마지막 항목이 가려지지 않을 만큼 띄운다 */}
-      <div className="flex flex-1 flex-col px-5 pb-nav pt-header">
+      <div className="flex flex-1 flex-col px-5 pb-nav">
         {isLoading ? (
           <RouteListSkeleton />
         ) : isError ? (
@@ -108,32 +117,7 @@ export function RouteListPage() {
             </button>
           </div>
         ) : isEmpty ? (
-          <div className="flex flex-1 flex-col items-center justify-center px-4 text-center">
-            {/* 그림 안 요소가 스스로 순서대로 살아난다(약 1.3초). 문구·CTA 는
-                그림이 끝날 즈음 떠오른다 — 그림보다 먼저 뜨면 이야기 순서가 꼬인다. */}
-            <RouteIllustration className="w-[200px]" />
-            <h2
-              className="animate-fade-in-up mt-6 text-[17px] font-medium text-ink"
-              style={{ animationDelay: '600ms' }}
-            >
-              아직 저장된 동선이 없어요
-            </h2>
-            <p
-              className="animate-fade-in-up mt-2 text-[15px] leading-6 text-ink-muted"
-              style={{ animationDelay: '600ms' }}
-            >
-              여행하며 다녀온 장소들을 이어
-              <br />
-              나만의 여행 발자국을 남겨보세요.
-            </p>
-            <button
-              onClick={() => navigate(ROUTES.journeyCreate)}
-              className="animate-fade-in-up mt-8 h-[46px] rounded-[24px] bg-pictree-700 px-7 text-[15px] font-medium text-white"
-              style={{ animationDelay: '750ms' }}
-            >
-              동선 생성하기
-            </button>
-          </div>
+          <EmptyRouteList />
         ) : (
           <>
             {/* 트레이: 저장된 동선 중 하나를 고른다. */}
