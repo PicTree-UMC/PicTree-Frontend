@@ -11,8 +11,8 @@ type WelcomeViewProps = {
 
 export function WelcomeView({ onSocialLogin }: WelcomeViewProps) {
   /*
-    두 블록 사이 빈칸이 토스트 자리다. 로그인 실패 사유가 이 화면에서만 나오는데,
-    공용 위치는 새싹 일러스트 위에 앉아 글이 그림과 겹쳤다. 자리는 훅이 재서 알린다.
+    히어로 문구와 로그인 버튼 사이 빈칸이 토스트 자리다. 화면 높이에 따라 간격이
+    달라지므로 두 지점을 훅이 재서 공용 토스트에 알려준다.
   */
   const contentRef = useRef<HTMLParagraphElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
@@ -20,25 +20,64 @@ export function WelcomeView({ onSocialLogin }: WelcomeViewProps) {
   useWelcomeToastAnchor(contentRef, actionsRef);
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="flex flex-1 flex-col items-center justify-center pb-[9.25rem] text-center">
-        <PicTreeMark />
-        <h1 className="mt-7 flex h-[2.375rem] flex-col justify-center text-center font-['KOROAD'] text-base font-bold leading-[2.5rem] tracking-[0px] text-ink">
-          나의 여행 발자국
-        </h1>
-        {/* 빈칸의 위 모서리다 — 바깥 div 에 ref 를 달면 pb-[9.25rem] 까지 포함돼 버튼 위와 같아진다. */}
-        <p
-          ref={contentRef}
-          className="mt-2 flex h-[2.375rem] flex-col justify-center text-center font-['KOROAD'] text-base font-medium leading-[2.5rem] tracking-[0px] text-ink"
-        >
-          발걸음마다 기록하고, 나무처럼 키우세요
-        </p>
-      </div>
+    <div className="relative flex min-h-0 flex-1 flex-col">
+      <div className="fixed inset-0 z-0 mx-auto bg-gradient-to-b from-pictree-100 via-cream to-cream sm:max-w-[390px]" aria-hidden />
 
-      <div ref={actionsRef} className="space-y-2">
+      <section className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center pb-8 text-center">
+        <div className="mb-7" aria-label="PicTree">
+          <PicTreeMark />
+        </div>
+
+        <TravelPhotoVisual />
+
+        <h1 className="mt-8 text-[27px] font-medium leading-[1.4] tracking-[-0.035em] text-ink">
+          여행의 모든 순간을
+          <br />
+          사진과 함께 심어보세요
+        </h1>
+        <p ref={contentRef} className="mt-3 text-[15px] font-light leading-[1.65] text-ink-muted">
+          장소와 사진이 모여 나만의 나무가 자라요.
+        </p>
+      </section>
+
+      <div ref={actionsRef} className="relative z-[1] space-y-2.5">
         <SocialLoginButton provider="KAKAO" onClick={() => onSocialLogin('KAKAO')} />
         <SocialLoginButton provider="GOOGLE" onClick={() => onSocialLogin('GOOGLE')} />
       </div>
+    </div>
+  );
+}
+
+function TravelPhotoVisual() {
+  return (
+    <div className="relative h-[142px] w-[210px]" aria-hidden>
+      <div className="absolute left-1 top-3 h-[126px] w-[94px] -rotate-6 rounded-[18px] border border-pictree-300 bg-white p-2 shadow-[0_10px_24px_rgba(44,57,48,0.10)]">
+        <div className="relative h-[88px] overflow-hidden rounded-[12px] bg-pictree-100">
+          <span className="absolute right-3 top-3 size-5 rounded-full bg-cream" />
+          <svg viewBox="0 0 90 70" className="absolute inset-x-0 bottom-0 w-full" fill="none">
+            <path d="m0 62 25-29 17 19 13-14 35 32H0Z" fill="#C5D89D" />
+            <path d="m0 66 34-22 16 12 15-8 25 18v4H0Z" fill="#788F4A" />
+          </svg>
+        </div>
+        <span className="mx-auto mt-2 block h-1.5 w-10 rounded-full bg-line-soft" />
+      </div>
+
+      <div className="absolute right-0 top-0 h-[132px] w-[102px] rotate-6 rounded-[18px] border border-line-soft bg-white p-2 shadow-[0_12px_28px_rgba(44,57,48,0.13)]">
+        <div className="relative grid h-[94px] place-items-center overflow-hidden rounded-[12px] bg-cream-sub">
+          <svg viewBox="0 0 72 72" className="size-[72px]" fill="none">
+            <path d="M36 10c-11 0-20 8.7-20 19.5C16 45 36 63 36 63s20-18 20-33.5C56 18.7 47 10 36 10Z" fill="#5B6B38" />
+            <circle cx="36" cy="30" r="8" fill="#FFFCEF" />
+          </svg>
+        </div>
+        <span className="mx-auto mt-2 block h-1.5 w-12 rounded-full bg-pictree-100" />
+      </div>
+
+      <span className="absolute bottom-0 left-1/2 grid size-11 -translate-x-1/2 place-items-center rounded-full border-4 border-cream bg-pictree-700 text-cream shadow-[0_7px_16px_rgba(44,57,48,0.18)]">
+        <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 21v-7" />
+          <path d="M12 14c-4.7 0-7-2.7-7-6.5C8.8 7.2 11.3 9 12 12c.7-3 3.2-4.8 7-4.5 0 3.8-2.3 6.5-7 6.5Z" />
+        </svg>
+      </span>
     </div>
   );
 }
@@ -65,14 +104,16 @@ function SocialLoginButton({
   return (
     <Button
       unstyled
-      className={`flex h-[4.3125rem] w-full items-center justify-center gap-3 rounded-[1.5rem] font-['KOROAD'] text-[1.125rem] font-bold text-ink transition ${
-        isKakao ? 'bg-[#FFEC9A] hover:bg-[#f7df70]' : 'bg-line-soft hover:bg-line'
+      className={`relative flex h-[54px] w-full items-center justify-center rounded-[18px] border text-[15px] font-medium text-ink transition active:scale-[0.99] ${
+        isKakao
+          ? 'border-[#FEE500] bg-[#FEE500] hover:bg-[#FFEC9A]'
+          : 'border-line bg-white hover:bg-line-soft'
       }`}
       type="button"
       onClick={onClick}
     >
-      <img alt={iconAlt} className="h-6 w-6 object-contain" src={iconSrc} />
-      {isKakao ? '카카오 로그인' : 'Google 로그인'}
+      <img alt={iconAlt} className="absolute left-5 h-6 w-6 object-contain" src={iconSrc} />
+      {isKakao ? '카카오로 계속하기' : 'Google로 계속하기'}
     </Button>
   );
 }
