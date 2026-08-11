@@ -1,4 +1,4 @@
-// 공용 컴포넌트 배럴 export — import { Button, Modal } from '@/shared/components';
+// 공용 컴포넌트 배럴 export — import { Button, Sheet } from '@/shared/components';
 export { Button } from './Button';
 export { PrimaryCta } from './PrimaryCta';
 export { BackButton } from './BackButton';
@@ -11,7 +11,6 @@ export { AppShell } from './AppShell';
 export { BottomTabBar } from './BottomTabBar';
 export type { TabItem } from './BottomTabBar';
 export { Layout } from './Layout';
-export { Modal, ConfirmModal } from './Modal';
 export { DeleteConfirmModal, DeleteIconButton } from './DeleteConfirmModal';
 export { Sheet } from './Sheet';
 export { ErrorPage, ErrorView } from './ErrorPage';
