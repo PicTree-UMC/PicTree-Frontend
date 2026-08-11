@@ -15,6 +15,32 @@
   # 실제 결제 승인은 백엔드가 시크릿 키로 한다(프론트엔 시크릿 키를 두지 않는다).
   SECRETS_SCAN_OMIT_KEYS = "VITE_API_BASE_URL,VITE_GOOGLE_CLIENT_ID,VITE_KAKAO_MAP_APP_KEY,VITE_OAUTH_REDIRECT_URI,VITE_TOSS_CLIENT_KEY"
 
+# API 프록시 — **로그인 유지가 여기 달려 있다.**
+#
+# refresh 토큰은 httpOnly 쿠키인데, 앱(`picturetree.netlify.app`)과 API(`tenma.store`)의
+# eTLD+1 이 달라 그 쿠키가 **서드파티 쿠키**였다. WebKit 은 서드파티 쿠키를 기본 차단하므로
+# **iOS 전 브라우저(Safari·Chrome — iOS 는 전부 WebKit)와 macOS Safari 에서 재발급이 한 번도
+# 성공하지 못했고, access 토큰이 만료되는 정확히 1시간마다 로그아웃됐다.**
+# `SameSite=None; Secure` 는 이미 제대로 붙어 있었다 — 그걸로 풀리는 문제가 아니다.
+# (Safari 의 "사이트 간 추적 방지" 를 끄면 재발급이 201 로 성공하는 것으로 인과를 확정했다.)
+#
+# 여기를 지나가면 브라우저가 보는 주소가 `picturetree.netlify.app/api/...` 라 **같은 오리진**이
+# 되고, 쿠키가 퍼스트파티가 되어 차단되지 않는다. CORS 도 함께 사라진다.
+#
+# ⚠️ **SPA 폴백보다 반드시 위에 있어야 한다.** Netlify 는 위에서부터 매칭하므로 아래로 내려가면
+# `/api/*` 가 `/index.html` 로 먹혀 API 가 전부 HTML 을 받는다.
+#
+# ⚠️ 백엔드가 `Set-Cookie` 에 `Domain=` 을 명시하면 이 방법이 깨진다 — 우리 도메인에서 남의
+# 도메인 쿠키를 심을 수 없기 때문이다. 지금은 host-only 라(관측된 쿠키의 Domain 에 앞 점이 없다)
+# 프록시를 타면 자동으로 우리 도메인 쿠키가 된다. 백엔드가 이걸 바꾸면 로그인 유지가 깨진다.
+#
+# 로컬(`npm run dev`)에는 Netlify 가 없다 — 같은 얼개를 `vite.config.ts` 의 `server.proxy` 가 맡는다.
+[[redirects]]
+  from = "/api/*"
+  to = "https://tenma.store/api/:splat"
+  status = 200
+  force = true
+
 # SPA 히스토리 폴백.
 # react-router 가 클라이언트에서 경로를 그리므로, /timeline 같은 경로로 새로고침하면
 # 서버에는 그 파일이 없어 404 가 난다. 모든 요청을 index.html 로 돌려 앱이 경로를 처리하게 한다.
