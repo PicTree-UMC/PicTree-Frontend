@@ -8,7 +8,7 @@ interface EmojiPickerProps {
   /**
    * grid: 촬영 폼용 7열 그리드(어두운 배경)
    * row: 캡션용 가로 스크롤
-   * modal: 밝은 배경 모달용 7열 그리드 — 기록 수정 시안 기준
+   * modal: 밝은 배경용 7열 그리드 — 기록 수정 화면(`TimelineEditView`)의 흰 카드 안
    */
   variant: EmojiPickerVariant;
 }

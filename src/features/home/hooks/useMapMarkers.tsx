@@ -8,7 +8,13 @@ export interface MapMarkerData {
   id: string;
   lat: number;
   lng: number;
+  /** 마커에 그리는 이모지. **비어 있으면 폴백이 채워진 값**이라 사용자가 고른 것이 아닐 수 있다. */
   emoji: string;
+  /**
+   * 서버가 준 기분 원본. 폴백을 안 씌운다 — 수정 화면이 프리필에 쓰므로 `emoji` 를 넘기면
+   * 기분을 안 고른 기록에 폴백 이모지가 저장된다.
+   */
+  mood?: string;
   label: string;
   date: string;
   comment: string;

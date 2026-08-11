@@ -10,7 +10,10 @@ import { TopBanner } from './components/TopBanner';
 import { SproutIllustration } from '@/shared/components';
 import { useNearbyTrees } from './hooks/useNearbyTrees';
 import { MarkerStoryViewer } from './components/MarkerStoryViewer';
-import { TimelineEditModal } from '@/features/timeline/components/TimelineEditModal';
+import {
+  TimelineEditView,
+  type TimelineEditValues,
+} from '@/features/timeline/components/TimelineEditView';
 import { useUpdateTimeline } from '@/features/timeline/hooks/useUpdateTimeline';
 import { useToast } from '@/shared/components';
 
@@ -111,12 +114,12 @@ export function HomePage() {
   const { showToast } = useToast();
 
   /*
-    장소 수정 — 타임라인의 수정 모달을 그대로 쓴다. 기록이 곧 나무라 고치는 대상도
+    장소 수정 — 타임라인의 수정 화면을 그대로 쓴다. 기록이 곧 나무라 고치는 대상도
     보내는 요청(`PATCH /trees/{treeId}`)도 같다. 여기에 폼을 하나 더 만들면 두 화면이
     갈라진다.
 
-    `MapMarkerData` 와 `TimelineRecord` 는 필드 이름이 달라서(label/comment/date ↔
-    placeName/comment/recordedAt) 모달이 읽는 모양으로 맞춰 넘긴다.
+    `MapMarkerData` 와 `TimelineRecord` 는 필드 이름이 달라서(label/comment/date/photo ↔
+    placeName/comment/recordedAt/thumbnailUrl) 수정 화면이 읽는 모양으로 맞춰 넘긴다.
   */
   const [editing, setEditing] = useState<MapMarkerData | null>(null);
 
@@ -125,7 +128,7 @@ export function HomePage() {
     if (target) setEditing(target);
   };
 
-  const handleSaveEdit = (values: { title: string; content: string }) => {
+  const handleSaveEdit = (values: TimelineEditValues) => {
     if (!editing) return;
 
     updateMutation.mutate(
@@ -270,14 +273,18 @@ export function HomePage() {
         />
       )}
 
-      {/* 수정 모달 — 스토리 뷰어 위에 얹힌다(모달이 portal 로 body 에 붙는다). */}
+      {/* 수정 화면 — 스토리 뷰어(z-50) 위에 얹힌다(포털로 body 에 붙고 z-[60]). */}
       {editing && (
-        <TimelineEditModal
+        <TimelineEditView
           record={{
             id: editing.id,
             placeName: editing.label,
             comment: editing.comment,
             recordedAt: editing.date,
+            // 사진과 기분은 수정 화면이 그리고 프리필하는 값이라 같이 넘긴다.
+            // `emoji` 가 아니라 `mood` 인 이유는 `treeMapping` 의 폴백 주석 참고.
+            thumbnailUrl: editing.photo,
+            mood: editing.mood,
           }}
           isSaving={updateMutation.isPending}
           onClose={() => setEditing(null)}
