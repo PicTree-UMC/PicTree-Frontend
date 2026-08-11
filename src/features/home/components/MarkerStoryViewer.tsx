@@ -61,13 +61,20 @@ export function MarkerStoryViewer({
     if (index !== activeIndex) onNavigate(index);
   };
 
-  // activeIndex 가 스크롤과 어긋나면(삭제로 슬라이드가 빠지거나 키보드로 이동) 맞춰 준다.
-  // 즉시 점프(behavior 'auto')로 이동해 중간 슬라이드에서 onScroll 이 튀지 않게 한다.
+  /*
+   * activeIndex 가 스크롤과 어긋나면(삭제로 슬라이드가 빠지거나 키보드로 이동) 맞춰 준다.
+   * 즉시 점프(behavior 'auto')로 이동해 중간 슬라이드에서 onScroll 이 튀지 않게 한다.
+   *
+   * ⚠️ **반 칸 넘게 어긋났을 때만 건드린다**(전에는 1px 이었다). 손가락으로 넘기는 중에는
+   * 반 칸을 지나는 순간 위 `handleScroll` 이 `activeIndex` 를 먼저 바꾸는데, 그때 끼어들어
+   * `scrollTo` 를 부르면 브라우저가 그리던 스냅 애니메이션을 끊어 화면이 툭 끊긴다.
+   * 밖에서 온 변경은 한 칸 단위라 이 문턱에 안 걸린다. (`PhotoPost` 의 `PhotoStrip` 과 같다.)
+   */
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || el.clientWidth === 0) return;
     const target = activeIndex * el.clientWidth;
-    if (Math.abs(el.scrollLeft - target) > 1) el.scrollTo({ left: target });
+    if (Math.abs(el.scrollLeft - target) > el.clientWidth / 2) el.scrollTo({ left: target });
   }, [activeIndex]);
 
   useEffect(() => {
@@ -97,10 +104,23 @@ export function MarkerStoryViewer({
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
+          /*
+            overscroll-x-contain: 끝 장에서 더 밀 때 스크롤이 페이지 밖으로 이어져
+            브라우저 뒤로가기 제스처가 걸리는 것을 막는다(`PhotoPost` 와 같은 이유).
+          */
+          className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain"
         >
           {markers.map((item) => (
-            <div key={item.id} className="relative h-full w-full shrink-0 snap-center">
+            <div
+              key={item.id}
+              /*
+                snap-always(`scroll-snap-stop: always`): 세게 튕겨도 한 칸에서 반드시
+                멈춘다. 이게 없으면 관성이 붙는 만큼 두세 장이 한 번에 넘어가는데,
+                여기 한 장은 각각 다른 나무라 **보지도 못한 기록이 지나가 버린다.**
+                타임라인의 하루 캐러셀(`PhotoPost` 의 `PhotoStrip`)이 같은 이유로 같은 값을 쓴다.
+              */
+              className="relative h-full w-full shrink-0 snap-center snap-always"
+            >
               {item.photo ? (
                 /*
                   사진이 화면의 전부인 자리라 폴백에 문구를 함께 세운다 — 나무 아이콘만
