@@ -1,19 +1,66 @@
+import type { ReactNode } from 'react';
+
 import { useToastStore, ToastType, ToastPlacement, type ToastItem } from './toastStore';
 
 /** 토스트 렌더러. 앱 최상단에 한 번만 <Toaster /> 로 마운트. */
 
 /*
-  ⚠️ **Tailwind 기본 팔레트 이름을 쓰지 말 것.** 여기가 기본 빨강(#EF4444)과 기본 진회색
-  (#262626)을 쓰고 있었는데 canonical 은 ERROR `#DC2626` · INK `#2C3930` 이라 **값이 달랐다.**
-
-  ESLint 색 규칙이 이걸 못 잡는다 — 대괄호 형태(`[#dc2626]`)만 검사하기 때문에 팔레트
-  이름으로 새는 것은 그대로 통과한다. 화면으로도 티가 안 나서(둘 다 빨강, 둘 다 진회색)
-  값이 같은 리터럴이 안 걸리던 것과 같은 방식으로 오래 남아 있었다.
+  잎 하나. 새싹 일러스트(SproutIllustration)가 앱의 성공·성장 어휘라, 성공 배지도 잎으로
+  잇는다 — 참고한 플래시 메시지 팩의 "왼쪽 유기적 장식" 자리를 우리 정체성으로 채운 것이다.
 */
-const typeClass: Record<ToastType, string> = {
-  success: 'bg-pictree-700 text-white',
-  error: 'bg-error text-white',
-  info: 'bg-ink text-white',
+function LeafIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+    </svg>
+  );
+}
+
+function ExclamationIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
+      <path d="M12 6v7" />
+      <path d="M12 17.5h.01" />
+    </svg>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
+      <path d="M12 11v6" />
+      <path d="M12 7h.01" />
+    </svg>
+  );
+}
+
+/*
+  옅은 유형색 카드 + 진한 배지. 종전의 "유형색으로 통째로 칠한 알약" 을 걷어냈다(#105).
+
+  - **카드가 옅은 유형 면**(GREEN-100·error-surface·cream-sub)이고 **배지가 진한 원**
+    (700·error·ink) + 흰 아이콘이다. 흰 카드안과 나란히 놓고 골랐다 — 앱이 초록 테마라
+    성공 토스트의 GREEN-100 면이 정체성과 맞물리고, 가장 자주 뜨는 토스트가 성공이다.
+  - 색만으로 가르지 않도록 **배지 모양도 유형마다 다르다**(잎·!·i) — 캘린더 일요일 색을
+    유지한 것과 같은 근거다(색이 정보를 혼자 나르지 않는다).
+  - **채도 높은 원색 카드(참고한 플래시 메시지 팩)는 일부러 안 따랐다.** 크림·뮤트 톤
+    화면 위에서 원색 면은 앱보다 목소리가 커진다.
+  - ⚠️ info 카드(cream-sub)는 크림 바닥에서 셋 중 가장 약하다 — 보더·그림자가 경계를
+    버틴다. 알고 고른 트레이드오프다(성공·에러가 뚜렷한 쪽을 우선했다).
+  - ⚠️ Tailwind 기본 팔레트 이름(`red-*`·`neutral-*`)을 쓰지 말 것 — canonical 과 값이
+    다르고(#EF4444 ≠ #DC2626), ESLint 색 규칙은 대괄호 형태만 잡아서 팔레트 이름으로
+    새는 것은 그대로 통과한다.
+*/
+const TYPE_META: Record<ToastType, { cardClass: string; badgeClass: string; icon: ReactNode }> = {
+  success: { cardClass: 'border-pictree-300 bg-pictree-100', badgeClass: 'bg-pictree-700', icon: <LeafIcon /> },
+  error: { cardClass: 'border-error/30 bg-error-surface', badgeClass: 'bg-error', icon: <ExclamationIcon /> },
+  info: { cardClass: 'border-line bg-cream-sub', badgeClass: 'bg-ink', icon: <InfoIcon /> },
+};
+
+/** 등장 방향은 자리를 따른다 — 위에서 오는 것은 내려앉고, 아래에서 오는 것은 떠오른다. */
+const enterClass: Record<ToastPlacement, string> = {
+  top: 'animate-fade-in-down',
+  bottom: 'animate-fade-in-up',
 };
 
 // 상단은 헤더/탭 아래로, 하단은 탭바 위로 오도록 위치를 잡는다.
@@ -83,17 +130,44 @@ export default function Toaster() {
           <div
             key={key}
             style={offset ? { [placement]: offset } : undefined}
-            className={`pointer-events-none fixed inset-x-0 ${TOAST_Z} flex flex-col items-center gap-2 px-4 ${
+            /*
+              `mx-auto sm:max-w-[390px]` — 이 컨테이너는 fixed 라 앱 컬럼 밖에 그려진다.
+              바텀시트와 같은 규칙으로 묶어야 데스크톱에서 토스트가 컬럼과 정렬된다
+              (CLAUDE.md 「폭」). 토스트가 w-full 이 되면서(아래) 이게 없으면 데스크톱에서
+              화면 전체 폭으로 늘어난다.
+            */
+            className={`pointer-events-none fixed inset-x-0 ${TOAST_Z} mx-auto flex flex-col items-center gap-2 px-4 sm:max-w-[390px] ${
               offset ? offsetCenterClass[placement] : placementClass[placement]
             }`}
           >
             {items.map((toast) => (
+              /*
+                토스트 전체가 버튼이다(누르면 닫힘) — 별도 × 를 두면 목표가 34px 안에서
+                갈라져 모바일에서 오히려 안 눌린다.
+
+                `w-full` — **너비는 홈 상단 배너와 같은 규칙이다**(TopBanner 의 inset-x-4
+                = 컬럼 − 양쪽 16px). 컨테이너 px-4 가 그 여백을 만든다. 내용 폭으로 두면
+                문구 길이마다 폭이 달라져 배너와 다른 물건으로 읽힌다.
+
+                모서리·그림자·여백은 앱 관례를 따른다(#105 실측: rounded-xl 60곳 ·
+                커스텀 그림자 20곳). 그림자 값은 동선 카드가 쓰는 것을 재사용했다 —
+                새 눈대중 값을 만들면 색 때처럼 변형이 자란다.
+              */
               <button
                 key={toast.id}
+                role="status"
                 onClick={() => removeToast(toast.id)} // 클릭 시 즉시 닫기
-                className={`pointer-events-auto max-w-sm rounded-md px-4 py-2 text-[15px] shadow-lg ${typeClass[toast.type]}`}
+                className={`pointer-events-auto flex w-full items-center gap-2.5 rounded-xl border p-2 pr-4 text-left shadow-[0_6px_18px_rgba(45,51,34,0.10)] ${TYPE_META[toast.type].cardClass} ${enterClass[toast.placement]}`}
               >
-                {toast.message}
+                <span
+                  aria-hidden
+                  className={`flex size-8 shrink-0 items-center justify-center rounded-full text-white ${TYPE_META[toast.type].badgeClass}`}
+                >
+                  {TYPE_META[toast.type].icon}
+                </span>
+                <span className="min-w-0 text-[15px] font-medium leading-5 text-ink">
+                  {toast.message}
+                </span>
               </button>
             ))}
           </div>
