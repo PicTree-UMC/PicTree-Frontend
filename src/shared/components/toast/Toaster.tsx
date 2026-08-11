@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import { useSwipeDismiss } from '@/shared/hooks/useSwipeDismiss';
+
 import { useToastStore, ToastType, ToastPlacement, type ToastItem } from './toastStore';
 
 /** 토스트 렌더러. 앱 최상단에 한 번만 <Toaster /> 로 마운트. */
@@ -101,6 +103,59 @@ const offsetCenterClass: Record<ToastPlacement, string> = {
  */
 const TOAST_Z = 'z-[70]';
 
+/**
+ * 토스트 한 장. **탭하거나 옆으로 밀어서 없앤다**(#260).
+ *
+ * ⚠️ **바깥 래퍼와 안쪽 버튼을 가른 것은 겉보기 이유가 아니다.** 등장 연출
+ * (`animate-fade-in-*`)은 `animation-fill-mode: both` 라 재생이 끝난 뒤에도 `transform` 을
+ * 물고 있고, CSS 애니메이션은 인라인 스타일을 이긴다. 같은 요소에 걸면 드래그가 **DOM 에는
+ * 반영되는데 화면에서는 안 움직인다**(TROUBLESHOOTING 2-9, `useSheetDrag` 가 먼저 데인 자리).
+ * **래퍼가 등장을, 버튼이 드래그를** 맡아 둘이 서로 다른 요소의 `transform` 을 쓴다.
+ *
+ * 목록에서 지우는 일은 훅이 아니라 여기가 한다 — 훅은 제스처만 알고 무엇을 지울지는 모른다.
+ */
+function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => void }) {
+  const { ref, swipeProps } = useSwipeDismiss<HTMLButtonElement>({
+    onDismiss,
+    onTap: onDismiss, // 밀지 않고 그냥 눌러도 닫힌다(종전 동작 유지)
+  });
+  const meta = TYPE_META[toast.type];
+
+  return (
+    <div className={`w-full ${enterClass[toast.placement]}`}>
+      {/*
+        토스트 전체가 버튼이다(누르면 닫힘) — 별도 × 를 두면 목표가 34px 안에서 갈라져
+        모바일에서 오히려 안 눌린다. 버튼이라 **키보드 Enter/Space 로도 닫힌다** —
+        드래그가 안 되는 입력에서는 그게 유일한 길이다.
+
+        `w-full` — **너비는 홈 상단 배너와 같은 규칙이다**(TopBanner 의 inset-x-4
+        = 컬럼 − 양쪽 16px). 컨테이너 px-4 가 그 여백을 만든다. 내용 폭으로 두면
+        문구 길이마다 폭이 달라져 배너와 다른 물건으로 읽힌다.
+
+        `select-none` — 밀 때 글자가 잡혀 끌리면 제스처가 텍스트 선택으로 새어 나간다.
+
+        모서리·그림자·여백은 앱 관례를 따른다(#105 실측: rounded-xl 60곳 ·
+        커스텀 그림자 20곳). 그림자 값은 동선 카드가 쓰는 것을 재사용했다 —
+        새 눈대중 값을 만들면 색 때처럼 변형이 자란다.
+      */}
+      <button
+        ref={ref}
+        role="status"
+        {...swipeProps}
+        className={`pointer-events-auto flex w-full select-none items-center gap-2.5 rounded-xl border p-2 pr-4 text-left shadow-[0_6px_18px_rgba(45,51,34,0.10)] ${meta.cardClass}`}
+      >
+        <span
+          aria-hidden
+          className={`flex size-8 shrink-0 items-center justify-center rounded-full text-white ${meta.badgeClass}`}
+        >
+          {meta.icon}
+        </span>
+        <span className="min-w-0 text-[15px] font-medium leading-5 text-ink">{toast.message}</span>
+      </button>
+    </div>
+  );
+}
+
 export default function Toaster() {
   const toasts = useToastStore((s) => s.toasts);
   const removeToast = useToastStore((s) => s.removeToast);
@@ -141,34 +196,7 @@ export default function Toaster() {
             }`}
           >
             {items.map((toast) => (
-              /*
-                토스트 전체가 버튼이다(누르면 닫힘) — 별도 × 를 두면 목표가 34px 안에서
-                갈라져 모바일에서 오히려 안 눌린다.
-
-                `w-full` — **너비는 홈 상단 배너와 같은 규칙이다**(TopBanner 의 inset-x-4
-                = 컬럼 − 양쪽 16px). 컨테이너 px-4 가 그 여백을 만든다. 내용 폭으로 두면
-                문구 길이마다 폭이 달라져 배너와 다른 물건으로 읽힌다.
-
-                모서리·그림자·여백은 앱 관례를 따른다(#105 실측: rounded-xl 60곳 ·
-                커스텀 그림자 20곳). 그림자 값은 동선 카드가 쓰는 것을 재사용했다 —
-                새 눈대중 값을 만들면 색 때처럼 변형이 자란다.
-              */
-              <button
-                key={toast.id}
-                role="status"
-                onClick={() => removeToast(toast.id)} // 클릭 시 즉시 닫기
-                className={`pointer-events-auto flex w-full items-center gap-2.5 rounded-xl border p-2 pr-4 text-left shadow-[0_6px_18px_rgba(45,51,34,0.10)] ${TYPE_META[toast.type].cardClass} ${enterClass[toast.placement]}`}
-              >
-                <span
-                  aria-hidden
-                  className={`flex size-8 shrink-0 items-center justify-center rounded-full text-white ${TYPE_META[toast.type].badgeClass}`}
-                >
-                  {TYPE_META[toast.type].icon}
-                </span>
-                <span className="min-w-0 text-[15px] font-medium leading-5 text-ink">
-                  {toast.message}
-                </span>
-              </button>
+              <ToastCard key={toast.id} toast={toast} onDismiss={() => removeToast(toast.id)} />
             ))}
           </div>
         );
