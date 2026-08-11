@@ -1,5 +1,6 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../shared/constants/routes';
+import { Spinner } from '../../shared/components';
 import { useToast } from '../../shared/components/toast/toastStore';
 import { useBlogCreate } from './hooks/useBlogCreate';
 import { useSaveBlogDraft } from './hooks/useBlogDrafts';
@@ -114,8 +115,8 @@ export function BlogCreatePage() {
 
   if (isPending) {
     return (
-      <main className="grid min-h-full place-items-center bg-cream" role="status" aria-label="PICTREE 토큰 잔량을 확인하는 중">
-        <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
+      <main className="grid min-h-full place-items-center bg-cream">
+        <Spinner label="PICTREE 토큰 잔량을 확인하는 중" labelHidden />
       </main>
     );
   }
