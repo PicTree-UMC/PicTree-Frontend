@@ -33,9 +33,15 @@ import { ROUTES } from '@/shared/constants/routes';
  * |---|---|---|
  * | 출처 | `GET /trees` 중 쿼리로 받은 날짜 | `GET /routes/{id}` 한 번 |
  * | 다음 단계 | 있음 (③ 이름 짓고 저장) | 없음 |
+ * | 하단 시트 | 다듬는다 (줄 탭·`전체 선택`) | **읽기 전용** |
  *
- * **갈리는 건 `places` 를 만드는 자리 하나뿐이다.** 끄기·번호 재순서화·마커 묶음
- * (설계서 6·7·9번)은 `RoutePlace[]` 만 보므로 두 모드가 그대로 공유한다.
+ * **갈리는 건 `places` 를 만드는 자리와, 시트에 넘기는 조작뿐이다.** 끄기·번호 재순서화·
+ * 마커 묶음(설계서 6·7·9번)은 `RoutePlace[]` 만 보므로 두 모드가 그대로 공유한다.
+ *
+ * ⚠️ ② 가 읽기 전용인 이유는 **저장할 데가 없기 때문**이다. 한동안 시트를 통째로 공유해서
+ * 보러 들어온 화면에서도 장소를 뺄 수 있었는데, `다음` 이 없으니 그 결과가 어디에도 남지
+ * 않고 새로고침 한 번에 되돌아왔다. ② 에 남는 조작은 **무엇을 보여줄지**를 정하는 것들
+ * (날짜 필터·따라가기)뿐이다.
  *
  * ① 의 날짜 고르기는 **앞 단계(`RouteCreatePage`)로 떼어냈다** — 이 화면은 고른 날짜를
  * 쿼리로 받아 지도를 그리는 일만 한다. 날짜를 바꾸려면 뒤로 가면 되므로 상단에 캘린더를
@@ -440,14 +446,21 @@ export function RouteViewPage() {
           disabledPlaceIds={disabledIds}
           // 값만 넘긴다 — 거르는 칩 줄은 지도 위에 있다(위 헤더 블록 참고).
           dateFilter={dateFilter}
-          allVisibleSelected={allVisibleSelected}
-          onToggleAllVisible={toggleAllVisible}
+          /*
+            ⚠️ **② 저장된 동선 보기에서는 다듬는 조작을 아예 안 넘긴다 — 읽기 전용이다.**
+            한동안 두 모드가 이 시트를 통째로 공유해서, 보러 들어온 화면에서도 줄이 눌리고
+            `전체 해제` 가 떠 있었다. 그런데 ② 에는 저장하는 자리가 없어(`onNext` 도 안 간다)
+            무엇을 빼든 새로고침 한 번에 되돌아왔다. **② 는 오직 보기다** — 거르고
+            (`RouteDateChips`) 짚어가는 것(`RouteNodeStepper`)만 남는다.
+          */
+          allVisibleSelected={isSavedView ? undefined : allVisibleSelected}
+          onToggleAllVisible={isSavedView ? undefined : toggleAllVisible}
           // ② 는 저장 한도가 의미 없다 — `3/20개` 는 더 담을 수 있다는 오해를 준다.
           maxPlaces={isSavedView ? undefined : MAX_PLACES}
           // `다음` 이 헤더에서 여기로 내려왔다. 넘어가는 건 이 목록이고 한도(n/20)도 이 줄이
           // 들고 있어서, 지도 반대편 끝에 떨어져 있는 것보다 맥락이 이어진다.
           onNext={isSavedView ? undefined : handleNext}
-          onTogglePlace={togglePlace}
+          onTogglePlace={isSavedView ? undefined : togglePlace}
           highlightedPlaceIds={highlightedPlaceIds}
           focusedPlaceId={focusedPlaceId}
           // 접힘을 페이지가 들고 있는 이유는 지도다 — 시트가 덮는 높이만큼 화면을 비워야 한다.
