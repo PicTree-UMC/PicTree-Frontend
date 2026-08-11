@@ -5,7 +5,6 @@ import { Route } from '../types/route';
 interface RouteMenuSheetProps {
   route: Route;
   onClose: () => void;
-  onAIBlog: () => void;
   onRename: () => void;
   /**
    * 삭제 확인 모달을 연다. **시트가 직접 지우지 않는다** — 되돌릴 수 없는 동작은
@@ -23,16 +22,6 @@ const iconBase = {
   strokeLinejoin: 'round' as const,
   'aria-hidden': true,
 };
-
-/** AI 블로그 작성(solar:book-linear) */
-function BookIcon({ className }: { className?: string }) {
-  return (
-    <svg {...iconBase} className={className}>
-      <path d="M6 3h13a1 1 0 0 1 1 1v14H7a3 3 0 0 0-3 3V6a3 3 0 0 1 3-3Z" />
-      <path d="M4 18a3 3 0 0 0 3 3h13" />
-    </svg>
-  );
-}
 
 /** 이름 변경(lucide:pen-line) */
 function PenIcon({ className }: { className?: string }) {
@@ -60,17 +49,6 @@ function ChevronIcon() {
       <path d="M9 6l6 6-6 6" />
     </svg>
   );
-}
-
-/**
- * 아이콘 상자 40px + 아이콘과 글자 사이 14px. 줄 사이 구분선을 **글자 시작점에** 맞추는 데 쓴다
- * (`SettingsList` 와 같은 규칙) — 줄 폭을 다 가로지르면 목록이 아니라 칸으로 쪼개져 보인다.
- */
-const TEXT_INSET_PX = 40 + 14;
-
-/** 줄 사이 옅은 헤어라인. 글자 시작점까지 들여쓴다. */
-function Divider() {
-  return <div aria-hidden className="h-px bg-line-soft" style={{ marginLeft: TEXT_INSET_PX }} />;
 }
 
 interface MenuRowProps {
@@ -134,11 +112,14 @@ function MenuRow({ icon, title, desc, onClick, danger = false }: MenuRowProps) {
  * **가장 위험한 것이 가장 누르기 쉬운 자리**를 차지한 셈이었다. 지금은 시트 맨 아래,
  * 구분선 아래 ERROR 줄이다(iOS 액션시트와 같은 자리).
  *
- * ⚠️ 반대로 **`지도에서 보기` 와 `사진 앨범` 은 여기서 나갔다.** 둘 다 동선에 무언가를
- * 하는 동작이 아니라 **같은 동선을 다르게 보여주는 일**이라 메뉴에 있을 이유가 없었다 —
- * 지도는 로드맵과 나란히 고르는 피커로(`RouteViewPicker`), 사진은 그 아래 앨범 섹션으로
- * (`RoutePhotoAlbum`) 화면에 상시로 나와 있다. **여기 남은 것은 동선을 바꾸거나 없애는
- * 것들뿐이다.**
+ * ⚠️ 반대로 **`지도에서 보기` · `사진 앨범` · `AI 블로그 작성` 은 여기서 나갔다.** 셋 다
+ * 동선에 무언가를 하는 동작이 아니었다 — 앞의 둘은 같은 동선을 다르게 보여주는 일이라
+ * 피커(`RouteViewPicker`)와 앨범 섹션(`RoutePhotoAlbum`)으로 화면에 상시로 나와 있고,
+ * 블로그는 동선을 재료로 **다른 것을 만드는** 일이라 플로팅 버튼(`BlogCreateFab`)이 됐다.
+ * 메뉴 안에 접혀 있는 동안에는 이 앱이 블로그를 써 준다는 것 자체가 안 보였다.
+ *
+ * **여기 남은 것은 동선 자체를 고치거나 없애는 둘뿐이다.** 줄이 둘이라 시트가 얇지만,
+ * 이름 변경은 자주 할 일이 아니고 삭제는 눈에 띄면 안 되는 것이라 이 자리가 맞다.
  *
  * 겉모습은 **동선 만들기 ②의 시트(`RoutePlaceStrip`)를 따른다** — 흰 바닥,
  * `rounded-t-[20px]`, 위로 뜨는 그림자, 40×4px 회색 그립. 크림 바닥이었던 이유는 없다:
@@ -153,13 +134,7 @@ function MenuRow({ icon, title, desc, onClick, danger = false }: MenuRowProps) {
  * ⓑ 장소가 다섯 곳을 넘으면 칸이 좁아져 이름이 전부 뭉개졌다. 어느 동선인지는 이름이 말한다.
  * (그 컴포넌트는 다른 사용처가 없어져 함께 지웠다.)
  */
-export function RouteMenuSheet({
-  route,
-  onClose,
-  onAIBlog,
-  onRename,
-  onDelete,
-}: RouteMenuSheetProps) {
+export function RouteMenuSheet({ route, onClose, onRename, onDelete }: RouteMenuSheetProps) {
   return (
     <Sheet
       onClose={onClose}
@@ -180,15 +155,7 @@ export function RouteMenuSheet({
         </p>
       </div>
 
-      {/* 동작 묶음. 구분선은 글자 시작점에 맞춰 들여쓴다. */}
       <div className="mt-4 flex flex-col">
-        <MenuRow
-          icon={<BookIcon className="size-[22px]" />}
-          title="AI 블로그 작성"
-          desc="이 동선으로 여행 블로그를 생성해요"
-          onClick={onAIBlog}
-        />
-        <Divider />
         <MenuRow
           icon={<PenIcon className="size-[22px]" />}
           title="이름 변경"

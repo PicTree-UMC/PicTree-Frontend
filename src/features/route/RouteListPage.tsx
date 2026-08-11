@@ -11,6 +11,7 @@ import { RouteIllustration } from './components/RouteIllustration';
 import { SavedRouteRoadmap } from './components/RouteRoadmap';
 import { RouteInlineMap } from './components/RouteInlineMap';
 import { RoutePhotoAlbum } from './components/RoutePhotoAlbum';
+import { BlogCreateFab } from '../blog/components/BlogCreateFab';
 import { RouteViewPicker, type RouteViewMode } from './components/RouteViewPicker';
 import { ROUTES, journeyViewPath } from '../../shared/constants/routes';
 import { DeleteConfirmModal } from '../../shared/components/DeleteConfirmModal';
@@ -233,17 +234,24 @@ export function RouteListPage() {
         )}
       </div>
 
+      {/*
+        AI 블로그 작성. **메뉴 시트의 줄이었다** — 접혀 있는 동안에는 이 앱이 동선으로
+        블로그를 써 준다는 것 자체가 화면에 없었다. 블로그 탭과 **같은 버튼**을 쓴다
+        (`BlogCreateFab`): 이달 잔량이 0 이면 결제 시트로 가로채는 판단이 그 안에 있어서,
+        여기에 따로 만들면 한쪽만 한도를 안 보게 된다.
+
+        글자를 곁들인 알약이다 — 동선 탭에는 '새 동선' 입구가 따로 있어서, 초록 원 하나로는
+        무엇을 만드는 버튼인지 갈린다.
+
+        **고른 동선이 있을 때만 뜬다.** 이 버튼이 넘기는 건 그 동선이라, 목록이 비었거나
+        아직 안 불러온 화면에서는 넘길 것이 없다.
+      */}
+      {selectedRoute && <BlogCreateFab routeId={selectedRoute.id} label="AI 블로그" />}
+
       {showMenuSheet && selectedRoute && (
         <RouteMenuSheet
           route={selectedRoute}
           onClose={() => setShowMenuSheet(false)}
-          // AI 블로그 작성 플로우로 이동. **이 동선 자체**를 넘긴다 — 초안 입력 단위가
-          // 기간에서 동선으로 바뀌면서(이슈 #212) 작성 화면 1단계가 이미 정해진 셈이 된다.
-          // 기간은 거기서 동선 상세로 도로 뽑으므로 여기서 계산해 넘길 것이 없다.
-          onAIBlog={() => {
-            setShowMenuSheet(false);
-            navigate(ROUTES.blogCreate, { state: { routeId: selectedRoute.id } });
-          }}
           onRename={() => {
             setShowMenuSheet(false);
             setShowRenameModal(true);
