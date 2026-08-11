@@ -62,15 +62,25 @@ interface PhotoPostProps {
  *
  * 라이브러리를 안 쓴다. 브라우저의 스냅이 관성·되돌림을 이미 처리하고, 지도
  * 스토리 뷰어(`MarkerStoryViewer`)도 같은 얼개다.
+ *
+ * `PhotoPost` 안에서만 쓰다가 밖으로 열었다 — 동선의 사진 앨범(`RoutePhotoAlbum`)이
+ * **넘기는 방식만** 같아야 하고 게시물 머리글(나무 아바타·장소명 줄)은 필요 없기 때문이다.
+ * 넘기는 감각이 화면마다 갈리지 않게, 복사하지 말고 이걸 쓸 것.
  */
-function PhotoStrip({
+export function PhotoStrip({
   slides,
   activeIndex,
   onActiveIndexChange,
+  className = '',
 }: {
   slides: PhotoPostSlide[];
   activeIndex: number;
   onActiveIndexChange: (index: number) => void;
+  /**
+   * 사진 칸 바깥틀에만 붙는다(점 줄은 제외) — 모서리를 둥글리는 자리.
+   * 게시물은 화면 끝까지 닿아 각진 채로 두고, 여백 안에 놓이는 앨범은 둥글린다.
+   */
+  className?: string;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isSwiping, setIsSwiping] = useState(false);
@@ -112,7 +122,7 @@ function PhotoStrip({
 
   return (
     <>
-      <div className="relative">
+      <div className={`relative ${className}`}>
         <div
           ref={scrollRef}
           onScroll={handleScroll}

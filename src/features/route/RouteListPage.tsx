@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { RouteMenuSheet } from './components/RouteMenuSheet';
-import { PhotoAlbumSheet } from './components/PhotoAlbumSheet';
 import { RenameModal } from './components/RenameModal';
 import { useSavedRoutes } from './hooks/useSavedRoutes';
 import { useDeleteRoute } from './hooks/useDeleteRoute';
@@ -11,6 +10,7 @@ import { RouteListSkeleton } from './components/RouteListSkeleton';
 import { RouteIllustration } from './components/RouteIllustration';
 import { SavedRouteRoadmap } from './components/RouteRoadmap';
 import { RouteInlineMap } from './components/RouteInlineMap';
+import { RoutePhotoAlbum } from './components/RoutePhotoAlbum';
 import { RouteViewPicker, type RouteViewMode } from './components/RouteViewPicker';
 import { ROUTES, journeyViewPath } from '../../shared/constants/routes';
 import { DeleteConfirmModal } from '../../shared/components/DeleteConfirmModal';
@@ -69,9 +69,6 @@ export function RouteListPage() {
   const [showMenuSheet, setShowMenuSheet] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showPhotoAlbum, setShowPhotoAlbum] = useState(false);
-  /** 앨범에서 되돌아온 경우 바텀시트를 애니메이션 없이 즉시 띄운다. */
-  const [animateMenuSheet, setAnimateMenuSheet] = useState(true);
 
   // 목록이 로드되거나 선택한 동선이 삭제되면 첫 동선으로 선택을 맞춘다.
   useEffect(() => {
@@ -198,10 +195,7 @@ export function RouteListPage() {
                         동선도 지도로 보려던 참이다. 되돌리면 두 번째 동선부터 매번 다시 누른다. */}
                     <RouteViewPicker value={viewMode} onChange={setViewMode} />
                     <button
-                      onClick={() => {
-                        setAnimateMenuSheet(true);
-                        setShowMenuSheet(true);
-                      }}
+                      onClick={() => setShowMenuSheet(true)}
                       aria-label="동선 메뉴"
                       className="flex size-9 items-center justify-center rounded-full text-ink-muted active:bg-cream-sub"
                     >
@@ -225,6 +219,14 @@ export function RouteListPage() {
                     />
                   )}
                 </div>
+
+                {/* 사진 앨범. **메뉴 시트의 줄이었다** — 사진은 이 동선이 어떤 여행이었는지
+                    가장 잘 말해 주는 것인데 메뉴를 열어야 닿았다. 로드맵/지도 아래에 두면
+                    고른 동선을 훑는 흐름(날짜 → 지도 → 사진) 안에 그대로 들어온다.
+                    key 로 동선이 바뀌면 보던 장을 첫 장으로 되돌린다. */}
+                <div className="mt-8">
+                  <RoutePhotoAlbum key={selectedRoute.id} routeId={selectedRoute.id} />
+                </div>
               </>
             )}
           </>
@@ -235,11 +237,6 @@ export function RouteListPage() {
         <RouteMenuSheet
           route={selectedRoute}
           onClose={() => setShowMenuSheet(false)}
-          animateIn={animateMenuSheet}
-          onPhotoGallery={() => {
-            setShowMenuSheet(false);
-            setShowPhotoAlbum(true);
-          }}
           // AI 블로그 작성 플로우로 이동. **이 동선 자체**를 넘긴다 — 초안 입력 단위가
           // 기간에서 동선으로 바뀌면서(이슈 #212) 작성 화면 1단계가 이미 정해진 셈이 된다.
           // 기간은 거기서 동선 상세로 도로 뽑으므로 여기서 계산해 넘길 것이 없다.
@@ -259,17 +256,6 @@ export function RouteListPage() {
           onDelete={() => {
             setShowMenuSheet(false);
             setShowDeleteModal(true);
-          }}
-        />
-      )}
-
-      {showPhotoAlbum && selectedRoute && (
-        <PhotoAlbumSheet
-          route={selectedRoute}
-          onClose={() => {
-            setShowPhotoAlbum(false);
-            setAnimateMenuSheet(false);
-            setShowMenuSheet(true);
           }}
         />
       )}
