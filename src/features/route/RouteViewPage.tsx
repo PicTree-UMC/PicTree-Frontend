@@ -22,7 +22,7 @@ import {
 } from './lib/routeParams';
 import { buildSequenceMap } from './lib/sequence';
 import { useGoBack } from '@/shared/hooks/useGoBack';
-import { NavBar } from '@/shared/components';
+import { NavBar, Spinner } from '@/shared/components';
 import { useToast } from '@/shared/components/toast/toastStore';
 import { ROUTES } from '@/shared/constants/routes';
 
@@ -384,9 +384,8 @@ export function RouteViewPage() {
       {/* 불러오는 동안·실패했을 때 지도 위에 얹는다. 하단 strip 을 가리지 않아서
           '표시할 동선이 없어요' 와 상태가 엇갈려 보이지 않는다. */}
       {isLoading && (
-        <div className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-white/70">
-          <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
-          <p className="text-[15px] font-medium text-pictree-700">동선을 불러오는 중...</p>
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-white/70">
+          <Spinner label="동선을 불러오는 중..." />
         </div>
       )}
 

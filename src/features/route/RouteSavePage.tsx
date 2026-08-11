@@ -13,7 +13,7 @@ import {
   toDatesParam,
   toPlacesParam,
 } from './lib/routeParams';
-import { NavBar, PrimaryCta } from '@/shared/components';
+import { NavBar, PrimaryCta, Spinner } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { useKeyboardOffset } from '@/shared/hooks/useKeyboardOffset';
 import { useToast } from '@/shared/components/toast/toastStore';
@@ -164,9 +164,8 @@ export function RouteSavePage() {
           밀려나 '무엇을 하는 화면인지'가 사라진다. */}
       <div className="relative min-h-0 flex-1">
         {isLoading ? (
-          <div className="flex h-full flex-col items-center justify-center gap-3">
-            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
-            <p className="text-[15px] font-medium text-pictree-700">동선을 그리는 중...</p>
+          <div className="flex h-full items-center justify-center">
+            <Spinner label="동선을 그리는 중..." />
           </div>
         ) : isError || isOffline ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-8">

@@ -11,7 +11,7 @@ import {
   parseDatesParam,
   toDatesParam,
 } from './lib/routeParams';
-import { Chip, NavBar, PrimaryCta } from '@/shared/components';
+import { Chip, NavBar, PrimaryCta, Spinner } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { ROUTES } from '@/shared/constants/routes';
 
@@ -155,9 +155,8 @@ export function RouteCreatePage() {
 
       <div className="mt-4 flex-1 overflow-y-auto px-5">
         {isLoading ? (
-          <div className="flex h-full flex-col items-center justify-center gap-3">
-            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
-            <p className="text-[15px] font-medium text-pictree-700">방문한 날짜를 불러오는 중...</p>
+          <div className="flex h-full items-center justify-center">
+            <Spinner label="방문한 날짜를 불러오는 중..." />
           </div>
         ) : isError || isOffline ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-3">
