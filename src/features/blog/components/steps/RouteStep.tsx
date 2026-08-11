@@ -1,5 +1,6 @@
 import { Spinner } from '@/shared/components';
 import type { Route } from '@/features/route/types/route';
+import { PrimaryCta } from '@/shared/components';
 
 type RouteStepProps = {
   routes: Route[];
@@ -37,7 +38,7 @@ function CheckIcon() {
  *
  * 그래서 **여기에는 기록을 하나씩 켜고 끄는 장치를 두지 않는다.** 그걸 되살리면 동선이
  * 의도한 범위를 다시 흐트러뜨리게 되고, 무엇이 들어갈지는 동선 화면에서 이미 정한 것이다.
- * 대신 카드가 장소 이름을 보여줘 무엇이 들어가는지 읽히게 한다.
+ * 카드에는 동선 제목·날짜·장소 수만 보여주고, 선택 뒤 실제 기록 수를 안내한다.
  */
 export function RouteStep({
   routes,
@@ -89,13 +90,9 @@ export function RouteStep({
           <br />
           먼저 다녀온 곳을 동선으로 묶어주세요.
         </p>
-        <button
-          type="button"
-          onClick={onCreateRoute}
-          className="mt-7 h-[54px] w-full max-w-[320px] rounded-xl bg-pictree-700 text-[16px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)]"
-        >
-          동선 만들러 가기
-        </button>
+        <div className="mt-7 w-full max-w-[320px]">
+          <PrimaryCta onClick={onCreateRoute}>동선 만들러 가기</PrimaryCta>
+        </div>
       </div>
     );
   }
@@ -128,15 +125,6 @@ export function RouteStep({
                     </span>
                   </span>
                   <span className="mt-1 block text-[13px] text-ink-muted">{route.date}</span>
-                  {/*
-                    목록 응답의 `places` 는 미리보기용이라 잘려 올 수 있다 — 그래서 개수는
-                    위 배지의 `placeCount`(서버 값)를 쓰고 여기서는 이름만 늘어놓는다.
-                  */}
-                  {route.places.length > 0 && (
-                    <span className="mt-2 block truncate text-[13px] text-[#8a8f86]">
-                      {route.places.map((place) => place.name).join(' · ')}
-                    </span>
-                  )}
                 </span>
 
                 <span
@@ -165,14 +153,9 @@ export function RouteStep({
               : `기록 ${treeCount}개로 초안을 만들어요.`}
       </p>
 
-      <button
-        type="button"
-        className="mt-auto h-[54px] w-full rounded-xl bg-pictree-700 text-[16px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)] disabled:cursor-not-allowed disabled:opacity-40"
-        onClick={onNext}
-        disabled={!canGoNext}
-      >
+      <PrimaryCta className="mt-auto" onClick={onNext} disabled={!canGoNext}>
         다음
-      </button>
+      </PrimaryCta>
     </div>
   );
 }

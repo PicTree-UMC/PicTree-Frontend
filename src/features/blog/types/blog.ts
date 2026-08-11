@@ -114,33 +114,6 @@ export interface BlogTone {
   example: string;
 }
 
-/** 나무 등록 API 응답을 블로그 작성 화면에 맞게 정규화한 레코드. */
-export interface BlogTreeRecord {
-  treeId: number;
-  name: string;
-  description: string;
-  latitude: number;
-  longitude: number;
-  /*
-    `address` 는 지웠다 — 이 레코드를 그리는 어느 화면도 읽지 않았고, 원본
-    `TreeListItem`(=`GET /trees` 목록)에도 없는 필드다. 블로그 쪽 로컬 타입만
-    `address?: string | null` 로 들고 있으면서 "응답에 포함되는 경우가 있어" 라는
-    주석을 달아 뒀는데, 쓰는 데가 없으니 확인할 방법도 없었다(이슈 #237).
-  */
-  /** 기록 당시 기분 이모지 (예: "😍"). */
-  mood: string;
-  /**
-   * 대표 사진 URL. 없으면 빈 문자열이다.
-   *
-   * ⚠️ 예전 이름은 `defaultImage` 였는데, 서버의 같은 이름 필드는 `"DEFAULT_1"` 같은
-   * **식별자**(`VarChar(20)`)라 URL 이 아니다. 이름이 같으니 그 값을 채워도 어색하지 않아
-   * 실제로 그렇게 들어갔고 `<img src="DEFAULT_1">` 요청이 나갔다(#209). 이름을 값과
-   * 맞춰 다시는 그 값을 담을 자리로 보이지 않게 한다.
-   */
-  imageUrl: string;
-  createdAt: string;
-}
-
 /** 생성된 초안의 장소별 문단. */
 export interface BlogSection {
   treeId: number;

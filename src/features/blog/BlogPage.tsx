@@ -3,8 +3,6 @@ import { BlogEmptyState } from './components/BlogEmptyState';
 import { SavedBlogCard } from './components/SavedBlogCard';
 import { BlogListSkeleton } from './components/BlogListSkeleton';
 import { useBlogDrafts } from './hooks/useBlogDrafts';
-import { useBlogTrees } from './hooks/useBlogTrees';
-import { getLocalDateString } from '@/shared/lib/date';
 import { Skeleton } from '@/shared/components';
 
 export function BlogPage() {
@@ -14,7 +12,6 @@ export function BlogPage() {
     `isFetching` 으로 갈면 캐시가 있어도 매번 스피너가 떠서 고치기 전과 같아진다.
   */
   const { data: savedBlogs = [], isPending, isError, refetch } = useBlogDrafts();
-  const { data: trees } = useBlogTrees();
 
   return (
     // pb: 탭바가 콘텐츠 위에 얹히므로 마지막 카드가 가려지지 않을 만큼 띄운다
@@ -52,14 +49,7 @@ export function BlogPage() {
       ) : savedBlogs.length > 0 ? (
         <section className="flex flex-col px-5">
           {savedBlogs.map((blog) => (
-            <SavedBlogCard
-              key={blog.draftId}
-              blog={blog}
-              treeCount={trees?.filter((tree) => {
-                const recordedDate = getLocalDateString(new Date(tree.createdAt));
-                return recordedDate >= blog.startDate && recordedDate <= blog.endDate;
-              }).length}
-            />
+            <SavedBlogCard key={blog.draftId} blog={blog} />
           ))}
         </section>
       ) : (

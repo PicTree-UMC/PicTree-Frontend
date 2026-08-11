@@ -1,6 +1,6 @@
 import type { ToneId } from '../../types/blog';
 import { BLOG_TONES } from '../../constants/blogTones';
-import { CheckIcon } from '../icons';
+import { PrimaryCta } from '@/shared/components';
 
 type ToneStepProps = {
   toneId: ToneId;
@@ -32,38 +32,37 @@ export function ToneStep({ toneId, onSelect, onNext }: ToneStepProps) {
               key={tone.id}
               type="button"
               aria-pressed={selected}
-              className={`rounded-xl border-2 bg-white px-[18px] py-4 text-left transition active:scale-[0.99] ${selected ? 'border-pictree-700' : 'border-pictree-100'}`}
+              className={`flex w-full items-start gap-3 rounded-2xl border bg-white px-5 py-[18px] text-left transition active:scale-[0.99] ${
+                selected
+                  ? 'border-pictree-700 shadow-[0_6px_18px_rgba(45,51,34,0.10)]'
+                  : 'border-pictree-100 shadow-[0_6px_18px_rgba(45,51,34,0.06)]'
+              }`}
               onClick={() => onSelect(tone.id)}
             >
-              <div className="flex items-center justify-between">
+              <span className="min-w-0 flex-1">
                 <span className="text-[16px] font-medium">{tone.label}</span>
-                {/*
-                  체크 자리는 **고르든 말든 항상 비워 둔다.** 조건부로 그리면 고를 때마다 줄
-                  높이가 아이콘만큼 뛰어 아래 카드가 통째로 밀리는데, 어체를 연달아 바꿔 보는
-                  화면이라 다음 목표가 손가락 밑에서 움직인다.
-
-                  ⚠️ 크기는 `scale-[0.55]` 로 줄이지 않는다 — transform 은 그려지는 크기만
-                  줄이고 레이아웃 박스는 34px 그대로라, 자리를 예약해도 점프가 남는다.
-                  아이콘에 직접 19px 을 준다(=34×0.55, 획 두께도 2.34px→2.38px 로 같다).
-                */}
-                <span className="grid size-[19px] shrink-0 place-items-center">
-                  {selected && <CheckIcon size={19} />}
-                </span>
-              </div>
-              <p className="mt-[2px] text-[13px] text-ink-muted">{tone.description}</p>
-              <p className="mt-2 rounded-lg bg-[#f6f9ec] px-3 py-2 text-[13px] leading-5 text-ink-muted">"{tone.example}"</p>
+                <span className="mt-[2px] block text-[13px] text-ink-muted">{tone.description}</span>
+                <span className="mt-2 block rounded-lg bg-[#f6f9ec] px-3 py-2 text-[13px] leading-5 text-ink-muted">"{tone.example}"</span>
+              </span>
+              <span
+                className={`mt-0.5 flex size-[22px] shrink-0 items-center justify-center rounded-full border-2 transition ${
+                  selected
+                    ? 'border-pictree-700 bg-pictree-700 text-white'
+                    : 'border-line bg-white text-transparent'
+                }`}
+              >
+                <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="m5 13 4 4 10-11" />
+                </svg>
+              </span>
             </button>
           );
         })}
       </div>
 
-      <button
-        type="button"
-        className="mt-6 h-[54px] w-full rounded-xl bg-pictree-700 text-[16px] font-medium text-white shadow-[0_7px_14px_rgba(45,51,34,0.13)]"
-        onClick={onNext}
-      >
+      <PrimaryCta className="mt-6" onClick={onNext}>
         이 어체로 작성하기
-      </button>
+      </PrimaryCta>
     </div>
   );
 }
