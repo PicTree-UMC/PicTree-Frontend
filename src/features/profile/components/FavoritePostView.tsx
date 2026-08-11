@@ -1,6 +1,6 @@
 import { createPortal } from "react-dom";
 
-import { NavBar, PhotoPost, PostHeartIcon } from "@/shared/components";
+import { FavoriteHeartButton, NavBar, PhotoPost } from "@/shared/components";
 import type { FavoritePlace } from "../types/favorite";
 
 interface Props {
@@ -50,14 +50,12 @@ export function FavoritePostView({ place, onClose, onRemove }: Props) {
           imageUrl={place.imageUrl}
           caption={place.description}
           actions={
-            <button
-              type="button"
-              onClick={onRemove}
-              aria-label="즐겨찾기 해제"
-              className="-ml-1 p-1 transition active:scale-90"
-            >
-              <PostHeartIcon filled />
-            </button>
+            <FavoriteHeartButton
+              filled
+              onToggle={onRemove}
+              label="즐겨찾기 해제"
+              className="-ml-1"
+            />
           }
         />
       </div>

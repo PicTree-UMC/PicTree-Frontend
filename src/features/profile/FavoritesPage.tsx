@@ -1,12 +1,11 @@
 import { useState } from "react";
 
-import { Chip, CloseButton, NavBar, Skeleton } from "@/shared/components";
+import { Chip, CloseButton, NavBar, Skeleton, TrashIcon } from "@/shared/components";
 import { useFavorites, useRemoveFavorites } from "./hooks/useFavorites";
 import type { FavoritePlace } from "./types/favorite";
 import { FavoriteGrid } from "./components/FavoriteGrid";
 import { FavoritesSkeleton } from "./components/FavoritesSkeleton";
 import { FavoritePostView } from "./components/FavoritePostView";
-import trashLargeIcon from "./assets/icons/trashLarge.svg";
 
 type SortOrder = "latest" | "registered";
 const SORT_ORDERS: SortOrder[] = ["latest", "registered"];
@@ -259,7 +258,7 @@ export function FavoritesPage() {
             className="w-full max-w-[302px] rounded-[20px] bg-cream px-6 py-6 text-center"
             onClick={(event) => event.stopPropagation()}
           >
-            <img src={trashLargeIcon} alt="" className="mx-auto h-[34px] w-[30px]" />
+            <TrashIcon className="mx-auto h-[30px] w-[30px] text-error" />
             <p className="mt-3 text-[17px] font-medium text-ink">
               {confirming.ids.length > 1
                 ? `선택한 ${confirming.ids.length}곳을 제거할까요?`

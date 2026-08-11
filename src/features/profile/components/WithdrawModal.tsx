@@ -1,4 +1,4 @@
-import trashIcon from "../assets/icons/trashLarge.svg";
+import { TrashIcon } from "@/shared/components";
 
 interface Props {
   isWithdrawing?: boolean;
@@ -23,7 +23,7 @@ export function WithdrawModal({ isWithdrawing, onCancel, onConfirm }: Props) {
         className="w-[350px] rounded-[20px] bg-cream px-6 py-6 text-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <img src={trashIcon} alt="" className="mx-auto h-[30px] w-[30px]" />
+        <TrashIcon className="mx-auto h-[30px] w-[30px] text-error" />
         <p className="mt-2 text-[20px] font-medium text-ink">정말 탈퇴할까요?</p>
         <p className="mt-1 text-[13px] leading-[18px] text-ink">
           지금까지 기록한 나무와 타임라인이 모두 사라지고
