@@ -1,3 +1,4 @@
+import { Spinner } from '@/shared/components';
 import type { Route } from '@/features/route/types/route';
 import { PrimaryCta } from '@/shared/components';
 
@@ -55,8 +56,8 @@ export function RouteStep({
 }: RouteStepProps) {
   if (isPending) {
     return (
-      <div className="grid flex-1 place-items-center" role="status" aria-label="동선을 불러오는 중">
-        <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
+      <div className="grid flex-1 place-items-center">
+        <Spinner label="동선을 불러오는 중" labelHidden />
       </div>
     );
   }

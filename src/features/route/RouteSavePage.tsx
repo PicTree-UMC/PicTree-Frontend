@@ -13,7 +13,7 @@ import {
   toDatesParam,
   toPlacesParam,
 } from './lib/routeParams';
-import { NavBar, PrimaryCta } from '@/shared/components';
+import { NavBar, PrimaryCta, Spinner } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { useKeyboardOffset } from '@/shared/hooks/useKeyboardOffset';
 import { useToast } from '@/shared/components/toast/toastStore';
@@ -164,9 +164,8 @@ export function RouteSavePage() {
           밀려나 '무엇을 하는 화면인지'가 사라진다. */}
       <div className="relative min-h-0 flex-1">
         {isLoading ? (
-          <div className="flex h-full flex-col items-center justify-center gap-3">
-            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
-            <p className="text-[15px] font-medium text-pictree-700">동선을 그리는 중...</p>
+          <div className="flex h-full items-center justify-center">
+            <Spinner label="동선을 그리는 중..." />
           </div>
         ) : isError || isOffline ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-8">
@@ -194,7 +193,12 @@ export function RouteSavePage() {
       {/* ② 동선 이름. 이 화면에서 사용자가 정하는 유일한 값이라 테두리 없이 놓는다 —
           알약 입력창은 '여기 칸이 있다'를 말하지만, 이 자리에서는 굳이 말할 필요가 없고
           윗줄의 제목처럼 읽히는 편이 낫다.
-          16px 인 이유는 iOS 다 — 그보다 작으면 사파리가 포커스할 때 화면을 확대해 버린다. */}
+
+          ⚠️ 여기 `text-base`(16px)에 **"iOS 확대를 막으려고" 라는 주석이 달려 있었는데 낡은
+          근거였다**(2026-08-11 확인). 그 확대는 `index.html` 의 뷰포트 메타
+          (`maximum-scale=1.0, user-scalable=no`)가 이미 막는다. 그래서 이 앱의 입력은
+          전부 15px 이고 이 줄만 예외다 — 맞추려면 15px 이지만, 이 화면만 따로 움직이는
+          변경이라 여기서는 안 건드렸다. */}
       <div className="border-t border-ink/10 px-5 py-4">
         <input
           value={name}

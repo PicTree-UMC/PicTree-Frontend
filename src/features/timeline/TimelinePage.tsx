@@ -9,10 +9,9 @@ import { TimelineSearchBar } from "./components/TimelineSearchBar";
 import { TimelineSortTabs } from "./components/TimelineSortTabs";
 import { TimelinePhotoGroup } from "./components/TimelinePhotoGroup";
 import { TimelineSkeleton } from "./components/TimelineSkeleton";
-import { TimelineEditModal } from "./components/TimelineEditModal";
-import { DeleteRecordModal } from "./components/DeleteRecordModal";
+import { TimelineEditView, type TimelineEditValues } from "./components/TimelineEditView";
 import { EmptyTimeline } from "./components/EmptyTimeline";
-import { useToast } from "@/shared/components";
+import { DeleteConfirmModal, useToast } from "@/shared/components";
 
 /** 헤더 오른쪽 검색 버튼의 돋보기 아이콘. */
 function SearchIcon() {
@@ -62,7 +61,7 @@ export function TimelinePage() {
     setDeleteTarget(null);
   };
 
-  const handleSaveEdit = (values: { title: string; content: string }) => {
+  const handleSaveEdit = (values: TimelineEditValues) => {
     if (!editTarget) return;
 
     updateMutation.mutate(
@@ -194,7 +193,7 @@ export function TimelinePage() {
       )}
 
       {editTarget && (
-        <TimelineEditModal
+        <TimelineEditView
           record={editTarget}
           isSaving={updateMutation.isPending}
           onClose={() => setEditTarget(null)}
@@ -203,10 +202,26 @@ export function TimelinePage() {
       )}
 
       {deleteTarget && (
-        <DeleteRecordModal
-          record={deleteTarget}
+        <DeleteConfirmModal
+          isOpen
+          title="이 장소를 삭제할까요?"
+          /*
+            ⚠️ 문구가 '타임라인 제거' 에서 '장소 삭제' 로 바뀐 이유 (#123).
+
+            통합 전에는 기록만 지워지고 나무는 지도에 남았다. 지금은 기록이 곧 나무라
+            `DELETE /trees/{treeId}` 가 나가고 **지도의 장소까지 함께 사라진다.**
+            예전 문구를 그대로 두면 "타임라인에서만 빠지겠지" 로 읽고 누르게 된다 —
+            되돌릴 방법이 없는 동작이라 결과를 먼저 말해야 한다.
+          */
+          description={
+            <>
+              {deleteTarget.placeName}
+              <br />
+              지도에서도 사라지고 되돌릴 수 없어요.
+            </>
+          }
           isDeleting={deleteMutation.isPending}
-          onCancel={() => setDeleteTarget(null)}
+          onClose={() => setDeleteTarget(null)}
           onConfirm={handleConfirmDelete}
         />
       )}

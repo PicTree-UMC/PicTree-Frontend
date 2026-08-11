@@ -1,4 +1,4 @@
-import { Photo } from '@/shared/components';
+import { Photo, Spinner } from '@/shared/components';
 
 import type { CalendarTree } from '../api/calendarTreesApi';
 
@@ -41,9 +41,8 @@ export function DayTreeList({ date, trees, isPending, isError, onRetry }: DayTre
       <h2 className="mb-2 px-1 text-[17px] font-medium text-ink">{formatDayTitle(date)}</h2>
 
       {isPending ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-line-soft bg-white py-10">
-          <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-500" />
-          <p className="text-[15px] text-ink-muted">나무를 불러오는 중...</p>
+        <div className="rounded-xl border border-line-soft bg-white py-10">
+          <Spinner label="나무를 불러오는 중..." />
         </div>
       ) : isError ? (
         <div className="flex flex-col items-center gap-4 rounded-xl border border-line-soft bg-white py-8">

@@ -6,7 +6,7 @@ import { RenameModal } from './components/RenameModal';
 import { useSavedRoutes } from './hooks/useSavedRoutes';
 import { useDeleteRoute } from './hooks/useDeleteRoute';
 import { useRenameRoute } from './hooks/useRenameRoute';
-import { RouteChips } from './components/RouteChips';
+import { RouteTray } from './components/RouteTray';
 import { RouteListSkeleton } from './components/RouteListSkeleton';
 import { RouteIllustration } from './components/RouteIllustration';
 import { SavedRouteRoadmap } from './components/RouteRoadmap';
@@ -136,14 +136,14 @@ export function RouteListPage() {
           </div>
         ) : (
           <>
-            {/* 칩 셀렉터: 저장된 동선 중 하나를 고른다. */}
+            {/* 트레이: 저장된 동선 중 하나를 고른다. */}
             <div className="pt-4">
-              <RouteChips
+              <RouteTray
                 routes={routes}
                 selectedId={selectedId}
                 onSelect={(route) => setSelectedId(route.id)}
                 // 빈 상태의 '동선 생성하기' CTA 는 목록이 차면 사라진다 — 그때부터
-                // 새 동선을 만들 입구가 아예 없었다. 칩 줄의 + 가 그 자리를 잇는다.
+                // 새 동선을 만들 입구가 아예 없었다. 트레이 첫 칸이 그 자리를 잇는다.
                 onCreate={() => navigate(ROUTES.journeyCreate)}
               />
             </div>

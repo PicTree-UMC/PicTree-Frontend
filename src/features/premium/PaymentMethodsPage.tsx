@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ConfirmModal, NavBar, Skeleton, useToast } from '@/shared/components';
+import { DeleteConfirmModal, NavBar, Skeleton, useToast } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { formatKoreanDate } from '@/shared/lib/date';
 import { ROUTES } from '@/shared/constants/routes';
@@ -159,20 +159,19 @@ export function PaymentMethodsPage() {
         </p>
       </div>
 
-      <ConfirmModal
+      <DeleteConfirmModal
         isOpen={pendingDelete !== null}
         title="카드를 삭제할까요?"
         /*
           마지막 카드를 지우면 다음 청구가 실패한다. '삭제됩니다' 로만 끝내면 그 결과를
           누른 뒤에야 알게 되므로, 조건이 맞을 때만 한 문장을 더 붙인다.
         */
-        message={
+        description={
           hasRenewingSubscription && isLastCard
             ? '이 카드를 지우면 다음 결제일에 자동결제가 실패하고 구독이 끊길 수 있어요. 새 카드를 먼저 등록하는 걸 권해요.'
             : '등록된 자동결제 카드를 삭제해요. 필요하면 다시 등록할 수 있어요.'
         }
-        confirmText="삭제"
-        isConfirming={deleteCard.isPending}
+        isDeleting={deleteCard.isPending}
         onConfirm={handleDelete}
         onClose={() => setPendingDelete(null)}
       />

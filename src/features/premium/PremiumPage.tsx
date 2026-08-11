@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { NavBar, useToast } from '@/shared/components';
+import { NavBar, Spinner, useToast } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { ROUTES } from '../../shared/constants/routes';
 import { BenefitShowcase } from './components/BenefitShowcase';
@@ -196,9 +196,8 @@ export function PremiumPage() {
         <div className={PREMIUM_BACKDROP_CLASS} />
         <div className="relative z-10 flex flex-1 flex-col">
           <PremiumNavBar />
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 px-5">
-            <div className="size-8 animate-spin rounded-full border-[3px] border-pictree-300 border-t-pictree-700" />
-            <p className="text-[15px] font-medium text-pictree-700">요금제를 불러오는 중...</p>
+          <div className="flex flex-1 items-center justify-center px-5">
+            <Spinner label="요금제를 불러오는 중..." surface="premium" />
           </div>
         </div>
       </main>

@@ -58,16 +58,10 @@ export function TravelCalendarPage() {
   const { year, month, goPrev, goNext } = useMonthCursor();
 
   // 달을 넘길 때마다 그 달치를 받는다 (queryKey 에 연·월이 들어 있어 캐시가 산다)
-  const { levelByDate, isPending, isError, refetch } = useTravelCalendar(year, month);
+  const { levelByDate, countByDate, isPending, isError, refetch } = useTravelCalendar(year, month);
 
   const [legendOpen, setLegendOpen] = useState(false);
   const [pickedDate, setPickedDate] = useState<string | null>(null);
-
-  /*
-    나무 목록은 **날짜를 처음 누른 뒤에야** 받는다 — `/trees` 에 날짜 필터가 없어 전체를
-    페이지 끝까지 훑는 호출이라, 잔디만 보고 나가는 사람에게 물릴 이유가 없다.
-  */
-  const treesQuery = useCalendarTrees(pickedDate !== null);
 
   /*
     달을 넘기면 고른 날짜를 놓는다. 안 놓으면 8월을 보고 있는데 아래 목록만 7월 15일에
@@ -76,6 +70,19 @@ export function TravelCalendarPage() {
   */
   const visibleDate =
     pickedDate?.startsWith(`${year}-${String(month).padStart(2, '0')}`) ? pickedDate : null;
+
+  /*
+    나무 목록은 **날짜를 처음 누른 뒤에야** 받는다 — `/trees` 에 날짜 필터가 없어 전체를
+    페이지 끝까지 훑는 호출이라, 잔디만 보고 나가는 사람에게 물릴 이유가 없다.
+
+    거기에 **그날 나무가 0그루면 아예 안 받는다.** 캘린더가 개수를 함께 내려주게 되면서
+    (`countByDate`) 빈 날인 걸 미리 알 수 있게 됐다 — 전에는 빈 날을 눌러도 나무 전체를
+    끝까지 훑고 나서 "이 날 심은 나무가 없어요" 를 띄웠다.
+    ⚠️ `?? 1` 이다. 아직 이 달을 못 받았으면 `undefined` 이고, 그때는 **모르니까 받는다** —
+    0 으로 넘겨 버리면 있는 나무를 없다고 말하게 된다.
+  */
+  const visibleDayCount = visibleDate ? (countByDate[visibleDate] ?? 1) : 0;
+  const treesQuery = useCalendarTrees(visibleDate !== null && visibleDayCount > 0);
 
   return (
     <div className="flex min-h-full flex-col bg-cream pb-nav">
@@ -122,9 +129,13 @@ export function TravelCalendarPage() {
               selectedDates={visibleDate ? [visibleDate] : []}
               // 한 번 더 누르면 닫힌다 — 목록을 치우는 다른 길이 없다.
               onDateSelect={(date) => setPickedDate((current) => (current === date ? null : date))}
+              /*
+                개수를 그대로 읽어 준다 — 눈으로는 색 농도로 보이는 것이 '3그루' 라는 뜻이다.
+                `잔디 3단계` 였는데, 단계는 우리 쪽 집계 용어라 듣는 사람에게는 뜻이 없다.
+              */
               dateAriaLabel={(date, day) => {
-                const level = levelByDate[date] ?? 0;
-                return `${month}월 ${day}일 ${level > 0 ? `잔디 ${level}단계` : '기록 없음'}`;
+                const count = countByDate[date] ?? 0;
+                return `${month}월 ${day}일 ${count > 0 ? `나무 ${count}그루` : '기록 없음'}`;
               }}
             />
           </div>

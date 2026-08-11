@@ -9,8 +9,12 @@ import { useDeleteTree, useToggleFavorite, useTreeDetail, useTrees } from './hoo
 import { TopBanner } from './components/TopBanner';
 import { SproutIllustration } from '@/shared/components';
 import { useNearbyTrees } from './hooks/useNearbyTrees';
+import { useTodayTreeQuota } from './hooks/useTodayTreeQuota';
 import { MarkerStoryViewer } from './components/MarkerStoryViewer';
-import { TimelineEditModal } from '@/features/timeline/components/TimelineEditModal';
+import {
+  TimelineEditView,
+  type TimelineEditValues,
+} from '@/features/timeline/components/TimelineEditView';
 import { useUpdateTimeline } from '@/features/timeline/hooks/useUpdateTimeline';
 import { useToast } from '@/shared/components';
 
@@ -33,6 +37,12 @@ export function HomePage() {
    * 지도가 위치를 계속 받는 유일한 화면이라 여기에 둔다.
    */
   const nearbyTrees = useNearbyTrees(coords);
+
+  /*
+   * 오늘 나무를 더 심을 수 있는지. 다 채웠으면 아래 카메라 버튼이 흐려지고, 위 배너가
+   * 그 이유를 말한다 — 버튼만 흐려지면 고장 난 것처럼 보인다.
+   */
+  const quota = useTodayTreeQuota();
 
   /*
    * 현재 위치가 확인될 때까지 지도 생성을 미루고, 확인되면 그 위치에서 연다.
@@ -111,12 +121,12 @@ export function HomePage() {
   const { showToast } = useToast();
 
   /*
-    장소 수정 — 타임라인의 수정 모달을 그대로 쓴다. 기록이 곧 나무라 고치는 대상도
+    장소 수정 — 타임라인의 수정 화면을 그대로 쓴다. 기록이 곧 나무라 고치는 대상도
     보내는 요청(`PATCH /trees/{treeId}`)도 같다. 여기에 폼을 하나 더 만들면 두 화면이
     갈라진다.
 
-    `MapMarkerData` 와 `TimelineRecord` 는 필드 이름이 달라서(label/comment/date ↔
-    placeName/comment/recordedAt) 모달이 읽는 모양으로 맞춰 넘긴다.
+    `MapMarkerData` 와 `TimelineRecord` 는 필드 이름이 달라서(label/comment/date/photo ↔
+    placeName/comment/recordedAt/thumbnailUrl) 수정 화면이 읽는 모양으로 맞춰 넘긴다.
   */
   const [editing, setEditing] = useState<MapMarkerData | null>(null);
 
@@ -125,7 +135,7 @@ export function HomePage() {
     if (target) setEditing(target);
   };
 
-  const handleSaveEdit = (values: { title: string; content: string }) => {
+  const handleSaveEdit = (values: TimelineEditValues) => {
     if (!editing) return;
 
     updateMutation.mutate(
@@ -153,6 +163,23 @@ export function HomePage() {
     map.panTo(new window.kakao.maps.LatLng(coords.latitude, coords.longitude));
     recenterPendingRef.current = false;
   }, [map, coords]);
+
+  /*
+    카메라로 보내되, 오늘 한도를 다 채웠으면 보내지 않고 이유만 말한다. 여기서 안 막으면
+    사진을 찍고 장소명·기분까지 다 채운 뒤 저장 버튼에서 처음 거절당한다 — 되돌릴 것이
+    가장 많은 자리다. (한도는 캐시된 값이라 틀릴 수 있고, 그때는 저장 시 서버 429 가 잡는다.)
+  */
+  const handleRecordPlace = () => {
+    if (quota.isFull) {
+      showToast(
+        `오늘은 나무를 ${quota.limit}그루까지 심었어요.\n내일 다시 심을 수 있어요.`,
+        'info',
+      );
+      return;
+    }
+
+    navigate(ROUTES.camera);
+  };
 
   const handleDelete = () => {
     if (!activeId) return;
@@ -194,6 +221,8 @@ export function HomePage() {
       */}
       <TopBanner
         placeCount={markers.length}
+        dailyLimitReached={quota.isFull}
+        dailyLimit={quota.limit}
         nearby={
           nearbyTrees && {
             placeName: nearbyTrees.label,
@@ -210,11 +239,18 @@ export function HomePage() {
         노치 기기에서 탭바가 안전영역만큼 높아져 버튼이 가려진다.
         left-1/2 + -translate-x-1/2 로 화면 가로 중앙에 정렬한다.
         흰 배경 + GREEN-500(#788F4A) 아이콘 — 흰 위 3.6:1 로 그래픽 요소(3:1) 충족.
+
+        ⚠️ 하루 한도를 다 채웠을 때 **`disabled` 를 쓰지 않는다.** 진짜 `disabled` 는 탭이
+        아예 안 먹어서 왜 못 누르는지 말할 기회가 없다 — 흐려진 버튼만 남고 이유는 어디에도
+        없게 된다. `aria-disabled` 로 상태만 알리고, 탭은 받아서 토스트로 답한다.
       */}
       <button
-        onClick={() => navigate(ROUTES.camera)}
+        onClick={handleRecordPlace}
         aria-label="장소 기록하기"
-        className="bottom-nav absolute left-1/2 z-20 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full bg-white text-pictree-500 shadow-lg ring-1 ring-black/5 transition active:scale-95"
+        aria-disabled={quota.isFull}
+        className={`bottom-nav absolute left-1/2 z-20 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full bg-white text-pictree-500 shadow-lg ring-1 ring-black/5 transition active:scale-95 ${
+          quota.isFull ? 'opacity-60' : ''
+        }`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -270,14 +306,18 @@ export function HomePage() {
         />
       )}
 
-      {/* 수정 모달 — 스토리 뷰어 위에 얹힌다(모달이 portal 로 body 에 붙는다). */}
+      {/* 수정 화면 — 스토리 뷰어(z-50) 위에 얹힌다(포털로 body 에 붙고 z-[60]). */}
       {editing && (
-        <TimelineEditModal
+        <TimelineEditView
           record={{
             id: editing.id,
             placeName: editing.label,
             comment: editing.comment,
             recordedAt: editing.date,
+            // 사진과 기분은 수정 화면이 그리고 프리필하는 값이라 같이 넘긴다.
+            // `emoji` 가 아니라 `mood` 인 이유는 `treeMapping` 의 폴백 주석 참고.
+            thumbnailUrl: editing.photo,
+            mood: editing.mood,
           }}
           isSaving={updateMutation.isPending}
           onClose={() => setEditing(null)}

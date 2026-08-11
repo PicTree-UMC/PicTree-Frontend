@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
-import { IconFrame, Photo } from '@/shared/components';
-import { DeleteMarkerModal } from './DeleteMarkerModal';
+import {
+  DeleteConfirmModal,
+  FavoriteHeartButton,
+  IconFrame,
+  Photo,
+  TRASH_BOX,
+  TRASH_GLYPH,
+} from '@/shared/components';
 import type { MapMarkerData } from '../hooks/useMapMarkers';
 
 interface MarkerStoryViewerProps {
@@ -41,7 +47,6 @@ export function MarkerStoryViewer({
 }: MarkerStoryViewerProps) {
   const { data: profile } = useMyProfile();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [favBump, setFavBump] = useState(false);
 
   const marker = markers[activeIndex];
 
@@ -56,20 +61,21 @@ export function MarkerStoryViewer({
     if (index !== activeIndex) onNavigate(index);
   };
 
-  // activeIndex 가 스크롤과 어긋나면(삭제로 슬라이드가 빠지거나 키보드로 이동) 맞춰 준다.
-  // 즉시 점프(behavior 'auto')로 이동해 중간 슬라이드에서 onScroll 이 튀지 않게 한다.
+  /*
+   * activeIndex 가 스크롤과 어긋나면(삭제로 슬라이드가 빠지거나 키보드로 이동) 맞춰 준다.
+   * 즉시 점프(behavior 'auto')로 이동해 중간 슬라이드에서 onScroll 이 튀지 않게 한다.
+   *
+   * ⚠️ **반 칸 넘게 어긋났을 때만 건드린다**(전에는 1px 이었다). 손가락으로 넘기는 중에는
+   * 반 칸을 지나는 순간 위 `handleScroll` 이 `activeIndex` 를 먼저 바꾸는데, 그때 끼어들어
+   * `scrollTo` 를 부르면 브라우저가 그리던 스냅 애니메이션을 끊어 화면이 툭 끊긴다.
+   * 밖에서 온 변경은 한 칸 단위라 이 문턱에 안 걸린다. (`PhotoPost` 의 `PhotoStrip` 과 같다.)
+   */
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || el.clientWidth === 0) return;
     const target = activeIndex * el.clientWidth;
-    if (Math.abs(el.scrollLeft - target) > 1) el.scrollTo({ left: target });
+    if (Math.abs(el.scrollLeft - target) > el.clientWidth / 2) el.scrollTo({ left: target });
   }, [activeIndex]);
-
-  const handleToggleFavorite = () => {
-    // 즐겨찾기로 켜질 때만 팝(인스타 좋아요 느낌). 해제 시엔 조용히.
-    if (!marker.isFavorite) setFavBump(true);
-    onToggleFavorite();
-  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -98,10 +104,23 @@ export function MarkerStoryViewer({
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
+          /*
+            overscroll-x-contain: 끝 장에서 더 밀 때 스크롤이 페이지 밖으로 이어져
+            브라우저 뒤로가기 제스처가 걸리는 것을 막는다(`PhotoPost` 와 같은 이유).
+          */
+          className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain"
         >
           {markers.map((item) => (
-            <div key={item.id} className="relative h-full w-full shrink-0 snap-center">
+            <div
+              key={item.id}
+              /*
+                snap-always(`scroll-snap-stop: always`): 세게 튕겨도 한 칸에서 반드시
+                멈춘다. 이게 없으면 관성이 붙는 만큼 두세 장이 한 번에 넘어가는데,
+                여기 한 장은 각각 다른 나무라 **보지도 못한 기록이 지나가 버린다.**
+                타임라인의 하루 캐러셀(`PhotoPost` 의 `PhotoStrip`)이 같은 이유로 같은 값을 쓴다.
+              */
+              className="relative h-full w-full shrink-0 snap-center snap-always"
+            >
               {item.photo ? (
                 /*
                   사진이 화면의 전부인 자리라 폴백에 문구를 함께 세운다 — 나무 아이콘만
@@ -171,23 +190,12 @@ export function MarkerStoryViewer({
           {/* 좌: 즐겨찾기 / 중앙: 점 인디케이터 / 우: 수정·삭제 */}
           <div className="grid grid-cols-3 items-center text-white">
             <div className="justify-self-start">
-              <button
-                onClick={handleToggleFavorite}
-                aria-label="즐겨찾기"
-                aria-pressed={!!marker.isFavorite}
-                className="-ml-1 p-1"
-              >
-                {/*
-                  하트 팝 애니메이션용 래퍼. `inline-block` 이면 글자 베이스라인에 얹혀
-                  옆 아이콘보다 몇 px 높게 앉는다 — `block` 으로 두어야 줄이 맞는다.
-                */}
-                <span
-                  className={`block ${favBump ? 'animate-heart-pop' : ''}`}
-                  onAnimationEnd={() => setFavBump(false)}
-                >
-                  <HeartIcon filled={!!marker.isFavorite} />
-                </span>
-              </button>
+              <FavoriteHeartButton
+                filled={!!marker.isFavorite}
+                onToggle={onToggleFavorite}
+                label="즐겨찾기"
+                className="-ml-1"
+              />
             </div>
 
             {/*
@@ -223,37 +231,25 @@ export function MarkerStoryViewer({
         </div>
       </div>
 
-      {confirmingDelete && (
-        <DeleteMarkerModal
-          placeName={marker.label}
-          onClose={() => setConfirmingDelete(false)}
-          onConfirm={() => {
-            setConfirmingDelete(false);
-            onDelete();
-          }}
-        />
-      )}
+      <DeleteConfirmModal
+        isOpen={confirmingDelete}
+        title="이 장소를 삭제할까요?"
+        description={`“${marker.label}”의 기록이 영구 삭제됩니다.`}
+        onClose={() => setConfirmingDelete(false)}
+        onConfirm={() => {
+          setConfirmingDelete(false);
+          onDelete();
+        }}
+      />
+
     </>,
     document.body,
   );
 }
 
-function HeartIcon({ filled }: { filled: boolean }) {
-  return (
-    <IconFrame
-      box={{ cx: 12, cy: 12, h: 16.5 }}
-      fill={filled ? '#ff4d6d' : 'none'}
-      stroke={filled ? '#ff4d6d' : 'currentColor'}
-      aria-hidden
-    >
-      <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-    </IconFrame>
-  );
-}
-
 function PencilIcon() {
   return (
-    <IconFrame box={{ cx: 13.8, cy: 10.4, h: 15.2 }} aria-hidden>
+    <IconFrame box={{ cx: 13.8, cy: 10.4, w: 15.8, h: 15.2 }} aria-hidden>
       <path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
       <path d="M19.5 7.125L16.875 4.5" />
     </IconFrame>
@@ -262,8 +258,8 @@ function PencilIcon() {
 
 function TrashIcon() {
   return (
-    <IconFrame box={{ cx: 12, cy: 13, h: 18 }} aria-hidden>
-      <path d="M4 7h16M10 11v6M14 11v6M5 7l1 13a2 2 0 002 2h8a2 2 0 002-2l1-13M9 7V4h6v3" />
+    <IconFrame box={TRASH_BOX} aria-hidden>
+      <path d={TRASH_GLYPH} />
     </IconFrame>
   );
 }

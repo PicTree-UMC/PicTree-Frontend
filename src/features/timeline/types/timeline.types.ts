@@ -34,6 +34,14 @@ export interface TimelineRecord {
    */
   defaultImage?: string | null;
   isFavorite?: boolean;
+  /**
+   * 기록할 때 고른 기분 이모지. 서버가 유저가 고른 문자를 그대로 저장하므로 문자열이다.
+   *
+   * **폴백을 씌우지 않는다.** 지도 마커는 비면 😊 로 채워 그리는데(`treeMapping`), 그건
+   * 마커에 글리프가 있어야 해서지 그 사람이 😊 를 골랐다는 뜻이 아니다. 수정 화면이 그
+   * 값을 프리필해 저장하면 **안 고른 사람에게 😊 가 심긴다.**
+   */
+  mood?: string;
 }
 
 export interface TimelineGroup {
