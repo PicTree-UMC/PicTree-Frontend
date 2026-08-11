@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
 import {
+  DeleteConfirmModal,
   FavoriteHeartButton,
   IconFrame,
   Photo,
   TRASH_BOX,
   TRASH_GLYPH,
 } from '@/shared/components';
-import { DeleteMarkerModal } from './DeleteMarkerModal';
 import type { MapMarkerData } from '../hooks/useMapMarkers';
 
 interface MarkerStoryViewerProps {
@@ -231,16 +231,17 @@ export function MarkerStoryViewer({
         </div>
       </div>
 
-      {confirmingDelete && (
-        <DeleteMarkerModal
-          placeName={marker.label}
-          onClose={() => setConfirmingDelete(false)}
-          onConfirm={() => {
-            setConfirmingDelete(false);
-            onDelete();
-          }}
-        />
-      )}
+      <DeleteConfirmModal
+        isOpen={confirmingDelete}
+        title="이 장소를 삭제할까요?"
+        description={`“${marker.label}”의 기록이 영구 삭제됩니다.`}
+        onClose={() => setConfirmingDelete(false)}
+        onConfirm={() => {
+          setConfirmingDelete(false);
+          onDelete();
+        }}
+      />
+
     </>,
     document.body,
   );
