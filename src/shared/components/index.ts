@@ -12,6 +12,7 @@ export { BottomTabBar } from './BottomTabBar';
 export type { TabItem } from './BottomTabBar';
 export { Layout } from './Layout';
 export { Modal, ConfirmModal } from './Modal';
+export { DeleteConfirmModal, DeleteIconButton } from './DeleteConfirmModal';
 export { Sheet } from './Sheet';
 export { ErrorPage, ErrorView } from './ErrorPage';
 export { ErrorBoundary } from './ErrorBoundary';

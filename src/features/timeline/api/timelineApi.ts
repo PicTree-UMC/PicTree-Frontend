@@ -93,7 +93,7 @@ export const updateTimeline = async (
  *
  * ⚠️ **이제 기록을 지우면 장소(나무)도 같이 사라진다.** 통합 전에는 기록만 지우고
  * 나무는 지도에 남았다. 삭제 확인 문구가 그 사실을 말하고 있는지 화면에서 확인할 것
- * (`DeleteRecordModal`).
+ * (`TimelinePage` 의 `DeleteConfirmModal`).
  */
 export const deleteTimeline = async (treeId: string): Promise<void> => {
   await httpClient.delete<ApiEnvelope<null>>(`/trees/${treeId}`);

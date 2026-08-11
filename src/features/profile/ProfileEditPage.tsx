@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  DeleteConfirmModal,
   NavBar,
   SettingsFooter,
   SettingsList,
@@ -14,7 +15,6 @@ import { useMyProfile } from "./hooks/useMyProfile";
 import { useUpdateMyProfile } from "./hooks/useUpdateMyProfile";
 import { useWithdraw } from "./hooks/useWithdraw";
 import { NicknameEditSheet } from "./components/NicknameEditSheet";
-import { WithdrawModal } from "./components/WithdrawModal";
 import treeIcon from "./assets/icons/tree.svg";
 import cardImage from "./assets/icons/card3d.jpg";
 
@@ -202,13 +202,37 @@ export function ProfileEditPage() {
         />
       )}
 
-      {isWithdrawModalOpen && (
-        <WithdrawModal
-          isWithdrawing={isWithdrawing}
-          onCancel={() => setIsWithdrawModalOpen(false)}
-          onConfirm={() => requestWithdraw()}
-        />
-      )}
+      {/*
+        탈퇴는 삭제가 아니지만 확인 규격은 같다 — 되돌릴 수 없고, 무엇이 사라지는지 먼저
+        말해야 한다. 종전엔 `WithdrawModal` 이 삭제 모달의 생김새를 손으로 베껴 두고 있었다.
+      */}
+      <DeleteConfirmModal
+        isOpen={isWithdrawModalOpen}
+        title="정말 탈퇴할까요?"
+        description={
+          <>
+            지금까지 기록한 나무와 타임라인이 모두 사라지고
+            <br />
+            되돌릴 수 없어요.
+            {/*
+              재가입 불가는 "되돌릴 수 없다" 보다 한 단계 더 센 제약이라 따로 떼어
+              강조한다. 탈퇴해도 계정 행은 남고(status: WITHDRAWN) 소셜 계정 연결도
+              그대로라, 같은 카카오·구글 계정으로 로그인하면 서버가 USER_UNAVAILABLE
+              로 막는다. 새 계정으로 시작할 방법이 지금은 없다.
+            */}
+            <span className="mt-3 block rounded-[12px] bg-error-surface px-4 py-3 font-medium text-error">
+              탈퇴하면 같은 계정으로
+              <br />
+              다시 가입할 수 없어요.
+            </span>
+          </>
+        }
+        confirmLabel="탈퇴"
+        pendingLabel="처리 중"
+        isDeleting={isWithdrawing}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        onConfirm={() => requestWithdraw()}
+      />
     </div>
   );
 }

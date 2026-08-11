@@ -1,6 +1,12 @@
 import { useState } from "react";
 
-import { Chip, CloseButton, NavBar, Skeleton, TrashIcon } from "@/shared/components";
+import {
+  Chip,
+  CloseButton,
+  DeleteConfirmModal,
+  NavBar,
+  Skeleton,
+} from "@/shared/components";
 import { useFavorites, useRemoveFavorites } from "./hooks/useFavorites";
 import type { FavoritePlace } from "./types/favorite";
 import { FavoriteGrid } from "./components/FavoriteGrid";
@@ -248,46 +254,21 @@ export function FavoritesPage() {
 
       {/* 게시물 화면(z-50) 위에서도 열리므로 한 층 위다 — 층 사다리는 Toaster 주석. */}
       {confirming && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-5"
-          onClick={() => setConfirming(null)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            className="w-full max-w-[302px] rounded-[20px] bg-cream px-6 py-6 text-center"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <TrashIcon className="mx-auto h-[30px] w-[30px] text-error" />
-            <p className="mt-3 text-[17px] font-medium text-ink">
-              {confirming.ids.length > 1
-                ? `선택한 ${confirming.ids.length}곳을 제거할까요?`
-                : "즐겨찾기에서 제거할까요?"}
-            </p>
-            {confirming.name && (
-              <p className="mt-1 text-[13px] text-ink">{confirming.name}</p>
-            )}
-
-            <div className="mt-5 flex gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirming(null)}
-                disabled={isRemoving}
-                className="h-[44px] flex-1 rounded-xl bg-line-soft text-[15px] text-ink disabled:opacity-50"
-              >
-                취소
-              </button>
-              <button
-                type="button"
-                onClick={handleRemove}
-                disabled={isRemoving}
-                className="h-[44px] flex-1 rounded-xl bg-error text-[15px] font-medium text-white disabled:opacity-50"
-              >
-                {isRemoving ? "제거하는 중" : "제거"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteConfirmModal
+          isOpen
+          title={
+            confirming.ids.length > 1
+              ? `선택한 ${confirming.ids.length}곳을 제거할까요?`
+              : "즐겨찾기에서 제거할까요?"
+          }
+          description={confirming.name}
+          /* 나무가 지워지는 게 아니라 즐겨찾기 목록에서만 빠진다 — '삭제' 로 쓰면 과하게 읽힌다. */
+          confirmLabel="제거"
+          pendingLabel="제거하는 중"
+          isDeleting={isRemoving}
+          onClose={() => setConfirming(null)}
+          onConfirm={handleRemove}
+        />
       )}
     </div>
   );
