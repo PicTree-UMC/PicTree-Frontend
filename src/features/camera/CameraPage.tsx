@@ -1,5 +1,8 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTodayTreeQuota } from '@/features/home/hooks/useTodayTreeQuota';
+import { isDailyTreeLimitError } from '@/features/home/lib/treeQuota';
+import { getApiErrorMessage } from '@/features/profile/lib/profileError';
 import { ROUTES } from '@/shared/constants/routes';
 import { getLocalDateString } from '@/shared/lib/date';
 import { useLockBodyScroll } from '@/shared/hooks/useLockBodyScroll';
@@ -41,6 +44,13 @@ export function CameraPage() {
   const today = getLocalDateString();
 
   /*
+    홈에서 이미 한 번 걸렀지만 여기서 또 본다 — 이 화면은 딥링크로도 열리고, 열어 둔 채
+    다른 기기에서 심었거나 자정을 넘겼을 수도 있다. 캐시라 이것도 최종 판정은 아니다
+    (그건 저장 시 서버 429 다). 남은 수가 얼마 없을 때는 미리 알려 준다.
+  */
+  const quota = useTodayTreeQuota();
+
+  /*
    * 지도에서 직접 고른 좌표. 있으면 GPS 좌표 대신 이걸 저장한다.
    *
    * 자동으로 갈아끼우지 않고 사용자가 고르게 하는 이유: 정확도 판정(30m)은 도심
@@ -63,6 +73,13 @@ export function CameraPage() {
   const handleClose = () => navigate(ROUTES.home);
   const handleSave = () => {
     if (isSaving) return;
+    if (quota.isFull) {
+      showToast(
+        `오늘은 나무를 ${quota.limit}그루까지 심었어요. 내일 다시 심을 수 있어요.`,
+        'error',
+      );
+      return;
+    }
     if (!isValid || selectedEmoji === null) {
       showToast('장소명과 기분 이모지를 입력해 주세요.', 'error');
       return;
@@ -83,8 +100,21 @@ export function CameraPage() {
           showToast('기록이 저장되었어요.', 'success');
           navigate(ROUTES.home);
         },
-        onError: () => {
-          showToast('저장에 실패했어요. 잠시 후 다시 시도해 주세요.', 'error');
+        onError: (error) => {
+          /*
+            하루 한도 초과(429)는 "잠시 후 다시" 가 틀린 안내다 — 오늘은 몇 번을 눌러도
+            안 된다. 서버 문구를 그대로 쓰는 이유는 한도 숫자가 응답에만 정확히 있어서다
+            (프론트 상수는 베껴 둔 값이라 어긋날 수 있다).
+          */
+          showToast(
+            isDailyTreeLimitError(error)
+              ? getApiErrorMessage(
+                  error,
+                  `오늘은 나무를 ${quota.limit}그루까지 심었어요. 내일 다시 심을 수 있어요.`,
+                )
+              : '저장에 실패했어요. 잠시 후 다시 시도해 주세요.',
+            'error',
+          );
         },
       },
     );
@@ -197,6 +227,15 @@ export function CameraPage() {
               {zoom.toFixed(1)}x
             </button>
           </div>
+        )}
+
+        {/* 남은 한도는 **얼마 안 남았을 때만** 알린다. 20그루 중 19그루가 남은 사람에게
+            매번 숫자를 보여줄 이유가 없고, 그러면 정작 임박했을 때도 늘 있던 줄로 읽힌다.
+            (한도를 아직 모르면 `remaining` 이 최댓값이라 이 줄은 안 뜬다.) */}
+        {(capturedPhoto || isWriteMode) && quota.remaining > 0 && quota.remaining <= 3 && (
+          <p className="px-4 pb-1 text-center text-[13px] text-white/80">
+            오늘 {quota.remaining}그루 더 심을 수 있어요
+          </p>
         )}
 
         {/* 저장 직전(촬영 검토·작성 모드)에만 위치 상태를 알린다. 라이브 프리뷰에서는

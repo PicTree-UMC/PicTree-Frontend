@@ -1,3 +1,4 @@
+import { DAILY_TREE_LIMIT } from '@/features/home/lib/treeQuota';
 import { Sheet } from '@/shared/components';
 import { CALENDAR_LEVELS } from '../lib/calendarLevel';
 import treeIcon from '../assets/icons/tree.svg';
@@ -60,8 +61,14 @@ export function GrassLegendSheet({ onClose }: { onClose: () => void }) {
         <span className="mt-[5px] px-1 text-[13px] text-ink">많음</span>
       </div>
 
+      {/*
+        하루 한도를 사용자에게 알리는 유일한 자리다. 다른 데서는 다 채운 뒤에야(홈 배너·토스트)
+        말하게 되는데, 여기는 "하루에 몇 그루" 를 이미 말하고 있는 문맥이라 미리 얹기 좋다.
+      */}
       <p className="mt-5 text-center text-[13px] leading-[18px] text-ink-muted">
         날짜를 누르면 그날 심은 나무를 볼 수 있어요.
+        <br />
+        나무는 하루에 {DAILY_TREE_LIMIT}그루까지 심을 수 있어요.
       </p>
     </Sheet>
   );

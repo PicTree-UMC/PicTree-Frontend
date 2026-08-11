@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { createTree, uploadTreeImage } from '@/features/home/api/treesApi';
+import { isDailyTreeLimitError } from '@/features/home/lib/treeQuota';
 import { treeKeys } from '@/features/home/hooks/useTrees';
 import { treeStatsKeys } from '@/features/profile/hooks/useTreeStats';
 import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
@@ -80,6 +81,16 @@ export function useCreateTreeRecord() {
       queryClient.invalidateQueries({ queryKey: calendarKeys.all });
       // 사진이 늘었다. 용량은 캐시를 무기한 들고 있어 여기서 안 깨면 그대로 남는다.
       queryClient.invalidateQueries({ queryKey: treeStatsKeys.summary });
+    },
+    onError: (error) => {
+      /*
+        하루 한도 초과(429)로 거절당했다면 우리가 들고 있던 오늘 개수가 서버보다 적었다는
+        뜻이다 — 다른 기기에서 심었거나 자정을 넘겨 캐시가 낡았거나. 여기서 안 깨면 홈에
+        돌아가도 카메라 버튼이 멀쩡해 보여서 같은 거절을 반복한다.
+      */
+      if (isDailyTreeLimitError(error)) {
+        queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+      }
     },
   });
 }
