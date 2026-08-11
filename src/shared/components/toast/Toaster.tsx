@@ -2,10 +2,18 @@ import { useToastStore, ToastType, ToastPlacement, type ToastItem } from './toas
 
 /** 토스트 렌더러. 앱 최상단에 한 번만 <Toaster /> 로 마운트. */
 
+/*
+  ⚠️ **Tailwind 기본 팔레트 이름을 쓰지 말 것.** 여기가 기본 빨강(#EF4444)과 기본 진회색
+  (#262626)을 쓰고 있었는데 canonical 은 ERROR `#DC2626` · INK `#2C3930` 이라 **값이 달랐다.**
+
+  ESLint 색 규칙이 이걸 못 잡는다 — 대괄호 형태(`[#dc2626]`)만 검사하기 때문에 팔레트
+  이름으로 새는 것은 그대로 통과한다. 화면으로도 티가 안 나서(둘 다 빨강, 둘 다 진회색)
+  값이 같은 리터럴이 안 걸리던 것과 같은 방식으로 오래 남아 있었다.
+*/
 const typeClass: Record<ToastType, string> = {
   success: 'bg-pictree-700 text-white',
-  error: 'bg-red-500 text-white',
-  info: 'bg-neutral-800 text-white',
+  error: 'bg-error text-white',
+  info: 'bg-ink text-white',
 };
 
 // 상단은 헤더/탭 아래로, 하단은 탭바 위로 오도록 위치를 잡는다.

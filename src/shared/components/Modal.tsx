@@ -92,7 +92,13 @@ export function ConfirmModal({
           <Button
             onClick={onConfirm}
             disabled={isConfirming}
-            className="!bg-red-500 hover:!bg-red-600"
+            /*
+              ⚠️ Tailwind 기본 빨강(#EF4444)이었다 — canonical ERROR 는 `#DC2626` 이라 값이 달랐다.
+              ESLint 색 규칙은 대괄호 형태만 잡아서 팔레트 이름으로는 그냥 샜다.
+              hover 는 ERROR 보다 진한 토큰이 없어 투명도로 낸다(더 진해지는 게 아니라
+              옅어진다 — 방향은 바뀌지만 새 눈대중 색을 만들지 않는 쪽을 골랐다).
+            */
+            className="!bg-error hover:!bg-error/90"
           >
             {confirmText}
           </Button>
