@@ -5,6 +5,10 @@ import { create } from 'zustand';
  * 데이터만 관리하고, 화면 표시는 Toaster.tsx 담당.
  * 사용: const { showToast } = useToast(); showToast('저장됨', 'success');
  * 상단 노출: showToast('저장됨', 'success', { placement: 'top' });
+ * 줄바꿈: 문구에 `\n` 을 넣는다 — `Toaster` 가 `whitespace-pre-line` 으로 살린다.
+ *
+ * ⚠️ 문구는 **문자열**이다(ReactNode 가 아니다). `<br />` 이나 굵은 글씨를 넣을 수 없고,
+ * 넣을 자리도 아니다 — 토스트는 한두 줄짜리 알림이다. 서식이 필요하면 모달·시트를 쓴다.
  */
 
 export type ToastType = 'success' | 'error' | 'info';

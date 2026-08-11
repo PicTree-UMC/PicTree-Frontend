@@ -160,7 +160,16 @@ function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => vo
         >
           {meta.icon}
         </span>
-        <span className="min-w-0 text-[15px] font-medium leading-5 text-ink">{toast.message}</span>
+        {/*
+          `whitespace-pre-line` — 문구의 `\n` 을 줄바꿈으로 살린다. 기본값(`normal`)은
+          줄바꿈도 공백으로 뭉개서, 문구에 `\n` 을 넣어도 한 줄로 이어 붙었다.
+          `pre` 가 아니라 `pre-line` 인 이유: 들여쓴 템플릿 리터럴의 앞쪽 공백까지 그대로
+          그리면 문구가 오른쪽으로 밀린다. `pre-line` 은 **줄바꿈만** 살리고 나머지 공백은
+          평소처럼 접는다 — 기존 문구는 `\n` 이 없어 전과 똑같이 그려진다.
+        */}
+        <span className="min-w-0 whitespace-pre-line text-[15px] font-medium leading-5 text-ink">
+          {toast.message}
+        </span>
       </button>
     </div>
   );

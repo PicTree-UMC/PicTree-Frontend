@@ -9,6 +9,7 @@ import { useDeleteTree, useToggleFavorite, useTreeDetail, useTrees } from './hoo
 import { TopBanner } from './components/TopBanner';
 import { SproutIllustration } from '@/shared/components';
 import { useNearbyTrees } from './hooks/useNearbyTrees';
+import { useTodayTreeQuota } from './hooks/useTodayTreeQuota';
 import { MarkerStoryViewer } from './components/MarkerStoryViewer';
 import {
   TimelineEditView,
@@ -36,6 +37,12 @@ export function HomePage() {
    * 지도가 위치를 계속 받는 유일한 화면이라 여기에 둔다.
    */
   const nearbyTrees = useNearbyTrees(coords);
+
+  /*
+   * 오늘 나무를 더 심을 수 있는지. 다 채웠으면 아래 카메라 버튼이 흐려지고, 위 배너가
+   * 그 이유를 말한다 — 버튼만 흐려지면 고장 난 것처럼 보인다.
+   */
+  const quota = useTodayTreeQuota();
 
   /*
    * 현재 위치가 확인될 때까지 지도 생성을 미루고, 확인되면 그 위치에서 연다.
@@ -157,6 +164,23 @@ export function HomePage() {
     recenterPendingRef.current = false;
   }, [map, coords]);
 
+  /*
+    카메라로 보내되, 오늘 한도를 다 채웠으면 보내지 않고 이유만 말한다. 여기서 안 막으면
+    사진을 찍고 장소명·기분까지 다 채운 뒤 저장 버튼에서 처음 거절당한다 — 되돌릴 것이
+    가장 많은 자리다. (한도는 캐시된 값이라 틀릴 수 있고, 그때는 저장 시 서버 429 가 잡는다.)
+  */
+  const handleRecordPlace = () => {
+    if (quota.isFull) {
+      showToast(
+        `오늘은 나무를 ${quota.limit}그루까지 심었어요.\n내일 다시 심을 수 있어요.`,
+        'info',
+      );
+      return;
+    }
+
+    navigate(ROUTES.camera);
+  };
+
   const handleDelete = () => {
     if (!activeId) return;
     deleteTree.mutate(activeId);
@@ -197,6 +221,8 @@ export function HomePage() {
       */}
       <TopBanner
         placeCount={markers.length}
+        dailyLimitReached={quota.isFull}
+        dailyLimit={quota.limit}
         nearby={
           nearbyTrees && {
             placeName: nearbyTrees.label,
@@ -213,11 +239,18 @@ export function HomePage() {
         노치 기기에서 탭바가 안전영역만큼 높아져 버튼이 가려진다.
         left-1/2 + -translate-x-1/2 로 화면 가로 중앙에 정렬한다.
         흰 배경 + GREEN-500(#788F4A) 아이콘 — 흰 위 3.6:1 로 그래픽 요소(3:1) 충족.
+
+        ⚠️ 하루 한도를 다 채웠을 때 **`disabled` 를 쓰지 않는다.** 진짜 `disabled` 는 탭이
+        아예 안 먹어서 왜 못 누르는지 말할 기회가 없다 — 흐려진 버튼만 남고 이유는 어디에도
+        없게 된다. `aria-disabled` 로 상태만 알리고, 탭은 받아서 토스트로 답한다.
       */}
       <button
-        onClick={() => navigate(ROUTES.camera)}
+        onClick={handleRecordPlace}
         aria-label="장소 기록하기"
-        className="bottom-nav absolute left-1/2 z-20 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full bg-white text-pictree-500 shadow-lg ring-1 ring-black/5 transition active:scale-95"
+        aria-disabled={quota.isFull}
+        className={`bottom-nav absolute left-1/2 z-20 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full bg-white text-pictree-500 shadow-lg ring-1 ring-black/5 transition active:scale-95 ${
+          quota.isFull ? 'opacity-60' : ''
+        }`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

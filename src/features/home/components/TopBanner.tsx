@@ -10,11 +10,16 @@ type NearbyContent = {
 type TopBannerProps = {
   placeCount: number;
   nearby?: NearbyContent | null;
+  /** 오늘 하루 한도를 다 채웠는지. 아래 카메라 버튼이 흐려진 이유를 이 카드가 말한다. */
+  dailyLimitReached?: boolean;
+  /** 하루 한도(그루). 문구에 숫자를 박지 않으려고 받는다. */
+  dailyLimit?: number;
 };
 
 /**
  * 홈 상단에 뜨는 안내 카드. 평소에는 "나의 여행 발자국"으로 기록한 장소 수를 보여주고,
  * 반경 50m 안에 내 나무가 있으면(`nearby`) **같은 자리에서 그 안내로 갈아탄다.**
+ * 오늘 하루 한도를 다 채웠으면(`dailyLimitReached`) 그것도 이 자리에서 알린다.
  *
  * 카드를 하나 더 얹지 않는 이유: 안내 카드를 따로 띄우면 이 배너 바로 아래에 놓여 지도를
  * 두 겹으로 가린다. 둘은 동시에 급하지 않으니 자리를 나눠 쓰는 편이 낫다 — 근처에 나무가
@@ -27,7 +32,12 @@ type TopBannerProps = {
  * (styles.css)이고 이 카드 아래에 놓이는 것들이 같은 변수를 보고 있어서, 한쪽만 키우면
  * 그것들이 카드 밑에 깔린다. 버튼은 h-8(32px)이라 아이콘 h-9(36px) 줄 안에 들어온다.
  */
-export function TopBanner({ placeCount, nearby }: TopBannerProps) {
+export function TopBanner({
+  placeCount,
+  nearby,
+  dailyLimitReached = false,
+  dailyLimit,
+}: TopBannerProps) {
   /*
     사라지는 중에도 읽을 문구가 있어야 해서 마지막 안내를 붙들어 둔다.
     `nearby` 가 null 이 되는 순간 문구까지 같이 사라지면 페이드아웃할 것이 없어
@@ -36,6 +46,15 @@ export function TopBanner({ placeCount, nearby }: TopBannerProps) {
   const lastNearby = useRef<NearbyContent | null>(null);
   if (nearby) lastNearby.current = nearby;
   const nearbyText = nearby ?? lastNearby.current;
+
+  /*
+    세 문구 중 또렷한 것은 하나뿐이다.
+
+    **근처 안내가 한도 안내보다 앞이다.** 순서를 뒤집으면 안 되는 이유: 한도는 그날 남은
+    시간 내내 참이라, 위에 두면 한도를 채운 사람은 근처에 나무가 있어도 그 안내를 영영 못
+    본다. 근처 안내는 지나가는 동안만 뜨고 누를 것(보기)이 있다 — 짧고 행동 가능한 쪽이 먼저다.
+  */
+  const active = nearby ? 'nearby' : dailyLimitReached ? 'limit' : 'default';
 
   return (
     <div className="top-banner absolute inset-x-4 z-30 flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
@@ -55,9 +74,9 @@ export function TopBanner({ placeCount, nearby }: TopBannerProps) {
       <div className="grid min-w-0 flex-1">
         <div
           className={`banner-line col-start-1 row-start-1 flex min-w-0 flex-col leading-tight ${
-            nearby ? 'banner-line-out' : ''
+            active === 'default' ? '' : 'banner-line-out'
           }`}
-          aria-hidden={Boolean(nearby)}
+          aria-hidden={active !== 'default'}
         >
           <span className="truncate text-[15px] font-medium text-neutral-900">
             나의 여행 발자국
@@ -67,12 +86,33 @@ export function TopBanner({ placeCount, nearby }: TopBannerProps) {
           </span>
         </div>
 
+        {/*
+          한도 문구는 `dailyLimitReached` 가 켜져 있는 동안만 존재한다 — 위 근처 안내와 달리
+          붙들어 두지 않는다. 꺼지는 경우가 자정을 넘겼거나 나무를 지웠을 때뿐이라
+          (하루에 있어도 한 번) 페이드아웃할 것을 남겨 둘 이유가 없다.
+        */}
+        {dailyLimitReached && (
+          <div
+            className={`banner-line col-start-1 row-start-1 flex min-w-0 flex-col leading-tight ${
+              active === 'limit' ? '' : 'banner-line-out'
+            }`}
+            aria-hidden={active !== 'limit'}
+          >
+            <span className="truncate text-[15px] font-medium text-neutral-900">
+              오늘 심을 수 있는 나무를 다 심었어요
+            </span>
+            <span className="truncate text-[13px] text-neutral-500">
+              {dailyLimit ? `하루 ${dailyLimit}그루까지 · ` : ''}내일 다시 심을 수 있어요.
+            </span>
+          </div>
+        )}
+
         {nearbyText && (
           <div
             className={`banner-line col-start-1 row-start-1 flex min-w-0 flex-col leading-tight ${
-              nearby ? '' : 'banner-line-out'
+              active === 'nearby' ? '' : 'banner-line-out'
             }`}
-            aria-hidden={!nearby}
+            aria-hidden={active !== 'nearby'}
           >
             <span className="truncate text-[15px] font-medium text-neutral-900">
               근처에 심어둔 나무가 있어요
