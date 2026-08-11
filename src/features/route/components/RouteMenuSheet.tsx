@@ -5,7 +5,6 @@ import { Route } from '../types/route';
 interface RouteMenuSheetProps {
   route: Route;
   onClose: () => void;
-  onMapView: () => void;
   onPhotoGallery: () => void;
   onAIBlog: () => void;
   onRename: () => void;
@@ -31,16 +30,6 @@ const iconBase = {
   strokeLinejoin: 'round' as const,
   'aria-hidden': true,
 };
-
-/** 지도에서 보기(solar:map-linear) */
-function MapIcon({ className }: { className?: string }) {
-  return (
-    <svg {...iconBase} className={className}>
-      <path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5L9 4Z" />
-      <path d="M9 4v13.5M15 6.5V20" />
-    </svg>
-  );
-}
 
 /** 사진 앨범(tabler:photo) */
 function PhotoIcon({ className }: { className?: string }) {
@@ -159,9 +148,13 @@ function MenuRow({ icon, title, desc, onClick, danger = false }: MenuRowProps) {
  * 동선 하나에 걸 수 있는 동작을 모은 시트 — `/journey` 목록의 더보기(⋯)로 연다.
  *
  * **동선에 거는 동작은 전부 여기 있다.** 삭제만 페이지 상단의 빨간 휴지통 아이콘으로 따로
- * 서 있었는데, 그러면 다섯 중 넷은 시트를 열어야 보이고 하나는 목록 옆에 상시로 떠 있어서
+ * 서 있었는데, 그러면 나머지는 시트를 열어야 보이고 하나는 목록 옆에 상시로 떠 있어서
  * **가장 위험한 것이 가장 누르기 쉬운 자리**를 차지한 셈이었다. 지금은 시트 맨 아래,
  * 구분선 아래 ERROR 줄이다(iOS 액션시트와 같은 자리).
+ *
+ * ⚠️ 반대로 **`지도에서 보기` 는 여기서 나갔다**(`RouteViewPicker`). 그건 동선에 무언가를
+ * 하는 동작이 아니라 **같은 동선을 다른 방식으로 보는 일**이라, 로드맵과 나란히 고를 수
+ * 있어야 대등해진다. 시트에 남겨두면 한쪽은 화면에 떠 있고 한쪽은 메뉴 속에 있게 된다.
  *
  * 겉모습은 **동선 만들기 ②의 시트(`RoutePlaceStrip`)를 따른다** — 흰 바닥,
  * `rounded-t-[20px]`, 위로 뜨는 그림자, 40×4px 회색 그립. 크림 바닥이었던 이유는 없다:
@@ -179,7 +172,6 @@ function MenuRow({ icon, title, desc, onClick, danger = false }: MenuRowProps) {
 export function RouteMenuSheet({
   route,
   onClose,
-  onMapView,
   onPhotoGallery,
   onAIBlog,
   onRename,
@@ -209,13 +201,6 @@ export function RouteMenuSheet({
 
       {/* 동작 묶음. 구분선은 글자 시작점에 맞춰 들여쓴다. */}
       <div className="mt-4 flex flex-col">
-        <MenuRow
-          icon={<MapIcon className="size-[22px]" />}
-          title="지도에서 보기"
-          desc="동선을 지도 위에서 확인해요"
-          onClick={onMapView}
-        />
-        <Divider />
         <MenuRow
           icon={<PhotoIcon className="size-[22px]" />}
           title="사진 앨범"

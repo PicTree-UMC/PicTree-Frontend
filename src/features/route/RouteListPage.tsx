@@ -10,16 +10,32 @@ import { RouteTray } from './components/RouteTray';
 import { RouteListSkeleton } from './components/RouteListSkeleton';
 import { RouteIllustration } from './components/RouteIllustration';
 import { SavedRouteRoadmap } from './components/RouteRoadmap';
+import { RouteInlineMap } from './components/RouteInlineMap';
+import { RouteViewPicker, type RouteViewMode } from './components/RouteViewPicker';
 import { ROUTES, journeyViewPath } from '../../shared/constants/routes';
 import { DeleteConfirmModal } from '../../shared/components/DeleteConfirmModal';
 
-/** 더보기(⋯) 아이콘 — 선택된 동선의 액션 시트를 연다. */
-function MoreIcon({ className }: { className?: string }) {
+/**
+ * 메뉴 아이콘 — 선택된 동선의 액션 시트를 연다(lucide:list-sort-descending).
+ *
+ * **점 셋(⋯)이었다.** 인스타그램 게시물 헤더가 쓰는 계단형 줄 아이콘으로 바꿨다 — 점 셋은
+ * '더 있다'까지만 말하는데, 이 글리프는 목록이 딸려 나온다는 것까지 말한다.
+ * 흰 원 + 초록 테두리를 두르고 있었지만 **면을 없앴다**: 크림 페이지에서 유일하게 테두리를
+ * 두른 요소라 옆의 피커보다 먼저 눈에 걸렸다. 지금은 회색 글리프 하나다.
+ */
+function MenuIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
-      <circle cx="5" cy="12" r="1.8" />
-      <circle cx="12" cy="12" r="1.8" />
-      <circle cx="19" cy="12" r="1.8" />
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 5h18M3 12h12M3 19h6" />
     </svg>
   );
 }
@@ -43,6 +59,13 @@ export function RouteListPage() {
   const [pendingSelectId, setPendingSelectId] = useState<number | null>(
     navigationState?.selectedRouteId ?? null,
   );
+  /**
+   * 고른 동선을 로드맵으로 볼지 지도로 볼지. **동선을 바꿔도 유지된다**(피커 주석 참고).
+   *
+   * 지도는 좌표가 필요해 상세를 따로 받아야 하므로(`RouteInlineMap`), 로드맵으로 두는
+   * 동안에는 그 요청이 아예 나가지 않는다 — 기본값이 로드맵인 이유이기도 하다.
+   */
+  const [viewMode, setViewMode] = useState<RouteViewMode>('roadmap');
   const [showMenuSheet, setShowMenuSheet] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -151,35 +174,54 @@ export function RouteListPage() {
             {selectedRoute && (
               <>
                 {/*
-                  선택 동선 메타 + 더보기.
+                  선택 동선 메타 + 보기 피커 + 메뉴.
 
-                  **삭제 버튼이 여기 있었다.** 동선에 걸 수 있는 동작 다섯 중 넷은 시트를
-                  열어야 보이는데 삭제만 목록 옆에 상시로 떠 있어서, 가장 위험한 것이 가장
-                  누르기 쉬운 자리를 차지하고 있었다. 지금은 시트 맨 아래 ERROR 줄이다.
+                  **삭제 버튼이 여기 있었다.** 동선에 거는 다른 동작은 전부 시트를 열어야
+                  보이는데 삭제만 목록 옆에 상시로 떠 있어서, 가장 위험한 것이 가장 누르기
+                  쉬운 자리를 차지하고 있었다. 지금은 시트 맨 아래 ERROR 줄이다.
+
+                  반대로 **`지도에서 보기` 는 시트에서 나와 이 줄의 피커가 됐다** — 그건
+                  동선에 무언가를 하는 게 아니라 같은 동선을 다른 방식으로 보는 일이라,
+                  로드맵과 나란히 서야 둘이 대등해진다.
 
                   장소 수는 11px light 였다 — 최소 13px 이고 굵기는 regular·medium 만 쓴다(§2).
                 */}
-                <div className="mt-5 flex items-center justify-between gap-2">
+                <div className="mt-5 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-[13px] font-medium text-ink">{selectedRoute.date}</p>
                     <p className="text-[13px] text-ink-muted">{selectedRoute.placeCount}개 장소</p>
                   </div>
-                  <button
-                    onClick={() => {
-                      setAnimateMenuSheet(true);
-                      setShowMenuSheet(true);
-                    }}
-                    aria-label="동선 더보기"
-                    className="flex size-9 shrink-0 items-center justify-center rounded-full border border-pictree-300 bg-white text-ink"
-                  >
-                    <MoreIcon className="size-5" />
-                  </button>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    {/* 보기 방식은 동선을 바꿔도 유지한다 — 지도로 훑어보던 사람은 다음
+                        동선도 지도로 보려던 참이다. 되돌리면 두 번째 동선부터 매번 다시 누른다. */}
+                    <RouteViewPicker value={viewMode} onChange={setViewMode} />
+                    <button
+                      onClick={() => {
+                        setAnimateMenuSheet(true);
+                        setShowMenuSheet(true);
+                      }}
+                      aria-label="동선 메뉴"
+                      className="flex size-9 items-center justify-center rounded-full text-ink-muted active:bg-cream-sub"
+                    >
+                      <MenuIcon className="size-[22px]" />
+                    </button>
+                  </div>
                 </div>
 
-                {/* 로드맵: 장소 이동을 사진 노드 + 점선으로 표현.
-                    key 로 동선이 바뀔 때마다 등장 애니메이션을 다시 재생한다. */}
+                {/* 로드맵 ↔ 지도. 피커가 이 자리를 갈아끼운다.
+                    로드맵은 key 로 동선이 바뀔 때마다 등장 애니메이션을 다시 재생한다.
+                    지도도 key 를 받는다 — 동선이 바뀌면 지도 인스턴스를 새로 세워, 이전
+                    동선을 보던 배율·중심이 남아 있지 않게 한다. */}
                 <div className="mt-6">
-                  <SavedRouteRoadmap key={selectedRoute.id} route={selectedRoute} />
+                  {viewMode === 'roadmap' ? (
+                    <SavedRouteRoadmap key={selectedRoute.id} route={selectedRoute} />
+                  ) : (
+                    <RouteInlineMap
+                      key={selectedRoute.id}
+                      routeId={selectedRoute.id}
+                      onExpand={() => navigate(journeyViewPath(selectedRoute.id))}
+                    />
+                  )}
                 </div>
               </>
             )}
@@ -192,7 +234,6 @@ export function RouteListPage() {
           route={selectedRoute}
           onClose={() => setShowMenuSheet(false)}
           animateIn={animateMenuSheet}
-          onMapView={() => navigate(journeyViewPath(selectedRoute.id))}
           onPhotoGallery={() => {
             setShowMenuSheet(false);
             setShowPhotoAlbum(true);
