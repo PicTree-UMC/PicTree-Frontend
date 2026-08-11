@@ -37,7 +37,9 @@ export function DeleteIconButton({ label, onClick, className = '' }: DeleteIconB
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`grid size-10 shrink-0 place-items-center rounded-full text-error active:bg-red-50 ${className}`}
+      // 글자는 토큰(`text-error`)인데 눌림 배경만 Tailwind 기본 연빨강(#FEF2F2)이었다 — canonical 은
+      // `error-surface`(#FEF7F7)다. 한 클래스 안에서 토큰과 팔레트 이름이 섞여 있던 자리다.
+      className={`grid size-10 shrink-0 place-items-center rounded-full text-error active:bg-error-surface ${className}`}
     >
       <TrashIcon size={21} />
     </button>
