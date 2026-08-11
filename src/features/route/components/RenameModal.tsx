@@ -28,7 +28,9 @@ function PenIcon({ className }: { className?: string }) {
 }
 
 /**
- * 동선 이름 변경 모달. 공용 Modal 대신 시안 전용 마크업으로 구성한다.
+ * 동선 이름 변경 모달. 시안 전용 마크업이다 — 공용 `DeleteConfirmModal` 은 파괴적 확인
+ * 전용이라 입력을 받지 않는다(종전엔 여기서 안 쓴다고 적어 둔 상대가 공용 `Modal` 이었는데,
+ * 그건 마지막 사용처가 없어져 지웠다).
  * 열림/닫힘은 부모의 조건부 렌더로 제어(마운트 = 열림).
  */
 export function RenameModal({ currentTitle, onClose, onConfirm }: RenameModalProps) {
