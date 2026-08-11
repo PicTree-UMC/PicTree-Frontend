@@ -16,12 +16,23 @@ export function ToneStep({ toneId, onSelect, onNext }: ToneStepProps) {
       <div className="mt-4 flex flex-col gap-3">
         {BLOG_TONES.map((tone) => {
           const selected = tone.id === toneId;
+
+          /*
+            카드의 `active:scale-[0.99]` 는 눌린 티를 내려는 것이다 — 안드로이드 크로미움은
+            스크롤 판정이 끝날 때까지 기본 탭 하이라이트와 `:active` 를 미뤄서, 표시가 하나도
+            없으면 손을 뗄 때까지 아무 반응이 없다(갤럭시 제보). 특히 이 화면은 진입 시 추천
+            어체가 이미 켜져 있어(useBlogCreate 의 suggestToneFromMoods) 그걸 다시 누르면
+            화면이 문자 그대로 안 바뀐다.
+
+            1단계 카드(RouteStep)와 같은 값이고, `transition-colors` 로는 스케일이 안 물어서
+            `transition` 으로 넓혔다.
+          */
           return (
             <button
               key={tone.id}
               type="button"
               aria-pressed={selected}
-              className={`rounded-xl border-2 bg-white px-[18px] py-4 text-left transition-colors ${selected ? 'border-pictree-700' : 'border-pictree-100'}`}
+              className={`rounded-xl border-2 bg-white px-[18px] py-4 text-left transition active:scale-[0.99] ${selected ? 'border-pictree-700' : 'border-pictree-100'}`}
               onClick={() => onSelect(tone.id)}
             >
               <div className="flex items-center justify-between">
