@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Chip, NavBar, Skeleton } from "@/shared/components";
+import { Chip, CloseButton, NavBar, Skeleton } from "@/shared/components";
 import { useFavorites, useRemoveFavorites } from "./hooks/useFavorites";
 import type { FavoritePlace } from "./types/favorite";
 import { FavoriteGrid } from "./components/FavoriteGrid";
@@ -110,16 +110,7 @@ export function FavoritesPage() {
              헤더 첫 칸이 흔들리지 않게. */
           leading={
             selecting ? (
-              <button
-                type="button"
-                onClick={exitSelecting}
-                aria-label="선택 취소"
-                className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-ink shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
-              >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-                  <path d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <CloseButton onClick={exitSelecting} aria-label="선택 취소" />
             ) : undefined
           }
           onBack={() => window.history.back()}

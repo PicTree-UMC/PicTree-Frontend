@@ -2,6 +2,7 @@
 export { Button } from './Button';
 export { PrimaryCta } from './PrimaryCta';
 export { BackButton } from './BackButton';
+export { CloseButton } from './CloseButton';
 export { NavBar } from './NavBar';
 export { Chip } from './Chip';
 export type { ChipTone, ChipSize } from './Chip';
