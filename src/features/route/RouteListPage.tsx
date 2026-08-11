@@ -184,13 +184,15 @@ export function RouteListPage() {
                   동선에 무언가를 하는 게 아니라 같은 동선을 다른 방식으로 보는 일이라,
                   로드맵과 나란히 서야 둘이 대등해진다.
 
-                  장소 수는 11px light 였다 — 최소 13px 이고 굵기는 regular·medium 만 쓴다(§2).
+                  **`n개 장소` 줄은 뺐다.** 13px 두 줄이 38px 짜리 피커 옆에서 잔글씨로 눌렸고,
+                  장소 수는 바로 아래 로드맵이 번호로, 지도가 마커로 이미 세어 보여준다
+                  (숫자 자체가 필요하면 메뉴 시트 머리에 날짜와 함께 남아 있다).
+                  한 줄이 된 날짜는 13 → 17px medium 으로 올렸다.
                 */}
                 <div className="mt-5 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-medium text-ink">{selectedRoute.date}</p>
-                    <p className="text-[13px] text-ink-muted">{selectedRoute.placeCount}개 장소</p>
-                  </div>
+                  {/* 여러 날에 걸친 동선은 '2026년 3월 31일 ~ 4월 1일' 처럼 길어진다. 잘라내지
+                      않고 두 줄로 흐르게 둔다 — 끝을 자르면 하필 '언제까지'가 사라진다. */}
+                  <p className="min-w-0 text-[17px] font-medium text-ink">{selectedRoute.date}</p>
                   <div className="flex shrink-0 items-center gap-1.5">
                     {/* 보기 방식은 동선을 바꿔도 유지한다 — 지도로 훑어보던 사람은 다음
                         동선도 지도로 보려던 참이다. 되돌리면 두 번째 동선부터 매번 다시 누른다. */}
