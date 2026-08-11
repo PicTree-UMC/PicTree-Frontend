@@ -5,12 +5,7 @@ import { ROUTES, paymentDetailPath } from '@/shared/constants/routes';
 
 import { usePayments } from './hooks/usePayments';
 import { formatPrice } from './lib/planDisplay';
-import {
-  formatPaymentDate,
-  getPaymentDate,
-  getPaymentStatusBadge,
-  isRefunded,
-} from './lib/paymentDisplay';
+import { formatPaymentDate, getPaymentDate } from './lib/paymentDisplay';
 import type { PaymentDto } from './types/payment';
 
 /** 상세로 들어가는 꺾쇠. 앱 안에서 이동하므로 대각선이 아니다. */
@@ -39,9 +34,6 @@ function ChevronIcon() {
  * 상세로 옮겼다 — 거기서는 자기 자리를 갖는다.
  */
 function PaymentRow({ payment, onOpen }: { payment: PaymentDto; onOpen: () => void }) {
-  const badge = getPaymentStatusBadge(payment.status);
-  const refunded = isRefunded(payment.status);
-
   return (
     <li className="border-b border-line-soft last:border-b-0">
       <button
@@ -67,22 +59,14 @@ function PaymentRow({ payment, onOpen }: { payment: PaymentDto; onOpen: () => vo
 
         </div>
 
-        <div className="flex shrink-0 flex-col items-end gap-1.5">
-          {/*
-            취소·실패 건은 금액에 취소선을 긋는다 — 숫자만 두면 빠져나간 돈으로 읽힌다
-            (`isRefunded` 주석). 배지가 이미 말하지만 금액이 먼저 눈에 든다.
-          */}
-          <span
-            className={`text-[15px] font-medium ${
-              refunded ? 'text-ink-muted line-through' : 'text-ink'
-            }`}
-          >
-            {formatPrice(payment.amount)}
-          </span>
-          <span className={`rounded-full px-2 py-[1px] text-[13px] font-medium ${badge.className}`}>
-            {badge.label}
-          </span>
-        </div>
+        {/*
+          ⚠️ **상태 배지를 두지 않는다.** 목록이 완료 건만 부르므로(`getMyPayments`) 모든 줄이
+          같은 말을 하게 되고, 줄마다 붙은 같은 배지는 정보가 아니라 잡음이다. 대기·실패·취소를
+          다시 보여주게 되면 그때 배지가 다시 뜻을 갖는다.
+        */}
+        <span className="shrink-0 text-[15px] font-medium text-ink">
+          {formatPrice(payment.amount)}
+        </span>
 
         <ChevronIcon />
       </button>

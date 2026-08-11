@@ -16,13 +16,12 @@
 
 import axios from 'axios';
 import { httpClient } from '@/shared/lib/httpClient';
+import { PAYMENT_STATUS } from '../types/payment';
 import type { ApiResponse } from '@/shared/types/api';
 import type {
   BillingKeyDeactivateResult,
   BillingKeyDto,
   ChangeSubscriptionPlanRequest,
-  CancelPaymentRequest,
-  CancelPaymentResult,
   PaymentDto,
   PaymentListData,
   CustomerKeyResponse,
@@ -170,14 +169,22 @@ export const cancelPlanChange = async (
 export const PAYMENT_PAGE_SIZE = 20;
 
 /**
- * GET /payments — 내 결제 내역 한 페이지.
+ * GET /payments — 내 결제 내역 한 페이지. **완료된 결제만.**
+ *
+ * ⚠️ **거르는 일을 서버에 맡긴다**(`status` 쿼리). 프론트에서 받아 놓고 걸러내면 한 페이지
+ * 20건 중 몇 건만 남아 화면이 들쭉날쭉해지고, `total`·`totalPages` 가 걸러내기 전 수라서
+ * '더 보기' 가 있는데 눌러도 아무것도 안 늘어나는 상태가 생긴다. 서버는 같은 `where` 로
+ * 목록과 개수를 세므로 페이징이 맞는다.
+ *
+ * 대기·실패·취소 건을 안 보여주는 것은 화면 결정이다(회의) — 사용자가 이 화면에서 할 수
+ * 있는 일이 '낸 돈을 확인하는 것' 뿐이라, 완료되지 않은 시도는 답할 수 없는 질문만 만든다.
  *
  * ⚠️ `page` 는 **1-based** 다(`/trees` 와 같다). `items` 가 `null` 로 올 수 있어 호출부에서
  * 빈 배열로 받는다.
  */
 export const getMyPayments = async (page: number): Promise<PaymentListData> => {
   const { data } = await httpClient.get<ApiResponse<PaymentListData>>('/payments', {
-    params: { page, size: PAYMENT_PAGE_SIZE },
+    params: { page, size: PAYMENT_PAGE_SIZE, status: PAYMENT_STATUS.done },
   });
 
   return data.data;
@@ -186,28 +193,6 @@ export const getMyPayments = async (page: number): Promise<PaymentListData> => {
 /** GET /payments/{id} — 결제 1건. 목록 항목과 같은 모양이다. */
 export const getMyPayment = async (paymentId: number): Promise<PaymentDto> => {
   const { data } = await httpClient.get<ApiResponse<PaymentDto>>(`/payments/${paymentId}`);
-
-  return data.data;
-};
-
-/**
- * POST /payments/{id}/cancel — 결제 취소(환불).
- *
- * ⚠️ **구독은 건드리지 않는다.** 서버는 결제 행의 상태만 `CANCELED` 로 바꾼다
- * (`updatePaymentAfterCancel`) — 이용 중인 구독은 그대로 남는다. 화면 문구가 이걸
- * 말해야 한다("환불되고 구독은 유지된다").
- *
- * 이미 취소된 건은 다시 불러도 성공으로 돌아온다(서버가 멱등하게 받는다).
- * 취소 불가 상태면 `PAYMENT409`.
- */
-export const cancelPayment = async (
-  paymentId: number,
-  body: CancelPaymentRequest,
-): Promise<CancelPaymentResult> => {
-  const { data } = await httpClient.post<ApiResponse<CancelPaymentResult>>(
-    `/payments/${paymentId}/cancel`,
-    body,
-  );
 
   return data.data;
 };

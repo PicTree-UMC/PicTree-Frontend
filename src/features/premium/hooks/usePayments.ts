@@ -1,11 +1,10 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
-import { cancelPayment, getMyPayment, getMyPayments } from '../api/paymentApi';
-import type { PaymentDto } from '../types/payment';
+import { getMyPayment, getMyPayments } from '../api/paymentApi';
 import { paymentKeys } from './useMySubscription';
 
 /**
- * 내 결제 내역. `GET /payments`
+ * 내 결제 내역(완료 건만). `GET /payments?status=DONE`
  *
  * ⚠️ **`paymentKeys.me`(구독 상태)와 다른 키다.** 이름이 둘 다 결제지만 성격이 반대다 —
  * 구독은 "지금 어떤 상태인가" 라 내가 바꿀 때만 변하고, 내역은 **한 번 남으면 안 바뀌는
@@ -44,38 +43,3 @@ export const usePaymentDetail = (paymentId: number) =>
     enabled: Number.isInteger(paymentId) && paymentId > 0,
     staleTime: 1000 * 60 * 5,
   });
-
-/** 화면에서 보내는 취소 사유. 자유 입력을 받지 않는 이유는 `CancelPaymentRequest` 주석. */
-const CANCEL_REASON = '사용자 요청으로 인한 결제 취소';
-
-/**
- * 결제 취소(환불).
- *
- * ⚠️ **낙관적 갱신을 하지 않는다.** 취소는 결제사(토스)까지 다녀오는 일이라 실패가
- * 드물지 않고(`PAYMENT502`), 돈이 걸린 화면에서 "취소됨" 을 먼저 보여줬다가 되돌리면
- * 사용자는 무엇이 참인지 알 수 없게 된다. 서버가 확인해 준 뒤에 바뀐다.
- *
- * ⚠️ **`paymentKeys.me`(구독)는 깨지 않는다.** 서버는 결제 행의 상태만 바꾸고 구독은
- * 그대로 둔다(`cancelPayment` 주석) — 여기서 구독까지 다시 부르면 "환불하면 구독도
- * 끊긴다" 는 잘못된 기대를 코드가 먼저 갖게 된다.
- */
-export const useCancelPayment = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (paymentId: number) =>
-      cancelPayment(paymentId, { cancelReason: CANCEL_REASON }),
-
-    onSuccess: (_result, paymentId) => {
-      /*
-        취소 응답(`CancelPaymentResult`)은 목록 항목과 모양이 달라 캐시에 그대로 못 넣는다.
-        상태만 맞춰 두고(그 자리에서 배지가 바로 바뀐다) 정확한 값은 무효화로 다시 받는다.
-      */
-      queryClient.setQueryData<PaymentDto>(paymentKeys.detail(paymentId), (payment) =>
-        payment ? { ...payment, status: 'CANCELED' } : payment,
-      );
-      queryClient.invalidateQueries({ queryKey: paymentKeys.detail(paymentId) });
-      queryClient.invalidateQueries({ queryKey: paymentKeys.history });
-    },
-  });
-};
