@@ -93,8 +93,9 @@ function SaveButton({
  * 있다'를 말하지만, 고칠 것이 셋뿐인 화면에서는 굳이 말할 필요가 없고 윗줄 제목처럼 읽히는
  * 편이 낫다. ③ 이 고치는 값(이름)과 읽는 값(장소·날짜)을 같은 띠로 세우는 것도 그대로 따랐다.
  *
- * ⚠️ **한줄평이 16px 인 이유는 iOS 다** — 그보다 작으면 사파리가 포커스할 때 화면을 확대해
- * 버린다. 본문 15px 규칙보다 이쪽이 우선인 자리다(③ 의 이름 입력도 같은 이유로 16px).
+ * 입력 글자는 앱 관례대로 **15px** 이다. iOS 사파리가 16px 미만 입력에 포커스할 때 화면을
+ * 확대하는 문제는 `index.html` 의 뷰포트 메타(`maximum-scale=1.0, user-scalable=no`)가 이미
+ * 막고 있다 — ⚠️ **그 한 줄을 지우면 이 앱의 15px 입력이 전부 확대된다.**
  *
  * ⚠️ **레퍼런스와 다른 곳:** 거기 행은 전부 다음 화면으로 가는 길(chevron)인데, 기분은
  * 이모지 14개라 화면을 하나 더 팔 물건이 아니다. 띠 안에 그리드를 그대로 펼친다 — 접어 두면
@@ -224,7 +225,7 @@ export function TimelineEditView({ record, isSaving = false, onClose, onSave }: 
             rows={1}
             aria-label="한줄평"
             placeholder="한줄평 추가..."
-            className="w-full resize-none overflow-hidden bg-transparent text-base leading-6 text-ink outline-none placeholder:text-ink-disabled"
+            className="w-full resize-none overflow-hidden bg-transparent text-[15px] leading-6 text-ink outline-none placeholder:text-ink-disabled"
           />
         </div>
 
