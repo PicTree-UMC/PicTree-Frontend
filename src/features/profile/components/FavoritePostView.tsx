@@ -1,6 +1,7 @@
 import { createPortal } from "react-dom";
 
 import { FavoriteHeartButton, NavBar, PhotoPost } from "@/shared/components";
+import { formatKoreanDate } from "@/shared/lib/date";
 import type { FavoritePlace } from "../types/favorite";
 
 interface Props {
@@ -10,13 +11,13 @@ interface Props {
   onRemove: () => void;
 }
 
-/** `"2026-03-30"` → `"2026년 3월 30일"`. 모르는 꼴이면 원본 그대로 보여 준다. */
-const formatDate = (value: string): string => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
-};
+/**
+ * `"2026-03-30"` → `"2026년 3월 30일"`. 모르는 꼴이면 원본 그대로 보여 준다.
+ *
+ * ⚠️ 계산은 `shared/lib/date` 가 한다(이슈 #294). 여기 있던 로컬 구현은 `new Date()` 로
+ * 읽어서, 기기가 UTC 보다 뒤인 지역에 있으면 **담아 둔 날짜가 하루 앞으로 찍혔다.**
+ */
+const formatDate = (value: string): string => formatKoreanDate(value) ?? value;
 
 /**
  * 격자에서 타일을 눌렀을 때 여는 게시물 화면.
