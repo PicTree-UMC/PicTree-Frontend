@@ -146,14 +146,23 @@ export const createRoute = async (routeName: string, treeIds: number[]): Promise
   return unwrapApiResponse(data).routeId;
 };
 
-/** 동선 1건 삭제. `DELETE /routes/{routeId}` (노드도 함께 삭제된다) */
+/**
+ * 동선 1건 삭제. `DELETE /routes/{routeId}` (노드도 함께 삭제된다)
+ *
+ * ⚠️ **본문을 안 쓰는데도 응답을 받는다.** 값이 필요해서가 아니라 `success` 를 보기
+ * 위해서다 — 안 받으면 200 + `success:false` 를 확인할 방법이 아예 없다(이슈 #308).
+ */
 export const deleteRoute = async (id: number): Promise<void> => {
-  await httpClient.delete(`/routes/${id}`);
+  const { data } = await httpClient.delete<ApiResponse<null>>(`/routes/${id}`);
+  unwrapApiResponse(data);
 };
 
-/** 동선 이름 변경. `PATCH /routes/{routeId}` */
+/** 동선 이름 변경. `PATCH /routes/{routeId}` (응답을 받는 이유는 `deleteRoute` 주석) */
 export const renameRoute = async (id: number, title: string): Promise<void> => {
-  await httpClient.patch(`/routes/${id}`, { routeName: title });
+  const { data } = await httpClient.patch<ApiResponse<null>>(`/routes/${id}`, {
+    routeName: title,
+  });
+  unwrapApiResponse(data);
 };
 
 /**
