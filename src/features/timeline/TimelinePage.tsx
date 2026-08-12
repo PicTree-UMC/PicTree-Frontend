@@ -12,6 +12,7 @@ import { TimelineSkeleton } from "./components/TimelineSkeleton";
 import { TimelineEditView, type TimelineEditValues } from "./components/TimelineEditView";
 import { EmptyTimeline } from "./components/EmptyTimeline";
 import { DeleteConfirmModal, useToast } from "@/shared/components";
+import { usePageScroll } from "@/shared/hooks/usePageScroll";
 
 /** 헤더 오른쪽 검색 버튼의 돋보기 아이콘. */
 function SearchIcon() {
@@ -41,6 +42,26 @@ export function TimelinePage() {
   const updateMutation = useUpdateTimeline();
   const favoriteMutation = useToggleTimelineFavorite();
   const { showToast } = useToast();
+  const { scrollToTop } = usePageScroll();
+
+  /**
+   * 정렬을 바꾸면 **맨 위 — 첫 사진 — 으로 되돌린다.**
+   *
+   * 목록이 통째로 뒤집히는데 스크롤만 그 자리에 남으면, 눌렀을 때 눈에 들어오는 건
+   * 앞뒤 맥락 없는 중간 어딘가다. 순서가 바뀐 게 아니라 사진이 제멋대로 갈린 것처럼
+   * 읽혀서 "정렬이 안 먹는다" 로 느껴진다. 새 순서는 첫 장부터 보여야 뜻이 통한다.
+   *
+   * 맨 위까지만 간다 — 첫 게시물에 딱 맞춰 붙이면 정렬 칩이 화면 밖으로 밀려서,
+   * 방금 누른 것을 되돌릴 방법이 사라진다.
+   *
+   * 이미 켜져 있는 칩을 다시 누른 경우는 거른다. 바뀐 게 없는데 화면만 움직이면
+   * 사용자가 보고 있던 자리를 이유 없이 빼앗는 꼴이다.
+   */
+  const handleSortChange = (next: TimelineSort) => {
+    if (next === sort) return;
+    setSort(next);
+    scrollToTop();
+  };
 
   const [editTarget, setEditTarget] = useState<TimelineRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<TimelineRecord | null>(null);
@@ -152,7 +173,7 @@ export function TimelinePage() {
         {/* 못 불러온 상태·기록이 없는 상태에서는 정렬을 숨긴다 — 줄 세울 목록이 없다. */}
         {!isError && !isEmpty && (
           <div className="flex">
-            <TimelineSortTabs value={sort} onChange={setSort} />
+            <TimelineSortTabs value={sort} onChange={handleSortChange} />
           </div>
         )}
 
@@ -198,6 +219,7 @@ export function TimelinePage() {
             <TimelinePhotoGroup
               key={group.dateKey}
               group={group}
+              sort={sort}
               onToggleFavorite={handleToggleFavorite}
               onEdit={setEditTarget}
               onDelete={setDeleteTarget}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 import { IconFrame } from './IconFrame';
 import { Photo } from './Photo';
@@ -138,6 +138,31 @@ export function PhotoStrip({
     const target = activeIndex * el.clientWidth;
     if (Math.abs(el.scrollLeft - target) > el.clientWidth / 2) el.scrollTo({ left: target });
   }, [activeIndex]);
+
+  /*
+   * 장 목록 자체가 갈리면(순서가 뒤집히거나 장이 드나들면) 스크롤을 지금 장에 다시 박는다.
+   *
+   * ⚠️ **위의 `activeIndex` effect 만으로는 못 잡는다.** 칸을 재사용한 채 자식만 다시
+   * 늘어놓으면 브라우저가 **스냅을 스스로 다시 맞춰서**, 붙잡고 있던 사진을 따라
+   * 스크롤이 혼자 움직인다. 타임라인 정렬을 뒤집을 때 실제로 그랬다 — 4장짜리 하루의
+   * 2번째 장을 보다 정렬을 바꾸면 그 사진이 3번째 자리로 가고 스크롤이 거기까지
+   * 따라가, **머리글은 1번 장소인데 화면엔 3번째 사진**이 남았다(화면에 보이는 칸에서만
+   * 났다 — 안 보이는 칸은 브라우저가 손대지 않는다). `activeIndex` 가 안 바뀌는 경우도
+   * 있어서 그 effect 는 아예 돌지도 않는다.
+   *
+   * 문턱을 두지 않는 이유: 목록이 바뀌는 순간은 손으로 넘기는 중이 아니라, 위 effect 가
+   * 스냅 애니메이션을 끊지 않으려고 반 칸 문턱을 뒀던 사정이 여기엔 없다.
+   *
+   * `useLayoutEffect` 다 — 그린 뒤에 고치면 어긋난 프레임이 한 번 보인다.
+   */
+  const slideOrder = slides.map((slide) => slide.key).join('|');
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el || el.clientWidth === 0) return;
+    el.scrollTo({ left: activeIndex * el.clientWidth });
+    // activeIndex 는 "어디로 되돌릴지" 일 뿐 이 effect 를 부르는 계기가 아니다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slideOrder]);
 
   // 점을 못 그릴 만큼 많으면 알약을 계속 띄워 둔다 — 자리를 알 방법이 그것뿐이다.
   const isDotted = slides.length <= MAX_DOTS;

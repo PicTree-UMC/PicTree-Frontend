@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { PageScrollContext } from '../hooks/usePageScroll';
 import { BottomTabBar } from './BottomTabBar';
 
 /**
@@ -47,7 +48,14 @@ export function Layout() {
     <div className="relative h-full">
       {/* overscroll-none: 스크롤 끝에서 셸로 넘어가며 튕기는 반동 차단 */}
       <div ref={scrollRef} className="h-full overflow-y-auto overscroll-none">
-        <Outlet />
+        {/*
+          라우트 이동 말고 **화면 안의 사정**으로 스크롤을 되돌려야 할 때가 있다 —
+          타임라인 정렬 전환처럼 목록 순서가 통째로 바뀌는 경우다. 그때 페이지가
+          이 컨테이너를 가리킬 수 있게 ref 를 내려보낸다(`usePageScroll`).
+        */}
+        <PageScrollContext.Provider value={scrollRef}>
+          <Outlet />
+        </PageScrollContext.Provider>
       </div>
       {/*
         z-index 는 래퍼에 준다. 탭바 자신에도 z-40 이 있지만 그 요소는
