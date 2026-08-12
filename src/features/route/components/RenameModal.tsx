@@ -45,7 +45,22 @@ export function RenameModal({ currentTitle, onClose, onConfirm }: RenameModalPro
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const handleConfirm = () => onConfirm(newTitle);
+  /*
+    ⚠️ **다듬은 값으로 판단하고, 다듬은 값을 보낸다.** 공백만 남긴 채 '변경' 을 누르면
+    그대로 요청이 나가서 이름이 빈 카드가 목록에 남았다(이슈 #293). 닉네임 시트
+    (`NicknameEditSheet`)·동선 저장(`RouteSavePage`)이 이미 같은 규칙이다.
+
+    길이 상한은 두지 않는다 — 서버 제약이 확인된 바 없고, 목록 카드가 긴 이름을 두 줄로
+    흘리도록 짜여 있다(`RouteListPage` 의 카드 주석이 '이름 변경에 maxLength 가 없다' 는
+    사실에 기대고 있다).
+  */
+  const trimmed = newTitle.trim();
+  const isEmpty = trimmed.length === 0;
+
+  const handleConfirm = () => {
+    if (isEmpty) return;
+    onConfirm(trimmed);
+  };
 
   return createPortal(
     <div
@@ -60,18 +75,32 @@ export function RenameModal({ currentTitle, onClose, onConfirm }: RenameModalPro
       >
         <h2 className="text-xl font-bold tracking-[0.2px] text-ink">이름 변경</h2>
 
-        <div className="mt-4 flex items-center gap-2 rounded-[20px] border-2 border-pictree-500 bg-white px-2.5 py-1.5">
+        <div
+          className={`mt-4 flex items-center gap-2 rounded-[20px] border-2 bg-white px-2.5 py-1.5 ${
+            isEmpty ? 'border-error' : 'border-pictree-500'
+          }`}
+        >
           <PenIcon className="size-[26px] shrink-0 text-ink" />
           <input
             ref={inputRef}
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
+            aria-invalid={isEmpty}
             className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-ink outline-none"
           />
         </div>
 
-        <div className="mt-5 flex justify-center gap-4">
+        {/*
+          안내 자리를 늘 잡아 둔다. 글자를 지우다 안내가 나타나면서 버튼이 아래로 밀리면,
+          마침 그 자리를 누르던 손가락이 '변경' 대신 방금 생긴 여백을 누른다
+          (`NicknameEditSheet` 와 같은 이유).
+        */}
+        <p className="mt-1.5 min-h-[18px] pl-1 text-[13px] leading-[18px] text-error">
+          {isEmpty ? '이름을 입력해주세요.' : ''}
+        </p>
+
+        <div className="mt-3 flex justify-center gap-4">
           <button
             onClick={onClose}
             className="h-[38px] w-[92px] rounded-[12px] bg-line-soft text-base font-semibold tracking-wide text-ink"
@@ -80,7 +109,8 @@ export function RenameModal({ currentTitle, onClose, onConfirm }: RenameModalPro
           </button>
           <button
             onClick={handleConfirm}
-            className="h-[38px] w-[92px] rounded-[12px] bg-cream-sub text-base font-semibold tracking-wide text-ink"
+            disabled={isEmpty}
+            className="h-[38px] w-[92px] rounded-[12px] bg-cream-sub text-base font-semibold tracking-wide text-ink disabled:bg-line disabled:text-ink-disabled"
           >
             변경
           </button>
