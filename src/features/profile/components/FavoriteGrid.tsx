@@ -50,7 +50,7 @@ export function FavoriteGrid({ places, selecting, checked, onOpen, onToggle }: P
               onClick={() => (selecting ? onToggle(place.treeId) : onOpen(place))}
               aria-label={selecting ? place.name : `${place.name} 게시물 보기`}
               aria-pressed={selecting ? isChecked : undefined}
-              className="relative block aspect-[3/4] w-full overflow-hidden bg-[#EDE7D2]"
+              className="relative block aspect-[3/4] w-full overflow-hidden bg-cream-deep"
             >
               {/*
                 사진이 없거나 **못 불러와도** 이름을 대신 채운다. 빈 칸으로 두면 어디였는지

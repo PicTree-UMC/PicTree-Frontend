@@ -23,7 +23,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     // 시안에 데스크톱이 없어 정해진 값이 없다. 앱이 크림(PicTree/100 #FFFCEF) 계열이라
     // 같은 온도의 무채색을 써서 배경이 물러나게 했다. 채도 있는 브랜드색(PicTree/800 등)은
     // 넓은 면적에서 앱과 색이 부딪혀 배경이 앞으로 튄다.
-    <div className="h-full bg-[#efede7]">
+    <div className="h-full bg-shell">
       <div className="mx-auto h-full w-full overflow-y-auto overscroll-none bg-cream sm:max-w-[390px] sm:shadow-2xl">
         {children}
       </div>

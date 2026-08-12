@@ -132,7 +132,7 @@ export function TimelinePage() {
                   type="button"
                   onClick={toggleSearch}
                   aria-label="검색"
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-[#EDE7D2]"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-cream-deep"
                 >
                   <SearchIcon />
                 </button>

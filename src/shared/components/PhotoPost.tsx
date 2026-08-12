@@ -131,7 +131,7 @@ function PhotoStrip({
                 여기서 넘기는 한 장은 각각 다른 기록이라 **읽지도 못한 기록이
                 지나가 버린다.** 사진 여러 장이 한 게시물인 인스타와 다른 점이다.
               */
-              className="relative h-full w-full shrink-0 snap-center snap-always overflow-hidden bg-[#EDE7D2]"
+              className="relative h-full w-full shrink-0 snap-center snap-always overflow-hidden bg-cream-deep"
             >
               <Photo
                 src={slide.url}
@@ -198,7 +198,7 @@ export function PhotoPost({
   return (
     <article>
       <div className="flex items-center gap-2 px-3 pb-2">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#EDE7D2]">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-cream-deep">
           <img src={TREE_AVATAR} alt="" className="h-5 w-5" />
         </span>
         <span className="min-w-0 flex-1 truncate text-[15px] text-ink">{title}</span>
@@ -212,7 +212,7 @@ export function PhotoPost({
           onActiveIndexChange={onActiveIndexChange ?? (() => {})}
         />
       ) : (
-        <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#EDE7D2]">
+        <div className="relative aspect-[4/5] w-full overflow-hidden bg-cream-deep">
           <Photo
             src={imageUrl}
             className="absolute inset-0 h-full w-full object-cover"
