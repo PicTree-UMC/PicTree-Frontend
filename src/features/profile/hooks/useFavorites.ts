@@ -6,11 +6,8 @@ import { useToast } from '@/shared/components';
 import { getFavorites, removeFavorites } from '../api/favoriteApi';
 import { isClientError } from '../lib/profileError';
 import { getFavoriteErrorMessage } from '../lib/favoriteError';
+import { favoriteKeys } from '../lib/favoriteKeys';
 import type { FavoriteList } from '../types/favorite';
-
-export const favoriteKeys = {
-  all: ['favorites'] as const,
-};
 
 /**
  * 즐겨찾기 목록 조회 훅. `GET /trees/favorites`
