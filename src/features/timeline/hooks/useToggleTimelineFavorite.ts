@@ -5,7 +5,7 @@ import { toggleTreeFavorite } from "@/features/home/api/treesApi";
 import { useToast } from "@/shared/components";
 import { treeSourceKey } from "@/features/home/hooks/useAllTrees";
 import { treeKeys } from "@/features/home/hooks/useTrees";
-import { favoriteKeys } from "@/features/profile/hooks/useFavorites";
+import { favoriteKeys } from "@/features/profile/lib/favoriteKeys";
 import type { TreeListItem } from "@/features/home/types/tree";
 
 interface ToggleArgs {
