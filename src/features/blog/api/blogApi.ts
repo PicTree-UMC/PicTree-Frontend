@@ -40,6 +40,11 @@ export const getBlogDraftUsage = async (): Promise<BlogDraftUsage> => {
 /**
  * AI 블로그 초안 생성
  * POST /api/v1/blog-drafts/generate
+ *
+ * ⚠️ **전역 10초 timeout(`httpClient.ts`)을 여기서만 늘린다.** 장소가 10개 이상이면
+ * AI 생성이 10초를 넘기기 쉬운데, 클라이언트가 먼저 끊어도 서버는 계속 처리해 사용량을
+ * 그대로 올린다 — 실패로 보이면서 잔량만 깎이는 원인이었다. 다른 엔드포인트는 대부분
+ * 짧게 끝나야 정상이라 전역값은 그대로 두고 이 호출만 60초로 늘린다.
  */
 export const createAIBlogDraft = async (
   payload: CreateAIBlogDraftRequest,
@@ -47,6 +52,7 @@ export const createAIBlogDraft = async (
   const { data } = await httpClient.post<ApiResponse<CreateAIBlogDraftResponseData>>(
     '/blog-drafts/generate',
     payload,
+    { timeout: 60000 },
   );
 
   return unwrapApiResponse(data, 'Failed to create AI blog draft');
