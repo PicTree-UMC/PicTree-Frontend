@@ -5,7 +5,7 @@ import { treeStatsKeys } from "@/features/profile/hooks/useTreeStats";
 import { calendarKeys } from "@/features/profile/hooks/useTravelCalendar";
 import { useToast } from "@/shared/components";
 import { deleteTimeline } from "../api/timelineApi";
-import { getTimelineErrorMessage } from "../lib/timelineError";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
 
 /**
  * 타임라인 기록 삭제 mutation 훅. `DELETE /trees/{treeId}`
@@ -42,7 +42,7 @@ export const useDeleteRecord = () => {
     onError: (error) => {
       // 서버가 준 사유를 그대로 보여준다 (없는 기록·잘못된 id 등)
       showToast(
-        getTimelineErrorMessage(error, "삭제에 실패했습니다. 다시 시도해주세요."),
+        getApiErrorMessage(error, "삭제에 실패했습니다. 다시 시도해주세요."),
         "error",
       );
     },

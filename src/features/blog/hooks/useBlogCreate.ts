@@ -6,7 +6,7 @@ import { useSavedRoutes } from '@/features/route/hooks/useSavedRoutes';
 
 import type { BlogDay, BlogDraftPreview, BlogStatus, ToneId, CreateAIBlogDraftRequest } from '../types/blog';
 import { getLocalDateString } from '../../../shared/lib/date';
-import { getApiErrorMessage } from '../../../shared/lib/apiError';
+import { getApiErrorMessage } from '@/shared/lib/apiError';
 import { DEFAULT_TONE_ID } from '../constants/blogTones';
 import { suggestToneFromMoods } from '../lib/moodTone';
 import { createAIBlogDraft } from '../api/blogApi';

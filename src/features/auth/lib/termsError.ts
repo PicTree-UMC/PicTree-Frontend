@@ -1,6 +1,6 @@
 import { isAxiosError } from 'axios';
 
-import { getApiErrorMessage } from './apiError';
+import { getApiErrorMessage } from '@/shared/lib/apiError';
 
 /**
  * 약관 동의 실패 사유를 화면 문구로.

@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { treeKeys } from "@/features/home/hooks/useTrees";
 import { useToast } from "@/shared/components";
 import { updateTimeline } from "../api/timelineApi";
-import { getTimelineErrorMessage } from "../lib/timelineError";
+import { getApiErrorMessage } from "@/shared/lib/apiError";
 import type { UpdateTimelineRequest } from "../types/timeline.types";
 
 interface UpdateTimelineVariables {
@@ -32,7 +32,7 @@ export const useUpdateTimeline = () => {
     },
 
     onError: (error) => {
-      showToast(getTimelineErrorMessage(error, "기록을 수정하지 못했어요."), "error");
+      showToast(getApiErrorMessage(error, "기록을 수정하지 못했어요."), "error");
     },
   });
 };

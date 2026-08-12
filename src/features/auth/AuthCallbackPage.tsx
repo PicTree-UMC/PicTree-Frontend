@@ -4,7 +4,7 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../../shared/constants/routes';
 import { useToast } from '../../shared/components';
 import { socialLogin } from './api/authApi';
-import { getApiErrorMessage } from './lib/apiError';
+import { getApiErrorMessage } from '@/shared/lib/apiError';
 import { WELCOME_TOAST_OPTIONS } from './lib/authToast';
 import { clearLogoutRequested } from './lib/logoutFlag';
 import {

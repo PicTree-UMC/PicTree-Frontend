@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 
 import { useToast } from '@/shared/components';
 import { logout } from '../api/authApi';
-import { getApiErrorMessage } from '../lib/apiError';
+import { getApiErrorMessage } from '@/shared/lib/apiError';
 import { useAuthStore } from '../store/authStore';
 import { useClearSession } from './useClearSession';
 

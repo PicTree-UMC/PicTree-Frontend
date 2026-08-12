@@ -11,10 +11,13 @@ import { isAxiosError } from 'axios';
  *
  * 두 번째 갈래를 빠뜨리면 서버가 준 사유가 통째로 사라지고 fallback 만 남는다.
  *
- * ⚠️ **feature 별 `lib/` 에 같은 함수가 셋 있다** — `auth/lib/apiError.ts`(1번만),
- * `profile/lib/profileError.ts`·`timeline/lib/timelineError.ts`(둘 다, 구현이 같다).
- * 여기가 있어야 할 자리다(`unwrapApiResponse` 의 주석이 이미 이 이름을 호출부 규약으로
- * 전제하고 있다). 기존 셋을 이걸로 모으는 건 별건 — 이 파일이 그 착지점이다.
+ * **저장소에 이 함수는 여기 하나뿐이다.** 한때 feature 별 `lib/` 에 셋이 더 있었고, 그중
+ * `auth/lib/apiError.ts` 만 2번 갈래를 빠뜨려 **즐겨찾기·약관·탈퇴에서 서버 문구가 통째로
+ * 사라졌다**(이슈 #307). 값이 같은 복사본은 이렇게 한쪽만 조용히 뒤처진다 — 그래서 새로
+ * 만들지 말고 **여기로 온다.**
+ *
+ * ⚠️ 도메인이 상태 코드를 자기 문구로 가로채는 것은 별개이고 정상이다
+ * (`favoriteError` 의 403·404, `termsError`). 그것들도 마지막에는 이 함수로 떨어진다.
  */
 export function getApiErrorMessage(error: unknown, fallback: string): string {
   if (!isAxiosError(error)) {

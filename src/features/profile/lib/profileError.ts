@@ -39,26 +39,14 @@ export function isClientError(error: unknown): boolean {
   return status !== undefined && status >= 400 && status < 500;
 }
 
-/**
- * 실패 응답에서 백엔드 메시지를 꺼낸다.
- *
- * axios 는 2xx 가 아니면 예외를 던지므로 응답 본문은 `error.response.data` 에 있다.
- *
- * 종전엔 명세서 형태(`{ resultType, error: { message } }`)와 서버 형태를 둘 다 읽었다.
- * 2026-08-08 스웨거 대조에서 **서버는 아래 한 형태뿐**임이 확인돼 명세서 쪽 갈래를 지웠다.
- *   `{ success: false, code, message }`
- *
- * ⚠️ `features/auth/lib/apiError.ts` 에 거의 같은 함수가 있다. 합치지 않은 이유는 이쪽만
- *    비-axios 예외(2xx 인데 `success: false` 라 훅이 직접 던진 경우)를 함께 처리하기
- *    때문이다 — 그 갈래를 auth 쪽으로 옮기면 로그인 화면이 안 쓰는 분기를 떠안는다.
- */
-export function getApiErrorMessage(error: unknown, fallback: string): string {
-  if (!isAxiosError(error)) {
-    // 2xx 로 내려온 실패 응답을 훅에서 직접 던진 경우 — 이미 서버 메시지를 담고 있다.
-    return error instanceof Error && error.message ? error.message : fallback;
-  }
+/*
+  `getApiErrorMessage` 는 `shared/lib/apiError.ts` 로 옮겼다(이슈 #307).
 
-  const body = error.response?.data as { message?: string } | undefined;
+  한때 "합치지 않는 이유는 이쪽만 비-axios 예외를 처리하기 때문이고, 그 갈래를 auth 로
+  옮기면 로그인 화면이 안 쓰는 분기를 떠안는다" 고 적혀 있었다. **그 전제가 무너졌다** —
+  이슈 #290 이 API 레이어 22곳에 `unwrapApiResponse` 를 붙이면서 비-axios 예외는
+  특정 화면의 사정이 아니라 **모든 도메인의 기본 실패 형태**가 됐다.
 
-  return body?.message ?? fallback;
-}
+  여기 남은 둘은 프로필 고유다 — 상태 코드를 **행동 기준으로 분류**하는 일이라
+  문구를 꺼내는 일과 층이 다르다.
+*/
