@@ -9,10 +9,16 @@ import {
 } from "@/shared/components";
 import type { PhotoPostSlide } from "@/shared/components";
 
+import type { TimelineSort } from "../lib/timelineQuery";
 import type { TimelineGroup, TimelineRecord } from "../types/timeline.types";
 
 interface Props {
   group: TimelineGroup;
+  /**
+   * 지금 목록이 어떤 순서로 서 있는지. 그리는 데는 안 쓰고 **바뀌었는지만** 본다 —
+   * 정렬이 바뀌면 보던 장을 첫 장으로 되돌린다(아래 참고).
+   */
+  sort: TimelineSort;
   /** 하트를 눌러 즐겨찾기를 토글한다. */
   onToggleFavorite: (record: TimelineRecord) => void;
   /** 머리글의 수정 아이콘. 상세 없이 바로 수정 모달로 간다. */
@@ -65,11 +71,33 @@ function TrashIcon() {
  */
 export function TimelinePhotoGroup({
   group,
+  sort,
   onToggleFavorite,
   onEdit,
   onDelete,
 }: Props) {
   const [index, setIndex] = useState(0);
+
+  /*
+   * 정렬이 바뀌면 **그룹 안쪽 순서도 함께 뒤집힌다**(`sortRecords` 가 그룹으로 묶기
+   * 전에 전체를 줄 세운다). 보던 장 번호를 그대로 두면 같은 3번 자리에 전혀 다른
+   * 기록이 앉아, 사진·장소명·한줄평이 통째로 갈린다 — 정렬한 게 아니라 화면이
+   * 망가진 것처럼 읽힌다. 첫 장으로 되돌려 새 순서를 처음부터 보여준다.
+   *
+   * ⚠️ **`key` 에 정렬을 섞어 remount 시키지 않는다.** 그러면 사진(`img`)이 전부
+   * 새로 붙어 캐시가 없는 장에서 빈 칸이 한 번 스친다. 되돌릴 것은 장 번호 하나뿐이다.
+   *
+   * ⚠️ **`useEffect` 가 아니라 렌더 중에 맞춘다.** effect 는 그린 뒤에 도는지라
+   * 옛 번호로 한 프레임이 먼저 그려졌다 튄다. 여기서 `setIndex` 를 부르면 React 가
+   * 화면에 내보내기 전에 다시 렌더한다(props 변화에 state 를 맞추는 표준 패턴).
+   *
+   * 가로 스크롤 위치는 `PhotoStrip` 이 `activeIndex` 를 보고 따라온다.
+   */
+  const [shownSort, setShownSort] = useState(sort);
+  if (shownSort !== sort) {
+    setShownSort(sort);
+    setIndex(0);
+  }
 
   const records = group.records;
   if (records.length === 0) return null;
