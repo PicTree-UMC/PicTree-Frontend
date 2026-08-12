@@ -64,9 +64,43 @@ const FEATURE_LABEL: Record<string, string> = {
 export const featureLabel = (feature: PlanFeatureDto): string =>
   FEATURE_LABEL[feature.code] ?? feature.name;
 
-/** 1024MB 단위로 딱 떨어지면 GB 로 줄인다 (100MB · 1GB · 5GB · 20GB). */
-export const formatStorage = (mb: number | null): string => {
-  if (mb == null) return '-';
+/**
+ * 혜택의 `unit` 을 바이트로 바꾸는 **유일한 표.**
+ *
+ * ⚠️ 서버 `unit` 은 `'COUNT' | 'MB' | null` 이다. 여기 없는 단위(`COUNT`·`null`, 그리고
+ * 앞으로 생길 수 있는 `GB`)는 **일부러 비워 둔다** — 모르는 단위를 MB 로 치고 계산하면
+ * 화면이 틀린 숫자를 자신 있게 그린다.
+ */
+const BYTES_PER_UNIT: Record<string, number> = {
+  MB: 1024 ** 2,
+};
+
+/**
+ * 용량 혜택(`PHOTO_STORAGE`)의 한도를 **바이트**로. 용량이 아니거나 단위를 모르면 `null`.
+ *
+ * ⚠️ **단위 해석은 반드시 여기를 거친다.** 한때 `planDisplay` 는 `unit === 'MB'` 를 보고
+ * `ProfileSummary` 는 안 보고 `× 1024²` 를 했다 — 같은 필드를 두 화면이 다르게 읽었고,
+ * `unit` 이 `GB` 로 바뀌면 마이페이지 막대만 한도를 1024배 작게 잡아 **아직 여유가 있는데
+ * 꽉 찬 것처럼** 보이게 될 자리였다(이슈 #276).
+ *
+ * 단위가 늘면 `BYTES_PER_UNIT` 에 한 줄 넣는 것으로 끝난다.
+ */
+export const featureLimitBytes = (feature: PlanFeatureDto | undefined): number | null => {
+  if (!feature || feature.limitValue == null) return null;
+  const bytesPerUnit = feature.unit == null ? undefined : BYTES_PER_UNIT[feature.unit];
+  return bytesPerUnit == null ? null : feature.limitValue * bytesPerUnit;
+};
+
+/**
+ * **바이트**를 받아 1024MB 로 딱 떨어지면 GB 로 줄인다 (100MB · 1GB · 5GB · 20GB).
+ *
+ * ⚠️ 내보내지 않는다. 한때 MB 를 받았던 함수라, 밖에서 부르는 자리가 생기면 옛 감각으로
+ * `limitValue` 를 그대로 넘겨 1024²배 어긋난 숫자가 나온다. 밖에서 필요한 건 언제나
+ * `featureLimitBytes` 를 거친 값이므로 `planSummary` 처럼 이 파일 안에서 엮어 준다.
+ */
+const formatStorage = (bytes: number | null): string => {
+  if (bytes == null) return '-';
+  const mb = bytes / 1024 ** 2;
   if (mb >= 1024 && mb % 1024 === 0) return `${mb / 1024}GB`;
   return `${mb}MB`;
 };
@@ -76,7 +110,11 @@ export const formatFeatureValue = (feature: PlanFeatureDto | undefined): string 
   if (!feature) return '-';
   if (feature.valueType === 'BOOLEAN') return feature.textValue ?? (feature.isEnabled ? '제공' : '미제공');
   if (!feature.isEnabled || feature.limitValue == null) return '사용불가';
-  if (feature.unit === 'MB') return formatStorage(feature.limitValue);
+
+  // 바이트로 환산되면 용량, 아니면 횟수다 — `unit === 'MB'` 를 여기서 또 보지 않는다.
+  const bytes = featureLimitBytes(feature);
+  if (bytes != null) return formatStorage(bytes);
+
   return `월 ${feature.limitValue}회`;
 };
 
@@ -113,11 +151,13 @@ export const featureValuesLabel = (
   // BOOLEAN 은 '있다/없다' 라 늘어놓을 값이 없다 — 한 칸으로 접는다.
   if (features[0].valueType === 'BOOLEAN') return formatFeatureValue(features[0]);
 
+  // 단위는 앞이나 뒤에 한 번만 — `월 5회/월 20회` 는 같은 말을 세 번 한다.
+  const byteValues = [...new Set(features.map(featureLimitBytes).filter((v) => v != null))];
+  if (byteValues.length > 0) return byteValues.map(formatStorage).join('/');
+
   const values = [...new Set(features.map((f) => f.limitValue).filter((v) => v != null))];
   if (values.length === 0) return null;
 
-  // 단위는 앞이나 뒤에 한 번만 — `월 5회/월 20회` 는 같은 말을 세 번 한다.
-  if (features[0].unit === 'MB') return values.map(formatStorage).join('/');
   return `월 ${values.join('/')}회`;
 };
 
@@ -161,7 +201,7 @@ export const planSummary = (plan: SubscriptionPlanDto) => ({
   /** '플러스' */
   shortName: planShortName(plan.name),
   /** '1GB' */
-  storage: formatStorage(findFeature(plan, FEATURE_CODE.photoStorage)?.limitValue ?? null),
+  storage: formatStorage(featureLimitBytes(findFeature(plan, FEATURE_CODE.photoStorage))),
   /** '월 5회' */
   generations: formatFeatureValue(findFeature(plan, FEATURE_CODE.aiBlogMonthly)),
   /** '2,900원' */
