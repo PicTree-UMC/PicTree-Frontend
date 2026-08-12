@@ -54,7 +54,7 @@ PicTree는 단순히 사진을 보관하는 서비스가 아니라, 사진에 �
 | 허현 | Frontend | 로그인/회원가입, 팀장 |
 | 이승호 | Frontend | 지도 홈 |
 | 김재원 | Frontend | 타임라인, 공용 컴포넌트 |
-| 강두이 | Frontend | 동선 |
+| 강두이 | Frontend | 동선, 결제, 배포 |
 
 <br/>
 
