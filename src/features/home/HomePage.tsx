@@ -62,7 +62,19 @@ export function HomePage() {
   const { containerRef, map } = useKakaoMap(initialCenter, 3);
   useCurrentLocation(map, coords);
 
-  const { data: markers = [] } = useTrees();
+  /*
+    ⚠️ `data` 만 꺼내 쓰면 안 된다. 못 받았을 때도 `markers` 가 빈 배열이라, 화면이 실패를
+    "기록한 장소가 없음" 으로 그려 버린다 — 지도는 멀쩡히 떠 있고 마커만 없어서 사용자가
+    구분할 방법이 없다(이슈 #292). 상단 배너가 이 셋을 갈라 말한다.
+
+    DEV 에서는 목 폴백이 실패를 덮으므로(`useTrees`) 이 분기는 배포 빌드에서만 보인다.
+  */
+  const {
+    data: markers = [],
+    isPending: isTreesPending,
+    isError: isTreesError,
+    refetch: refetchTrees,
+  } = useTrees();
   // 탭한 마커/클러스터에 묶인 나무들의 id 목록과, 지금 보고 있는 슬라이드 위치.
   // 단일 마커는 길이 1, 클러스터는 묶인 개수만큼 담겨 좌우로 넘겨 본다.
   const [selection, setSelection] = useState<{ ids: string[]; index: number } | null>(null);
@@ -221,6 +233,8 @@ export function HomePage() {
       */}
       <TopBanner
         placeCount={markers.length}
+        status={isTreesError ? 'error' : isTreesPending ? 'loading' : 'ready'}
+        onRetry={() => refetchTrees()}
         dailyLimitReached={quota.isFull}
         dailyLimit={quota.limit}
         nearby={
