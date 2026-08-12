@@ -124,9 +124,18 @@ export function HomePage() {
     setSelection((prev) => (prev ? { ...prev, index } : prev));
   }, []);
 
+  /*
+    현재 값을 함께 넘긴다 — 훅이 캐시에서 읽으면 낙관적 갱신이 이미 뒤집어 놓은 값을
+    보게 되어 목표 상태가 거꾸로 잡힌다(`useToggleFavorite` 주석).
+
+    값은 상세 조회가 왔으면 그쪽을, 아니면 목록 마커를 쓴다. 하트를 그리는 것도
+    `selectedMarkers` 라(상세를 덮어 만든 배열) 화면에 보이는 상태와 같은 값이 된다.
+  */
   const handleToggleFavorite = () => {
     if (!activeId) return;
-    toggleFavorite.mutate(activeId);
+
+    const active = selectedMarkers?.find((marker) => marker.id === activeId);
+    toggleFavorite.mutate({ treeId: activeId, isFavorite: Boolean(active?.isFavorite) });
   };
 
   const updateMutation = useUpdateTimeline();

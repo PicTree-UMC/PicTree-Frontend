@@ -3,6 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { treeStatsKeys } from '@/features/profile/hooks/useTreeStats';
 import { calendarKeys } from '@/features/profile/hooks/useTravelCalendar';
+/* ⚠️ 키는 `lib/favoriteKeys` 에서 온다 — `hooks/useFavorites` 가 이 파일의 `treeKeys` 를
+   가져다 쓰므로, 그쪽에서 import 하면 두 모듈이 서로를 불러 TDZ 로 죽는다. */
+import { favoriteKeys } from '@/features/profile/lib/favoriteKeys';
+import type { FavoriteList, FavoritePlace } from '@/features/profile/types/favorite';
 import { deleteTree, getTreeDetail, toggleTreeFavorite } from '../api/treesApi';
 import { listItemToMarker } from '../lib/treeMapping';
 import { DEMO_MARKERS } from '../mocks/markers';
@@ -103,33 +107,110 @@ const optimisticSourceUpdate = (
   return prev;
 };
 
-/** 즐겨찾기 토글. 비로그인 시 캐시만 낙관적 갱신(로컬 목 데모용). */
+/**
+ * 지도 목록의 나무 하나를 즐겨찾기 목록의 항목 모양으로 옮겨 담는다.
+ *
+ * 다섯 필드가 `TreeListItem` 에 전부 있어서 새로 받아올 것이 없다. 좌표·기분은
+ * 즐겨찾기 목록이 안 쓰므로 버린다.
+ *
+ * ⚠️ `createdAt` 만 결이 다르다 — 서버의 즐겨찾기 응답은 `2026-03-30` 꼴인데 여기
+ * 실리는 건 등록 **시각**이다. 화면이 쓰는 곳은 둘 다 견딘다(`formatKoreanDate` 는
+ * 시각을 잘라 읽고, 목록 정렬은 `localeCompare` 라 날짜 앞부분이 같으면 순서가
+ * 유지된다). 어차피 `onSettled` 의 재조회가 서버 값으로 덮는다.
+ */
+const treeToFavoritePlace = (tree: TreeListItem): FavoritePlace => ({
+  treeId: tree.treeId,
+  name: tree.name,
+  description: tree.description,
+  createdAt: tree.createdAt,
+  imageUrl: tree.imageUrl,
+});
+
+interface ToggleFavoriteArgs {
+  /** 대상 나무 id. 원본 캐시가 `number` 로 들고 있어 비교할 때 문자열로 맞춘다. */
+  treeId: string;
+  /** 현재 값. 목표 상태는 이 값의 반대다. */
+  isFavorite: boolean;
+}
+
+/**
+ * 즐겨찾기 토글. 비로그인 시 캐시만 낙관적 갱신(로컬 목 데모용).
+ *
+ * ⚠️ **현재 값을 인자로 받는다 — 캐시에서 읽지 않는다.** 종전에는 `mutationFn` 이
+ * `treeSourceKey` 에서 현재 값을 찾아 `!current.isFavorite` 을 목표로 보냈는데,
+ * `onMutate` 가 **먼저** 돌아 그 캐시를 이미 뒤집어 놓기 때문에 목표가 아니라 원래
+ * 값을 보내고 있었다. 지금은 서버(develop)가 본문을 안 읽고 무조건 뒤집어서 드러나지
+ * 않지만, 명세대로 DTO 가 붙는 순간 조용히 반대 상태를 보내게 된다
+ * (`toggleTreeFavorite` 주석). 그래서 서버가 바뀌기 전에 먼저 고쳤다.
+ *
+ * 타임라인 피드의 하트(`useToggleTimelineFavorite` 의 `ToggleArgs`)가 같은 이유로
+ * 이미 이 형태다 — 두 훅이 같은 엔드포인트를 쓰므로 모양도 맞춰 둔다.
+ */
 export const useToggleFavorite = () => {
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   return useMutation({
-    mutationFn: async (treeId: string) => {
-      // 지금 값의 반대가 목표 상태다 (명세서가 본문으로 상태를 지정하게 돼 있다)
-      const current = queryClient
-        .getQueryData<TreeListItem[]>(treeSourceKey)
-        ?.find((tree) => String(tree.treeId) === treeId);
-
+    mutationFn: async ({ treeId, isFavorite }: ToggleFavoriteArgs) => {
       if (isAuthenticated) {
-        await toggleTreeFavorite(Number(treeId), !current?.isFavorite);
+        await toggleTreeFavorite(Number(treeId), !isFavorite);
       }
     },
-    onMutate: async (treeId) => {
+    onMutate: async ({ treeId, isFavorite }) => {
       await queryClient.cancelQueries({ queryKey: treeSourceKey });
+      await queryClient.cancelQueries({ queryKey: favoriteKeys.all });
+
+      const nextFavorite = !isFavorite;
+
+      /*
+        즐겨찾기 목록에 넣을 항목을 여기서 집어 둔다 — 아래에서 원본을 갱신하지만
+        `isFavorite` 만 바뀌고 나머지 필드는 그대로라 어느 쪽을 읽어도 같다.
+      */
+      const tree = queryClient
+        .getQueryData<TreeListItem[]>(treeSourceKey)
+        ?.find((item) => String(item.treeId) === treeId);
+
       const prev = optimisticSourceUpdate(queryClient, (trees) =>
-        trees.map((tree) =>
-          String(tree.treeId) === treeId ? { ...tree, isFavorite: !tree.isFavorite } : tree,
+        trees.map((item) =>
+          String(item.treeId) === treeId ? { ...item, isFavorite: nextFavorite } : item,
         ),
       );
-      return { prev };
+
+      /*
+        즐겨찾기 목록도 같이 뒤집는다. **키가 `['trees']` 와 `['favorites']` 로 갈려
+        접두사로도 안 걸리므로 여기서 직접 손대야 한다** — 반대 방향(즐겨찾기 화면에서
+        해제)은 `useRemoveFavorites` 가 이미 지도 목록을 무효화하고 있었는데, 이쪽만
+        비어 있어서 목록을 띄워 둔 채 지도에서 켠 하트가 반영되지 않았다.
+
+        목록을 아직 안 받았으면(`!old`) 아무것도 만들지 않는다 — 여기서 지어내면
+        `count` 가 서버가 세어 준 값이 아니라 우리가 아는 만큼이 된다. 그 화면은
+        마운트할 때 어차피 받아 온다.
+
+        넣는 자리는 맨 뒤여도 된다. 즐겨찾기 화면이 `createdAt` 으로 다시 정렬한다.
+      */
+      const prevFavorites = queryClient.getQueryData<FavoriteList>(favoriteKeys.all);
+
+      if (tree) {
+        queryClient.setQueryData<FavoriteList>(favoriteKeys.all, (old) => {
+          if (!old) return old;
+
+          const favorites = nextFavorite
+            ? old.favorites.some((place) => place.treeId === tree.treeId)
+              ? old.favorites
+              : [...old.favorites, treeToFavoritePlace(tree)]
+            : old.favorites.filter((place) => place.treeId !== tree.treeId);
+
+          return { count: favorites.length, favorites };
+        });
+      }
+
+      return { prev, prevFavorites };
     },
-    onError: (_error, _treeId, context) => {
+    onError: (_error, _args, context) => {
       if (context?.prev) queryClient.setQueryData(treeSourceKey, context.prev);
+      if (context?.prevFavorites) {
+        queryClient.setQueryData(favoriteKeys.all, context.prevFavorites);
+      }
     },
     onSettled: () => {
       if (!isAuthenticated) return;
@@ -139,6 +220,12 @@ export const useToggleFavorite = () => {
         같은 원본을 보므로 이 한 줄이 둘 다 덮는다.
       */
       queryClient.invalidateQueries({ queryKey: treeSourceKey });
+      /*
+        낙관적으로 넣은 항목은 우리가 지어낸 것이라(특히 `count`·`createdAt`) 서버
+        값으로 덮는다. 타임라인 토글(`useToggleTimelineFavorite`)이 이미 같은 줄을
+        갖고 있다 — 지도 쪽에만 빠져 있었다.
+      */
+      queryClient.invalidateQueries({ queryKey: favoriteKeys.all });
     },
   });
 };
