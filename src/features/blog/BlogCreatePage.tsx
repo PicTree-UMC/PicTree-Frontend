@@ -62,10 +62,24 @@ function BlogCreateContent() {
   };
 
   return (
-    // min-h-full: 뷰포트 단위를 아는 곳은 셸(styles.css) 하나다.
-    <main className="flex min-h-full flex-col bg-cream text-ink">
+    /*
+      `h-full` 이다 — **`min-h-full` 이었다.** 그때는 페이지가 내용만큼 자라고 CTA 가 그
+      흐름 맨 끝에 달려 있어서, 화면이 내용보다 짧으면 버튼이 스크롤해야 닿는 자리로
+      내려갔다. 어체 선택 단계가 약 700px 이라 iPhone(가시영역 ~715px)에서는 아슬하게
+      들어가고 갤럭시(~650px)에서는 밀려났다 — 가로로 돌렸다 되돌려야 눌린다는 제보가
+      그것이다(회전이 레이아웃을 다시 재게 만들어 스크롤이 걸린다).
+
+      높이를 확정하고 **본문만 스크롤**시키면 기기 높이·회전과 무관해진다. 동선 만들기
+      ①(`RouteCreatePage`)·③(`RouteSavePage`)과 같은 얼개다.
+
+      ⚠️ **스크롤은 여기서 걸지 않는다 — 각 스텝이 제 안에서 건다.** 세 단계가 저마다
+      바닥 칸(`StepFooter`)을 갖는데, 그 칸은 스크롤 밖에 있어야 하므로 스크롤 경계가
+      스텝 안쪽이어야 한다. 여기 `overflow-y-auto` 를 두면 바닥 칸까지 같이 굴러간다.
+    */
+    <main className="flex h-full w-full flex-col bg-cream text-ink">
       <CreateStepHeader step={flow.step} onBack={handleBack} />
-      <div className="flex flex-1 flex-col">
+      {/* `min-h-0`: 이게 없으면 flex 아이템이 내용 높이만큼 버텨서 안쪽 스크롤이 안 걸린다. */}
+      <div className="flex min-h-0 flex-1 flex-col">
         {flow.step === 1 && (
           <RouteStep
             routes={flow.routes}
