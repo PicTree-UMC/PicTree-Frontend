@@ -1,6 +1,7 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { NavBar, Skeleton } from '@/shared/components';
+import { useGoBack } from '@/shared/hooks/useGoBack';
 import { ROUTES } from '@/shared/constants/routes';
 
 import { usePaymentDetail } from './hooks/usePayments';
@@ -96,7 +97,8 @@ function DetailBody({ payment }: { payment: PaymentDto }) {
 
 /** 결제 1건 상세 — 목록에서 줄을 눌러 들어온다. */
 export function PaymentDetailPage() {
-  const navigate = useNavigate();
+  /* 목록과 같은 이유로 `useGoBack` 이다 — 여기도 `navigate(경로)` 로 밀어 넣고 있었다. */
+  const goBack = useGoBack(ROUTES.paymentHistory);
   const { paymentId } = useParams();
   const numericId = Number(paymentId);
   const { data, isPending, isError, refetch } = usePaymentDetail(numericId);
@@ -104,7 +106,7 @@ export function PaymentDetailPage() {
   return (
     <div className="flex min-h-full flex-col bg-cream pb-nav">
       <header className="px-5 pt-header">
-        <NavBar onBack={() => navigate(ROUTES.paymentHistory)} title="결제 상세" />
+        <NavBar onBack={goBack} title="결제 상세" />
       </header>
 
       {isError ? (
