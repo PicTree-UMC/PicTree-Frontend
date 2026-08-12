@@ -199,12 +199,20 @@ export function PhotoStrip({
         </div>
 
         {/*
-          ⚠️ 우상단이었다. 게시물이 머리글(장소명 · 날짜)을 사진 위에 얹으면서 그 자리를
-          날짜에 내주고 아래로 내려왔다. 가운데 점(`dotsInside`)과는 좌우로 안 겹친다.
+          ⚠️ **두 번 옮겼다: 우상단 → 우하단 → 좌하단.** 처음은 게시물이 머리글(장소명 ·
+          날짜)을 사진 위에 얹으면서 그 자리를 날짜에 내준 것이고, 이번엔 동선 목록의
+          AI 블로그 버튼(`BlogCreateFab`)이 우하단을 덮어서다.
+
+          그 버튼은 `fixed` + `right-5` + 56px 라 화면 오른쪽 20~76px 를 차지하는데,
+          앨범의 알약은 `right-3` 에 좌우 여백 20px 인 자리라 거의 정확히 같은 띠에 든다.
+          앨범은 스크롤되고 버튼은 안 움직이므로, 훑다 보면 알약이 버튼 밑을 지나간다.
+
+          왼쪽은 두 화면 다 비어 있고(게시물의 머리글은 위, 액션 줄은 사진 밖이다),
+          가운데 점(`dotsInside`)과도 좌우로 안 겹친다.
         */}
         <span
           aria-hidden
-          className={`pointer-events-none absolute bottom-3 right-3 rounded-full bg-black/55 px-2.5 py-0.5 text-[13px] text-white transition-opacity duration-200 ${
+          className={`pointer-events-none absolute bottom-3 left-3 rounded-full bg-black/55 px-2.5 py-0.5 text-[13px] text-white transition-opacity duration-200 ${
             showCounter ? 'opacity-100' : 'opacity-0'
           }`}
         >
