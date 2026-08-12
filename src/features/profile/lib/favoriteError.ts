@@ -1,6 +1,6 @@
 import { isAxiosError } from 'axios';
 
-import { getApiErrorMessage } from '@/features/auth/lib/apiError';
+import { getApiErrorMessage } from '@/shared/lib/apiError';
 
 /**
  * 즐겨찾기 실패 사유를 화면 문구로.

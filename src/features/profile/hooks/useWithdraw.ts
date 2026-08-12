@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
 import { useClearSession } from '@/features/auth/hooks/useClearSession';
-import { getApiErrorMessage } from '@/features/auth/lib/apiError';
+import { getApiErrorMessage } from '@/shared/lib/apiError';
 import { useToast } from '@/shared/components';
 import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import { withdrawMe } from '../api/withdrawApi';

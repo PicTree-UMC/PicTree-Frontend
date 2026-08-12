@@ -4,7 +4,7 @@ import { useToast } from '@/shared/components';
 import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { updateMyProfile } from '../api/userApi';
-import { getApiErrorMessage } from '../lib/profileError';
+import { getApiErrorMessage } from '@/shared/lib/apiError';
 import type { MyProfile, UpdateMyProfileRequest } from '../types/user';
 import { userKeys } from './useMyProfile';
 

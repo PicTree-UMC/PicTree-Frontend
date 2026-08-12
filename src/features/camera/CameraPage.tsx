@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTodayTreeQuota } from '@/features/home/hooks/useTodayTreeQuota';
 import { isDailyTreeLimitError } from '@/features/home/lib/treeQuota';
-import { getApiErrorMessage } from '@/features/profile/lib/profileError';
+import { getApiErrorMessage } from '@/shared/lib/apiError';
 import { ROUTES } from '@/shared/constants/routes';
 import { getLocalDateString } from '@/shared/lib/date';
 import { useLockBodyScroll } from '@/shared/hooks/useLockBodyScroll';
