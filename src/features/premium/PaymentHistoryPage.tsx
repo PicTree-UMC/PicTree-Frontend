@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { NavBar, Skeleton } from '@/shared/components';
+import { useGoBack } from '@/shared/hooks/useGoBack';
 import { ROUTES, paymentDetailPath } from '@/shared/constants/routes';
 
 import { usePayments } from './hooks/usePayments';
@@ -86,6 +87,14 @@ function PaymentRow({ payment, onOpen }: { payment: PaymentDto; onOpen: () => vo
  */
 export function PaymentHistoryPage() {
   const navigate = useNavigate();
+  /*
+    ⚠️ `navigate(ROUTES.profileEdit)` 로 **밀어 넣고** 있었다. 그러면 ← 가 뒤로 가는 게
+    아니라 '내 정보' 를 스택에 하나 더 쌓아서, 거기서 다시 뒤로 갈 때 방금 떠난 이 화면으로
+    되돌아온다. 옆줄 '결제 수단' 은 처음부터 `useGoBack` 이라 멀쩡했다.
+
+    fallback 은 부모인 '내 정보' 다 — 히스토리 없이 들어온 경우에만 쓰인다(훅 주석).
+  */
+  const goBack = useGoBack(ROUTES.profileEdit);
   const {
     data,
     isPending,
@@ -102,7 +111,7 @@ export function PaymentHistoryPage() {
   return (
     <div className="flex min-h-full flex-col bg-cream pb-nav">
       <header className="px-5 pt-header">
-        <NavBar onBack={() => navigate(ROUTES.profileEdit)} title="결제 내역" />
+        <NavBar onBack={goBack} title="결제 내역" />
       </header>
 
       <div className="flex flex-col gap-4 px-5 pt-6">
