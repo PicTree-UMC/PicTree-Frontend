@@ -1,6 +1,7 @@
 import { Spinner } from '@/shared/components';
 import type { Route } from '@/features/route/types/route';
 import { PrimaryCta } from '@/shared/components';
+import { StepFooter } from '../StepFooter';
 
 type RouteStepProps = {
   routes: Route[];
@@ -98,66 +99,73 @@ export function RouteStep({
   }
 
   return (
-    <div className="flex flex-1 flex-col px-5 pb-6 pt-2">
-      <p className="text-[15px] leading-6 text-ink-muted">블로그로 만들 동선을 골라주세요.</p>
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* 동선 목록만 스크롤한다. `min-h-0` 이 없으면 내용 높이만큼 버텨서 안 걸린다. */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-2">
+        <p className="text-[15px] leading-6 text-ink-muted">블로그로 만들 동선을 골라주세요.</p>
 
-      <ul className="mt-4 flex flex-col gap-2.5">
-        {routes.map((route) => {
-          const selected = route.id === selectedRouteId;
+        <ul className="mt-4 flex flex-col gap-2.5">
+          {routes.map((route) => {
+            const selected = route.id === selectedRouteId;
 
-          return (
-            <li key={route.id}>
-              <button
-                type="button"
-                onClick={() => onSelect(route.id)}
-                aria-pressed={selected}
-                className={`flex w-full items-start gap-3 rounded-2xl border bg-white px-5 py-[18px] text-left transition active:scale-[0.99] ${
-                  selected
-                    ? 'border-pictree-700 shadow-[0_6px_18px_rgba(45,51,34,0.10)]'
-                    : 'border-pictree-100 shadow-[0_6px_18px_rgba(45,51,34,0.06)]'
-                }`}
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2">
-                    <span className="truncate text-[16px] font-medium text-ink">{route.title}</span>
-                    <span className="shrink-0 rounded-full bg-pictree-100 px-2 py-[1px] text-[13px] font-medium text-pictree-700">
-                      {route.placeCount}곳
-                    </span>
-                  </span>
-                  <span className="mt-1 block text-[13px] text-ink-muted">{route.date}</span>
-                </span>
-
-                <span
-                  className={`mt-0.5 flex size-[22px] shrink-0 items-center justify-center rounded-full border-2 transition ${
+            return (
+              <li key={route.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(route.id)}
+                  aria-pressed={selected}
+                  className={`flex w-full items-start gap-3 rounded-2xl border bg-white px-5 py-[18px] text-left transition active:scale-[0.99] ${
                     selected
-                      ? 'border-pictree-700 bg-pictree-700 text-white'
-                      : // 미체크 테두리는 LINE(1.4:1)으로 못 쓴다 — 흰 면 위 비텍스트 UI 는 3:1 이
-                        // 필요하고, 여기선 테두리가 이 원의 유일한 단서다. 근거는 `TermsAgreementView`(#232).
-                        'border-ink-muted bg-white text-transparent'
+                      ? 'border-pictree-700 shadow-[0_6px_18px_rgba(45,51,34,0.10)]'
+                      : 'border-pictree-100 shadow-[0_6px_18px_rgba(45,51,34,0.06)]'
                   }`}
                 >
-                  <CheckIcon />
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate text-[16px] font-medium text-ink">{route.title}</span>
+                      <span className="shrink-0 rounded-full bg-pictree-100 px-2 py-[1px] text-[13px] font-medium text-pictree-700">
+                        {route.placeCount}곳
+                      </span>
+                    </span>
+                    <span className="mt-1 block text-[13px] text-ink-muted">{route.date}</span>
+                  </span>
 
-      {/* 고른 뒤에야 말할 수 있는 것들. 자리를 미리 비워 두면 버튼이 위아래로 튄다. */}
-      <p className="mt-4 min-h-[1.25rem] text-[13px] text-ink-muted" role="status">
-        {selectedRouteId === null
-          ? ''
-          : isDetailPending
-            ? '동선을 확인하는 중이에요...'
-            : isDetailError
-              ? '동선 내용을 불러오지 못했어요. 다시 골라주세요.'
-              : `기록 ${treeCount}개로 초안을 만들어요.`}
-      </p>
+                  <span
+                    className={`mt-0.5 flex size-[22px] shrink-0 items-center justify-center rounded-full border-2 transition ${
+                      selected
+                        ? 'border-pictree-700 bg-pictree-700 text-white'
+                        : // 미체크 테두리는 LINE(1.4:1)으로 못 쓴다 — 흰 면 위 비텍스트 UI 는 3:1 이
+                          // 필요하고, 여기선 테두리가 이 원의 유일한 단서다. 근거는 `TermsAgreementView`(#232).
+                          'border-ink-muted bg-white text-transparent'
+                    }`}
+                  >
+                    <CheckIcon />
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
 
-      <PrimaryCta className="mt-auto" onClick={onNext} disabled={!canGoNext}>
-        다음
-      </PrimaryCta>
+      {/* 안내 줄이 버튼과 같은 칸에 있다 — 고른 동선의 기록 수를 말하는 줄이라 버튼 곁에
+          있어야 뜻이 붙고, 목록을 굴리는 동안에도 사라지지 않는다. 자리를 미리 비워
+          두는 것(`min-h`)은 그대로다: 채워질 때 버튼이 위아래로 튀지 않게. */}
+      <StepFooter>
+        <p className="min-h-[1.25rem] text-[13px] text-ink-muted" role="status">
+          {selectedRouteId === null
+            ? ''
+            : isDetailPending
+              ? '동선을 확인하는 중이에요...'
+              : isDetailError
+                ? '동선 내용을 불러오지 못했어요. 다시 골라주세요.'
+                : `기록 ${treeCount}개로 초안을 만들어요.`}
+        </p>
+
+        <PrimaryCta className="mt-2" onClick={onNext} disabled={!canGoNext}>
+          다음
+        </PrimaryCta>
+      </StepFooter>
     </div>
   );
 }

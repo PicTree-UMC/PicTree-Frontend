@@ -3,6 +3,7 @@ import type { BlogDraftPreview, BlogStatus } from '../../types/blog';
 import { GeneratingCard } from '../GeneratingCard';
 import { useToast } from '../../../../shared/components/toast/toastStore';
 import { Photo, PrimaryCta } from '@/shared/components';
+import { StepFooter } from '../StepFooter';
 import { formatLongDate } from '../../lib/formatBlogDate';
 
 type ResultStepProps = {
@@ -34,49 +35,53 @@ export function ResultStep({
   */
   if (status === 'error') {
     return (
-      <div className="flex flex-1 flex-col px-5 pb-6 pt-2">
-        <div
-          role="alert"
-          className="mt-5 rounded-2xl border border-[#e7e8dc] bg-white px-5 py-7 text-center shadow-[0_5px_18px_rgba(45,51,34,0.06)]"
-        >
-          <span
-            aria-hidden
-            className="mx-auto grid size-10 place-items-center rounded-full bg-[#fdeaea] text-error"
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-2">
+          <div
+            role="alert"
+            className="mt-5 rounded-2xl border border-[#e7e8dc] bg-white px-5 py-7 text-center shadow-[0_5px_18px_rgba(45,51,34,0.06)]"
           >
-            <svg
-              viewBox="0 0 24 24"
-              className="size-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
+            <span
+              aria-hidden
+              className="mx-auto grid size-10 place-items-center rounded-full bg-[#fdeaea] text-error"
             >
-              <path d="M12 8v5M12 16.5v.01" />
-              <circle cx="12" cy="12" r="9" />
-            </svg>
-          </span>
+              <svg
+                viewBox="0 0 24 24"
+                className="size-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <path d="M12 8v5M12 16.5v.01" />
+                <circle cx="12" cy="12" r="9" />
+              </svg>
+            </span>
 
-          <p className="mt-4 text-[15px] font-medium text-ink">초안을 만들지 못했어요</p>
+            <p className="mt-4 text-[15px] font-medium text-ink">초안을 만들지 못했어요</p>
 
-          {/* 서버 문구를 그대로 보인다 — 다음부터는 콘솔을 열지 않아도 원인이 보인다. */}
-          {errorMessage && (
-            <p className="mt-2 text-[13px] leading-[1.7] text-ink-muted">{errorMessage}</p>
-          )}
-        </div>
-
-        {/* 비율은 아래 `복사하기 / 저장하기` 줄과 같게 둔다 — 같은 자리의 같은 문법이다. */}
-        <div className="mt-auto flex gap-3 pt-5">
-          <button
-            type="button"
-            onClick={onBack}
-            className="h-[52px] flex-1 rounded-[24px] bg-line-soft text-[15px] font-medium text-ink-muted"
-          >
-            이전 단계로
-          </button>
-          <div className="flex-[2]">
-            <PrimaryCta onClick={onRetry}>다시 시도</PrimaryCta>
+            {/* 서버 문구를 그대로 보인다 — 다음부터는 콘솔을 열지 않아도 원인이 보인다. */}
+            {errorMessage && (
+              <p className="mt-2 text-[13px] leading-[1.7] text-ink-muted">{errorMessage}</p>
+            )}
           </div>
         </div>
+
+        {/* 비율은 결과 화면의 `복사하기 / 저장하기` 줄과 같게 둔다 — 같은 자리의 같은 문법이다. */}
+        <StepFooter>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="h-[52px] flex-1 rounded-[24px] bg-line-soft text-[15px] font-medium text-ink-muted"
+            >
+              이전 단계로
+            </button>
+            <div className="flex-[2]">
+              <PrimaryCta onClick={onRetry}>다시 시도</PrimaryCta>
+            </div>
+          </div>
+        </StepFooter>
       </div>
     );
   }
@@ -117,65 +122,72 @@ export function ResultStep({
   };
 
   return (
-    <div className="blog-result-enter flex flex-1 flex-col pb-6 pt-2">
-      <article className="mx-5 overflow-hidden rounded-2xl border border-[#e7e8dc] bg-white shadow-[0_5px_18px_rgba(45,51,34,0.06)]">
-        <header className="px-5 pb-5 pt-6">
-          <span className="text-[12px] font-medium text-pictree-700">여행 기록</span>
-          <h2 className="mt-2 text-[23px] font-bold leading-[1.4] tracking-[-0.02em] text-ink">
-            {draft.title}
-          </h2>
-          <p className="mt-3 text-[12px] text-[#9a9e96]">AI가 여행 기록과 사진으로 작성한 초안이에요.</p>
-        </header>
+    <div className="blog-result-enter flex min-h-0 flex-1 flex-col">
+      {/* 초안 전문만 스크롤한다. **여기가 이 화면의 핵심 수정이다** — 종전에는 이 글이
+          페이지째 굴러가서 `복사하기 / 저장하기` 줄이 글 끝에 붙어 있었고, 초안은 언제나
+          한 화면보다 길기 때문에 **버튼이 항상 화면 밖**이었다. */}
+      <div className="min-h-0 flex-1 overflow-y-auto pb-6 pt-2">
+        <article className="mx-5 overflow-hidden rounded-2xl border border-[#e7e8dc] bg-white shadow-[0_5px_18px_rgba(45,51,34,0.06)]">
+          <header className="px-5 pb-5 pt-6">
+            <span className="text-[12px] font-medium text-pictree-700">여행 기록</span>
+            <h2 className="mt-2 text-[23px] font-bold leading-[1.4] tracking-[-0.02em] text-ink">
+              {draft.title}
+            </h2>
+            <p className="mt-3 text-[12px] text-[#9a9e96]">AI가 여행 기록과 사진으로 작성한 초안이에요.</p>
+          </header>
 
-        <div className="h-px bg-[#f0f0e9]" />
+          <div className="h-px bg-[#f0f0e9]" />
 
-        <div className="px-5 pb-8 pt-2">
-          {draft.days.map((day, dayIndex) => (
-            <section key={day.date} className={dayIndex > 0 ? 'mt-14 border-t border-[#eeeeea] pt-10' : 'pt-6'}>
-              <h3 className="text-center text-[18px] font-bold tracking-[-0.01em] text-[#30362f]">
-                {formatLongDate(day.date)}
-              </h3>
-              <div className="mt-7">
-                {day.sections.map((section, sectionIndex) => (
-                  <article key={`${section.treeId}-${sectionIndex}`} className={sectionIndex > 0 ? 'mt-10' : undefined}>
-                    {/*
-                      못 불러온 사진은 아무것도 안 그린다(`fallback={null}`) — 글에는
-                      아이콘보다 없는 편이 낫다. `figure` 는 높이 0 이 되지만 아래 `mt-5`
-                      는 남아 20px 빈틈이 생기는데, 그건 그대로 둔다: 실패 여부를 바깥
-                      JSX 로 끌어올리지 않으려고 받아들인 값이다(#214).
-                    */}
-                    {section.image && (
-                      <figure className="overflow-hidden rounded-lg bg-pictree-100">
-                        <Photo
-                          src={section.image}
-                          alt={`${section.heading}에서 촬영한 사진`}
-                          className="max-h-[440px] w-full object-cover"
-                          fallback={null}
-                        />
-                      </figure>
-                    )}
-                    <h4 className={`${section.image ? 'mt-5' : ''} text-[18px] font-bold leading-snug text-[#252b24]`}>
-                      {section.heading}
-                    </h4>
-                    <p className="mt-3 whitespace-pre-line text-[15px] leading-[1.9] text-[#444a43]">
-                      {section.body}
-                    </p>
-                  </article>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      </article>
-
-      <div className="mt-auto flex gap-3 px-5 pt-5">
-        <button type="button" className="h-[52px] flex-1 rounded-[24px] bg-line-soft text-[15px] font-medium text-ink-muted" onClick={handleCopy}>복사하기</button>
-        <div className="flex-[2]">
-          <PrimaryCta onClick={handleSave} disabled={isSaving}>
-            {isSaving ? '저장 중...' : '저장하기'}
-          </PrimaryCta>
-        </div>
+          <div className="px-5 pb-8 pt-2">
+            {draft.days.map((day, dayIndex) => (
+              <section key={day.date} className={dayIndex > 0 ? 'mt-14 border-t border-[#eeeeea] pt-10' : 'pt-6'}>
+                <h3 className="text-center text-[18px] font-bold tracking-[-0.01em] text-[#30362f]">
+                  {formatLongDate(day.date)}
+                </h3>
+                <div className="mt-7">
+                  {day.sections.map((section, sectionIndex) => (
+                    <article key={`${section.treeId}-${sectionIndex}`} className={sectionIndex > 0 ? 'mt-10' : undefined}>
+                      {/*
+                        못 불러온 사진은 아무것도 안 그린다(`fallback={null}`) — 글에는
+                        아이콘보다 없는 편이 낫다. `figure` 는 높이 0 이 되지만 아래 `mt-5`
+                        는 남아 20px 빈틈이 생기는데, 그건 그대로 둔다: 실패 여부를 바깥
+                        JSX 로 끌어올리지 않으려고 받아들인 값이다(#214).
+                      */}
+                      {section.image && (
+                        <figure className="overflow-hidden rounded-lg bg-pictree-100">
+                          <Photo
+                            src={section.image}
+                            alt={`${section.heading}에서 촬영한 사진`}
+                            className="max-h-[440px] w-full object-cover"
+                            fallback={null}
+                          />
+                        </figure>
+                      )}
+                      <h4 className={`${section.image ? 'mt-5' : ''} text-[18px] font-bold leading-snug text-[#252b24]`}>
+                        {section.heading}
+                      </h4>
+                      <p className="mt-3 whitespace-pre-line text-[15px] leading-[1.9] text-[#444a43]">
+                        {section.body}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </article>
       </div>
+
+      <StepFooter>
+        <div className="flex gap-3">
+          <button type="button" className="h-[52px] flex-1 rounded-[24px] bg-line-soft text-[15px] font-medium text-ink-muted" onClick={handleCopy}>복사하기</button>
+          <div className="flex-[2]">
+            <PrimaryCta onClick={handleSave} disabled={isSaving}>
+              {isSaving ? '저장 중...' : '저장하기'}
+            </PrimaryCta>
+          </div>
+        </div>
+      </StepFooter>
     </div>
   );
 }
