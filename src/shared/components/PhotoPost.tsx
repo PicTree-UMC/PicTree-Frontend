@@ -215,8 +215,12 @@ export function PhotoStrip({
           점을 사진 안에 얹을 때만 아래에도 그늘을 깐다. 흰 점 + 획 그늘만으로는
           눈밭·흰 벽처럼 밝은 사진에서 점이 사라진다(머리글을 얹으며 위에 깐 것과 같은
           이유). 점이 사진 밖에 있는 앨범은 받칠 것이 없으므로 깔지 않는다.
+
+          ⚠️ `isDotted` 도 같이 본다 — 점을 접는 장수(9 장 이상)에서는 받칠 점이 없고,
+          그 자리를 대신하는 `n/N` 알약은 제 배경을 갖고 있다. 안 그러면 사진 아래쪽만
+          이유 없이 어두워진다.
         */}
-        {dotsInside && (
+        {dotsInside && isDotted && (
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent"
