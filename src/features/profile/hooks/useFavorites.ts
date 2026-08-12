@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { treeKeys } from '@/features/home/hooks/useTrees';
 import { useToast } from '@/shared/components';
 import { getFavorites, removeFavorites } from '../api/favoriteApi';
 import { isClientError } from '../lib/profileError';
@@ -65,7 +66,7 @@ export const useRemoveFavorites = () => {
       });
 
       // 지도 마커의 즐겨찾기 표시도 같이 틀어지지 않게 한다
-      queryClient.invalidateQueries({ queryKey: ['trees'] });
+      queryClient.invalidateQueries({ queryKey: treeKeys.all });
 
       if (failedCount > 0) {
         showToast(

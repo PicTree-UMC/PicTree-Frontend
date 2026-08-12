@@ -4,6 +4,8 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 import { toggleTreeFavorite } from "@/features/home/api/treesApi";
 import { useToast } from "@/shared/components";
 import { treeSourceKey } from "@/features/home/hooks/useAllTrees";
+import { treeKeys } from "@/features/home/hooks/useTrees";
+import { favoriteKeys } from "@/features/profile/hooks/useFavorites";
 import type { TreeListItem } from "@/features/home/types/tree";
 
 interface ToggleArgs {
@@ -60,8 +62,13 @@ export const useToggleTimelineFavorite = () => {
       // 응답에 실려 오게 됐다(#129). 서버의 favorite 은 값을 지정하는 게 아니라 순수
       // 토글이라, 우리가 들고 있던 값이 어긋나 있으면 낙관적 반전도 함께 어긋난다 —
       // 재조회로 서버 상태를 그대로 덮어써야 하트가 실제와 어긋난 채 남지 않는다.
-      queryClient.invalidateQueries({ queryKey: ["trees"] });
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      /*
+        ⚠️ 팩토리를 거친다. 여기만 `["trees"]`·`["favorites"]` 리터럴이었는데, 값이 우연히
+        맞아떨어져 동작은 했다 — **그래서 더 위험하다.** 팩토리 쪽이 접두사를 바꾸면 이 두
+        줄은 조용히 아무것도 무효화하지 않고, 하트가 서버와 어긋난 채 남는다(이슈 #296).
+      */
+      queryClient.invalidateQueries({ queryKey: treeKeys.all });
+      queryClient.invalidateQueries({ queryKey: favoriteKeys.all });
     },
   });
 };
