@@ -5,6 +5,7 @@ import { useMySubscription } from "@/features/premium/hooks/useMySubscription";
 import { useSubscriptionPlans } from "@/features/premium/hooks/useSubscriptionPlans";
 import {
   FEATURE_CODE,
+  featureLimitBytes,
   findFeature,
   planShortName,
 } from "@/features/premium/lib/planDisplay";
@@ -118,12 +119,20 @@ export function ProfileSummary() {
   */
   const planName = planShortName(planDto?.name ?? getPlanLabel(planCode));
 
-  const storageMb = planDto
-    ? findFeature(planDto, FEATURE_CODE.photoStorage)?.limitValue
+  /*
+    서버 용량이 오면 그걸 쓰고, 아직이면 lib/plan.ts 의 시안 값으로 버틴다.
+
+    ⚠️ **단위 환산은 `featureLimitBytes` 만 한다.** 여기서 직접 `× 1024 ** 2` 를 하고
+    있었는데, 그건 `unit` 을 안 보고 MB 라고 단정하는 계산이었다 — 요금제 표(`planDisplay`)
+    는 `unit` 을 보고 있었으므로 같은 필드를 두 화면이 다르게 읽던 셈이다(이슈 #276).
+
+    모르는 단위면 `null` 이 와서 아래 폴백으로 떨어진다. 시안 값이 조금 어긋나는 편이,
+    한도를 1024배 작게 잡아 **여유가 있는데 꽉 찼다고** 말하는 것보다 낫다.
+  */
+  const storageBytes = planDto
+    ? featureLimitBytes(findFeature(planDto, FEATURE_CODE.photoStorage))
     : null;
-  // 서버 용량이 오면 그걸 쓰고, 아직이면 lib/plan.ts 의 시안 값으로 버틴다.
-  const storageLimit =
-    storageMb != null ? storageMb * 1024 ** 2 : getStorageLimitBytes(planCode);
+  const storageLimit = storageBytes ?? getStorageLimitBytes(planCode);
 
   /*
     사용량을 모를 때 막대를 0% 로 두고 수치를 `-` 로 둔다. 지어내지 않는다 — 기록이
