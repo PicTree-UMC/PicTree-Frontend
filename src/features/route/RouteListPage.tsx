@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { EmptyRouteList } from './components/EmptyRouteList';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { RouteMenuSheet } from './components/RouteMenuSheet';
-import { RenameModal } from './components/RenameModal';
+import { RenameSheet } from './components/RenameSheet';
 import { useSavedRoutes } from './hooks/useSavedRoutes';
 import { useDeleteRoute } from './hooks/useDeleteRoute';
 import { useRenameRoute } from './hooks/useRenameRoute';
@@ -68,7 +68,7 @@ export function RouteListPage() {
    */
   const [viewMode, setViewMode] = useState<RouteViewMode>('roadmap');
   const [showMenuSheet, setShowMenuSheet] = useState(false);
-  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showRenameSheet, setShowRenameSheet] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // 목록이 로드되거나 선택한 동선이 삭제되면 첫 동선으로 선택을 맞춘다.
@@ -104,7 +104,7 @@ export function RouteListPage() {
   const handleRename = (newTitle: string) => {
     if (!selectedRoute) return;
     renameMutation.mutate({ id: selectedRoute.id, title: newTitle });
-    setShowRenameModal(false);
+    setShowRenameSheet(false);
     setShowMenuSheet(false);
   };
 
@@ -242,7 +242,7 @@ export function RouteListPage() {
           onClose={() => setShowMenuSheet(false)}
           onRename={() => {
             setShowMenuSheet(false);
-            setShowRenameModal(true);
+            setShowRenameSheet(true);
           }}
           /*
             시트를 닫고 확인 모달로 넘긴다. **시트를 열어둔 채 모달을 얹지 않는다** —
@@ -256,10 +256,10 @@ export function RouteListPage() {
         />
       )}
 
-      {showRenameModal && selectedRoute && (
-        <RenameModal
+      {showRenameSheet && selectedRoute && (
+        <RenameSheet
           currentTitle={selectedRoute.title}
-          onClose={() => setShowRenameModal(false)}
+          onClose={() => setShowRenameSheet(false)}
           onConfirm={handleRename}
         />
       )}
