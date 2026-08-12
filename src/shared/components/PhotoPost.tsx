@@ -73,6 +73,7 @@ export function PhotoStrip({
   onActiveIndexChange,
   className = '',
   dotsInside = false,
+  frameClassName = 'aspect-[4/5]',
 }: {
   slides: PhotoPostSlide[];
   activeIndex: number;
@@ -85,14 +86,24 @@ export function PhotoStrip({
   /**
    * 점을 사진 **안** 아래쪽에 얹는다. 기본은 사진 밑에 한 줄로 놓는 것.
    *
-   * 게시물(타임라인)은 사진 아래에 액션 줄·한줄평이 이어지므로 점도 그 흐름의 첫 줄로
-   * 두는 게 맞다. 반면 앨범은 사진 한 칸이 섹션의 전부라, 점이 밖에 있으면 사진과
-   * 아래 섹션 사이에 정체 모를 8px 짜리 줄이 하나 끼는 꼴이 된다.
+   * 앨범은 사진 한 칸이 섹션의 전부라, 점이 밖에 있으면 사진과 아래 섹션 사이에
+   * 정체 모를 8px 짜리 줄이 하나 끼는 꼴이 된다.
+   *
+   * ⚠️ **게시물도 얹는 쪽으로 바뀌었다.** 종전에는 "사진 아래로 액션 줄·한줄평이
+   * 이어지니 점도 그 흐름의 첫 줄" 이라는 이유로 밖에 뒀는데, 게시물 하나가 한 화면에
+   * 들어가야 한다는 조건이 생기면서 그 14px 이 사진에 주는 편이 나아졌다.
    *
    * 얹을 땐 흰 점 + 그림자다 — 사진이 무엇이든(하늘·눈밭) 흰 점만으로는 사라질 수 있어
    * 획 주변에만 그늘을 깐다(지도 위 제목의 외곽선과 같은 수법).
    */
   dotsInside?: boolean;
+  /**
+   * 사진 칸(가로 스크롤러)의 높이를 정하는 클래스. 기본은 4:5.
+   *
+   * 게시물은 바깥틀(`className`)이 `.post-photo` 로 높이를 정하므로 여기에 `h-full` 을
+   * 넘긴다 — 동선 앨범은 한 화면에 들어가야 할 이유가 없어 기본값을 그대로 쓴다.
+   */
+  frameClassName?: string;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isSwiping, setIsSwiping] = useState(false);
@@ -164,7 +175,7 @@ export function PhotoStrip({
             overscroll-x-contain: 끝 장에서 더 밀 때 스크롤이 페이지 밖으로 이어져
             브라우저 뒤로가기 제스처가 걸리는 것을 막는다.
           */
-          className="no-scrollbar flex aspect-[4/5] w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain"
+          className={`no-scrollbar flex w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain ${frameClassName}`}
         >
           {slides.map((slide) => (
             <div
@@ -187,15 +198,34 @@ export function PhotoStrip({
           ))}
         </div>
 
+        {/*
+          ⚠️ 우상단이었다. 게시물이 머리글(장소명 · 날짜)을 사진 위에 얹으면서 그 자리를
+          날짜에 내주고 아래로 내려왔다. 가운데 점(`dotsInside`)과는 좌우로 안 겹친다.
+        */}
         <span
           aria-hidden
-          className={`pointer-events-none absolute right-3 top-3 rounded-full bg-black/55 px-2.5 py-0.5 text-[13px] text-white transition-opacity duration-200 ${
+          className={`pointer-events-none absolute bottom-3 right-3 rounded-full bg-black/55 px-2.5 py-0.5 text-[13px] text-white transition-opacity duration-200 ${
             showCounter ? 'opacity-100' : 'opacity-0'
           }`}
         >
           {activeIndex + 1}/{slides.length}
         </span>
 
+        {/*
+          점을 사진 안에 얹을 때만 아래에도 그늘을 깐다. 흰 점 + 획 그늘만으로는
+          눈밭·흰 벽처럼 밝은 사진에서 점이 사라진다(머리글을 얹으며 위에 깐 것과 같은
+          이유). 점이 사진 밖에 있는 앨범은 받칠 것이 없으므로 깔지 않는다.
+
+          ⚠️ `isDotted` 도 같이 본다 — 점을 접는 장수(9 장 이상)에서는 받칠 점이 없고,
+          그 자리를 대신하는 `n/N` 알약은 제 배경을 갖고 있다. 안 그러면 사진 아래쪽만
+          이유 없이 어두워진다.
+        */}
+        {dotsInside && isDotted && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent"
+          />
+        )}
         {dotsInside && dots}
       </div>
 
@@ -205,18 +235,26 @@ export function PhotoStrip({
 }
 
 /**
- * 인스타 게시물 꼴의 사진 한 칸 — 머리글(나무 아바타 + 장소명 / 날짜) · 사진 ·
- * 액션 줄 · 한줄평.
+ * 인스타 게시물 꼴의 사진 한 칸 — 사진(위에 머리글이 얹힌다) · 액션 줄 · 한줄평.
  *
  * 타임라인 피드와 즐겨찾기(타일을 눌러 여는 게시물)가 같은 얼개를 쓴다. 액션은
  * 화면마다 다르므로(타임라인은 하트·수정·삭제, 즐겨찾기는 해제 하나) 이 컴포넌트는
  * 자리만 내주고 내용은 안 정한다.
  *
+ * ⚠️ **머리글(나무 아바타 + 장소명 / 날짜)은 사진 위에 얹는다.** 종전에는 사진 위쪽에
+ * 한 줄로 따로 서서 40px 을 차지했는데, 게시물 하나가 한 화면에 들어가야 한다는 조건
+ * 아래에서 그 40px 은 곧 사진에서 빼는 높이였다. 릴스·인스타 피드가 쓰는 방식대로
+ * 얹으면 사진이 그만큼 길어지면서 정보는 그대로 남는다.
+ *
+ * 얹은 글자가 사진에 묻히지 않게 위쪽에 검은 그라데이션을 깐다 — 카메라 화면이 상단
+ * 컨트롤에 쓰는 것과 같은 수법이다(`CameraPage` 의 스크림). 점(`dotsInside`)이 흰 점 +
+ * 그늘인 것과 같은 이유다.
+ *
  * 사진은 한 장(`imageUrl`)일 수도, 옆으로 넘기는 여러 장(`photos`)일 수도 있다.
  * 넘기는 쪽은 점·`n/N` 알약이 따라붙는다.
  *
  * 좌우 여백을 안 갖는다 — 사진이 화면 끝까지 닿아야 해서 부모가 여백 없이 놓고,
- * 머리글·캡션만 `px-3` 으로 안쪽에서 들여 쓴다.
+ * 얹은 머리글과 캡션만 `px-3` 으로 안쪽에서 들여 쓴다.
  */
 export function PhotoPost({
   title,
@@ -231,33 +269,47 @@ export function PhotoPost({
   const isStrip = !!photos && photos.length > 0;
 
   return (
-    <article>
-      <div className="flex items-center gap-2 px-3 pb-2">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-cream-deep">
-          <img src={TREE_AVATAR} alt="" className="h-5 w-5" />
-        </span>
-        <span className="min-w-0 flex-1 truncate text-[15px] text-ink">{title}</span>
-        {meta && <span className="shrink-0 text-[15px] text-ink-muted">{meta}</span>}
+    <article className="post-frame flex flex-col">
+      <div className="post-photo relative">
+        {isStrip ? (
+          <PhotoStrip
+            slides={photos}
+            activeIndex={activeIndex}
+            onActiveIndexChange={onActiveIndexChange ?? (() => {})}
+            className="h-full"
+            frameClassName="h-full"
+            dotsInside
+          />
+        ) : (
+          <div className="relative h-full w-full overflow-hidden bg-cream-deep">
+            <Photo
+              src={imageUrl}
+              className="absolute inset-0 h-full w-full object-cover"
+              iconClassName="h-14 w-14"
+            />
+          </div>
+        )}
+
+        {/*
+          얹은 머리글. 스크림은 `pointer-events-none` 이라 사진을 옆으로 넘기는 손짓을
+          가로채지 않는다 — 머리글 줄 자체도 누를 것이 없어 같이 통과시킨다.
+        */}
+        <div className="pointer-events-none absolute inset-x-0 top-0">
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/55 to-transparent" />
+          <div className="relative flex items-center gap-2 px-3 pt-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-cream-deep">
+              <img src={TREE_AVATAR} alt="" className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-white">
+              {title}
+            </span>
+            {meta && <span className="shrink-0 text-[15px] text-white/85">{meta}</span>}
+          </div>
+        </div>
       </div>
 
-      {isStrip ? (
-        <PhotoStrip
-          slides={photos}
-          activeIndex={activeIndex}
-          onActiveIndexChange={onActiveIndexChange ?? (() => {})}
-        />
-      ) : (
-        <div className="relative aspect-[4/5] w-full overflow-hidden bg-cream-deep">
-          <Photo
-            src={imageUrl}
-            className="absolute inset-0 h-full w-full object-cover"
-            iconClassName="h-14 w-14"
-          />
-        </div>
-      )}
-
       {(actions || caption) && (
-        <div className="px-3 pt-2">
+        <div className="shrink-0 px-3 pt-2">
           {actions && <div className="flex items-center text-ink">{actions}</div>}
 
           {/* 한줄평은 font-light 로 머리글의 medium 느낌을 뺀다. */}
