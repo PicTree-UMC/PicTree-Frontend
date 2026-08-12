@@ -2,7 +2,9 @@
  * 결제/구독 백엔드 API 레이어.
  *
  * 엔드포인트 경로 확정. 공통 응답 래퍼 확인됨({ success, code, message, data }) →
- * 실제 payload 는 response.data.data 에 있다. 각 함수가 그 한 겹을 벗겨 반환한다.
+ * 실제 payload 는 response.data.data 에 있다. 각 함수가 `unwrapApiResponse` 로 그 한 겹을
+ * 벗겨 반환한다 — **벗기면서 `success` 를 함께 본다.** 한동안 `data.data` 를 그냥 꺼내 써서,
+ * 200 에 `success:false` 가 실려 오면 빈 값이 화면까지 갔다(이슈 #290).
  *
  * baseURL 에 이미 `/api/v1` 이 포함돼 있으므로(HANDOFF 10절) 경로는 그 뒤만 적는다.
  *
@@ -16,6 +18,7 @@
 
 import axios from 'axios';
 import { httpClient } from '@/shared/lib/httpClient';
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import { PAYMENT_STATUS } from '../types/payment';
 import type { ApiResponse } from '@/shared/types/api';
 import type {
@@ -40,7 +43,7 @@ export const getSubscriptionPlans = async (): Promise<SubscriptionPlanDto[]> => 
   const { data } = await httpClient.get<ApiResponse<SubscriptionPlanDto[]>>(
     '/subscription-plans',
   );
-  return data.data;
+  return unwrapApiResponse(data);
 };
 
 /** GET /billing-keys/customer-key — SDK 에 넘길 customerKey 발급 (필드명 확인됨) */
@@ -48,7 +51,7 @@ export const getCustomerKey = async (): Promise<string> => {
   const { data } = await httpClient.get<ApiResponse<CustomerKeyResponse>>(
     '/billing-keys/customer-key',
   );
-  return data.data.customerKey;
+  return unwrapApiResponse(data).customerKey;
 };
 
 /** POST /billing-keys — 토스 인증 후 authKey 로 빌링키 발급(카드 등록) */
@@ -59,7 +62,7 @@ export const registerBillingKey = async (
     '/billing-keys',
     body,
   );
-  return data.data;
+  return unwrapApiResponse(data);
 };
 
 /** POST /subscriptions — 구독 시작(첫 청구). 생성된 구독 정보를 반환 */
@@ -70,19 +73,24 @@ export const startSubscription = async (
     '/subscriptions',
     body,
   );
-  return data.data;
+  return unwrapApiResponse(data);
 };
 
 /**
  * GET /subscriptions/me — 내 구독 상태.
  * 미구독은 404 로 오는데, 이건 에러가 아니라 정상 상태이므로 null 로 변환한다.
+ *
+ * ⚠️ **`catch` 의 `axios.isAxiosError` 가드를 걷어내고 `return null` 로 단순화하지 말 것.**
+ * `unwrapApiResponse` 는 200 에 `success:false` 가 실려 왔을 때 평범한 `Error` 를 던지는데,
+ * 가드가 없으면 그것까지 '미구독' 으로 접혀 **실패가 무료 사용자로 둔갑한다.** 404 만
+ * 정상 상태다.
  */
 export const getMySubscription = async (): Promise<MySubscription> => {
   try {
     const { data } = await httpClient.get<ApiResponse<SubscriptionDto>>(
       '/subscriptions/me',
     );
-    return data.data;
+    return unwrapApiResponse(data);
   } catch (err) {
     if (axios.isAxiosError(err) && err.response?.status === 404) {
       return null; // 미구독
@@ -94,7 +102,7 @@ export const getMySubscription = async (): Promise<MySubscription> => {
 /** GET /billing-keys — 등록된 자동결제 수단(카드) 목록 */
 export const getBillingKeys = async (): Promise<BillingKeyDto[]> => {
   const { data } = await httpClient.get<ApiResponse<BillingKeyDto[]>>('/billing-keys');
-  return data.data;
+  return unwrapApiResponse(data);
 };
 
 /** DELETE /billing-keys/{id} — 자동결제 수단 삭제(비활성화) */
@@ -104,7 +112,7 @@ export const deleteBillingKey = async (
   const { data } = await httpClient.delete<ApiResponse<BillingKeyDeactivateResult>>(
     `/billing-keys/${billingKeyId}`,
   );
-  return data.data;
+  return unwrapApiResponse(data);
 };
 
 /** POST /subscriptions/{id}/cancel — 자동갱신 해지 (status 는 ACTIVE 유지, autoRenew=false) */
@@ -114,7 +122,7 @@ export const cancelSubscription = async (
   const { data } = await httpClient.post<ApiResponse<SubscriptionDto>>(
     `/subscriptions/${subscriptionId}/cancel`,
   );
-  return data.data;
+  return unwrapApiResponse(data);
 };
 
 /** POST /subscriptions/{id}/resume — 자동갱신 재개 (autoRenew=true, nextBillingAt 복귀) */
@@ -124,7 +132,7 @@ export const resumeSubscription = async (
   const { data } = await httpClient.post<ApiResponse<SubscriptionDto>>(
     `/subscriptions/${subscriptionId}/resume`,
   );
-  return data.data;
+  return unwrapApiResponse(data);
 };
 
 /**
@@ -149,7 +157,7 @@ export const schedulePlanChange = async (
     `/subscriptions/${subscriptionId}/plan-change`,
     body,
   );
-  return data.data;
+  return unwrapApiResponse(data);
 };
 
 /**
@@ -162,7 +170,7 @@ export const cancelPlanChange = async (
   const { data } = await httpClient.post<ApiResponse<SubscriptionDto>>(
     `/subscriptions/${subscriptionId}/plan-change/cancel`,
   );
-  return data.data;
+  return unwrapApiResponse(data);
 };
 
 /** 한 번에 받아 오는 결제 건수. 서버 기본값과 같다(최대 100). */
@@ -187,12 +195,12 @@ export const getMyPayments = async (page: number): Promise<PaymentListData> => {
     params: { page, size: PAYMENT_PAGE_SIZE, status: PAYMENT_STATUS.done },
   });
 
-  return data.data;
+  return unwrapApiResponse(data);
 };
 
 /** GET /payments/{id} — 결제 1건. 목록 항목과 같은 모양이다. */
 export const getMyPayment = async (paymentId: number): Promise<PaymentDto> => {
   const { data } = await httpClient.get<ApiResponse<PaymentDto>>(`/payments/${paymentId}`);
 
-  return data.data;
+  return unwrapApiResponse(data);
 };
