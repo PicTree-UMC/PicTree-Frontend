@@ -1,5 +1,7 @@
 import { useRef } from 'react';
 
+import { Skeleton } from '@/shared/components';
+
 /** 반경 안에 내 나무가 있을 때 배너가 대신 알릴 내용. */
 type NearbyContent = {
   placeName: string;
@@ -7,8 +9,21 @@ type NearbyContent = {
   onView: () => void;
 };
 
+/**
+ * 장소 목록을 받아 왔는가.
+ *
+ * ⚠️ **`placeCount` 만으로는 셋을 못 가른다.** 못 받았을 때도 0 이고 받아 봤더니 없을 때도
+ * 0 이라, 이 값만 보면 화면이 "0개의 장소를 기록했어요" 라고 **단정**한다 — 불러오는 중에
+ * 잠깐 그렇게 뜨고, 실패하면 그대로 굳는다(이슈 #292).
+ */
+type PlacesStatus = 'loading' | 'error' | 'ready';
+
 type TopBannerProps = {
   placeCount: number;
+  /** 장소 목록의 상태. `ready` 일 때만 `placeCount` 를 말한다. */
+  status?: PlacesStatus;
+  /** 실패했을 때 다시 받아 볼 손잡이. `status === 'error'` 에서만 쓰인다. */
+  onRetry?: () => void;
   nearby?: NearbyContent | null;
   /** 오늘 하루 한도를 다 채웠는지. 아래 카메라 버튼이 흐려진 이유를 이 카드가 말한다. */
   dailyLimitReached?: boolean;
@@ -34,6 +49,8 @@ type TopBannerProps = {
  */
 export function TopBanner({
   placeCount,
+  status = 'ready',
+  onRetry,
   nearby,
   dailyLimitReached = false,
   dailyLimit,
@@ -54,7 +71,18 @@ export function TopBanner({
     시간 내내 참이라, 위에 두면 한도를 채운 사람은 근처에 나무가 있어도 그 안내를 영영 못
     본다. 근처 안내는 지나가는 동안만 뜨고 누를 것(보기)이 있다 — 짧고 행동 가능한 쪽이 먼저다.
   */
-  const active = nearby ? 'nearby' : dailyLimitReached ? 'limit' : 'default';
+  const isError = status === 'error';
+
+  /*
+    **실패가 맨 앞이다.** 목록을 못 받으면 지도에 마커가 하나도 안 찍혀서, 화면만 봐서는
+    "실패" 와 "아직 아무 데도 안 갔다" 가 똑같이 생겼다. 그 둘을 갈라 주는 것이 이 자리에서
+    가장 급한 말이다.
+
+    근처 안내와 겹칠 일은 없다 — 근처 나무는 이 목록에서 골라내므로 목록이 없으면 그쪽도 없다.
+    한도 안내보다는 앞이다. 한도는 카메라 버튼이 흐린 이유를 설명할 뿐이고, 그건 지도가
+    비어 보이는 이유를 설명하지 못한다.
+  */
+  const active = isError ? 'error' : nearby ? 'nearby' : dailyLimitReached ? 'limit' : 'default';
 
   return (
     <div className="top-banner absolute inset-x-4 z-30 flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
@@ -81,10 +109,38 @@ export function TopBanner({
           <span className="truncate text-[15px] font-medium text-neutral-900">
             나의 여행 발자국
           </span>
-          <span className="truncate text-[13px] text-neutral-500">
-            {placeCount}개의 장소를 기록했어요.
-          </span>
+          {/*
+            아직 모르는 개수는 **막대로 자리만 잡는다.** 0 을 먼저 그려 두면 도착하는 순간
+            숫자가 튀고, 그 짧은 사이에 화면이 "한 곳도 기록 안 했다" 는 거짓말을 한다.
+            높이는 이 줄의 실제 높이(13px 글자, leading-tight)와 맞춘다 — 배너 높이가
+            60px 로 고정이라 여기서 어긋나면 아래 것들이 카드 밑에 깔린다.
+          */}
+          {status === 'loading' ? (
+            <Skeleton surface="card" className="mt-0.5 h-[13px] w-32 rounded" />
+          ) : (
+            <span className="truncate text-[13px] text-neutral-500">
+              {placeCount}개의 장소를 기록했어요.
+            </span>
+          )}
         </div>
+
+        {/*
+          못 받았을 때. 붙들어 두지 않는다(근처 안내와 달리) — 다시 받아서 성공하면 그 문구는
+          더 이상 참이 아니라, 페이드아웃으로 남겨 두면 틀린 말이 잠깐 더 보인다.
+        */}
+        {isError && (
+          <div
+            className="banner-line col-start-1 row-start-1 flex min-w-0 flex-col leading-tight"
+            role="alert"
+          >
+            <span className="truncate text-[15px] font-medium text-neutral-900">
+              장소를 불러오지 못했어요
+            </span>
+            <span className="truncate text-[13px] text-neutral-500">
+              지도에 기록이 안 보일 수 있어요.
+            </span>
+          </div>
+        )}
 
         {/*
           한도 문구는 `dailyLimitReached` 가 켜져 있는 동안만 존재한다 — 위 근처 안내와 달리
@@ -124,7 +180,21 @@ export function TopBanner({
         )}
       </div>
 
-      {nearby && (
+      {/*
+        오른쪽 버튼 자리도 문구와 같이 하나만 쓴다. 실패했으면 '보기' 는 누를 것이 없다 —
+        보여 줄 나무가 그 못 받은 목록 안에 있었다.
+      */}
+      {isError && onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="animate-fade-in h-8 shrink-0 rounded-xl bg-pictree-300 px-3 text-[13px] font-medium text-neutral-900"
+        >
+          다시 시도
+        </button>
+      )}
+
+      {!isError && nearby && (
         <button
           type="button"
           onClick={nearby.onView}
