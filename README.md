@@ -25,17 +25,15 @@ PicTree는 여행 중 찍은 사진의 위치 정보를 기반으로 장소를 �
 
 ### 주요 화면
 
-> TODO: 팀원별 담당 화면 스크린샷 추가 필요 (아래 표에 이미지 채워 넣기). 로그인 이후 화면은 카카오/구글 계정이 있어야 캡처 가능해 담당자가 직접 채워야 합니다.
-
 | 화면 | 스크린샷 |
 | --- | --- |
-| 로그인 | |
-| 지도 홈 | |
-| 기록 생성 | |
-| 타임라인 | |
-| 동선 보기 | |
-| AI 블로그 작성 | |
-| 마이페이지 | |
+| 로그인 | <img src="docs/screenshots/login.png" width="200" /> |
+| 지도 홈 | <img src="docs/screenshots/home.png" width="200" /> |
+| 기록 생성 | <img src="docs/screenshots/camera.png" width="200" /> |
+| 타임라인 | <img src="docs/screenshots/timeline.png" width="200" /> |
+| 동선 보기 | <img src="docs/screenshots/journey-map.png" width="200" /> <img src="docs/screenshots/journey-roadmap.png" width="200" /> (지도 · 로드맵 두 모드 지원) |
+| AI 블로그 작성 | <img src="docs/screenshots/blog.png" width="200" /> |
+| 마이페이지 | <img src="docs/screenshots/profile.png" width="200" /> |
 
 <br/>
 
