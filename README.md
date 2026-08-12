@@ -11,7 +11,7 @@ PicTree는 여행 중 찍은 사진의 위치 정보를 기반으로 장소를 �
 
 ## Live Demo
 
-배포 주소: **[https://picturetree.netlify.app](https://picturetree.netlify.app)** (Netlify, `main` 브랜치 머지 시 자동 배포)
+배포 주소: **[https://picturetree.netlify.app](https://picturetree.netlify.app)** (Netlify, 자동 배포 없이 수동으로 deploy를 실행해 반영)
 
 ### 테스트 방법
 
@@ -247,7 +247,7 @@ features/{featureName}/
 
 ### Branch
 
-`main` + 단명 기능 브랜치(`type/shortDescription`) 2단계 구조를 씁니다. `dev`나 `release` 같은 중간 통합 브랜치는 두지 않습니다 — Netlify가 `main` 머지 시점에 바로 배포하는 구조라, 배포 대상이 없는 중간 브랜치를 끼워 넣으면 머지 단계만 늘어나기 때문입니다. 대신 모든 병합은 PR + 코드 리뷰를 거칩니다. 자세한 배경은 [CONTRIBUTING.md의 Branching Strategy](./CONTRIBUTING.md#branching-strategy)를 확인합니다.
+`main` + 단명 기능 브랜치(`type/shortDescription`) 2단계 구조를 씁니다. `dev`나 `release` 같은 중간 통합 브랜치는 두지 않습니다 — **`main` 머지가 곧 배포가 아니기 때문입니다.** 배포는 Netlify에서 deploy를 직접 실행할 때만 일어나므로, 3단계 구조에서 `dev`가 맡는 "기능을 모아 두고 테스트하는 공간"을 `main`이 겸할 수 있습니다. 대신 모든 병합은 PR + 코드 리뷰를 거칩니다. 자세한 배경은 [CONTRIBUTING.md의 Branching Strategy](./CONTRIBUTING.md#branching-strategy)를 확인합니다.
 
 ```text
 type/shortDescription
