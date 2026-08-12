@@ -60,7 +60,7 @@ export function RenameModal({ currentTitle, onClose, onConfirm }: RenameModalPro
       >
         <h2 className="text-xl font-bold tracking-[0.2px] text-ink">이름 변경</h2>
 
-        <div className="mt-4 flex items-center gap-2 rounded-[20px] border-2 border-pictree-500 bg-[#fffdfd] px-2.5 py-1.5">
+        <div className="mt-4 flex items-center gap-2 rounded-[20px] border-2 border-pictree-500 bg-white px-2.5 py-1.5">
           <PenIcon className="size-[26px] shrink-0 text-ink" />
           <input
             ref={inputRef}

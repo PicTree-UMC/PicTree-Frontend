@@ -131,7 +131,9 @@ export function RouteStep({
                   className={`mt-0.5 flex size-[22px] shrink-0 items-center justify-center rounded-full border-2 transition ${
                     selected
                       ? 'border-pictree-700 bg-pictree-700 text-white'
-                      : 'border-line bg-white text-transparent'
+                      : // 미체크 테두리는 LINE(1.4:1)으로 못 쓴다 — 흰 면 위 비텍스트 UI 는 3:1 이
+                        // 필요하고, 여기선 테두리가 이 원의 유일한 단서다. 근거는 `TermsAgreementView`(#232).
+                        'border-ink-muted bg-white text-transparent'
                   }`}
                 >
                   <CheckIcon />

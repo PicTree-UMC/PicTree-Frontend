@@ -202,12 +202,19 @@ export function TermsAgreementView({ onAgree }: TermsAgreementViewProps) {
   );
 }
 
+/*
+  ⚠️ 미체크 테두리는 **LINE 이 아니다.** 흰 면 위 비텍스트 UI 는 3:1 이 필요한데
+  LINE(`#D9D9D9`)은 1.4:1, 종전 값 `#9B9B9B` 는 2.8:1 로 둘 다 미달이었다 —
+  테두리가 이 원의 유일한 단서라(체크 표시는 미체크일 때 투명) 안 보이면 컨트롤 자체가 사라진다.
+  INK-muted 는 흰 위 6.0:1 이라 여유 있게 넘고, **회색을 새로 만들지 않아도 된다.**
+  같은 판정을 `blog/components/steps/RouteStep.tsx` 의 선택 원도 함께 따른다(#232).
+*/
 function CheckCircle({ checked, compact = false }: { checked: boolean; compact?: boolean }) {
   return (
     <span
       className={`grid shrink-0 place-items-center rounded-full border-2 ${
         compact ? 'h-6 w-6' : 'h-7 w-7'
-      } ${checked ? 'border-pictree-500 bg-pictree-500' : 'border-[#9B9B9B] bg-white'}`}
+      } ${checked ? 'border-pictree-500 bg-pictree-500' : 'border-ink-muted bg-white'}`}
       aria-hidden="true"
     >
       <svg width="15" height="12" viewBox="0 0 15 12" fill="none">

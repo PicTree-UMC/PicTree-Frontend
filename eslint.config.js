@@ -37,6 +37,8 @@ const withToken = {
   b4b4b4: 'ink-disabled',
   fffcef: 'cream',
   f6f0d7: 'cream-sub',
+  ede7d2: 'cream-deep',
+  efede7: 'shell',
   dc2626: 'error',
   fef7f7: 'error-surface',
   '7a5c3a': 'bark',
@@ -69,6 +71,8 @@ const deprecated = {
   fffdf7: ['cream` 또는 `white', '크림 위에 뜨는 면은 흰색이다'],
   fffdf4: ['cream', '크림 근사값'],
   faf8ef: ['cream', '크림 근사값'],
+  fffdfd: ['white', '흰색 근사값'],
+  '9b9b9b': ['ink-muted', '미체크 테두리용 회색이었는데 흰 위 2.8:1 로 3:1 미달이었다'],
 };
 
 /**
