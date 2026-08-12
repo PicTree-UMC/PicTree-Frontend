@@ -15,8 +15,8 @@ export const favoriteKeys = {
 /**
  * 즐겨찾기 목록 조회 훅. `GET /trees/favorites`
  *
- * 토큰이 없어도 개발 환경에서는 돌린다 — `favoriteApi` 가 목데이터로 폴백하므로
- * 막아 버리면 로컬에서 화면이 계속 비어 있게 된다.
+ * 토큰이 없으면 부르지 않는다 — 인증이 걸린 엔드포인트라 401 이 뻔하다.
+ * ⚠️ `|| import.meta.env.DEV` 를 되살리지 말 것 — 목데이터가 생기지 않는다(`useTrees` 주석).
  */
 export const useFavorites = () => {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -24,7 +24,7 @@ export const useFavorites = () => {
   return useQuery({
     queryKey: favoriteKeys.all,
     queryFn: getFavorites,
-    enabled: Boolean(accessToken) || import.meta.env.DEV,
+    enabled: Boolean(accessToken),
     /** 4xx 는 반복해도 결과가 같다. 5xx·네트워크 오류만 1회 재시도한다. */
     retry: (failureCount, error) => (isClientError(error) ? false : failureCount < 1),
     refetchOnWindowFocus: (query) => !isClientError(query.state.error),

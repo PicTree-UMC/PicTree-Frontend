@@ -25,7 +25,8 @@ export const calendarKeys = {
  * 화면이 쓰기 좋게 `날짜 → level` · `날짜 → 나무 수` 맵으로 바꿔서 돌려준다. 격자가 날짜로
  * 조회하는데 배열이면 매 칸마다 훑어야 한다.
  *
- * 토큰이 없어도 개발 환경에서는 돌린다 — `calendarApi` 가 목데이터로 폴백한다.
+ * 토큰이 없으면 부르지 않는다 — `GET /calendar` 는 인증이 걸려 있어 401 이 뻔하다.
+ * ⚠️ `|| import.meta.env.DEV` 를 되살리지 말 것 — 목데이터가 생기지 않는다(`useTrees` 주석).
  */
 export const useTravelCalendar = (year: number, month: number) => {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -33,7 +34,7 @@ export const useTravelCalendar = (year: number, month: number) => {
   const query = useQuery({
     queryKey: calendarKeys.month(year, month),
     queryFn: () => getTravelCalendar(year, month),
-    enabled: Boolean(accessToken) || import.meta.env.DEV,
+    enabled: Boolean(accessToken),
     /** 4xx 는 반복해도 결과가 같다. 400(잘못된 연·월)도 여기 포함된다. */
     retry: (failureCount, error) => (isClientError(error) ? false : failureCount < 1),
     refetchOnWindowFocus: (query) => !isClientError(query.state.error),

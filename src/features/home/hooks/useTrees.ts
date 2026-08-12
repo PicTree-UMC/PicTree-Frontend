@@ -35,6 +35,12 @@ const USE_MOCK_FALLBACK = import.meta.env.DEV;
  * 곳이면 어디든 가짜 `treeId` 가 흘러들었다 — 동선 후보가 `home/treesApi` 재사용을
  * 일부러 피한 이유가 그것이었다(가짜 id 가 `POST /routes` 로 새면 400). 원본
  * (`fetchAllTreeItems`)은 깨끗하므로, 폴백은 화면 하나가 자기 사정으로 갖는다.
+ *
+ * ⚠️ **폴백은 `enabled` 를 여는 게 아니라 결과를 갈아끼우는 자리에 있다**(아래 `if` 블록).
+ * 그래서 `enabled` 에 `import.meta.env.DEV` 를 넣어 봐야 목데이터가 생기지 않는다 — 토큰
+ * 없는 요청이 나가 401 을 받을 뿐이다. 프로필 훅 셋(`useTravelCalendar`·`useFavorites`·
+ * `useCalendarTrees`)이 그 오해로 DEV 예외를 달고 있었고 정작 그 API 들엔 폴백이 없었다
+ * (이슈 #291). 이 저장소의 목 폴백은 여기 하나뿐이다.
  */
 export const useTrees = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
