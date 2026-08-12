@@ -1,4 +1,5 @@
 import { httpClient } from '@/shared/lib/httpClient';
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import type { MapMarkerData } from '../hooks/useMapMarkers';
 import type {
   ApiEnvelope,
@@ -24,13 +25,18 @@ import { detailToMarker } from '../lib/treeMapping';
 /** 서버가 허용하는 최대 페이지 크기(`TreePagination.MAX_SIZE`). */
 const MAX_PAGE_SIZE = 100;
 
-/** `GET /trees` 한 페이지. ⚠️ `page` 는 **1-based** 다 — 0 을 넣으면 서버가 첫 장을 안 준다. */
+/**
+ * `GET /trees` 한 페이지. ⚠️ `page` 는 **1-based** 다 — 0 을 넣으면 서버가 첫 장을 안 준다.
+ *
+ * 언랩이 여기 한 곳에만 있으면 된다 — 아래 `fetchAllTreeItems` 의 병렬 순회가 전부
+ * 이 함수를 거치므로, 몇 번째 장이 실패해도 그 자리에서 던진다.
+ */
 async function fetchTreePage(page: number): Promise<TreeListData> {
   const { data } = await httpClient.get<ApiEnvelope<TreeListData>>('/trees', {
     params: { page, size: MAX_PAGE_SIZE },
   });
 
-  return data.data;
+  return unwrapApiResponse(data);
 }
 
 /**
@@ -102,7 +108,7 @@ export async function fetchAllTreeItems(): Promise<TreeListItem[]> {
 /** 나무 상세 조회(마커 탭 시 코멘트·사진·날짜 채우기용). */
 export const getTreeDetail = async (treeId: number): Promise<MapMarkerData> => {
   const { data } = await httpClient.get<ApiEnvelope<TreeDetail>>(`/trees/${treeId}`);
-  return detailToMarker(data.data);
+  return detailToMarker(unwrapApiResponse(data));
 };
 
 /** 장소(나무) 등록. 등록된 treeId 로 이어서 사진을 업로드한다. */
@@ -110,7 +116,7 @@ export const createTree = async (
   payload: CreateTreeRequest,
 ): Promise<CreateTreeData> => {
   const { data } = await httpClient.post<ApiEnvelope<CreateTreeData>>('/trees', payload);
-  return data.data;
+  return unwrapApiResponse(data);
 };
 
 /**
@@ -132,7 +138,7 @@ export const uploadTreeImage = async (
     `/trees/${treeId}/images`,
     formData,
   );
-  return data.data.image;
+  return unwrapApiResponse(data).image;
 };
 
 /**

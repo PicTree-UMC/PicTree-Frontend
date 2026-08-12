@@ -1,4 +1,5 @@
 import { httpClient } from '@/shared/lib/httpClient';
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import type { ApiEnvelope } from '@/features/home/types/tree';
 
 /**
@@ -49,11 +50,16 @@ interface TreeSummaryData {
  */
 export async function getTreeStats(): Promise<TreeStats> {
   const { data } = await httpClient.get<ApiEnvelope<TreeSummaryData>>('/trees/summary');
-  const summary = data.data;
+  /*
+    ⚠️ **언랩이 특히 중요한 자리다.** 세 값이 전부 `null` 을 허용해서, 실패 응답이 그냥
+    "아직 모른다"(스켈레톤·`-`)로 보인다 — 화면에 실패의 흔적이 하나도 안 남았다.
+    아래 `?? null` 은 **성공 응답이 필드를 비웠을 때**를 위한 것이지 실패 처리가 아니다.
+  */
+  const summary = unwrapApiResponse(data);
 
   return {
-    treeCount: summary?.treeCount ?? null,
-    photoCount: summary?.imageCount ?? null,
-    usedBytes: summary?.usedBytes ?? null,
+    treeCount: summary.treeCount ?? null,
+    photoCount: summary.imageCount ?? null,
+    usedBytes: summary.usedBytes ?? null,
   };
 }

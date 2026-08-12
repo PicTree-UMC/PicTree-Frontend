@@ -1,4 +1,5 @@
 import { httpClient } from '@/shared/lib/httpClient';
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import type { ApiResponse } from '@/shared/types/api';
 import type { Route, RouteDetail, RoutePhoto, RoutePlace } from '../types/route';
 import { formatRecordDates, formatSavedDate } from '../lib/formatDate';
@@ -8,6 +9,7 @@ import { formatRecordDates, formatSavedDate } from '../lib/formatDate';
  *
  * 서버 응답은 공통 래퍼 `{success,code,message,data}` 로 감싸여 오므로 여기서 언랩하고,
  * 화면이 쓰는 형태까지 매핑을 끝낸다 — 위층(훅·페이지)은 서버 필드명을 모른다.
+ * 언랩은 `unwrapApiResponse` 가 한다 — **벗기면서 `success` 를 함께 본다**(이슈 #290).
  * 인증 헤더는 httpClient 인터셉터가 붙인다.
  */
 
@@ -62,8 +64,13 @@ const toRoute = (item: RouteListItem): Route => ({
  */
 export const getRoutes = async (): Promise<Route[]> => {
   const { data } = await httpClient.get<ApiResponse<RouteListData>>('/routes');
-
-  return (data.data?.items ?? []).map(toRoute);
+  /*
+    ⚠️ **`items` 의 `?? []` 를 실패 처리로 착각하지 말 것.** 이건 성공 응답이 `items:null` 을
+    실어 보낼 때(타입도 `| null` 이다) 쓰는 값이다. 예전엔 언랩이 없어서 `success:false` 도
+    이 빈 배열로 접혔고, 그러면 쿼리가 **성공으로 끝나** 목록 화면이 에러 UI 대신
+    '아직 저장된 동선이 없어요' 를 띄웠다 — 실패한 줄 아무도 몰랐다.
+  */
+  return (unwrapApiResponse(data).items ?? []).map(toRoute);
 };
 
 /** `GET /routes/{routeId}` 의 노드 하나. 목록과 달리 좌표·날짜·순서까지 온다. */
@@ -96,15 +103,15 @@ interface RouteDetailData {
  */
 export const getRouteDetail = async (routeId: number): Promise<RouteDetail> => {
   const { data } = await httpClient.get<ApiResponse<RouteDetailData>>(`/routes/${routeId}`);
-  const detail = data.data;
+  const detail = unwrapApiResponse(data);
 
   // 순서는 서버 배열 순서를 믿지 않고 sequence 로 정한다 — 이 순서가 곧 지도의 선과 번호다.
-  const points = [...(detail?.points ?? [])].sort((a, b) => a.sequence - b.sequence);
+  const points = [...(detail.points ?? [])].sort((a, b) => a.sequence - b.sequence);
 
   return {
-    id: detail?.routeId ?? routeId,
-    title: detail?.routeName ?? '',
-    savedAt: formatSavedDate(detail?.createdAt),
+    id: detail.routeId,
+    title: detail.routeName,
+    savedAt: formatSavedDate(detail.createdAt),
     places: points.map(
       (point, index): RoutePlace => ({
         // 같은 나무를 다시 방문하면 treeId 가 겹친다 → 화면용 키는 방문 순서로 만든다.
@@ -136,7 +143,7 @@ export const createRoute = async (routeName: string, treeIds: number[]): Promise
     points: treeIds.map((treeId, sequence) => ({ treeId, sequence })),
   });
 
-  return data.data.routeId;
+  return unwrapApiResponse(data).routeId;
 };
 
 /** 동선 1건 삭제. `DELETE /routes/{routeId}` (노드도 함께 삭제된다) */
@@ -160,7 +167,7 @@ export const getRoutePhotos = async (id: number): Promise<RoutePhoto[]> => {
     `/routes/${id}/images`,
   );
 
-  return (data.data?.images ?? []).map((image) => ({
+  return (unwrapApiResponse(data).images ?? []).map((image) => ({
     treeId: image.treeId,
     placeName: image.name,
     url: image.imageUrl,
