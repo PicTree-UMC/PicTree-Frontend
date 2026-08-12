@@ -67,9 +67,17 @@ export function RouteSavedPage() {
     navigate(ROUTES.journey, { replace: true, state: { selectedRouteId: routeId } });
 
   return (
-    <main className="flex min-h-full w-full flex-col">
-      {/* 알림은 남는 자리 한가운데. 아래 버튼이 자리를 먼저 가져가고 남는 만큼을 쓴다. */}
-      <div className="flex flex-1 flex-col items-center justify-center px-5 text-center">
+    /*
+      `h-full` 이다 — **`min-h-full` 이었다.** 내용이 문장 세 줄뿐이라 눈에 띄지 않았지만,
+      높이가 안 확정된 컬럼에서는 아래 버튼이 '바닥' 이 아니라 '흐름의 끝' 에 있는 것이라
+      내용이 화면보다 길어지면 밀려난다(블로그 만들기 세 단계가 그래서 터졌다).
+      ①②③ 과 같은 얼개로 맞춰 둔다.
+    */
+    <main className="flex h-full w-full flex-col">
+      {/* 알림은 남는 자리 한가운데. 아래 버튼이 자리를 먼저 가져가고 남는 만큼을 쓴다.
+          `min-h-0` + `overflow-y-auto`: 큰 글꼴·가로 모드처럼 자리가 모자랄 때 이 칸이
+          스크롤을 받는다. 없으면 높이가 확정된 만큼 넘치는 부분이 잘려 안 보인다. */}
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-5 text-center">
         {/*
           동선이 그려지는 그림이 먼저 돈다(약 1.3초). 빈 화면에서는 앞으로 만들 것을 예고하는
           그림인데, 여기서는 **방금 만든 그것**이라 같은 그림이 확인이 된다.
