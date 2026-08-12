@@ -98,15 +98,23 @@ export function TimelinePage() {
   return (
     // min-h-full: 100vh 는 셸 컬럼을 넘긴다. 상단 안전영역은 안쪽 pt-header 가 갖는다.
     <div className="flex min-h-full flex-col bg-cream pb-nav">
-      <div className="flex flex-col gap-4 px-5 pb-5 pt-header">
+      {/*
+        ⚠️ 기록이 없을 때는 머리글을 동선·블로그와 **같은 치수**(`pb-3` + 제목 한 줄)로
+        둔다. 빈 화면은 머리글 아래 남은 높이의 가운데에 서므로, 머리글이 22px 높으면
+        그만큼 새싹과 문구가 다른 탭과 어긋난다(이슈 #274).
+      */}
+      <div className={`flex flex-col gap-4 px-5 pt-header ${isEmpty ? 'pb-3' : 'pb-5'}`}>
         {/*
           평소엔 좌측 타이틀 + 우측 검색 버튼을 둔다. 돋보기를 누르면
           이 헤더 자리를 통째로 검색바가 차지하고, 우측 취소로 다시 헤더로 돌아온다.
 
           두 상태를 같은 고정 높이(h-11 = 검색바 높이) 안에 두어야 전환할 때 헤더가
           위아래로 튀지 않는다.
+
+          ⚠️ 기록이 없으면 그 고정 높이를 뺀다. 검색 버튼 자체가 숨겨져 있어(아래) 검색바가
+          열릴 수 없으니, 튐을 막을 것이 없는데 44px 만 잡아먹는다.
         */}
-        <div className="flex h-11 items-center">
+        <div className={`flex items-center ${isEmpty ? '' : 'h-11'}`}>
           {isSearchOpen ? (
             <div className="flex w-full items-center gap-2">
               <div className="min-w-0 flex-1">
@@ -175,10 +183,16 @@ export function TimelinePage() {
       {/* 헤더 아래 남은 높이를 새싹이 차지한다 — 위로 붙으면 화면이 비어 보인다. */}
       {isEmpty && <EmptyTimeline />}
 
-      {/* 게시물은 인스타 피드처럼 좌우 여백 없이 화면 끝까지 채운다. */}
+      {/*
+        게시물은 인스타 피드처럼 좌우 여백 없이 화면 끝까지 채운다.
+
+        ⚠️ 기록이 없으면 이 묶음 자체를 걸러 낸다. 안이 비어도 `pb-4` 만큼(16px) 자리를
+        차지해서, 위 빈 화면이 쓸 수 있는 높이가 다른 탭보다 그만큼 짧아진다 — 새싹과
+        문구가 다른 탭보다 조금 높게 서 있던 이유다(이슈 #274).
+      */}
       {isLoading ? (
         <TimelineSkeleton />
-      ) : (
+      ) : isEmpty ? null : (
         <div className="flex flex-col gap-5 pb-4">
           {groups.map((group) => (
             <TimelinePhotoGroup
