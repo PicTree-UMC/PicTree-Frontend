@@ -18,13 +18,16 @@ import { groupTreesByDate } from '../api/calendarTreesApi';
  *
  * `staleTime` 을 5분 준 것도 같은 이유다 — 이 화면을 보는 동안 나무가 늘어날 일이
  * 없는데(심는 건 카메라 화면이다) 창 포커스마다 전체 순회가 다시 나가면 안 된다.
+ *
+ * 토큰이 없으면 부르지 않는다 — `GET /trees` 는 인증이 걸려 있어 401 이 뻔하다.
+ * ⚠️ `|| import.meta.env.DEV` 를 되살리지 말 것 — 목데이터가 생기지 않는다(`useTrees` 주석).
  */
 export const useCalendarTrees = (enabled: boolean) => {
   const accessToken = useAuthStore((state) => state.accessToken);
 
   return useAllTrees({
     select: groupTreesByDate,
-    enabled: enabled && (Boolean(accessToken) || import.meta.env.DEV),
+    enabled: enabled && Boolean(accessToken),
     staleTime: 5 * 60 * 1000,
   });
 };
