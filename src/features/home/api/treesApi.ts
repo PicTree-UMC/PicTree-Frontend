@@ -147,15 +147,25 @@ export const uploadTreeImage = async (
  * 명세서는 본문 `{ isFavorite }` 로 원하는 상태를 지정하게 돼 있다. 서버(develop)는
  * 아직 본문을 읽지 않고 현재 값을 뒤집지만, 명세서대로 실어 보내야 DTO 가 붙었을 때
  * 호출부를 고치지 않아도 된다. 즐겨찾기 화면(`profile/api/favoriteApi`)도 같은 형태로 보낸다.
+ *
+ * ⚠️ **본문을 안 쓰는데도 응답을 받는다.** 값이 필요해서가 아니라 `success` 를 보기
+ * 위해서다 — 안 받으면 200 + `success:false` 를 확인할 방법이 아예 없다(이슈 #308).
+ * 이 화면은 특히 낙관적 갱신을 쓰므로, 실패가 안 던져지면 **롤백이 안 돌아** 별이
+ * 켜진 채 남았다가 다음 무효화에 조용히 꺼진다.
  */
 export const toggleTreeFavorite = async (
   treeId: number,
   isFavorite: boolean,
 ): Promise<void> => {
-  await httpClient.patch(`/trees/${treeId}/favorite`, { isFavorite });
+  const { data } = await httpClient.patch<ApiEnvelope<null>>(
+    `/trees/${treeId}/favorite`,
+    { isFavorite },
+  );
+  unwrapApiResponse(data);
 };
 
-/** 나무 삭제. */
+/** 나무 삭제. 응답을 받는 이유는 `toggleTreeFavorite` 주석. */
 export const deleteTree = async (treeId: number): Promise<void> => {
-  await httpClient.delete(`/trees/${treeId}`);
+  const { data } = await httpClient.delete<ApiEnvelope<null>>(`/trees/${treeId}`);
+  unwrapApiResponse(data);
 };

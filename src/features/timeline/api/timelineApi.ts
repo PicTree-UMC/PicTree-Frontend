@@ -1,4 +1,5 @@
 import { httpClient } from '@/shared/lib/httpClient';
+import { unwrapApiResponse } from '@/shared/lib/apiResponse';
 import type { ApiEnvelope, TreeListItem } from '@/features/home/types/tree';
 import type {
   TimelineRecord,
@@ -74,16 +75,21 @@ export const toRecordFromListItem = (tree: TreeListItem): TimelineRecord => ({
  *
  * 반환값은 수정한 나무의 id — 통합 전 `updateTimeline` 이 기록 id 를 돌려주던 자리다.
  * 서버는 `data: null` 을 주므로 인자를 그대로 되돌린다.
+ *
+ * ⚠️ **`unwrapApiResponse` 를 값이 아니라 검사로만 쓴다.** 서버가 `data:null` 을 주므로
+ * 언랩의 결과는 항상 `null` 이다 — 그걸 반환하면 위 규약이 깨진다. 그래도 불러야 하는
+ * 이유는 200 + `success:false` 를 여기 말고는 볼 자리가 없어서다(이슈 #308).
  */
 export const updateTimeline = async (
   treeId: string,
   payload: UpdateTimelineRequest,
 ): Promise<string> => {
-  await httpClient.patch<ApiEnvelope<null>>(`/trees/${treeId}`, {
+  const { data } = await httpClient.patch<ApiEnvelope<null>>(`/trees/${treeId}`, {
     ...(payload.title !== undefined ? { name: payload.title } : {}),
     ...(payload.content !== undefined ? { description: payload.content } : {}),
     ...(payload.mood !== undefined ? { mood: payload.mood } : {}),
   });
+  unwrapApiResponse(data);
 
   return treeId;
 };
@@ -96,5 +102,6 @@ export const updateTimeline = async (
  * (`TimelinePage` 의 `DeleteConfirmModal`).
  */
 export const deleteTimeline = async (treeId: string): Promise<void> => {
-  await httpClient.delete<ApiEnvelope<null>>(`/trees/${treeId}`);
+  const { data } = await httpClient.delete<ApiEnvelope<null>>(`/trees/${treeId}`);
+  unwrapApiResponse(data);
 };
