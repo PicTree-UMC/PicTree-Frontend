@@ -135,8 +135,21 @@ function useCollapseDrag(setCollapsed: (collapsed: boolean) => void) {
       onPointerDown: (event: ReactPointerEvent) => {
         startYRef.current = event.clientY;
         draggedRef.current = false;
-        // 캡처하지 않으면 손가락이 패널 밖으로 나가는 순간 move 가 끊긴다.
-        event.currentTarget.setPointerCapture(event.pointerId);
+        /*
+          캡처하지 않으면 손가락이 패널 밖으로 나가는 순간 move 가 끊긴다.
+
+          ⚠️ **마우스에는 걸지 않는다 — 걸면 안쪽 버튼의 `onClick` 이 죽는다.** 캡처가 살아
+          있으면 `pointerup` 이 캡처 대상(이 `div`)으로 재타게팅되고, `click` 은 누른 곳
+          (`button`)과 뗀 곳(`div`)의 **공통 조상**에서 발화한다 — 즉 `div` 에서 나고 버튼은
+          영영 안 불린다. 터치는 브라우저가 `pointerdown` 대상에 암묵적 캡처를 이미 걸어 둬서
+          대상이 버튼 그대로라 이 문제가 없다(그래서 모바일에서만 멀쩡했다).
+
+          마우스는 커서가 패널 밖으로 나가도 창 안에 있는 한 move 가 계속 오고, 창을 벗어나면
+          `pointercancel` 이 정리한다. 잃는 것이 없다.
+        */
+        if (event.pointerType !== 'mouse') {
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }
       },
       onPointerMove: (event: ReactPointerEvent) => {
         const startY = startYRef.current;
