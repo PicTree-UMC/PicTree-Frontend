@@ -35,9 +35,10 @@ interface SheetProps {
    * - `grip` — 40×4px. **동선 만들기 ②(`RoutePlaceStrip`)의 손잡이**이고, 시트를 이쪽으로
    *   통일해 가는 중이다. 흰 바닥 시트에서 유일하게 '선'인 요소라 LINE 회색(`bg-line`)과 짝이다.
    *
-   * ⚠️ **이행이 거의 끝났다 — 남은 건 `LocationPickerSheet` 하나다.** 이 셸을 쓰는 일곱
-   * 시트 중 여섯이 이미 `grip` 을 넘긴다. 그 하나만 옮기면 기본값을 `grip` 으로 바꾸고
-   * 이 prop 과 `wide` 를 함께 지운다.
+   * ⚠️ **`wide` 를 실제로 쓰는 시트는 이제 없다.** 일곱 중 여섯이 `grip` 을 넘기고,
+   * 남은 `LocationPickerSheet` 는 `handle={false}` 라 손잡이를 그리지 않는다. 기본값이
+   * `wide` 인 것은 이행이 안 끝나서가 아니라 아무도 그 기본값에 닿지 않아서다 —
+   * 기본값을 `grip` 으로 바꾸고 이 prop 을 지워도 화면은 하나도 안 움직인다.
    */
   handleSize?: 'wide' | 'grip';
   /** 열릴 때 슬라이드업. */
