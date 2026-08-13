@@ -121,7 +121,6 @@ export function RoutePlacePreview({ places, onClear }: RoutePlacePreviewProps) {
         <Sheet
           onClose={() => setShowAll(false)}
           label="선택한 장소"
-          handleSize="grip"
           handleColor="#D9D9D9"
           className="max-h-[70vh] rounded-t-[20px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.12)]"
           contentClassName="overflow-y-auto px-5"

@@ -1,5 +1,3 @@
-export type PlanType = "free" | "premium";
-
 /*
  * 기록 분류(`TimelineCategory`: VISIT·FOOD·SHOPPING·ACTIVITY·ETC)는 2026-08-04 에 지웠다.
  * `/timelines` 가 tree 로 합쳐지면서 서버에서 개념 자체가 없어졌고(#123),
@@ -48,20 +46,6 @@ export interface TimelineGroup {
   dateKey: string;
   label: string;
   records: TimelineRecord[];
-}
-
-/**
- * 정규화된 목록 — 화면·훅이 실제로 쓰는 형태.
- *
- * ⚠️ 서버 응답 타입(`TimelineApiRecord`·`TimelineApiPage`)은 2026-08-04 에 지웠다.
- * `/timelines` 가 없어지고 기록이 나무가 되면서(#123) 원본이 `TreeListItem`·`TreeDetail`
- * (`features/home/types/tree.ts`) 로 바뀌었기 때문이다. 매핑은 `timelineApi` 안에 있다.
- */
-export interface TimelinePage {
-  records: TimelineRecord[];
-  page: number;
-  size: number;
-  totalCount: number;
 }
 
 /*

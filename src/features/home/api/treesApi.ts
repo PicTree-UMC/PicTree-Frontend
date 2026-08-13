@@ -58,7 +58,8 @@ async function fetchTreePage(page: number): Promise<TreeListData> {
  * `page` 가 먹는 상태라, 서버가 이걸 무시하게 되면 같은 페이지를 여러 번 받는다.
  * 순차 순회라면 무한 루프가 되겠지만 여기는 `totalPages` 만큼만 병렬로 부르므로
  * 멈추기는 한다 — 대신 **마커가 겹쳐 찍힌다.** 거르는 값이 싸서 그냥 막아 둔다.
- * (`blogPlacesApi`·`routeCandidatesApi` 도 같은 이유로 각자 `seen` 을 들고 있다.)
+ * 이 화면 저 화면이 각자 거르던 것을 여기 한 곳으로 모았다 — 소비처는 전부 이 결과를
+ * `select` 로 가공할 뿐이라 중복을 다시 볼 일이 없다(이슈 #237).
  */
 export async function fetchAllTreeItems(): Promise<TreeListItem[]> {
   const first = await fetchTreePage(1);

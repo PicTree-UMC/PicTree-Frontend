@@ -69,7 +69,6 @@ export function RenameSheet({ currentTitle, onClose, onConfirm }: RenameSheetPro
       onClose={onClose}
       label="동선 이름 변경"
       handleColor="#D9D9D9"
-      handleSize="grip"
       avoidKeyboard
       className="rounded-t-[20px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.12)]"
       contentClassName="px-6"

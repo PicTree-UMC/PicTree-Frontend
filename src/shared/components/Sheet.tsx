@@ -28,18 +28,6 @@ interface SheetProps {
    * 실제로 쓰이는 값은 둘뿐이다: 기본 INK(`#2c3930`), 흰 바닥 시트는 LINE(`#D9D9D9`).
    */
   handleColor?: string;
-  /**
-   * 손잡이 크기.
-   *
-   * - `wide` — 134×5px. 이 셸이 생길 때 있던 시트들이 쓰던 값이라 기본값으로 남겨 뒀다.
-   * - `grip` — 40×4px. **동선 만들기 ②(`RoutePlaceStrip`)의 손잡이**이고, 시트를 이쪽으로
-   *   통일해 가는 중이다. 흰 바닥 시트에서 유일하게 '선'인 요소라 LINE 회색(`bg-line`)과 짝이다.
-   *
-   * ⚠️ 기본값을 아직 안 바꾼 이유: 이 셸을 쓰는 시트가 아홉이라, 한꺼번에 뒤집으면 이번
-   * 변경과 무관한 화면까지 같이 움직인다. 옮길 때마다 이 값을 `grip` 으로 넘기고, 남는 게
-   * 없어지면 그때 기본값을 바꾸고 이 prop 을 지운다.
-   */
-  handleSize?: 'wide' | 'grip';
   /** 열릴 때 슬라이드업. */
   animateIn?: boolean;
   /**
@@ -93,7 +81,6 @@ export function Sheet({
   dim = 'light',
   handle = true,
   handleColor = '#2c3930',
-  handleSize = 'wide',
   animateIn = true,
   top,
   className = '',
@@ -142,13 +129,16 @@ export function Sheet({
             type="button"
             aria-label="닫기"
             {...handleProps}
-            className={`flex w-full shrink-0 justify-center pb-2 ${
-              // grip 은 동선 만들기 ②(RoutePlaceStrip) 기준값(18px = 컨테이너 pt-2.5 + 버튼 py-2)에 맞춘다.
-              handleSize === 'grip' ? 'pt-[18px]' : 'pt-3'
-            }`}
+            // 위 여백 18px 은 동선 만들기 ②(RoutePlaceStrip) 기준값이다
+            // (컨테이너 pt-2.5 + 버튼 py-2).
+            className="flex w-full shrink-0 justify-center pb-2 pt-[18px]"
           >
+            {/*
+              40×4px. 흰 바닥 시트에서 유일하게 '선'인 요소라 LINE 회색(`bg-line`)과 짝이다
+              — 색은 `handleColor` 로 받는다(그쪽 주석에 hex 인 이유가 있다).
+            */}
             <span
-              className={`rounded-full ${handleSize === 'grip' ? 'h-1 w-10' : 'h-[5px] w-[134px]'}`}
+              className="h-1 w-10 rounded-full"
               style={{ backgroundColor: handleColor }}
               aria-hidden
             />
