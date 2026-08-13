@@ -141,7 +141,6 @@ export function RouteMenuSheet({ route, onClose, onRename, onDelete }: RouteMenu
       label={`${route.title} 옵션`}
       dim="dark"
       handleColor="#D9D9D9"
-      handleSize="grip"
       className="rounded-t-[20px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.12)]"
       contentClassName="px-5"
       bottomPadding="1.25rem"

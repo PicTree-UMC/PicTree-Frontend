@@ -47,7 +47,6 @@ export function NicknameEditSheet({ currentNickname, isSaving, onClose, onSubmit
       onClose={onClose}
       label="닉네임 수정"
       handleColor="#D9D9D9"
-      handleSize="grip"
       avoidKeyboard
       className="rounded-t-[20px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.12)]"
       contentClassName="px-6"

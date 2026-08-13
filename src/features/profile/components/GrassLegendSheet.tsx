@@ -25,7 +25,6 @@ export function GrassLegendSheet({ onClose }: { onClose: () => void }) {
       onClose={onClose}
       label="잔디 색 안내"
       handleColor="#D9D9D9"
-      handleSize="grip"
       className="rounded-t-[20px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.12)]"
       contentClassName="px-5"
       bottomPadding="1.25rem"
