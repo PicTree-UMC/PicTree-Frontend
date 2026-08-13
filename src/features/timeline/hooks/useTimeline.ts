@@ -34,16 +34,7 @@ const toDateKey = (d: Date) =>
  */
 const buildLabel = (date: Date): string =>
   `${date.getMonth() + 1}월 ${date.getDate()}일`;
-/**
- * 방문 날짜로 묶는다.
- *
- * 그룹 머리글도 정렬과 같은 날짜를 봐야 한다 — `getSortDate` 를 함께 쓰는 이유다.
- * 정렬은 방문일로 해 놓고 머리글만 다른 날짜면 "4월 1일" 아래에 3월 기록이
- * 섞여 읽힌다.
- *
- * 그룹의 앞뒤 순서도 정렬 방향을 따른다. 등록순인데 날짜 머리글이 최신부터면
- * 안쪽만 뒤집힌 꼴이 된다. 그룹 안쪽은 `sortRecords` 가 잡아 둔 순서를 그대로 쓴다.
- */
+
 /**
  * 날짜를 못 받은 기록들이 모이는 그룹의 키.
  *
@@ -57,6 +48,16 @@ const buildLabel = (date: Date): string =>
  */
 const NO_DATE_KEY = "";
 
+/**
+ * 방문 날짜로 묶는다.
+ *
+ * 그룹 머리글도 정렬과 같은 날짜를 봐야 한다 — `getSortDate` 를 함께 쓰는 이유다.
+ * 정렬은 방문일로 해 놓고 머리글만 다른 날짜면 "4월 1일" 아래에 3월 기록이
+ * 섞여 읽힌다.
+ *
+ * 그룹의 앞뒤 순서도 정렬 방향을 따른다. 등록순인데 날짜 머리글이 최신부터면
+ * 안쪽만 뒤집힌 꼴이 된다. 그룹 안쪽은 `sortRecords` 가 잡아 둔 순서를 그대로 쓴다.
+ */
 const groupByDate = (
   records: TimelineRecord[],
   sort: TimelineSort
@@ -102,6 +103,10 @@ interface UseTimelineOptions {
   sort?: TimelineSort;
 }
 
+/** 원본 나무 → 타임라인 기록. 모듈 최상위 참조로 `select` 에 넘긴다. */
+const toTimelineRecords = (trees: TreeListItem[]): TimelineRecord[] =>
+  trees.map(toRecordFromListItem);
+
 /**
  * 타임라인 목록 조회 훅. `GET /trees` (통합 전에는 `GET /timelines` — #123)
  *
@@ -115,10 +120,6 @@ interface UseTimelineOptions {
  * 이미 전체를 받고 있던 것과 어긋난 채였다(#200 과 같은 종류의 잘림이다). 지금은 원본
  * 하나를 나눠 쓰므로 전부 걸린다.
  */
-/** 원본 나무 → 타임라인 기록. 모듈 최상위 참조로 `select` 에 넘긴다. */
-const toTimelineRecords = (trees: TreeListItem[]): TimelineRecord[] =>
-  trees.map(toRecordFromListItem);
-
 export const useTimeline = ({
   keyword = "",
   sort = "recent",
