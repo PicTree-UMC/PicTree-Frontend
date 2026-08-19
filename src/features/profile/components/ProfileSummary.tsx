@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/shared/constants/routes";
 import { Skeleton } from "@/shared/components";
 import { usePictreeToken } from "@/features/premium/hooks/usePictreeToken";
 import { useMySubscription } from "@/features/premium/hooks/useMySubscription";
@@ -28,17 +30,28 @@ function StatTile({
   icon,
   value,
   label,
+  onClick,
 }: {
   /** 이모지 한 글자. ⚠️ 자리표시다 — 아이콘 자산이 생기면 여기만 갈아끼운다. */
   icon: string;
   /** 큰 값. 아직 모르면 `null` — 그 자리는 스켈레톤으로 둔다. */
   value: ReactNode;
   label: string;
+  /**
+   * 누르면 갈 곳. **없으면 읽기 전용 칸이다**(기본).
+   *
+   * ⚠️ 아래 컴포넌트 주석의 "읽기 전용" 규칙을 깨는 게 아니다 — 그 규칙이 막으려던 건
+   * **다섯 칸이 전부 같은 곳(`/premium`)으로 가는 것**이었다. 여기서 열리는 문은 하나뿐이고
+   * 목적지도 다르다(생성권 추가 구매). 두 개째가 생기려 하면 그때 다시 따져야 한다.
+   */
+  onClick?: () => void;
 }) {
-  return (
-    /* 껍데기는 `SettingsList` 의 카드와 같은 값이다 — 같은 바닥에 놓이는 흰 면이라
-       한쪽만 그림자를 쓰면 두 카드가 다른 높이에 떠 있는 것처럼 보인다. */
-    <div className="flex items-center gap-[11px] rounded-xl border border-line-soft bg-white p-[13px]">
+  /* 껍데기는 `SettingsList` 의 카드와 같은 값이다 — 같은 바닥에 놓이는 흰 면이라
+     한쪽만 그림자를 쓰면 두 카드가 다른 높이에 떠 있는 것처럼 보인다. */
+  const shell = 'flex w-full items-center gap-[11px] rounded-xl border border-line-soft bg-white p-[13px]';
+
+  const body = (
+    <>
       <span
         aria-hidden
         className="grid size-[30px] flex-none place-items-center rounded-[9px] bg-pictree-100 text-[16px] leading-none"
@@ -46,7 +59,7 @@ function StatTile({
         {icon}
       </span>
 
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1 text-left">
         {value === null ? (
           /* 흰 칸 위라 크림 띠의 #EDE4C4 가 아니라 헤어라인 회색을 쓴다(`surface="card"`). */
           <Skeleton surface="card" className="h-[23px] w-12 rounded" />
@@ -55,7 +68,36 @@ function StatTile({
         )}
         <p className="mt-px truncate text-[13px] text-ink-muted">{label}</p>
       </div>
-    </div>
+
+      {/* 누를 수 있다는 신호. 설정 목록 줄과 같은 꺾쇠라 같은 뜻으로 읽힌다. */}
+      {onClick && <ChevronIcon />}
+    </>
+  );
+
+  if (!onClick) return <div className={shell}>{body}</div>;
+
+  return (
+    <button type="button" onClick={onClick} className={`${shell} transition active:bg-cream`}>
+      {body}
+    </button>
+  );
+}
+
+/** 칸에서 다음 화면으로 가는 꺾쇠. `SettingsRow` 의 것과 같은 모양이다. */
+function ChevronIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="size-4 flex-none text-ink-disabled"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
   );
 }
 
@@ -73,9 +115,13 @@ function StatTile({
  *    칸 모양(2×2 숫자 격자 vs 한 줄 + 화살표)이 이미 둘을 구분한다.
  *    **앱에서 크림이 아닌 페이지는 `/premium` 하나** 라는 규칙(§1.2)에도 이쪽이 맞다.
  *
- * **여전히 읽기 전용이다.** 카드가 됐다고 눌리지 않는다 — 다섯 칸이 전부 `/premium`
- * 한 곳으로 갈 텐데, 같은 곳으로 가는 문 다섯 개는 서로 다른 곳처럼 읽힌다.
- * 아래 목록의 '구독' 줄이 그 문이다.
+ * **토큰 칸 하나만 눌린다.** 원래는 다섯 칸 전부 읽기 전용이었다 — 그때 막으려던 것은
+ * "다섯 칸이 전부 `/premium` 한 곳으로 가는 것" 이었고, 같은 곳으로 가는 문 다섯 개는
+ * 서로 다른 곳처럼 읽히기 때문이다. 시안(WF-021)이 연 문은 **목적지가 다르고 하나뿐**
+ * 이라 그 이유에 걸리지 않는다. 잔량을 보고 모자란 걸 아는 자리가 바로 여기다.
+ *
+ * ⚠️ 두 번째 칸을 누르게 만들려 하면 그때 위 규칙을 다시 따질 것.
+ * 나머지 넷은 그대로 읽기 전용이고, 구독으로 가는 문은 아래 목록의 '구독' 줄이다.
  *
  * **타일은 쌓은 것, 줄은 폭이 필요한 것.** 나무·사진·요금제·토큰은 값 하나로 끝나서
  * 칸에 들어가고, 사진 저장 용량은 막대 + `100MB 중 42MB` 까지 있어야 뜻이 서므로
@@ -92,6 +138,7 @@ function StatTile({
  * 것이 그 순회였으므로, 이제 이 영역은 다른 카드들과 같은 급이다.
  */
 export function ProfileSummary() {
+  const navigate = useNavigate();
   const { data: subscription } = useMySubscription();
   const { data: plans, isPending: isPlansPending } = useSubscriptionPlans();
   const { monthlyLimit, remaining, isPending: isTokenPending } = usePictreeToken();
@@ -187,6 +234,11 @@ export function ProfileSummary() {
                     : `${monthlyLimit}회`
           }
           label={remaining !== null ? "남은 토큰" : "이번 달 토큰"}
+          /*
+            시안(WF-021)이 이 칸을 생성권 추가 구매로 가는 문으로 쓴다. 잔량을 보고
+            "모자란데" 싶은 순간이 바로 여기라, 목록까지 내려가지 않고 그 자리에서 살 수 있다.
+          */
+          onClick={() => navigate(ROUTES.premiumTokens)}
         />
       </div>
 
