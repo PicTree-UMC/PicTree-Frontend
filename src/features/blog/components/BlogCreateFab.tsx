@@ -75,6 +75,7 @@ export function BlogCreateFab({ routeId }: BlogCreateFabProps = {}) {
         <PremiumUpsellSheet
           onClose={() => setShowPremiumSheet(false)}
           onUpgrade={() => navigate(ROUTES.premium)}
+          onBuyTokens={() => navigate(ROUTES.premiumTokens)}
         />
       )}
     </>

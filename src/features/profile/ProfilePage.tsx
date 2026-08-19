@@ -10,6 +10,7 @@ import { ProfileSummary } from "./components/ProfileSummary";
 import treeIcon from "./assets/icons/tree.svg";
 import accountImage from "./assets/icons/account3d.jpg";
 import cardImage from "./assets/icons/card3d.jpg";
+import tokenImage from "./assets/icons/token3d.png";
 // 이 둘만 투명 PNG 다 — 다른 세트에서 왔고 흰 배경이 안 구워져 있다(§8).
 import calendarImage from "./assets/icons/calendar3d.png";
 import favoriteImage from "./assets/icons/favorite3d.png";
@@ -158,6 +159,17 @@ export function ProfilePage() {
               길이 끊긴 채 남아 있다가 용량 카드를 이 페이지로 옮기면서 지웠다.
             */
             onClick={() => navigate(ROUTES.premium)}
+          />
+          {/*
+            '구독' 바로 아래다. 둘 다 돈을 쓰는 줄인데, 구독은 **플랜을 바꾸는 일**이고
+            이건 **플랜을 그대로 두고 생성권만 더 사는 일**이라 나란히 놓아야 차이가 읽힌다.
+            떨어뜨려 두면 생성권이 모자란 사람이 구독 줄만 보고 플랜을 올린다.
+          */}
+          {/* 아이콘은 토큰이다 — 옆줄 '구독'(카드)과 같은 그림을 쓰면 두 줄이 한 덩어리로 읽힌다. */}
+          <SettingsRow
+            image={tokenImage}
+            title="AI 초안 생성권"
+            onClick={() => navigate(ROUTES.premiumTokens)}
           />
           <SettingsRow
             image={calendarImage}
