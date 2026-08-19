@@ -1,6 +1,12 @@
 import { formatKoreanDate } from '@/shared/lib/date';
 import { ConfirmDialog, DoneDialog } from './Dialog';
-import { formatPrice, planPriceLabel, planShortName, planSummary } from '../lib/planDisplay';
+import {
+  PICTREE_TOKEN_LABEL,
+  formatPrice,
+  planPriceLabel,
+  planShortName,
+  planSummary,
+} from '../lib/planDisplay';
 import { lastDayBefore } from '../lib/planProration';
 import type { PendingPlanChangeDto, SubscriptionPlanDto } from '../types/payment';
 
@@ -56,7 +62,11 @@ export function PlanUpgradeDoneModal({
     <DoneDialog
       label="요금제 변경 완료"
       title={`${planName}으로 변경되었습니다.`}
-      description="추가된 저장 용량과 AI 초안 생성권을 지금부터 이용할 수 있습니다."
+      /*
+        ⚠️ 여기만 `AI 초안 생성권` 이라고 불렀다 — 시안 문구를 그대로 옮긴 자리인데,
+        같은 값을 비교표·히어로·FAQ 는 `PICTREE 토큰` 이라 부르고 있었다(이슈 #329).
+      */
+      description={`추가된 저장 용량과 ${PICTREE_TOKEN_LABEL}을 지금부터 이용할 수 있습니다.`}
       onConfirm={onConfirm}
     />
   );
