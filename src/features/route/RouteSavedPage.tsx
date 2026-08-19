@@ -4,6 +4,7 @@ import { ROUTES } from '@/shared/constants/routes';
 import { RouteIllustration } from './components/RouteIllustration';
 import { useBlogDraftUsage } from '@/features/blog/hooks/useBlogDraftUsage';
 import { PREMIUM_GRADIENT_CLASS } from '@/features/premium/lib/backdrop';
+import { PICTREE_TOKEN_LABEL } from '@/features/premium/lib/planDisplay';
 
 /** ③단계에서 실어 보내는 이름. 없어도 화면은 선다(새로고침·딥링크). */
 type RouteSavedState = { routeName?: string } | null | undefined;
@@ -120,7 +121,7 @@ export function RouteSavedPage() {
               사람에게 결제가 유일한 길인 것처럼 읽힌다. `지금` 이 그 차이를 진다.
             */
             <>
-              이번 주기 PICTREE 토큰을 다 썼어요
+              이번 주기 {PICTREE_TOKEN_LABEL}을 다 썼어요
               <br />
               플랜을 올리면 지금 더 쓸 수 있어요
             </>

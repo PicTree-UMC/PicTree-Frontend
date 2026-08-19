@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useInView } from '@/shared/hooks/useInView';
+import { PICTREE_TOKEN_LABEL } from '../lib/planDisplay';
 
 /**
  * 사진 네 장의 자리와, 무대 정중앙(문서 카드)까지 옮겨갈 거리.
@@ -140,7 +141,7 @@ export function BenefitShowcase() {
         하나의 이야기로 만드세요
       </h2>
       <p className="mx-auto mt-2 max-w-[300px] text-center text-[18px] leading-relaxed text-ink-muted">
-        플랜을 성장시키고 더 많은 저장 공간과 PICTREE 토큰을 누려보세요
+        플랜을 성장시키고 더 많은 저장 공간과 {PICTREE_TOKEN_LABEL}을 누려보세요
       </p>
     </section>
   );

@@ -3,6 +3,7 @@ import { PrimaryCta, Sheet, Skeleton } from '@/shared/components';
 import { useSubscriptionPlans } from '@/features/premium/hooks/useSubscriptionPlans';
 import {
   FEATURE_CODE,
+  PICTREE_TOKEN_LABEL,
   featureLabel,
   featureValuesLabel,
   sortedFeatures,
@@ -65,7 +66,7 @@ export function PremiumUpsellSheet({ onClose, onUpgrade }: PremiumUpsellSheetPro
     */
     <Sheet
       onClose={onClose}
-      label="PICTREE 토큰 소진"
+      label={`${PICTREE_TOKEN_LABEL} 소진`}
       handleColor="#D9D9D9"
       z={60}
       className="rounded-t-[20px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.12)]"
@@ -79,7 +80,7 @@ export function PremiumUpsellSheet({ onClose, onUpgrade }: PremiumUpsellSheetPro
       {/* 다음 주기에 채워지는 걸 숨기지 않는다 — 업그레이드만 말하면 기다리면 되는 사람에게
           결제가 유일한 길인 것처럼 읽힌다. `지금` 이 그 차이를 진다. */}
       <p className="mt-2 text-center text-[15px] leading-[21px] text-ink">
-        이번 주기 PICTREE 토큰을 다 썼어요
+        이번 주기 {PICTREE_TOKEN_LABEL}을 다 썼어요
         <br />
         플랜을 올리면 지금 더 쓸 수 있어요
       </p>
