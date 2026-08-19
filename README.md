@@ -172,12 +172,26 @@ npm ci
 
 ### 3. Environment Variables
 
-루트 디렉터리에 `.env` 파일을 생성하고 `.env.example`을 참고해 값을 입력합니다.
+루트 디렉터리에 `.env` 파일을 생성하고 `.env.example`을 참고해 값을 입력합니다. `VITE_` 변수는 전부 **클라이언트 번들에 평문으로 인라인되는 공개 값**이므로, 서버 전용 시크릿(토스 시크릿 키 등)은 여기에 두지 않습니다.
 
 ```env
-VITE_API_BASE_URL=
+# ⚠️ 절대 URL 금지 — `/api/v1` 같은 상대 경로여야 합니다 (아래 표 참고)
+VITE_API_BASE_URL=/api/v1
 VITE_KAKAO_MAP_APP_KEY=
+VITE_KAKAO_REST_API_KEY=
+VITE_GOOGLE_CLIENT_ID=
+VITE_OAUTH_REDIRECT_URI=
+VITE_TOSS_CLIENT_KEY=
 ```
+
+| 변수 | 필요한 기능 | 비워 두면 |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | 전체 | 모든 API 요청이 실패합니다. **절대 URL 을 넣으면** refresh 쿠키가 서드파티가 되어 WebKit(iOS 전 브라우저 · macOS Safari)에서 차단되고 **1시간마다 로그아웃**됩니다. 상대 경로여야 프록시(로컬 `vite.config.ts`, 배포 `netlify.toml`)를 타고 같은 오리진이 됩니다 |
+| `VITE_KAKAO_MAP_APP_KEY` | 지도 | 카카오맵 SDK 가 로드되지 않아 지도 화면이 뜨지 않습니다 (카카오 **JavaScript 키**) |
+| `VITE_KAKAO_REST_API_KEY` | 카카오 로그인 | 카카오 로그인 버튼이 에러만 띄웁니다. 위 지도 키와 **다른 키**입니다 (카카오 **REST API 키**) |
+| `VITE_GOOGLE_CLIENT_ID` | 구글 로그인 | 구글 로그인 버튼이 동작하지 않습니다 |
+| `VITE_OAUTH_REDIRECT_URI` | 선택 | 비워 두면 `window.location.origin` + `/auth/callback` 을 사용합니다. 배포 도메인과 다른 콜백을 쓸 때만 지정합니다 |
+| `VITE_TOSS_CLIENT_KEY` | 결제 | 결제·카드 등록 버튼이 아무 동작도 하지 않습니다. 토스 **클라이언트 키**이고, 승인에 쓰는 시크릿 키는 백엔드 전용입니다 |
 
 ### 4. Run
 
