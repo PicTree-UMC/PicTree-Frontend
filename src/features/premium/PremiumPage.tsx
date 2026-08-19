@@ -2,13 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NavBar, Spinner, useToast } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
-import { formatKoreanDate } from '@/shared/lib/date';
 import { ROUTES } from '../../shared/constants/routes';
 import { BenefitShowcase } from './components/BenefitShowcase';
 import { PaymentCheckoutView } from './components/PaymentCheckoutView';
 import { PaymentCompleteModal } from './components/PaymentCompleteModal';
 import { PendingPlanChangeNotice } from './components/PendingPlanChangeNotice';
-import { PlanChangeDoneModal, PlanChangeModal } from './components/PlanChangeModal';
+import {
+  PlanChangeDoneModal,
+  PlanChangeModal,
+  PlanUpgradeDoneModal,
+  PlanUpgradeModal,
+} from './components/PlanChangeModal';
 import { PlanCheckoutButton } from './components/PlanCheckoutButton';
 import { PlanComparison } from './components/PlanComparison';
 import { PremiumFaq } from './components/PremiumFaq';
@@ -25,6 +29,7 @@ import { useSubscriptionPlans } from './hooks/useSubscriptionPlans';
 import { PREMIUM_BACKDROP_CLASS } from './lib/backdrop';
 import { isActiveCard } from './lib/billingKey';
 import { resolvePlanAction } from './lib/planAction';
+import { upgradeProration } from './lib/planProration';
 import type { PendingPlanChangeDto } from './types/payment';
 import type { PaymentStep } from './types/premium';
 
@@ -81,13 +86,19 @@ export function PremiumPage() {
    */
   const [isPlanChangeOpen, setIsPlanChangeOpen] = useState(false);
   /**
-   * 예약이 걸린 직후 띄우는 완료 모달의 값 — **서버 응답에서 그대로 든다.**
+   * 변경이 끝난 직후 띄울 완료 모달 — **서버 응답에서 그대로 든다.**
    *
-   * `subscription.pendingPlanChange` 를 읽지 않는 이유: 무효화(`invalidateQueries`)는
-   * 비동기라 모달이 먼저 그려지고, 그 순간 캐시에는 아직 예약 전 값이 들어 있다.
-   * 확정된 `effectiveAt` 을 말해야 하는 모달이라 서버가 돌려준 것을 쓴다.
+   * `subscription` 을 읽지 않는 이유: 무효화(`invalidateQueries`)는 비동기라 모달이 먼저
+   * 그려지고, 그 순간 캐시에는 아직 변경 전 값이 들어 있다. 확정된 `effectiveAt` 을
+   * 말해야 하는 모달이라 서버가 돌려준 것을 쓴다.
+   *
+   * ⚠️ **어느 쪽인지도 응답이 정한다.** 가격 비교로 "올라갔으니 즉시 적용됐겠지" 라고
+   * 짐작하면, 서버가 아직 예약만 하는 동안 화면이 "지금부터 이용할 수 있습니다" 라고
+   * 거짓말한다. 미리보기와 실제 처리가 어긋날 수 있는 자리라 응답을 믿는다.
    */
-  const [donePlanChange, setDonePlanChange] = useState<PendingPlanChangeDto | null>(null);
+  const [changeResult, setChangeResult] = useState<
+    { kind: 'immediate'; planName: string } | { kind: 'scheduled'; pending: PendingPlanChangeDto } | null
+  >(null);
   /**
    * 고른 플랜 — **비교표의 칩 하나가 정한다.**
    *
@@ -121,7 +132,16 @@ export function PremiumPage() {
    * `이미 이용 중인 구독이 있습니다` 로 막았다 — 업그레이드할 길이 없었다.
    * 여섯 갈래를 세는 일은 `lib/planAction` 이 맡는다.
    */
-  const planAction = resolvePlanAction(subscription, selectedPlan?.id ?? -1);
+  const planAction = resolvePlanAction(subscription, selectedPlan ?? { id: -1, price: -1 });
+
+  /**
+   * 업그레이드일 때 오늘 청구되는 차액. 계산은 `lib/planProration` 이 정책대로 한다.
+   * 다운그레이드·미구독은 계산할 것이 없어 `null`.
+   */
+  const proration =
+    planAction === 'upgrade' && subscription && selectedPlan
+      ? upgradeProration(subscription.plan, selectedPlan, subscription.nextBillingAt)
+      : null;
 
   /**
    * 등록된 카드로 결제. 앱을 떠나지 않고 `POST /subscriptions` 하나로 끝나므로,
@@ -181,10 +201,16 @@ export function PremiumPage() {
       {
         onSuccess: (updated) => {
           setIsPlanChangeOpen(false);
-          // 서버가 예약을 안 채워 보내면(있어선 안 되지만) 날짜 없는 모달을 띄우느니
-          // 종전 토스트로 물러난다 — 완료 모달의 알맹이가 곧 그 날짜다.
-          if (updated.pendingPlanChange) setDonePlanChange(updated.pendingPlanChange);
-          else showToast('요금제 변경을 예약했어요.', 'success');
+          if (updated.pendingPlanChange) {
+            setChangeResult({ kind: 'scheduled', pending: updated.pendingPlanChange });
+          } else if (updated.plan.id === selectedPlan.id) {
+            // 예약이 안 걸렸는데 플랜이 이미 바뀌어 있다 = 즉시 적용됐다.
+            setChangeResult({ kind: 'immediate', planName: updated.plan.name });
+          } else {
+            // 둘 다 아니면 무슨 일이 일어났는지 모른다. 모르는 채로 완료 모달을 띄우면
+            // 화면이 지어낸 말을 하게 되므로 토스트 한 줄로 물러난다.
+            showToast('요금제 변경을 접수했어요.', 'success');
+          }
         },
         onError: () => {
           setIsPlanChangeOpen(false);
@@ -269,7 +295,6 @@ export function PremiumPage() {
     subscription?.subscriptionId && currentPlan && currentPlan.id !== selectedPlan.id,
   );
   const basePlan = isChangingPlan && currentPlan ? currentPlan : freePlan;
-  const nextBillingLabel = formatKoreanDate(subscription?.nextBillingAt);
 
   return (
     <main className="relative min-h-full pb-nav text-ink">
@@ -322,13 +347,20 @@ export function PremiumPage() {
             // 적용 시점은 다음 결제일이다. 예약을 걸기 **전**이라 서버 응답의
             // `effectiveAt` 이 아직 없어 `nextBillingAt` 에서 읽는다.
             planChange={
-              isChangingPlan ? { effectiveAt: subscription?.nextBillingAt ?? null } : null
+              isChangingPlan
+                ? {
+                    direction: planAction === 'upgrade' ? 'upgrade' : 'downgrade',
+                    effectiveAt: subscription?.nextBillingAt ?? null,
+                    chargeAmount: proration?.chargeAmount ?? null,
+                  }
+                : null
             }
             notice={<PendingPlanChangeNotice />}
           >
             <PlanCheckoutButton
               plan={selectedPlan}
               action={planAction}
+              chargeAmount={proration?.chargeAmount ?? null}
               onStart={() => setStep('confirm')}
               onChange={() => setIsPlanChangeOpen(true)}
             />
@@ -359,19 +391,17 @@ export function PremiumPage() {
             결제 후 즉시 저장 용량과 월 작성 횟수가 적용돼요.
             <br />
             매월 자동으로 갱신되고, 다음 결제일 전까지 언제든 해지할 수 있어요.
-            {/*
-              다음 결제일은 **구독자에게만** 있는 값이다(#325 시안). 미구독이면 아직
-              결제일이 없고, 해지(자동갱신 off)하면 서버가 `nextBillingAt` 을 null 로
-              주므로 두 경우 다 줄째로 빠진다 — 날짜를 지어내지 않는다.
-            */}
-            {nextBillingLabel && (
-              <>
-                <br />
-                다음 결제일 : {nextBillingLabel}
-              </>
-            )}
           </p>
 
+          {/*
+            ⚠️ **여기에 `다음 결제일 : …` 을 또 붙이지 말 것.** #325 가 "푸터 고지에 다음
+            결제일 표기" 를 과제로 잡았는데, **이미 바로 아래 `SubscriptionCancelSection`
+            이 그리고 있다**(15px, 해지 버튼 바로 위). 한 번 붙였다가 같은 날짜가 두 줄
+            간격으로 두 번 찍히는 걸 보고 되돌렸다.
+
+            그쪽 자리가 맞다 — 이 값이 답하는 질문은 '언제까지 쓸 수 있나' 이고 그건
+            해지 버튼에 붙어야 한다. 여기(13px 고지)에 두면 잔글씨로 읽혀 넘어간다.
+          */}
           <SubscriptionCancelSection />
         </footer>
       </div>
@@ -389,22 +419,38 @@ export function PremiumPage() {
       {step === 'complete' && (
         <PaymentCompleteModal plan={selectedPlan} onConfirm={handleComplete} />
       )}
-      {isPlanChangeOpen && subscription?.subscriptionId && (
-        <PlanChangeModal
-          currentPlanName={subscription.plan.name}
-          nextPlan={selectedPlan}
-          // 적용 시점은 다음 결제일이다. 서버 응답의 `effectiveAt` 과 같은 값이지만,
-          // 예약을 걸기 **전**이라 아직 그 응답이 없어 `nextBillingAt` 에서 읽는다.
-          effectiveAt={subscription.nextBillingAt}
-          isPending={schedulePlanChange.isPending}
-          onKeep={() => setIsPlanChangeOpen(false)}
-          onConfirm={handleConfirmPlanChange}
+      {isPlanChangeOpen &&
+        subscription?.subscriptionId &&
+        (planAction === 'upgrade' && proration ? (
+          <PlanUpgradeModal
+            nextPlan={selectedPlan}
+            chargeAmount={proration.chargeAmount}
+            isPending={schedulePlanChange.isPending}
+            onKeep={() => setIsPlanChangeOpen(false)}
+            onConfirm={handleConfirmPlanChange}
+          />
+        ) : (
+          <PlanChangeModal
+            currentPlanName={subscription.plan.name}
+            nextPlan={selectedPlan}
+            // 적용 시점은 다음 결제일이다. 서버 응답의 `effectiveAt` 과 같은 값이지만,
+            // 예약을 걸기 **전**이라 아직 그 응답이 없어 `nextBillingAt` 에서 읽는다.
+            effectiveAt={subscription.nextBillingAt}
+            isPending={schedulePlanChange.isPending}
+            onKeep={() => setIsPlanChangeOpen(false)}
+            onConfirm={handleConfirmPlanChange}
+          />
+        ))}
+      {changeResult?.kind === 'scheduled' && (
+        <PlanChangeDoneModal
+          pending={changeResult.pending}
+          onConfirm={() => setChangeResult(null)}
         />
       )}
-      {donePlanChange && (
-        <PlanChangeDoneModal
-          pending={donePlanChange}
-          onConfirm={() => setDonePlanChange(null)}
+      {changeResult?.kind === 'immediate' && (
+        <PlanUpgradeDoneModal
+          planName={changeResult.planName}
+          onConfirm={() => setChangeResult(null)}
         />
       )}
     </main>

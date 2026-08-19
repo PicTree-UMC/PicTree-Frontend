@@ -25,10 +25,14 @@ import type { SubscriptionPlanDto } from '../types/payment';
  */
 const STATIC_ROW = { label: '타임라인 · 동선 저장', free: '무제한', paid: '무제한' };
 
-/** 플랜 변경 맥락. 값이 있으면 헤더가 '현재/변경 후' 로 바뀌고 줄이 둘 붙는다. */
+/** 플랜 변경 맥락. 값이 있으면 헤더가 '현재/변경 후' 로 바뀌고 줄이 붙는다. */
 export type PlanChangeContext = {
-  /** 변경이 적용되는 시점 = 다음 결제일. 서버가 안 주면 `null` — 날짜를 지어내지 않는다. */
+  /** 업그레이드냐 다운그레이드냐. 붙는 줄과 값이 여기서 갈린다. */
+  direction: 'upgrade' | 'downgrade';
+  /** 변경이 적용되는 시점 = 다음 결제일. 없으면 날짜를 지어내지 않고 문장만 바꾼다. */
   effectiveAt: string | null;
+  /** 업그레이드일 때 오늘 청구되는 차액(원). 계산이 안 되면 `null`. */
+  chargeAmount: number | null;
 };
 
 type Props = {
@@ -118,31 +122,36 @@ export function PlanComparison({
 
   if (planChange) {
     /*
-      ⚠️ **`오늘 결제` 는 지금 늘 0원이다.** 서버가 주는 변경 수단이 예약
-      (`POST /subscriptions/{id}/plan-change`) 하나뿐이라 방향과 무관하게 이번 주기에는
-      돈이 안 나간다 — 이미 낸 요금이 있어서다.
-
-      시안의 업그레이드 프레임은 여기에 **잔여일 비례 차액**(`차액 1,300원`)을 그리는데,
-      그건 프론트가 계산할 값이 아니다. `4,900 - 2,900` 같은 뺄셈이 아니라 남은 일수로
-      나눈 값이고, 서버에 미리보기 API 가 생겨야 한다(#325). 그때 이 줄의 값만
-      갈아끼우면 되도록 줄 자체는 지금 세워 둔다.
+      업그레이드는 남은 기간 비례 차액, 다운그레이드는 0원(`lib/planProration`).
+      `planAmountLabel` 이 아니다 — 저건 0원을 '무료' 로 접는데, 여기서 하려는 말은
+      '이 플랜이 공짜다' 가 아니라 '오늘 빠져나가는 돈이 없다' 다.
     */
-    // `planAmountLabel` 이 아니다 — 저건 0원을 '무료' 로 접는데, 여기서 하려는 말은
-    // '이 플랜이 공짜다' 가 아니라 '오늘 빠져나가는 돈이 없다' 다.
-    rows.push({ label: '오늘 결제', free: '-', paid: formatPrice(0) });
+    rows.push({
+      label: '오늘 결제',
+      free: '-',
+      paid: formatPrice(
+        planChange.direction === 'upgrade' ? (planChange.chargeAmount ?? 0) : 0,
+      ),
+    });
 
     /*
+      ⚠️ **`적용 시점` 은 다운그레이드에만 붙는다**(#325 시안). 업그레이드는 결제 즉시
+      적용이라 '언제부터' 가 질문이 안 되고, 그 사실은 CTA(`5,000원 결제하고 변경`)와
+      확인 모달이 이미 말한다.
+
       ⚠️ 해를 뺀 '9월 15일부터' 다(`formatKoreanMonthDay`). 표의 값 열은 `1fr` 두 칸이라
       390px 에서 한 칸이 ~98px 인데, `2026년 9월 15일부터` 는 거기서 두 줄로 접혀 이 줄만
       키가 커진다. 예약은 길어야 한 결제 주기 뒤라 연도가 정보를 더하지도 않는다 —
       확인 모달처럼 자리가 넉넉한 곳에서만 해를 붙인다.
     */
-    const effectiveLabel = formatKoreanMonthDay(planChange.effectiveAt);
-    rows.push({
-      label: '적용 시점',
-      free: '현재 이용 중',
-      paid: effectiveLabel ? `${effectiveLabel}부터` : '다음 결제일부터',
-    });
+    if (planChange.direction === 'downgrade') {
+      const effectiveLabel = formatKoreanMonthDay(planChange.effectiveAt);
+      rows.push({
+        label: '적용 시점',
+        free: '현재 이용 중',
+        paid: effectiveLabel ? `${effectiveLabel}부터` : '다음 결제일부터',
+      });
+    }
   }
 
   const baseHeader = isChanging ? `현재 ${planSummary(basePlan).shortName}` : '무료';
