@@ -38,15 +38,6 @@ export const ROUTES = {
   blogCreate: '/blog/create',
   blogDetail: '/blog/:draftId',
   premium: '/premium',
-  /**
-   * AI 초안 생성권(PICTREE 토큰) 추가 구매 (WF-021).
-   *
-   * ⚠️ **들어오는 길은 마이페이지인데 경로는 `/premium` 아래다.** 이 화면이 하는 일이
-   * 결제라, 결제 착지 라우트(`/premium/billing/*`)·요금제와 한 묶음으로 두는 편이
-   * 나중에 결제 흐름을 손볼 때 흩어지지 않는다. `/profile/*` 은 '내 정보' 딸림 화면들의
-   * 접두사라 성격이 다르다.
-   */
-  premiumTokens: '/premium/tokens',
   // 토스 빌링 인증 후 리다이렉트되는 착지 라우트 (successUrl/failUrl 오리진 뒤 경로)
   premiumBillingSuccess: '/premium/billing/success',
   premiumBillingFail: '/premium/billing/fail',

@@ -20,7 +20,6 @@ import { PaymentMethodsPage } from '../features/premium/PaymentMethodsPage';
 import { PaymentHistoryPage } from '../features/premium/PaymentHistoryPage';
 import { PaymentDetailPage } from '../features/premium/PaymentDetailPage';
 import { PremiumPage } from '../features/premium/PremiumPage';
-import { TokenPurchasePage } from '../features/premium/TokenPurchasePage';
 import { ProfileEditPage } from '../features/profile/ProfileEditPage';
 import { TravelCalendarPage } from '../features/profile/TravelCalendarPage';
 import { FavoritesPage } from '../features/profile/FavoritesPage';
@@ -152,11 +151,6 @@ export const router = createBrowserRouter([
               {
                 path: ROUTES.premium,
                 element: <PremiumPage />,
-              },
-              {
-                // 시안(WF-021)에 하단 탭바가 있어 `Layout` 안이다 — 결제 착지 라우트들과 다르다.
-                path: ROUTES.premiumTokens,
-                element: <TokenPurchasePage />,
               },
             ],
           },
