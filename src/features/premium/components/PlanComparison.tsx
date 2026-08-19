@@ -1,11 +1,14 @@
 import type { ReactNode } from 'react';
 import { Chip } from '@/shared/components';
+import { formatKoreanMonthDay } from '@/shared/lib/date';
 import {
   FEATURE_CODE,
   featureLabel,
   findFeature,
   formatFeatureValue,
-  planPriceLabel,
+  formatPrice,
+  planAmountLabel,
+  planPriceRowLabel,
   planSummary,
   sortedFeatures,
 } from '../lib/planDisplay';
@@ -15,14 +18,38 @@ import type { SubscriptionPlanDto } from '../types/payment';
  * 서버 혜택이 아니다 — 요금제와 무관하게 무제한이라 `/subscription-plans` 에 안 들어있다.
  * 그래도 비교표에 남긴다: 무료로 어디까지 되는지가 유료 전환 판단의 절반이라, "기록 자체는
  * 원래 무제한" 이라는 사실이 빠지면 표가 실제보다 인색해 보인다. 서버에 생기면 이 상수를 지운다.
+ *
+ * ⚠️ **플랜 변경 맥락에서는 안 그린다.** 유료 ↔ 유료를 견주는 표에서는 양쪽이 다 '무제한'
+ * 이라 아무것도 말하지 않는 줄이 되고, 시안의 변경 프레임에도 이 줄이 없다. 위 근거는
+ * "무료로 어디까지 되나" 였으므로 무료 열이 있을 때만 성립한다.
  */
 const STATIC_ROW = { label: '타임라인 · 동선 저장', free: '무제한', paid: '무제한' };
 
+/** 플랜 변경 맥락. 값이 있으면 헤더가 '현재/변경 후' 로 바뀌고 줄이 둘 붙는다. */
+export type PlanChangeContext = {
+  /** 변경이 적용되는 시점 = 다음 결제일. 서버가 안 주면 `null` — 날짜를 지어내지 않는다. */
+  effectiveAt: string | null;
+};
+
 type Props = {
-  freePlan: SubscriptionPlanDto;
+  /**
+   * 왼쪽 열 — 견줄 **기준** 플랜.
+   *
+   * ⚠️ 종전엔 `freePlan` 으로 못 박혀 있었다. 그래서 이미 플러스를 쓰는 사람이 프로를
+   * 골라도 표가 `무료 | 프로` 를 그렸고, 정작 알아야 할 '지금 것과 무엇이 다른가' 는
+   * 화면 어디에도 없었다. 무엇을 넘길지는 부르는 쪽이 정한다(`PremiumPage`).
+   */
+  basePlan: SubscriptionPlanDto;
   paidPlans: SubscriptionPlanDto[];
   selectedId: number;
   onSelect: (id: number) => void;
+  /** 플랜 변경 맥락이면 채운다. 미구독이거나 지금 쓰는 플랜을 고른 상태면 `null`. */
+  planChange?: PlanChangeContext | null;
+  /**
+   * 칩 줄 바로 아래에 붙는 것(`PendingPlanChangeNotice`). 예약 배지는 **표를 읽기 전에**
+   * 보여야 한다 — 표가 말하는 '지금 플랜' 위에 이미 다른 예약이 걸려 있다는 전제라서다.
+   */
+  notice?: ReactNode;
   /**
    * 표 아래에 붙는 결제 버튼(`PlanCheckoutButton`). 이 섹션 안에 들어와야 한다 —
    * 칩·표·버튼이 같은 선택 하나를 보고 움직이는데 버튼만 섹션 밖에 있으면
@@ -35,7 +62,7 @@ type Props = {
 };
 
 /**
- * 무료 ↔ 고른 유료 플랜을 나란히 놓는 비교표 + 그 아래 결제 버튼.
+ * 기준 플랜 ↔ 고른 유료 플랜을 나란히 놓는 비교표 + 그 아래 결제 버튼.
  *
  * **피커바가 이 페이지의 유일한 플랜 선택기다.** 한때는 소개 카드의 CTA 로도 플랜을
  * 정할 수 있었는데, 두 선택이 서로를 몰라서 표에 편 플랜과 실제 결제 대상이 어긋날 수
@@ -46,20 +73,24 @@ type Props = {
  * 않는다 — 고르는 데 쓸 수 없는 숫자다. 유료 플랜을 전부 열로 펼치는 방법도 있지만 390px
  * 폭에 3열이 들어가면 값이 두 줄로 접힌다. 그래서 피커로 갈아끼운다.
  *
- * 줄은 무료 플랜의 혜택 목록을 기준으로 만든다. 유료에만 있는 코드는 안 그려지는데,
- * 지금 서버는 세 플랜이 같은 코드 집합(용량·AI 블로그·광고)을 쓴다.
+ * 줄은 기준 플랜의 혜택 목록을 기준으로 만든다. 고른 플랜에만 있는 코드는 안 그려지는데,
+ * 지금 서버는 네 플랜이 같은 코드 집합(용량·AI 블로그·광고)을 쓴다.
  */
 export function PlanComparison({
-  freePlan,
+  basePlan,
   paidPlans,
   selectedId,
   onSelect,
+  planChange,
+  notice,
   children,
 }: Props) {
   const selected = paidPlans.find((p) => p.id === selectedId) ?? paidPlans[0];
   if (!selected) return null;
 
-  const rows = sortedFeatures(freePlan)
+  const isChanging = Boolean(planChange);
+
+  const rows = sortedFeatures(basePlan)
     /*
       광고 제거 줄은 뺐다 — 그 자리를 가격이 가져갔다. 세 혜택 중 유일한 참/거짓 값이라
       다른 줄들처럼 '얼마나 늘어나는지' 를 말하지 못하고, 표에서 유료 전환의 근거로는
@@ -74,16 +105,50 @@ export function PlanComparison({
       free: formatFeatureValue(feature),
       paid: formatFeatureValue(findFeature(selected, feature.code)),
     }));
-  rows.splice(1, 0, STATIC_ROW); // 사진 용량 바로 아래
+  if (!isChanging) rows.splice(1, 0, STATIC_ROW); // 사진 용량 바로 아래
   /*
-    가격은 맨 아래 — 혜택을 다 읽은 뒤에 오는 결론이고, 바로 밑에 붙는 결제 버튼과
+    이용료는 혜택 줄 다음 — 혜택을 다 읽은 뒤에 오는 결론이고, 바로 밑에 붙는 결제 버튼과
     이어진다. 서버 값에서 파생하는 줄이라 `STATIC_ROW` 와 달리 지울 대상이 아니다.
   */
   rows.push({
-    label: '가격',
-    free: planPriceLabel(freePlan),
-    paid: planPriceLabel(selected),
+    label: planPriceRowLabel(selected),
+    free: planAmountLabel(basePlan),
+    paid: planAmountLabel(selected),
   });
+
+  if (planChange) {
+    /*
+      ⚠️ **`오늘 결제` 는 지금 늘 0원이다.** 서버가 주는 변경 수단이 예약
+      (`POST /subscriptions/{id}/plan-change`) 하나뿐이라 방향과 무관하게 이번 주기에는
+      돈이 안 나간다 — 이미 낸 요금이 있어서다.
+
+      시안의 업그레이드 프레임은 여기에 **잔여일 비례 차액**(`차액 1,300원`)을 그리는데,
+      그건 프론트가 계산할 값이 아니다. `4,900 - 2,900` 같은 뺄셈이 아니라 남은 일수로
+      나눈 값이고, 서버에 미리보기 API 가 생겨야 한다(#325). 그때 이 줄의 값만
+      갈아끼우면 되도록 줄 자체는 지금 세워 둔다.
+    */
+    // `planAmountLabel` 이 아니다 — 저건 0원을 '무료' 로 접는데, 여기서 하려는 말은
+    // '이 플랜이 공짜다' 가 아니라 '오늘 빠져나가는 돈이 없다' 다.
+    rows.push({ label: '오늘 결제', free: '-', paid: formatPrice(0) });
+
+    /*
+      ⚠️ 해를 뺀 '9월 15일부터' 다(`formatKoreanMonthDay`). 표의 값 열은 `1fr` 두 칸이라
+      390px 에서 한 칸이 ~98px 인데, `2026년 9월 15일부터` 는 거기서 두 줄로 접혀 이 줄만
+      키가 커진다. 예약은 길어야 한 결제 주기 뒤라 연도가 정보를 더하지도 않는다 —
+      확인 모달처럼 자리가 넉넉한 곳에서만 해를 붙인다.
+    */
+    const effectiveLabel = formatKoreanMonthDay(planChange.effectiveAt);
+    rows.push({
+      label: '적용 시점',
+      free: '현재 이용 중',
+      paid: effectiveLabel ? `${effectiveLabel}부터` : '다음 결제일부터',
+    });
+  }
+
+  const baseHeader = isChanging ? `현재 ${planSummary(basePlan).shortName}` : '무료';
+  const selectedHeader = isChanging
+    ? `변경 후 ${planSummary(selected).shortName}`
+    : planSummary(selected).shortName;
 
   return (
     <section>
@@ -135,11 +200,27 @@ export function PlanComparison({
         })}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-line-soft bg-white">
+      {/*
+        예약 배지 자리. 제목·칩이 가운데 축이라 배지도 따라간다 — 왼쪽에 붙으면 칩 줄과
+        다른 묶음으로 읽힌다.
+
+        ⚠️ 감싸개에 여백을 주지 않는다(`mt-3` 는 배지 자신이 든다). 예약이 없으면
+        `PendingPlanChangeNotice` 가 `null` 을 돌려주는데, 그때 이 div 가 여백을 들고
+        있으면 **아무것도 없는 자리가 12px 벌어진다.** 빈 div 는 높이가 0이다.
+      */}
+      <div className="flex justify-center">{notice}</div>
+
+      {/*
+        ⚠️ `break-keep`(word-break: keep-all) 은 표 전체에 건다. 값 열이 `1fr` 두 칸이라
+        320px 에서 한 칸이 ~82px 인데, 기본값에서 브라우저는 한글을 글자 단위로 끊어서
+        `9월 15일부 / 터` 처럼 낱말 가운데가 갈렸다. keep-all 이면 띄어쓰기에서만 끊긴다 —
+        좁은 폭에서 줄이 하나 늘 수는 있어도 낱말이 쪼개지지는 않는다.
+      */}
+      <div className="mt-4 overflow-hidden break-keep rounded-2xl border border-line-soft bg-white">
         <div className="grid grid-cols-[1.4fr_1fr_1fr] border-b border-line-soft px-4 py-3 text-[13px] text-ink-muted">
           <span>혜택</span>
-          <span className="text-center">무료</span>
-          <span className="text-center text-pictree-700">{planSummary(selected).shortName}</span>
+          <span className="text-center">{baseHeader}</span>
+          <span className="text-center text-pictree-700">{selectedHeader}</span>
         </div>
 
         {rows.map((row, i) => (
@@ -151,8 +232,8 @@ export function PlanComparison({
           >
             <span className="text-ink">{row.label}</span>
             {/*
-              무료 열을 흐리게 하지 않는다 — 비교 대상이지 비활성이 아니다(§5 의 칩 규칙과 같은 이유).
-              차이는 유료 열에 색을 주는 쪽으로만 낸다.
+              기준 열을 흐리게 하지 않는다 — 비교 대상이지 비활성이 아니다(§5 의 칩 규칙과 같은 이유).
+              차이는 고른 플랜 열에 색을 주는 쪽으로만 낸다.
             */}
             <span className="text-center text-ink-muted">{row.free}</span>
             <span className="text-center font-medium text-pictree-700">{row.paid}</span>

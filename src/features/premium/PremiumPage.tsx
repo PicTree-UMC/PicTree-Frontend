@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NavBar, Spinner, useToast } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
+import { formatKoreanDate } from '@/shared/lib/date';
 import { ROUTES } from '../../shared/constants/routes';
 import { BenefitShowcase } from './components/BenefitShowcase';
 import { PaymentCheckoutView } from './components/PaymentCheckoutView';
 import { PaymentCompleteModal } from './components/PaymentCompleteModal';
 import { PendingPlanChangeNotice } from './components/PendingPlanChangeNotice';
-import { PlanChangeModal } from './components/PlanChangeModal';
+import { PlanChangeDoneModal, PlanChangeModal } from './components/PlanChangeModal';
 import { PlanCheckoutButton } from './components/PlanCheckoutButton';
 import { PlanComparison } from './components/PlanComparison';
 import { PremiumFaq } from './components/PremiumFaq';
@@ -24,6 +25,7 @@ import { useSubscriptionPlans } from './hooks/useSubscriptionPlans';
 import { PREMIUM_BACKDROP_CLASS } from './lib/backdrop';
 import { isActiveCard } from './lib/billingKey';
 import { resolvePlanAction } from './lib/planAction';
+import type { PendingPlanChangeDto } from './types/payment';
 import type { PaymentStep } from './types/premium';
 
 /**
@@ -79,6 +81,14 @@ export function PremiumPage() {
    */
   const [isPlanChangeOpen, setIsPlanChangeOpen] = useState(false);
   /**
+   * 예약이 걸린 직후 띄우는 완료 모달의 값 — **서버 응답에서 그대로 든다.**
+   *
+   * `subscription.pendingPlanChange` 를 읽지 않는 이유: 무효화(`invalidateQueries`)는
+   * 비동기라 모달이 먼저 그려지고, 그 순간 캐시에는 아직 예약 전 값이 들어 있다.
+   * 확정된 `effectiveAt` 을 말해야 하는 모달이라 서버가 돌려준 것을 쓴다.
+   */
+  const [donePlanChange, setDonePlanChange] = useState<PendingPlanChangeDto | null>(null);
+  /**
    * 고른 플랜 — **비교표의 칩 하나가 정한다.**
    *
    * 한때 `checkoutId`(결제 대상)와 `comparedId`(표에서 견주는 플랜)로 나눠 뒀다.
@@ -94,6 +104,14 @@ export function PremiumPage() {
   const paidPlans = plans.filter((p) => p.price > 0); // 가격 오름차순 (useSubscriptionPlans 가 정렬)
   const selectedPlan =
     paidPlans.find((p) => p.id === selectedId) ?? paidPlans[paidPlans.length - 1];
+
+  /**
+   * 지금 쓰는 플랜의 **전체** DTO.
+   *
+   * `subscription.plan` 은 요약(`SubscriptionPlanSummary`)이라 `features[]` 가 없어
+   * 비교표 줄을 만들 수 없다. 같은 id 로 요금제 목록에서 원본을 찾아 쓴다.
+   */
+  const currentPlan = plans.find((p) => p.id === subscription?.plan.id);
 
   /**
    * 고른 플랜에 대해 지금 할 수 있는 일 — 결제냐 변경 예약이냐, 아니면 왜 막혔나.
@@ -147,7 +165,11 @@ export function PremiumPage() {
    *
    * 성공해도 `complete` 스텝(결제 완료 모달 → 블로그)으로 보내지 않는다. 방금 산 것을
    * 바로 써 보게 하는 흐름인데, 여기서는 다음 결제일까지 바뀌는 게 없다.
-   * 대신 푸터의 `PendingPlanChangeNotice` 가 예약을 이어받아 말한다.
+   * 대신 `PlanChangeDoneModal` 이 언제부터 바뀌는지를 날짜로 말하고, 그 뒤로는 칩 아래
+   * 예약 배지(`PendingPlanChangeNotice`)가 이어받는다.
+   *
+   * ⚠️ **종전엔 토스트였다**(#325). 3초 뒤 사라지는 줄이라 적용 날짜를 읽을 시간이 없고,
+   * 화면에도 즉각적인 변화가 없어 눌린 건지조차 남지 않았다.
    */
   const handleConfirmPlanChange = () => {
     if (!selectedPlan || !subscription?.subscriptionId) return;
@@ -157,9 +179,12 @@ export function PremiumPage() {
         subscriptionPlanId: selectedPlan.id,
       },
       {
-        onSuccess: () => {
+        onSuccess: (updated) => {
           setIsPlanChangeOpen(false);
-          showToast('요금제 변경을 예약했어요.', 'success');
+          // 서버가 예약을 안 채워 보내면(있어선 안 되지만) 날짜 없는 모달을 띄우느니
+          // 종전 토스트로 물러난다 — 완료 모달의 알맹이가 곧 그 날짜다.
+          if (updated.pendingPlanChange) setDonePlanChange(updated.pendingPlanChange);
+          else showToast('요금제 변경을 예약했어요.', 'success');
         },
         onError: () => {
           setIsPlanChangeOpen(false);
@@ -229,6 +254,23 @@ export function PremiumPage() {
     );
   }
 
+  /**
+   * 지금 화면이 **플랜 변경 맥락인가** — 비교표의 왼쪽 열·헤더·추가 두 줄이 전부 이
+   * 하나를 보고 갈린다.
+   *
+   * ⚠️ **고른 플랜이 지금 쓰는 플랜이면 변경이 아니다.** 그때는 왼쪽 열도 현재 플랜이라
+   * 같은 플랜을 자기 자신과 견주는 표가 된다 — 무료 열로 되돌려 '무료 대비 무엇을 더
+   * 받고 있나' 를 보여주는 편이 그 자리에서 할 수 있는 유일하게 쓸모 있는 비교다.
+   *
+   * 위 에러 가드 뒤에 두는 이유는 `freePlan` 이 여기서야 확실해지기 때문이다 — 그 전에
+   * 계산하면 `basePlan` 이 `undefined` 를 품은 채로 표까지 내려간다.
+   */
+  const isChangingPlan = Boolean(
+    subscription?.subscriptionId && currentPlan && currentPlan.id !== selectedPlan.id,
+  );
+  const basePlan = isChangingPlan && currentPlan ? currentPlan : freePlan;
+  const nextBillingLabel = formatKoreanDate(subscription?.nextBillingAt);
+
   return (
     <main className="relative min-h-full pb-nav text-ink">
       <div className={PREMIUM_BACKDROP_CLASS} />
@@ -273,10 +315,16 @@ export function PremiumPage() {
         */}
         <div className="mt-20 px-5">
           <PlanComparison
-            freePlan={freePlan}
+            basePlan={basePlan}
             paidPlans={paidPlans}
             selectedId={selectedPlan.id}
             onSelect={setSelectedId}
+            // 적용 시점은 다음 결제일이다. 예약을 걸기 **전**이라 서버 응답의
+            // `effectiveAt` 이 아직 없어 `nextBillingAt` 에서 읽는다.
+            planChange={
+              isChangingPlan ? { effectiveAt: subscription?.nextBillingAt ?? null } : null
+            }
+            notice={<PendingPlanChangeNotice />}
           >
             <PlanCheckoutButton
               plan={selectedPlan}
@@ -297,6 +345,9 @@ export function PremiumPage() {
 
           해지가 페이지 맨 끝인 이유: 바로 위 고지가 "언제든 해지할 수 있어요" 로 끝나
           그 문장이 곧 이 버튼의 안내가 된다. 구독자가 아니면 아무것도 안 그린다.
+
+          ⚠️ **예약 알림(`PendingPlanChangeNotice`)은 여기 없다.** 칩 줄 바로 아래로
+          올라갔다(#325) — 그쪽 주석에 이유를 적어 뒀다.
         */}
         <footer className="mt-20 px-5">
           {/*
@@ -308,13 +359,19 @@ export function PremiumPage() {
             결제 후 즉시 저장 용량과 월 작성 횟수가 적용돼요.
             <br />
             매월 자동으로 갱신되고, 다음 결제일 전까지 언제든 해지할 수 있어요.
+            {/*
+              다음 결제일은 **구독자에게만** 있는 값이다(#325 시안). 미구독이면 아직
+              결제일이 없고, 해지(자동갱신 off)하면 서버가 `nextBillingAt` 을 null 로
+              주므로 두 경우 다 줄째로 빠진다 — 날짜를 지어내지 않는다.
+            */}
+            {nextBillingLabel && (
+              <>
+                <br />
+                다음 결제일 : {nextBillingLabel}
+              </>
+            )}
           </p>
 
-          {/*
-            예약된 변경이 해지 위에 온다 — 다가올 일이 먼저고 끝내는 일이 맨 아래다.
-            예약이 없으면 아무것도 안 그린다.
-          */}
-          <PendingPlanChangeNotice />
           <SubscriptionCancelSection />
         </footer>
       </div>
@@ -342,6 +399,12 @@ export function PremiumPage() {
           isPending={schedulePlanChange.isPending}
           onKeep={() => setIsPlanChangeOpen(false)}
           onConfirm={handleConfirmPlanChange}
+        />
+      )}
+      {donePlanChange && (
+        <PlanChangeDoneModal
+          pending={donePlanChange}
+          onConfirm={() => setDonePlanChange(null)}
         />
       )}
     </main>
