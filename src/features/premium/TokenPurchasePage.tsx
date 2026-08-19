@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 
-import { NavBar, PrimaryCta, Skeleton } from '@/shared/components';
+import { NavBar, PrimaryCta, Skeleton, useToast } from '@/shared/components';
 import { useGoBack } from '@/shared/hooks/useGoBack';
 import { ROUTES } from '@/shared/constants/routes';
 
 import { usePictreeToken } from './hooks/usePictreeToken';
 import { useTokenProducts } from './hooks/useTokenProducts';
 import { IS_TOKEN_PURCHASE_READY } from './api/tokenProductApi';
+import { TokenPurchaseConfirmModal } from './components/TokenPurchaseConfirmModal';
 import { formatPrice } from './lib/planDisplay';
 import type { TokenProduct } from './types/tokenProduct';
 
@@ -68,13 +69,16 @@ function QuantityChip({
  * AI 초안 생성권 추가 구매 (WF-021).
  *
  * 구독 플랜을 건드리지 않고 생성권만 **일회성으로** 더 사는 화면이다. 들어오는 길은 둘 —
- * 마이페이지의 줄, 그리고 블로그 생성 흐름에서 생성권을 다 썼을 때다.
+ * 마이페이지 요약의 토큰 칸, 그리고 블로그 생성 흐름에서 생성권을 다 썼을 때다.
  *
- * ⚠️⚠️ **결제 버튼이 잠겨 있다. 화면이 미완성이라서가 아니라 서버가 아직 못 받는다.**
- * 일회성 결제 주문 API 가 없다(지금 `POST /payment-orders` 는 구독 요금제 전용). 상품
- * 목록도 목데이터다(`api/tokenProductApi`). 눌러도 아무 일이 없거나 "준비 중" 토스트만
- * 뜨는 버튼을 두지 않는 이유는, 사용자가 그걸 **결제 실패로 읽기** 때문이다 — 잠그고
- * 버튼 글자로 이유를 말한다(`PrimaryCta` 주석의 규칙).
+ * ⚠️⚠️ **아직 실제로 결제되지 않는다.** 일회성 결제 주문 API 가 없고(지금
+ * `POST /payment-orders` 는 구독 요금제 전용) 상품 목록도 목데이터다
+ * (`api/tokenProductApi`). 흐름은 시안(WF-021)대로 끝까지 이어 두고, **막히는 지점은
+ * 확인창의 `결제하기` 한 곳**이다(`handleConfirm`).
+ *
+ * 페이지 CTA 를 잠그지 않은 이유: 그 버튼은 돈을 쓰지 않고 확인창을 열 뿐이다. 실제로
+ * 청구가 일어날 자리에서만 멈추는 편이, 화면 전체가 죽어 있는 것보다 무엇이 준비 안 됐는지
+ * 정확히 말한다.
  *
  * 서버가 생기면 `IS_TOKEN_PURCHASE_READY` 하나로 열린다.
  *
@@ -89,6 +93,8 @@ export function TokenPurchasePage() {
   const { remaining, isPending: isBalancePending } = usePictreeToken();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const { showToast } = useToast();
 
   /*
     기본 선택은 **가운데 상품**이다. 시안이 10회를 펴 둔 상태로 그려져 있고, 아무것도
@@ -103,6 +109,26 @@ export function TokenPurchasePage() {
   }, [products, selectedId]);
 
   const selected = products?.find((product) => product.id === selectedId) ?? null;
+
+  /**
+   * 확인창의 `결제하기`.
+   *
+   * ⚠️ **아직 결제되지 않는다.** 일회성 결제 주문 API 가 없어서(`api/tokenProductApi`)
+   * 여기서 멈추고 그 사실을 그대로 알린다. 실패 토스트(`error`)가 아니라 `info` 인 것이
+   * 중요하다 — 빨간 토스트는 사용자가 **자기 카드가 거절됐다**고 읽는다. 결제를 시도한
+   * 적조차 없다는 것을 말해야 하는 자리다.
+   *
+   * 서버가 생기면 `IS_TOKEN_PURCHASE_READY` 가 켜지고 이 함수는 `purchaseTokens(id)` 를
+   * 부르면 된다.
+   */
+  const handleConfirm = () => {
+    setIsConfirming(false);
+
+    if (!IS_TOKEN_PURCHASE_READY) {
+      showToast('생성권 결제 기능을 준비 중이에요.', 'info');
+      return;
+    }
+  };
 
   /** 구매 후 보유량. 잔량을 모르면 `null` — 위 ⚠️ 참고. */
   const balanceAfter =
@@ -129,14 +155,18 @@ export function TokenPurchasePage() {
         </div>
       ) : (
         <div className="flex flex-col px-5 pt-6">
-          <h1 className="text-[20px] font-medium leading-tight text-ink">
+          {/*
+            시안대로 가운데 정렬 세 줄이다. 첫 줄이 무엇을 하는 화면인지, 아래 두 줄이
+            **무엇이 안 바뀌는지**를 말한다 — 이 화면에 닿는 사람이 가장 헷갈리는 지점이
+            "이거 사면 플랜이 바뀌나" 라, 그 답을 맨 위에 둔다.
+          */}
+          <h1 className="text-center text-[17px] font-medium leading-[26px] text-ink">
             필요한 만큼만 추가로 구매하세요
-          </h1>
-          <p className="mt-2 text-[15px] leading-6 text-ink-muted">
+            <br />
             구독 플랜을 변경하지 않고
             <br />
             AI 초안 생성권만 추가할 수 있습니다.
-          </p>
+          </h1>
 
           {/* 수량 칩 — 셋이 폭을 나눠 갖는다. 개수가 늘어도 줄이 안 깨지게 `flex-1` 이다. */}
           <div className="mt-6 flex gap-2">
@@ -160,7 +190,18 @@ export function TokenPurchasePage() {
             값이 아직 없을 때 `-` 로 두고 자리는 유지한다 — 줄이 늦게 생기면 아래 고지와
             버튼이 통째로 밀린다.
           */}
-          <div className="mt-5 overflow-hidden rounded-xl border border-line-soft bg-white">
+          <div className="mt-5 overflow-hidden rounded-xl border border-pictree-300 bg-white">
+            {/*
+              머리 행. 시안에 있는 줄인데, 아래가 `이름 — 값` 표라는 걸 먼저 알려 준다.
+              값이 전부 `n회` 로 끝나 세로로 훑으면 무엇의 개수인지 헷갈리기 쉬운 표다.
+            */}
+            <div className="flex items-center gap-4 border-b border-line-soft px-5 py-3">
+              <span className="shrink-0 text-[15px] text-ink-muted">항목</span>
+              <span className="min-w-0 flex-1 text-right text-[15px] text-ink-muted">
+                표시 내용
+              </span>
+            </div>
+
             <SummaryRow label="AI 초안 생성권">
               {selected ? `${selected.quantity}회` : '-'}
             </SummaryRow>
@@ -195,22 +236,23 @@ export function TokenPurchasePage() {
             <li>· 결제 완료 즉시 생성권이 추가됩니다.</li>
           </ul>
 
-          <PrimaryCta
-            className="mt-7"
-            disabled={!IS_TOKEN_PURCHASE_READY || !selected}
-            /*
-              ⚠️ 지금은 닿지 않는 가지다(위 `disabled`). 서버가 생겼을 때 배선할 자리를
-              비워 두지 않고 남긴다 — 빈 핸들러는 "이미 붙었는데 안 되는 것" 으로 읽힌다.
-            */
-            onClick={() => undefined}
-          >
-            {!IS_TOKEN_PURCHASE_READY
-              ? '결제 준비 중이에요'
-              : selected
-                ? `${formatPrice(selected.price)} 결제하기`
-                : '수량을 선택해주세요'}
+          {/*
+            ⚠️ **이 버튼은 돈을 쓰지 않는다 — 확인창을 열 뿐이다.** 그래서 서버가 아직
+            일회성 결제를 못 받아도 잠그지 않는다. 실제로 청구가 일어날 자리는 확인창의
+            `결제하기` 이고, 막히는 것도 거기다(`handleConfirm`).
+          */}
+          <PrimaryCta className="mt-7" disabled={!selected} onClick={() => setIsConfirming(true)}>
+            {selected ? `${formatPrice(selected.price)} 결제하기` : '수량을 선택해주세요'}
           </PrimaryCta>
         </div>
+      )}
+
+      {isConfirming && selected && (
+        <TokenPurchaseConfirmModal
+          product={selected}
+          onConfirm={handleConfirm}
+          onCancel={() => setIsConfirming(false)}
+        />
       )}
     </div>
   );
