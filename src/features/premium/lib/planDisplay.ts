@@ -186,6 +186,23 @@ export const planPriceLabel = (plan: SubscriptionPlanDto): string => {
 };
 
 /**
+ * 비교표 이용료 줄의 **라벨** — '월 이용료' / '연 이용료'.
+ *
+ * 주기가 라벨로 올라가면서 값 쪽은 `planAmountLabel` 이 맡는다. 종전처럼 라벨 `가격` +
+ * 값 `월 2,900원` 으로 두면 두 열에 '월' 이 두 번 찍히고, 그렇다고 라벨에 '월' 을
+ * 박아 두면 연간 요금제가 생기는 순간 화면이 거짓말을 한다 — 그래서 여기서도 파생한다.
+ *
+ * ⚠️ **무료 플랜(`billingCycle: 'NONE'`)이 아니라 견주는 유료 플랜을 넘긴다.** 무료를
+ * 넘기면 주기가 없어 늘 '월' 로 떨어진다.
+ */
+export const planPriceRowLabel = (plan: SubscriptionPlanDto): string =>
+  `${plan.billingCycle === 'YEARLY' ? '연' : '월'} 이용료`;
+
+/** 같은 줄의 **값** — '무료' / '2,900원'. 주기는 라벨이 이미 말한다. */
+export const planAmountLabel = (plan: SubscriptionPlanDto): string =>
+  plan.price === 0 ? '무료' : formatPrice(plan.price);
+
+/**
  * '플러스 플랜' → '플러스'. 접미사가 없으면 그대로 둔다.
  *
  * 폭이 빠듯한 자리에서 쓴다 — 플랜 카드 한 줄(이름·용량·횟수를 다 담아 390px 에서
