@@ -9,6 +9,7 @@ import { RouteStep } from './components/steps/RouteStep';
 import { ToneStep } from './components/steps/ToneStep';
 import { ResultStep } from './components/steps/ResultStep';
 import { useBlogDraftUsage } from './hooks/useBlogDraftUsage';
+import { PICTREE_TOKEN_LABEL } from '@/features/premium/lib/planDisplay';
 
 /**
  * 동선 페이지의 "AI 블로그 작성"에서 넘어올 때 전달되는 프리필.
@@ -130,7 +131,7 @@ export function BlogCreatePage() {
   if (isPending) {
     return (
       <main className="grid min-h-full place-items-center bg-cream">
-        <Spinner label="PICTREE 토큰 잔량을 확인하는 중" labelHidden />
+        <Spinner label={`${PICTREE_TOKEN_LABEL} 잔량을 확인하는 중`} labelHidden />
       </main>
     );
   }

@@ -20,6 +20,8 @@
  * 비교표가 말하게 두고 여기서는 규칙만 설명한다.
  */
 
+import { PICTREE_TOKEN_LABEL } from '../lib/planDisplay';
+
 export interface PremiumFaqItem {
   q: string;
   a: string;
@@ -39,7 +41,7 @@ export const PREMIUM_FAQ: PremiumFaqItem[] = [
       맨 앞에 두는 이유: 위 혜택 문구와 비교표가 이미 이 낱말을 쓴다. 뜻을 모르는 채로
       두 번 마주친 사람이 답을 찾는 자리가 여기다.
     */
-    q: 'PICTREE 토큰이 뭔가요?',
+    q: `${PICTREE_TOKEN_LABEL}이 뭔가요?`,
     a: 'AI가 여행기 초안을 써 줄 때 쓰는 이용권이에요. 초안 한 편에 토큰 하나를 쓰고, 플랜마다 한 달에 주어지는 개수가 달라요. 위 비교표에서 플랜별로 확인할 수 있어요.',
   },
   {
@@ -87,6 +89,6 @@ export const PREMIUM_FAQ: PremiumFaqItem[] = [
     // 근거: 무료 플랜도 /subscription-plans 에 있고 features 가 용량·AI 블로그에만 걸린다.
     // 기록·동선에 제한이 없다는 건 profile/constants/faq.ts 와 같은 근거.
     q: '무료로는 어디까지 쓸 수 있나요?',
-    a: '장소를 기록하고 동선을 만드는 데에는 제한이 없어요. 사진 저장 용량과 PICTREE 토큰에만 제한이 있고, 위 비교표에서 플랜별로 확인할 수 있어요.',
+    a: `장소를 기록하고 동선을 만드는 데에는 제한이 없어요. 사진 저장 용량과 ${PICTREE_TOKEN_LABEL}에만 제한이 있고, 위 비교표에서 플랜별로 확인할 수 있어요.`,
   },
 ];
