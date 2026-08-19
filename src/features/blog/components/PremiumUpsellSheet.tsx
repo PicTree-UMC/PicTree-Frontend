@@ -13,6 +13,13 @@ import { AdOffIcon, BlogBenefitIcon, CheckIcon, CrownIcon, StorageUpgradeIcon } 
 type PremiumUpsellSheetProps = {
   onClose: () => void;
   onUpgrade: () => void;
+  /**
+   * 플랜을 그대로 두고 생성권만 더 사러 간다 (WF-021).
+   *
+   * ⚠️ **플랜 업그레이드와 다른 길이다.** 이번 달만 몇 편 더 쓰면 되는 사람에게
+   * 월 구독을 올리라고만 하면 필요보다 큰 것을 팔게 된다.
+   */
+  onBuyTokens: () => void;
 };
 
 /**
@@ -48,7 +55,11 @@ function BenefitSkeleton() {
  * 들어 있었는데, 그 표에는 **무료 플랜의 월 1회가 아예 없었다.** 값은 `GET /subscription-plans`
  * 에서만 온다(`planDisplay` 맨 위의 "되돌리지 말 것").
  */
-export function PremiumUpsellSheet({ onClose, onUpgrade }: PremiumUpsellSheetProps) {
+export function PremiumUpsellSheet({
+  onClose,
+  onUpgrade,
+  onBuyTokens,
+}: PremiumUpsellSheetProps) {
   const { data: plans, isPending } = useSubscriptionPlans();
 
   /*
@@ -115,6 +126,20 @@ export function PremiumUpsellSheet({ onClose, onUpgrade }: PremiumUpsellSheetPro
       <PrimaryCta onClick={onUpgrade} className="mt-4">
         플랜 업그레이드
       </PrimaryCta>
+
+      {/*
+        생성권만 사는 길. **업그레이드보다 약하게 둔다** — 이 시트가 보여 주는 표가 플랜
+        혜택이라 그쪽이 주된 제안이고, 여기는 "그만큼은 필요 없다" 는 사람의 출구다.
+        같은 무게로 두면 방금 읽은 표와 버튼이 서로 다른 것을 가리키게 된다.
+      */}
+      <button
+        type="button"
+        onClick={onBuyTokens}
+        className="mt-3 h-12 w-full rounded-xl border border-line bg-white text-[15px] font-medium text-ink"
+      >
+        생성권만 추가 구매
+      </button>
+
       <button type="button" className="mt-3 w-full py-2 text-[13px] text-ink-muted" onClick={onClose}>
         나중에 할게요
       </button>
