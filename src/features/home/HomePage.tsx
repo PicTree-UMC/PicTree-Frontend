@@ -173,7 +173,11 @@ export function HomePage() {
     if (locationError === notifiedLocationErrorRef.current) return;
 
     notifiedLocationErrorRef.current = locationError;
-    showToast(locationError, 'error');
+    /*
+      기본 2.5초로는 "설정 → 개인 정보 보호 및 보안 → …" 같은 두 줄짜리 안내를 못 읽는다.
+      다른 토스트와 달리 이건 알림이 아니라 **따라 할 지시**라 읽을 시간을 준다.
+    */
+    showToast(locationError, 'error', { duration: 6000 });
     // 실패했으니 대기 중인 '현재 위치로 이동'도 접는다. 안 접으면 한참 뒤 엉뚱한 좌표가
     // 도착했을 때 사용자가 보던 화면이 그때 가서 끌려간다.
     recenterPendingRef.current = false;
