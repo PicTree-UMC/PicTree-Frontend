@@ -39,6 +39,26 @@ export interface UseGeolocationOptions extends PositionOptions {
 const DEFAULT_MAXIMUM_AGE = 5000;
 
 /**
+ * 고정밀 측위가 실패했을 때 **정밀도를 낮춰 한 번 더** 시도하는 조건.
+ *
+ * `enableHighAccuracy: true` 는 GPS 를 직접 켠다 — 실내·지하·첫 측위에서는 10초 안에
+ * 안 잡히는 일이 흔하고, 그러면 `TIMEOUT` 만 돌아오며 **좌표를 영영 못 받는다.**
+ * 기기의 위치 서비스가 꺼져 있거나 iOS 의 '정확한 위치' 가 꺼져 있어도 같은 자리에서 막힌다.
+ * 사용자 눈에는 "권한은 허용했는데 위치를 아예 못 잡는" 것으로만 보인다.
+ *
+ * 그때는 Wi-Fi·기지국 측위로 내려가 다시 묻는다. 수십~수백 m 어긋난 좌표라도 **지도가
+ * 서울시청에서 열리는 것보다는 낫다.** 신뢰반경은 그대로 실어 보내므로 카메라 화면은
+ * `LOW_ACCURACY_THRESHOLD_M` 로 걸러 수동 지정을 권한다 — 틀린 좌표를 숨기지는 않는다.
+ */
+const FALLBACK_TIMEOUT_MS = 20000;
+
+/**
+ * 폴백에서는 캐시 좌표를 넓게 받아들인다. 고정밀이 이미 실패한 상황이라 **새 측위를
+ * 또 기다리는 것보다 브라우저가 들고 있는 값을 쓰는 편이 빠르고 확실하다.**
+ */
+const FALLBACK_MAXIMUM_AGE_MS = 60000;
+
+/**
  * 이 값을 넘는 신뢰반경(m)이면 "부정확"으로 보고 사용자에게 수동 지정을 권한다.
  *
  * 실외 GPS 는 보통 5~20m, 지하에서 Wi-Fi 측위로 내려앉으면 30~150m, 기지국까지
@@ -75,6 +95,26 @@ const isSupported = () => typeof navigator !== 'undefined' && 'geolocation' in n
 const UNSUPPORTED_MESSAGE = '이 기기에서는 위치를 사용할 수 없어요.';
 
 /**
+ * 실패 사유를 **사용자가 할 수 있는 일**로 옮긴다.
+ *
+ * 셋을 가르는 이유는 손 쓸 방법이 저마다 다르기 때문이다 — 권한은 브라우저 설정,
+ * 위치 서비스는 OS 설정, 시간 초과는 자리를 옮기는 것이다. 예전처럼 뒤 둘을 "잠시 후 다시
+ * 시도해 주세요" 로 뭉뚱그리면 **실내에서 영영 안 되는 상황을 계속 기다리게 만든다.**
+ *
+ * 줄바꿈(`\n`)은 토스트가 `whitespace-pre-line` 으로 살린다.
+ */
+function messageForError(error: GeolocationPositionError) {
+  switch (error.code) {
+    case error.PERMISSION_DENIED:
+      return '위치 권한이 거부되어 현재 위치를 표시할 수 없어요.';
+    case error.POSITION_UNAVAILABLE:
+      return '기기의 위치 서비스가 꺼져 있거나 신호를 잡지 못했어요.\n설정에서 위치 서비스를 켠 뒤 다시 시도해 주세요.';
+    default:
+      return '위치를 확인하는 데 너무 오래 걸렸어요.\n실외나 창가에서 다시 시도해 주세요.';
+  }
+}
+
+/**
  * 기기의 현재 위치를 가져오는 훅.
  *
  * 기본은 마운트 시 1회 조회이고, `request()` 로 다시 요청할 수 있다.
@@ -93,6 +133,19 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     timeout = 10000,
     maximumAge = DEFAULT_MAXIMUM_AGE,
   } = options;
+
+  /*
+   * 고정밀 측위가 실패해 저정밀로 내려온 상태인지 (위 FALLBACK_* 주석 참고).
+   *
+   * 한 번 내려오면 이 훅이 살아 있는 동안 다시 올라가지 않는다 — 실패한 조건으로 되돌아가
+   * 봐야 같은 자리에서 또 막히고, 그동안 화면에는 계속 위치가 없다. 화면을 다시 열면
+   * (마운트) 고정밀부터 다시 시도하므로 실외로 나온 뒤에는 원래 정밀도로 돌아온다.
+   */
+  const [degraded, setDegraded] = useState(false);
+
+  const effectiveHighAccuracy = enableHighAccuracy && !degraded;
+  const effectiveTimeout = degraded ? Math.max(timeout, FALLBACK_TIMEOUT_MS) : timeout;
+  const effectiveMaximumAge = degraded ? Math.max(maximumAge, FALLBACK_MAXIMUM_AGE_MS) : maximumAge;
 
   /*
    * 마지막으로 알던 좌표에서 시작한다 — 화면을 다시 열 때 빈 상태로 되돌아가지 않는다.
@@ -164,24 +217,39 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
    * 깜빡이며 사라진다. 마지막으로 알던 위치를 두는 편이 낫다.
    * 권한이 거부된 경우만 예외 — 더 이상 위치를 보여줄 근거가 없다.
    */
-  const handleError = useCallback((error: GeolocationPositionError) => {
-    const denied = error.code === error.PERMISSION_DENIED;
+  const handleError = useCallback(
+    (error: GeolocationPositionError) => {
+      const denied = error.code === error.PERMISSION_DENIED;
 
-    /*
-     * 거부됐으면 보관해 둔 좌표도 버린다. 안 버리면 다른 화면이 "마지막으로 알던 위치" 로
-     * 계속 그려서 **권한을 껐는데도 위치가 남아 있는 것처럼 보인다.** 아래에서 이 훅의
-     * 좌표를 비우는 것과 짝이고, 잠깐 끊긴 경우(denied 아님)에 좌표를 남기는 규칙도 같다.
-     */
-    if (denied) useGeolocationStore.getState().clearFix();
+      /*
+       * 권한 문제가 아니고 **아직 한 번도 좌표를 못 받았으면** 정밀도를 낮춰 한 번 더
+       * 시도한다 — 아직 실패로 치지 않으므로 `loading` 도 그대로 둔다. 여기서 곧장 에러를
+       * 세우면 재시도가 성공해도 이미 토스트가 떠 버린 뒤다.
+       *
+       * 판정에 `lastFixRef` 를 쓰는 이유: 추적 중 터널에서 잠깐 끊긴 것까지 폴백으로 보면
+       * **한 번 지나간 터널 때문에 남은 화면 내내 저정밀로 떨어진다.** 폴백은 첫 측위를
+       * 건지려는 장치지 끊김을 메우는 장치가 아니다(끊김은 아래에서 좌표를 남기는 쪽이 맡는다).
+       */
+      if (!denied && !degraded && enableHighAccuracy && lastFixRef.current === null) {
+        setDegraded(true);
+        return;
+      }
 
-    setState((prev) => ({
-      coords: denied ? null : prev.coords,
-      error: denied
-        ? '위치 권한이 거부되어 현재 위치를 표시할 수 없어요.'
-        : '현재 위치를 가져오지 못했어요. 잠시 후 다시 시도해 주세요.',
-      loading: false,
-    }));
-  }, []);
+      /*
+       * 거부됐으면 보관해 둔 좌표도 버린다. 안 버리면 다른 화면이 "마지막으로 알던 위치" 로
+       * 계속 그려서 **권한을 껐는데도 위치가 남아 있는 것처럼 보인다.** 아래에서 이 훅의
+       * 좌표를 비우는 것과 짝이고, 잠깐 끊긴 경우(denied 아님)에 좌표를 남기는 규칙도 같다.
+       */
+      if (denied) useGeolocationStore.getState().clearFix();
+
+      setState((prev) => ({
+        coords: denied ? null : prev.coords,
+        error: messageForError(error),
+        loading: false,
+      }));
+    },
+    [degraded, enableHighAccuracy],
+  );
 
   /** 1회 조회. watch 모드에서도 수동 재시도로 쓸 수 있다. */
   const request = useCallback(() => {
@@ -192,11 +260,11 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
 
     setState((prev) => ({ ...prev, loading: true, error: null }));
     navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
-      enableHighAccuracy,
-      timeout,
-      maximumAge,
+      enableHighAccuracy: effectiveHighAccuracy,
+      timeout: effectiveTimeout,
+      maximumAge: effectiveMaximumAge,
     });
-  }, [enableHighAccuracy, timeout, maximumAge, handleSuccess, handleError]);
+  }, [effectiveHighAccuracy, effectiveTimeout, effectiveMaximumAge, handleSuccess, handleError]);
 
   useEffect(() => {
     const cached = useGeolocationStore.getState().fix;
@@ -226,15 +294,27 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       setState((prev) => ({ ...prev, loading: true, error: null }));
     }
 
+    /*
+     * `degraded` 가 켜지면 handleError → setDegraded 로 이 effect 가 다시 돌아, 지금 watch 를
+     * 끊고 저정밀 옵션으로 새로 건다. 폴백이 추적 모드에서도 걸리는 자리가 여기다.
+     */
     const watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
-      enableHighAccuracy,
-      timeout,
-      maximumAge,
+      enableHighAccuracy: effectiveHighAccuracy,
+      timeout: effectiveTimeout,
+      maximumAge: effectiveMaximumAge,
     });
 
     // 화면을 떠나면 추적을 멈춘다. 안 끊으면 백그라운드에서 계속 측위해 배터리를 쓴다.
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [watch, request, enableHighAccuracy, timeout, maximumAge, handleSuccess, handleError]);
+  }, [
+    watch,
+    request,
+    effectiveHighAccuracy,
+    effectiveTimeout,
+    effectiveMaximumAge,
+    handleSuccess,
+    handleError,
+  ]);
 
   return { ...state, request };
 }

@@ -25,7 +25,12 @@ export function HomePage() {
   const navigate = useNavigate();
   // 지도는 이동을 따라가야 하므로 추적 모드로 받는다. request(refreshLocation)는
   // 추적 중에도 수동 재조회로 쓸 수 있어 우하단 새로고침 버튼에서 사용한다.
-  const { coords, loading: locating, request: refreshLocation } = useGeolocation({ watch: true });
+  const {
+    coords,
+    error: locationError,
+    loading: locating,
+    request: refreshLocation,
+  } = useGeolocation({ watch: true });
 
   /*
    * 반경 50m 안에 내 나무가 있으면 상단 배너가 그 안내로 갈아탄다.
@@ -142,6 +147,39 @@ export function HomePage() {
   const { showToast } = useToast();
 
   /*
+    위치를 못 잡은 **이유**를 알린다.
+
+    이 화면은 좌표가 없으면 조용히 서울시청(FALLBACK_CENTER)에서 열린다. 그것만 보면 권한
+    거부인지, 기기 위치 서비스가 꺼진 건지, 실내라 시간이 초과된 건지 구분할 방법이 없어
+    사용자도 우리도 원인을 못 찾았다. 훅은 사유를 문구로 만들어 두는데 **읽는 곳이 없었다.**
+
+    ⚠️ 같은 문구는 다시 안 띄운다. 추적 모드(watchPosition)는 실패가 이어지면 에러를 계속
+    쏘므로, 거르지 않으면 2.5초마다 같은 토스트가 다시 뜬다. 성공해서 error 가 null 로
+    풀리면 기준도 같이 풀어, 다음에 또 실패하면 그때는 다시 알린다.
+  */
+  const notifiedLocationErrorRef = useRef<string | null>(null);
+  /*
+    우하단 '현재 위치' 버튼이 세워 두는 플래그. 좌표 갱신이 비동기라, 눌렀다는 사실만
+    여기 남겨 두고 좌표가 도착한 뒤 아래 effect 에서 지도를 옮긴다.
+    (실패하면 바로 아래 토스트 effect 가 접는다 — 그래서 선언이 그보다 위에 있다.)
+  */
+  const recenterPendingRef = useRef(false);
+
+  useEffect(() => {
+    if (!locationError) {
+      notifiedLocationErrorRef.current = null;
+      return;
+    }
+    if (locationError === notifiedLocationErrorRef.current) return;
+
+    notifiedLocationErrorRef.current = locationError;
+    showToast(locationError, 'error');
+    // 실패했으니 대기 중인 '현재 위치로 이동'도 접는다. 안 접으면 한참 뒤 엉뚱한 좌표가
+    // 도착했을 때 사용자가 보던 화면이 그때 가서 끌려간다.
+    recenterPendingRef.current = false;
+  }, [locationError, showToast]);
+
+  /*
     장소 수정 — 타임라인의 수정 화면을 그대로 쓴다. 기록이 곧 나무라 고치는 대상도
     보내는 요청(`PATCH /trees/{treeId}`)도 같다. 여기에 폼을 하나 더 만들면 두 화면이
     갈라진다.
@@ -171,9 +209,6 @@ export function HomePage() {
     );
   };
 
-  // 우하단 버튼 — 누르면 GPS 를 새로 읽고(refreshLocation), 갱신된 좌표가 도착하면
-  // 그 위치로 지도를 옮긴다. 좌표 갱신은 비동기라 ref 플래그를 세워 두고 아래 effect 에서 처리한다.
-  const recenterPendingRef = useRef(false);
   const handleRecenter = () => {
     recenterPendingRef.current = true;
     refreshLocation();
@@ -250,8 +285,7 @@ export function HomePage() {
           nearbyTrees && {
             placeName: nearbyTrees.label,
             distanceM: Math.round(nearbyTrees.distanceM),
-            onView: () =>
-              setSelection({ ids: nearbyTrees.trees.map((tree) => tree.id), index: 0 }),
+            onView: () => setSelection({ ids: nearbyTrees.trees.map((tree) => tree.id), index: 0 }),
           }
         }
       />
