@@ -38,7 +38,7 @@ export function CameraPage() {
 
   const { selectedEmoji, setSelectedEmoji, placeName, setPlaceName, comment, setComment, isValid } =
     useRecordForm();
-  const { coords: gpsCoords, request: requestLocation } = useGeolocation();
+  const { coords: gpsCoords, error: locationError, request: requestLocation } = useGeolocation();
   const { showToast } = useToast();
   const { mutate: saveRecord, isPending: isSaving } = useCreateTreeRecord();
   const today = getLocalDateString();
@@ -78,9 +78,7 @@ export function CameraPage() {
   const handleCapture = () => {
     if (!videoRef.current || !viewportRef.current) return;
     const { clientWidth, clientHeight } = viewportRef.current;
-    setCapturedPhoto(
-      captureFrame(videoRef.current, zoom, clientWidth / clientHeight, isMirrored),
-    );
+    setCapturedPhoto(captureFrame(videoRef.current, zoom, clientWidth / clientHeight, isMirrored));
   };
 
   const handleRetake = () => setCapturedPhoto(null);
@@ -99,8 +97,17 @@ export function CameraPage() {
       return;
     }
     if (!coords) {
-      // POST /trees 에 좌표가 필수라 확보될 때까지 막고 위치를 다시 요청한다.
-      showToast('현재 위치를 확인하는 중이에요. 잠시 후 다시 시도해 주세요.', 'info');
+      /*
+        POST /trees 에 좌표가 필수라 확보될 때까지 막고 위치를 다시 요청한다.
+
+        실패해서 없는 것과 아직 안 온 것을 가른다. 전부 "확인하는 중" 으로 말하면, 권한이
+        거부됐거나 기기 위치 서비스가 꺼져 **아무리 기다려도 안 되는** 상황에서도 사용자를
+        계속 기다리게 만든다 — 그때는 아래 시트에서 지도로 직접 찍는 길이 있는데도 모른다.
+      */
+      showToast(
+        locationError ?? '현재 위치를 확인하는 중이에요. 잠시 후 다시 시도해 주세요.',
+        locationError ? 'error' : 'info',
+      );
       requestLocation();
       return;
     }
@@ -137,7 +144,12 @@ export function CameraPage() {
   const toggleFacing = () =>
     setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'));
   const cycleZoom = () =>
-    setZoom((prev) => ZOOM_STEPS[(ZOOM_STEPS.indexOf(prev as (typeof ZOOM_STEPS)[number]) + 1) % ZOOM_STEPS.length]);
+    setZoom(
+      (prev) =>
+        ZOOM_STEPS[
+          (ZOOM_STEPS.indexOf(prev as (typeof ZOOM_STEPS)[number]) + 1) % ZOOM_STEPS.length
+        ],
+    );
 
   return (
     <div ref={viewportRef} className="relative h-full w-full overflow-hidden bg-black">
@@ -159,7 +171,11 @@ export function CameraPage() {
 
       {/* 촬영된 사진 */}
       {capturedPhoto && (
-        <img src={capturedPhoto} alt="촬영된 사진" className="absolute inset-0 h-full w-full object-cover" />
+        <img
+          src={capturedPhoto}
+          alt="촬영된 사진"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
       )}
 
       {/* 작성 모드: 카메라를 가리는 불투명 배경 */}
@@ -187,7 +203,9 @@ export function CameraPage() {
           {capturedPhoto ? (
             <>
               <div className="flex-1" />
-              <span className="animate-fade-in-down shrink-0 text-[15px] text-white/80">{today}</span>
+              <span className="animate-fade-in-down shrink-0 text-[15px] text-white/80">
+                {today}
+              </span>
             </>
           ) : (
             <>
