@@ -105,12 +105,82 @@ const UNSUPPORTED_MESSAGE = '이 기기에서는 위치를 사용할 수 없어�
  */
 function messageForError(error: GeolocationPositionError) {
   switch (error.code) {
-    case error.PERMISSION_DENIED:
-      return '위치 권한이 거부되어 현재 위치를 표시할 수 없어요.';
     case error.POSITION_UNAVAILABLE:
       return '기기의 위치 서비스가 꺼져 있거나 신호를 잡지 못했어요.\n설정에서 위치 서비스를 켠 뒤 다시 시도해 주세요.';
     default:
       return '위치를 확인하는 데 너무 오래 걸렸어요.\n실외나 창가에서 다시 시도해 주세요.';
+  }
+}
+
+/**
+ * 안내 문구를 고르려고만 쓴다 — 설정 경로가 OS 마다 다르기 때문이다.
+ * 기능을 가르는 데는 쓰지 않는다(UA 판별은 늘 틀릴 수 있고, 틀려도 문구만 덜 정확해진다).
+ */
+function platform(): 'ios' | 'android' | 'other' {
+  if (typeof navigator === 'undefined') return 'other';
+  if (/Android/.test(navigator.userAgent)) return 'android';
+  if (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    // iPadOS 는 데스크톱 Safari 로 위장한다 — 터치 지점 수로 가른다.
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  ) {
+    return 'ios';
+  }
+  return 'other';
+}
+
+/** 브라우저가 기억하고 있는 이 사이트의 위치 권한. 못 읽으면 `null`. */
+async function queryPermissionState(): Promise<PermissionState | null> {
+  if (typeof navigator === 'undefined' || !navigator.permissions?.query) return null;
+  try {
+    return (await navigator.permissions.query({ name: 'geolocation' })).state;
+  } catch {
+    // 일부 브라우저는 'geolocation' 을 모르고 던진다. 모른다고 답하는 것과 같게 다룬다.
+    return null;
+  }
+}
+
+/**
+ * `PERMISSION_DENIED` 의 **두 얼굴**을 가른다.
+ *
+ * iOS 는 위치 권한이 두 겹이다 — ① OS 의 `설정 > 개인 정보 보호 및 보안 > 위치 서비스 >
+ * Safari 웹사이트` ② 사이트별 허용. **①이 꺼져 있으면 사이트 프롬프트에서 '허용' 을 눌러도
+ * 곧바로 거부가 돌아온다.** 실제로 이 앱에서 "권한을 허용했는데 위치를 전혀 못 잡는" 신고가
+ * 전부 이 경우였다(#337).
+ *
+ * 둘을 가르는 단서가 Permissions API 다. 브라우저가 스스로 `denied` 라고 답하면 사이트 권한이
+ * 막힌 것이고, `granted`·`prompt` 인데도 거부가 왔다면 **브라우저 바깥**, 곧 OS 층이 막은 것이다.
+ * 문구를 하나로 뭉뚱그리면 사용자가 브라우저 설정만 뒤지다 못 찾는다 — 실제로 그랬다.
+ *
+ * ⚠️ 앱이 저 설정을 **켜 줄 수는 없다.** 웹은 시스템 설정을 읽지도 바꾸지도 못하고, Safari 에서
+ * 설정 앱의 특정 화면으로 딥링크하는 것도 iOS 가 막아 뒀다(`App-Prefs:` 는 네이티브 전용).
+ * 우리가 할 수 있는 최선은 **어디를 켜야 하는지 정확히 짚어 주는 것**이다.
+ */
+async function deniedMessage(): Promise<string> {
+  const state = await queryPermissionState();
+
+  const os = platform();
+
+  // ② 사이트 층 — 브라우저가 이 사이트를 스스로 막고 있다고 답한 경우.
+  if (state === 'denied') {
+    switch (os) {
+      case 'ios':
+        return '이 사이트의 위치 접근이 차단돼 있어요.\n주소창의 AA 버튼 → 웹사이트 설정 → 위치에서 허용해 주세요.';
+      case 'android':
+        return '이 사이트의 위치 접근이 차단돼 있어요.\n주소창 왼쪽 아이콘 → 권한 → 위치에서 허용해 주세요.';
+      default:
+        return '이 사이트의 위치 접근이 차단돼 있어요.\n브라우저의 사이트 설정에서 위치를 허용해 주세요.';
+    }
+  }
+
+  // ① OS 층 — 브라우저는 허용인데 그 바깥이 막은 경우.
+  switch (os) {
+    case 'ios':
+      return '기기 설정에서 브라우저의 위치 접근이 꺼져 있어요.\n설정 → 개인 정보 보호 및 보안 → 위치 서비스 → Safari 웹사이트를 켜 주세요.';
+    case 'android':
+      return '기기 설정에서 브라우저의 위치 접근이 꺼져 있어요.\n설정 → 앱 → 브라우저 → 권한 → 위치를 허용해 주세요.';
+    default:
+      return '기기 설정에서 브라우저의 위치 접근이 꺼져 있어요.\n설정에서 브라우저의 위치 권한을 켜 주세요.';
   }
 }
 
@@ -168,6 +238,15 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
 
   /** 마지막으로 받아들인 측위의 정확도·시각. 아래 역행 필터의 기준점. */
   const lastFixRef = useRef<{ accuracy: number; timestamp: number } | null>(null);
+
+  /** 거부 문구는 Permissions API 를 기다렸다 세우므로, 그 사이 화면이 사라졌는지 본다. */
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const handleSuccess = useCallback(
     (position: GeolocationPosition) => {
@@ -242,8 +321,20 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
        */
       if (denied) useGeolocationStore.getState().clearFix();
 
+      /*
+       * 거부는 어디가 막았는지 읽어 온 뒤 **한 번에** 세운다. 일단 기본 문구로 세우고 나중에
+       * 갈아끼우면 화면이 토스트를 두 번 띄운다(문구가 바뀌면 새 알림으로 보므로).
+       */
+      if (denied) {
+        void deniedMessage().then((message) => {
+          if (!mountedRef.current) return;
+          setState({ coords: null, error: message, loading: false });
+        });
+        return;
+      }
+
       setState((prev) => ({
-        coords: denied ? null : prev.coords,
+        coords: prev.coords,
         error: messageForError(error),
         loading: false,
       }));
